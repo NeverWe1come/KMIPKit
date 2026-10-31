@@ -7592,3 +7592,13 @@ The preceding PR head's CI run `41190649237` exposed 39 Python test failures on 
 | Refactor/evidence — record the cause, compatibility baseline update, and scoped verification | this commit | Documentation and traceability checks; `git diff --check` | No production code changed. An exploratory all-module API-manifest run was not green: it exposed unrelated in-progress operation/inventory snapshot mismatches, plus five test modules unavailable to the system interpreter because `jsonschema` is absent. Those results are not represented as passing; the CI-targeted extension-fixture and API-parity modules pass. T091 remains open at 30 candidates. |
 
 The two baseline additions are present in the generated registry projection and have `KMIPKIT-0012-FR-010/011` ownership. The fixture update is limited to these appended API records; all pre-existing API records and all other baseline fields remain unchanged. The broad API-manifest failures include `test_t091_root_reexport_aliases` for the `ClientBatch` root alias; that remains a separate T091 mapping candidate and is not hidden by this CI repair.
+
+### T091 ClientBatch root reexport requirement parity (2026-10-31)
+
+The direct Rust reexport `kmipkit::ClientBatch` is the same public type as `kmipkit_client::ClientBatch`. Its root declaration therefore retains the canonical owner's complete requirement set, including KMIPKIT-0006-FR-002. The previous row omitted that requirement even though its export and all language mappings identify the same declaration.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red — assert every root reexport retains the canonical declaration's full requirement set | `b36bf8208` | `python -B -m unittest tools.api_manifest.tests.test_t091_root_reexport_aliases.T091RootReexportAliasTests.test_approved_root_aliases_reuse_exact_canonical_declarations -v` | Expected failure: `kmipkit::ClientBatch` omitted `KMIPKIT-0006-FR-002`. |
+| Green — add the missing owner requirement and regenerate parity and shared Rust inventory outputs | `3acfdb544` | Full `test_t091_root_reexport_aliases`; `tools.api_manifest.tests.test_parity`; API generator and shared Rust inventory `--check`; `git diff --check` | Pass: root aliases 2/2; parity 24/24; all 12 generated outputs and the shared Rust inventory are current. No runtime behavior changed; the T091 candidate count remains 30. |
+| Refactor/evidence — record alias semantics and exact traceability | this commit | Feature traceability tests; `git diff --check` | Documentation only; T091 remains open at 30 candidates. |
