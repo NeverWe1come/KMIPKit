@@ -2015,7 +2015,6 @@ fn profile_validation_error_view(
         (None, Some(gap_id), Some(locator)) => {
             (PROFILE_ERROR_SOURCE_GAP, Some(gap_id), Some(locator))
         }
-        (None, None, None) => (PROFILE_ERROR_SOURCE_NONE, None, None),
         _ => (PROFILE_ERROR_SOURCE_NONE, None, None),
     };
     let (batch_item_index_present, batch_item_index) = match error.batch_item_index() {
