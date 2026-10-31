@@ -13208,6 +13208,7 @@
       "id": "client_batch_set_client_correlation_value",
       "requirementIds": [
         "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],
@@ -13626,6 +13627,7 @@
     {
       "id": "client_batch_item_response_unique_batch_item_id",
       "requirementIds": [
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0007-FR-001",
         "KMIPKIT-0007-FR-006",
         "KMIPKIT-0007-FR-008",
@@ -13701,6 +13703,7 @@
     {
       "id": "client_batch_item_response_pending_correlation_value",
       "requirementIds": [
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0007-FR-001",
         "KMIPKIT-0007-FR-006",
         "KMIPKIT-0007-FR-008",
@@ -31387,6 +31390,7 @@
     {
       "id": "client_async_operation_outcome_correlation_value",
       "requirementIds": [
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0009-FR-002",
         "KMIPKIT-0009-FR-003",
         "KMIPKIT-0009-FR-004",
@@ -77568,6 +77572,7 @@
       "requirementIds": [
         "KMIPKIT-0006-FR-001",
         "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0006-FR-014",
         "KMIPKIT-0006-FR-017",
         "KMIPKIT-0006-FR-018",
@@ -77764,6 +77769,7 @@
       "requirementIds": [
         "KMIPKIT-0006-FR-001",
         "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0006-FR-014",
         "KMIPKIT-0006-FR-017",
         "KMIPKIT-0006-FR-018",
@@ -78331,6 +78337,7 @@
       "requirementIds": [
         "KMIPKIT-0006-FR-001",
         "KMIPKIT-0006-FR-002",
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0006-FR-013",
         "KMIPKIT-0006-FR-014",
         "KMIPKIT-0043-FR-005",
@@ -78377,6 +78384,7 @@
       "requirementIds": [
         "KMIPKIT-0006-FR-001",
         "KMIPKIT-0006-FR-002",
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0006-FR-013",
         "KMIPKIT-0006-FR-014",
         "KMIPKIT-0043-FR-005",
@@ -88287,6 +88295,7 @@
       "capabilityId": "client_batch_model",
       "requirementIds": [
         "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],
@@ -88708,6 +88717,7 @@
       "exportName": "kmipkit_client::ClientBatchItemResponse::unique_batch_item_id",
       "capabilityId": "client_execution",
       "requirementIds": [
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0007-FR-001",
         "KMIPKIT-0007-FR-006",
         "KMIPKIT-0007-FR-008",
@@ -89737,6 +89747,7 @@
       "exportName": "kmipkit_client::ClientBatchOutcome::asynchronous_correlation_value",
       "capabilityId": "client_execution",
       "requirementIds": [
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0007-FR-001",
         "KMIPKIT-0007-FR-006",
         "KMIPKIT-0007-FR-008",
@@ -94690,6 +94701,7 @@
       "exportName": "kmipkit_client::PendingOutcome::asynchronous_correlation_value",
       "capabilityId": "client_execution",
       "requirementIds": [
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0007-FR-001",
         "KMIPKIT-0007-FR-006",
         "KMIPKIT-0007-FR-008",
@@ -97380,6 +97392,7 @@
       "capabilityId": "client_batch_model",
       "requirementIds": [
         "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],
@@ -97911,6 +97924,7 @@
       "exportName": "kmipkit::ClientBatchItemResponse::unique_batch_item_id",
       "capabilityId": "client_execution",
       "requirementIds": [
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0007-FR-001",
         "KMIPKIT-0007-FR-006",
         "KMIPKIT-0007-FR-008",
@@ -98898,6 +98912,7 @@
       "exportName": "kmipkit::ClientBatchOutcome::asynchronous_correlation_value",
       "capabilityId": "client_execution",
       "requirementIds": [
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0007-FR-001",
         "KMIPKIT-0007-FR-006",
         "KMIPKIT-0007-FR-008",
@@ -102109,6 +102124,7 @@
       "exportName": "kmipkit::ClientOperationOutcome::with_asynchronous_correlation_value",
       "capabilityId": "client_asynchronous_operations",
       "requirementIds": [
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0009-FR-001",
         "KMIPKIT-0009-FR-002",
         "KMIPKIT-0009-FR-003",
@@ -103644,6 +103660,7 @@
       "exportName": "kmipkit::PendingOutcome::asynchronous_correlation_value",
       "capabilityId": "client_execution",
       "requirementIds": [
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0007-FR-001",
         "KMIPKIT-0007-FR-006",
         "KMIPKIT-0007-FR-008",
@@ -263102,6 +263119,7 @@
       "exportName": "kmipkit_client_batch_item_response_pending_correlation_value",
       "capabilityId": "client_execution",
       "requirementIds": [
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0007-FR-001",
         "KMIPKIT-0007-FR-006",
         "KMIPKIT-0007-FR-008",
@@ -263186,6 +263204,7 @@
       "exportName": "kmipkit_client_batch_item_response_unique_batch_item_id",
       "capabilityId": "client_execution",
       "requirementIds": [
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0007-FR-001",
         "KMIPKIT-0007-FR-006",
         "KMIPKIT-0007-FR-008",
@@ -263393,6 +263412,7 @@
       "capabilityId": "client_batch_model",
       "requirementIds": [
         "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],
@@ -266278,6 +266298,7 @@
       "capabilityId": "client_batch_model",
       "requirementIds": [
         "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],
@@ -266316,6 +266337,7 @@
       "capabilityId": "client_batch_model",
       "requirementIds": [
         "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],
@@ -266557,6 +266579,7 @@
       "exportName": "org.kmipkit.extensions.ClientBatchItemResult.uniqueBatchItemId",
       "capabilityId": "client_execution",
       "requirementIds": [
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0007-FR-001",
         "KMIPKIT-0007-FR-006",
         "KMIPKIT-0007-FR-008",
@@ -266599,6 +266622,7 @@
       "exportName": "kmipkit.client.BatchItemResult.unique_batch_item_id",
       "capabilityId": "client_execution",
       "requirementIds": [
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0007-FR-001",
         "KMIPKIT-0007-FR-006",
         "KMIPKIT-0007-FR-008",
@@ -266641,6 +266665,7 @@
       "exportName": "org.kmipkit.extensions.ClientBatchItemResult.pendingCorrelationValue",
       "capabilityId": "client_execution",
       "requirementIds": [
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0007-FR-001",
         "KMIPKIT-0007-FR-006",
         "KMIPKIT-0007-FR-008",
@@ -266683,6 +266708,7 @@
       "exportName": "kmipkit.client.BatchItemResult.pending_correlation_value",
       "capabilityId": "client_execution",
       "requirementIds": [
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0007-FR-001",
         "KMIPKIT-0007-FR-006",
         "KMIPKIT-0007-FR-008",
@@ -331365,6 +331391,7 @@
       "exportName": "org.kmipkit.extensions.AsyncOperationOutcome.withAsynchronousCorrelationValue",
       "capabilityId": "client_asynchronous_operations",
       "requirementIds": [
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0009-FR-002",
         "KMIPKIT-0009-FR-003",
         "KMIPKIT-0009-FR-004",
@@ -332072,6 +332099,7 @@
       "exportName": "kmipkit.client.AsyncOperationOutcome.with_asynchronous_correlation_value",
       "capabilityId": "client_asynchronous_operations",
       "requirementIds": [
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0009-FR-002",
         "KMIPKIT-0009-FR-003",
         "KMIPKIT-0009-FR-004",
@@ -332829,6 +332857,7 @@
       "exportName": "kmipkit_client::ClientOperationOutcome::with_asynchronous_correlation_value",
       "capabilityId": "client_asynchronous_operations",
       "requirementIds": [
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0009-FR-001",
         "KMIPKIT-0009-FR-002",
         "KMIPKIT-0009-FR-003",
@@ -361295,6 +361324,7 @@
       "requirementIds": [
         "KMIPKIT-0006-FR-001",
         "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0006-FR-014",
         "KMIPKIT-0006-FR-017",
         "KMIPKIT-0006-FR-018",
@@ -361736,6 +361766,7 @@
       "requirementIds": [
         "KMIPKIT-0006-FR-001",
         "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0006-FR-014",
         "KMIPKIT-0006-FR-017",
         "KMIPKIT-0006-FR-018",
@@ -361972,6 +362003,7 @@
       "requirementIds": [
         "KMIPKIT-0006-FR-001",
         "KMIPKIT-0006-FR-002",
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0006-FR-013",
         "KMIPKIT-0006-FR-014",
         "KMIPKIT-0043-FR-005",
@@ -362110,6 +362142,7 @@
       "requirementIds": [
         "KMIPKIT-0006-FR-001",
         "KMIPKIT-0006-FR-002",
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0006-FR-013",
         "KMIPKIT-0006-FR-014",
         "KMIPKIT-0043-FR-005",
@@ -364996,6 +365029,7 @@
       "requirementIds": [
         "KMIPKIT-0006-FR-001",
         "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0006-FR-014",
         "KMIPKIT-0006-FR-017",
         "KMIPKIT-0006-FR-018",
@@ -365486,6 +365520,7 @@
       "requirementIds": [
         "KMIPKIT-0006-FR-001",
         "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0006-FR-014",
         "KMIPKIT-0006-FR-017",
         "KMIPKIT-0006-FR-018",
@@ -365673,6 +365708,7 @@
       "requirementIds": [
         "KMIPKIT-0006-FR-001",
         "KMIPKIT-0006-FR-002",
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0006-FR-013",
         "KMIPKIT-0006-FR-014",
         "KMIPKIT-0043-FR-005",
@@ -365857,6 +365893,7 @@
       "requirementIds": [
         "KMIPKIT-0006-FR-001",
         "KMIPKIT-0006-FR-002",
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0006-FR-013",
         "KMIPKIT-0006-FR-014",
         "KMIPKIT-0043-FR-005",
@@ -404253,6 +404290,7 @@
     {
       "capabilityId": "client_execution",
       "requirementIds": [
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0007-FR-001",
         "KMIPKIT-0007-FR-006",
         "KMIPKIT-0007-FR-008",
@@ -405000,6 +405038,7 @@
     {
       "capabilityId": "client_asynchronous_operations",
       "requirementIds": [
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0009-FR-001",
         "KMIPKIT-0009-FR-002",
         "KMIPKIT-0009-FR-003",

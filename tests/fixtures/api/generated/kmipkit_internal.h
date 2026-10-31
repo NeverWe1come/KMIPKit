@@ -632,7 +632,7 @@ int32_t kmipkit_client_batch_set_asynchronous_indicator(kmipkit_client_batch_t *
 int32_t kmipkit_client_batch_add_item(kmipkit_client_batch_t * batch, kmipkit_client_batch_item_t ** inout_item);
 /* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_add_error_continuation_value(kmipkit_client_batch_t * batch, uint32_t value);
-/* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
+/* KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-008, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_set_client_correlation_value(kmipkit_client_batch_t * batch, const uint8_t * value, uint64_t value_length);
 /* The item handle is consumed after the item handle and identifier span have been validated.
  * If either validation fails, the caller retains ownership. Once ownership transfer begins, the caller must not use or release item, even if the call returns an error.
@@ -653,12 +653,12 @@ int32_t kmipkit_client_batch_item_unique_batch_item_id(kmipkit_client_batch_item
 /* The item-response handle retains its parent response, so closing the parent batch-response handle does not invalidate this span.
  * The returned out_value is a borrowed byte span into the response-owned buffer. It remains valid and unchanged only while this item-response handle remains open; copy the bytes before releasing the handle.
  */
-/* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-021 */
+/* KMIPKIT-0006-FR-008, KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_item_response_unique_batch_item_id(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_byte_span_v1_t * out_value);
 /* The item-response handle retains its parent response, so closing the parent batch-response handle does not invalidate this span.
  * The returned out_value is a borrowed byte span into the response-owned buffer. It remains valid and unchanged only while this item-response handle remains open; copy the bytes before releasing the handle.
  */
-/* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-021 */
+/* KMIPKIT-0006-FR-008, KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_item_response_pending_correlation_value(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_byte_span_v1_t * out_value);
 /* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_create(kmipkit_client_configuration_t * configuration, kmipkit_transport_config_t ** transport_configuration, kmipkit_client_t ** out_client);
@@ -1327,7 +1327,7 @@ int32_t kmipkit_client_batch_item_set_attribute(const kmipkit_unique_identifier_
 int32_t kmipkit_client_batch_item_response_set_attribute(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
 /* Exposes a borrowed span over the exact opaque asynchronous correlation bytes when present; it remains valid while the outcome handle is alive.
  */
-/* KMIPKIT-0009-FR-002, KMIPKIT-0009-FR-003, KMIPKIT-0009-FR-004, KMIPKIT-0009-FR-005, KMIPKIT-0009-FR-006, KMIPKIT-0009-FR-009, KMIPKIT-0043-FR-021 */
+/* KMIPKIT-0006-FR-008, KMIPKIT-0009-FR-002, KMIPKIT-0009-FR-003, KMIPKIT-0009-FR-004, KMIPKIT-0009-FR-005, KMIPKIT-0009-FR-006, KMIPKIT-0009-FR-009, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_async_operation_outcome_correlation_value(kmipkit_client_async_operation_outcome_t * outcome, uint8_t * out_present, kmipkit_byte_span_v1_t * out_value);
 /* Copies common KMIP result metadata into the caller-provided versioned output record. The Result Message pointer borrows from the outcome handle.
  */
