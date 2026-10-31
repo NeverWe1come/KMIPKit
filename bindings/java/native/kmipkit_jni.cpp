@@ -2051,6 +2051,49 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_attestationCred
     });
 }
 
+JNIEXPORT jint JNICALL Java_org_kmipkit_NativeExtensionRegistry_deviceCredentialFromTtlv(
+        JNIEnv* env, jclass, jlong raw_structure, jlongArray out_credential) {
+    return guarded<jint>(env, KMIPKIT_ERROR_INTERNAL, [&] {
+        if (out_credential == nullptr || env->GetArrayLength(out_credential) != 1) {
+            throw_invalid_input(env);
+            return static_cast<jint>(KMIPKIT_ERROR_INVALID_INPUT);
+        }
+        kmipkit_device_credential_t* credential = nullptr;
+        const int32_t status = kmipkit_device_credential_from_ttlv(
+                from_java_handle<kmipkit_ttlv_structure_t>(raw_structure), &credential);
+        if (status != 0) {
+            return static_cast<jint>(status);
+        }
+        const jlong raw_credential = reinterpret_cast<jlong>(credential);
+        env->SetLongArrayRegion(out_credential, 0, 1, &raw_credential);
+        if (env->ExceptionCheck()) {
+            kmipkit_device_credential_release(credential);
+            return static_cast<jint>(KMIPKIT_ERROR_INTERNAL);
+        }
+        return static_cast<jint>(0);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_deviceCredentialTtlvView(
+        JNIEnv* env, jclass, jlong raw_credential) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_ttlv_structure_view_t>(env, [&](auto output) {
+            return kmipkit_device_credential_ttlv_view(
+                    from_java_handle<kmipkit_device_credential_t>(raw_credential), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_deviceCredentialIntoTtlv(
+        JNIEnv* env, jclass, jlong raw_credential) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_ttlv_structure_t>(env, [&](auto output) {
+            return kmipkit_device_credential_into_ttlv(
+                    from_java_handle<kmipkit_device_credential_t>(raw_credential), output);
+        });
+    });
+}
+
 JNIEXPORT jstring JNICALL Java_org_kmipkit_NativeExtensionRegistry_extensionIdentityVendorIdentifier(
         JNIEnv* env, jclass, jlong identity) {
     return identity_text(env, identity, kmipkit_extension_identity_vendor_identifier);
@@ -4153,6 +4196,8 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_release(
                 from_java_handle<kmipkit_authentication_t>(raw_handle)); break;
         case 49: kmipkit_credential_view_release(
                 from_java_handle<kmipkit_credential_view_t>(raw_handle)); break;
+        case 50: kmipkit_device_credential_release(
+                from_java_handle<kmipkit_device_credential_t>(raw_handle)); break;
         default: throw_invalid_input(env); break;
         }
         return 0;

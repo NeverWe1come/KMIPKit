@@ -31,7 +31,7 @@ use crate::{
     kmipkit_client_batch_response_t, kmipkit_client_batch_t, kmipkit_client_configuration_t,
     kmipkit_client_extension_registry_t, kmipkit_client_request_message_extension_t,
     kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_credential_t, kmipkit_credential_view_t,
-    kmipkit_extension_child_rule_t, kmipkit_extension_compatibility_t,
+    kmipkit_device_credential_t, kmipkit_extension_child_rule_t, kmipkit_extension_compatibility_t,
     kmipkit_extension_definition_t, kmipkit_extension_discriminator_t,
     kmipkit_extension_identity_t, kmipkit_extension_information_t,
     kmipkit_extension_order_constraint_t, kmipkit_extension_recognition_t,
@@ -77,7 +77,9 @@ use kmipkit_protocol::{
     SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask, Ticket,
     UniqueIdentifier, ValidateRequest,
 };
-use kmipkit_protocol::{AttestationCredential, Authentication, Credential, CredentialType, Nonce};
+use kmipkit_protocol::{
+    AttestationCredential, Authentication, Credential, CredentialType, DeviceCredential, Nonce,
+};
 use kmipkit_protocol::{MessageValidationError, MessageValidationErrorKind, RequestMessage};
 use kmipkit_protocol::{
     ProfileObjectState, ProfileValidationContext, ProfileValidationError,
@@ -416,6 +418,7 @@ enum Kind {
     Authentication,
     CredentialView,
     AttestationCredential,
+    DeviceCredential,
 }
 
 enum HandleValue {
@@ -453,6 +456,7 @@ enum HandleValue {
         index: usize,
     },
     AttestationCredential(AttestationCredential),
+    DeviceCredential(DeviceCredential),
     ChildRule(Box<extension::ExtensionChildRule>),
     OrderConstraint(extension::ExtensionOrderConstraint),
     Value(Value),
@@ -662,6 +666,9 @@ impl TtlvView {
                     authentication.with_ttlv(|view| resolve_structure_path(&view, steps, callback))
                 }
                 HandleValue::AttestationCredential(credential) => {
+                    credential.with_ttlv(|view| resolve_structure_path(&view, steps, callback))
+                }
+                HandleValue::DeviceCredential(credential) => {
                     credential.with_ttlv(|view| resolve_structure_path(&view, steps, callback))
                 }
                 _ => Err(ERROR_INVALID_INPUT),
@@ -8547,6 +8554,78 @@ pub extern "C" fn kmipkit_attestation_credential_release(
 ) {
     ffi_entrypoint(|| {
         release(handle, Kind::AttestationCredential);
+    });
+}
+
+/// Consumes and validates a Device Credential Value, retaining its original TTLV fields.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_device_credential_from_ttlv(
+    structure: *mut kmipkit_ttlv_structure_t,
+    out_credential: *mut *mut kmipkit_device_credential_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_credential);
+        let owner = try_ffi!(consume_unshared_ttlv_source(structure));
+        let payload = try_ffi!(unwrap_payload(owner));
+        let HandleValue::Structure(structure) = payload else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let credential = match DeviceCredential::try_from_ttlv(structure) {
+            Ok(credential) => credential,
+            Err(_error) => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::DeviceCredential,
+            HandleValue::DeviceCredential(credential)
+        ));
+        SUCCESS
+    })
+}
+
+/// Creates a read-only view over the Device Credential's original ordered TTLV.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_device_credential_ttlv_view(
+    credential: *mut kmipkit_device_credential_t,
+    out_view: *mut *mut kmipkit_ttlv_structure_view_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_view);
+        let owner = try_ffi!(clone_handle_owner(credential, Kind::DeviceCredential));
+        let view = TtlvView::new(owner, ViewRoot::Structure, ViewTarget::Structure);
+        *out = try_ffi!(try_make_handle(
+            Kind::StructureView,
+            HandleValue::StructureView(view)
+        ));
+        SUCCESS
+    })
+}
+
+/// Consumes the Device Credential and returns its exact original TTLV Structure.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_device_credential_into_ttlv(
+    credential: *mut kmipkit_device_credential_t,
+    out_structure: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_structure);
+        let owner = try_ffi!(consume_unshared_owner(credential, Kind::DeviceCredential));
+        let payload = try_ffi!(unwrap_payload(owner));
+        let HandleValue::DeviceCredential(credential) = payload else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(credential.into_ttlv())
+        ));
+        SUCCESS
+    })
+}
+
+/// Releases a Device Credential handle.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_device_credential_release(handle: *mut kmipkit_device_credential_t) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::DeviceCredential);
     });
 }
 

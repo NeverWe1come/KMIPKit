@@ -113,8 +113,8 @@ class SharedRustInventoryTests(unittest.TestCase):
     def test_current_inventory_links_every_mapped_rust_declaration_to_approved_owner_requirements(self) -> None:
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
-        self.assertEqual(inventory["observedRustDeclarationCount"], 10457)
-        self.assertEqual(inventory["mappedRustDeclarationCount"], 651)
+        self.assertEqual(inventory["observedRustDeclarationCount"], 10458)
+        self.assertEqual(inventory["mappedRustDeclarationCount"], 679)
         self.assertEqual(len(inventory["blockedUnreconciledDeclarations"]), 2)
         self.assertEqual(set(inventory["draftOwnerGates"]), {"KMIPKIT-0010"})
         self.assertEqual(

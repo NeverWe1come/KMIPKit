@@ -82,6 +82,11 @@
         "requirementIds": {
           "$ref": "#/$defs/requirementIds"
         },
+        "normativeSource": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The exact KMIP 2.1 clause or table defining a typed protocol value."
+        },
         "enumRepresentation": {
           "$ref": "#/$defs/enumRepresentation"
         },

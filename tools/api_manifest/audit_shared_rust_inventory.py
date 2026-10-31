@@ -234,10 +234,15 @@ def _verify_ready_mapping_exports(
             for alias in row.get("aliases", [])
         )
 
+    capability_scopes = {
+        row.get("capabilityId"): row.get("parityScope")
+        for row in manifest.get("capabilities", [])
+    }
     ready_rows = [
         row
         for row in manifest.get("publicDeclarations", [])
         if row.get("declarationState") in {"declared", "verified"}
+        and capability_scopes.get(row.get("capabilityId")) != "c-only"
     ]
     shared_capability_ids = {
         row.get("capabilityId") for row in manifest.get("capabilities", [])
@@ -270,6 +275,8 @@ def _verify_ready_mapping_exports(
 
     for capability in manifest.get("capabilities", []):
         if capability.get("capabilityState") not in {"declared", "verified"}:
+            continue
+        if capability.get("parityScope") == "c-only":
             continue
         expected = aggregate.get(capability.get("capabilityId"), {})
         actual = capability.get("mappings", {})

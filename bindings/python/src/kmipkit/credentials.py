@@ -22,6 +22,7 @@ _T = TypeVar("_T")
 _ACTIVE_NONCE_VIEWS: WeakKeyDictionary[object, int] = WeakKeyDictionary()
 _ACTIVE_CREDENTIAL_VIEWS: WeakKeyDictionary[object, int] = WeakKeyDictionary()
 _ACTIVE_ATTESTATION_CREDENTIAL_VIEWS: WeakKeyDictionary[object, int] = WeakKeyDictionary()
+_ACTIVE_DEVICE_CREDENTIAL_VIEWS: WeakKeyDictionary[object, int] = WeakKeyDictionary()
 _ACTIVE_AUTHENTICATION_VIEWS: WeakKeyDictionary[object, int] = WeakKeyDictionary()
 _MAX_AUTHENTICATION_CREDENTIALS = 100_000
 
@@ -420,11 +421,70 @@ class AttestationCredential(NativeHandle):
         return _wrap_owned_handle(Structure, handle)
 
 
+class DeviceCredential(NativeHandle):
+    """Validated Device Credential Value preserving its exact original TTLV."""
+
+    __slots__ = ("__weakref__",)
+
+    _release_name = "kmipkit_device_credential_release"
+
+    @classmethod
+    def from_ttlv(cls, structure: Structure) -> DeviceCredential:
+        """Consume and validate a TTLV Structure using KMIP 2.1 Table 412 rules."""
+        handle = _new_handle(
+            "kmipkit_device_credential_t",
+            lib.kmipkit_device_credential_from_ttlv,
+            structure,
+            consumed=(0,),
+            restore_on_statuses=(errors._SHARED_OWNER_STATUS,),
+        )
+        return _wrap_owned_handle(cls, handle)
+
+    @synchronized_native_call
+    def with_ttlv(self, callback: Callable[[TtlvStructureView], _T]) -> _T:
+        """Lend the original ordered TTLV and close the read-only view on return."""
+        if not callable(callback):
+            errors.raise_for_status(4)
+        view_handle = _new_handle(
+            "kmipkit_ttlv_structure_view_t",
+            lib.kmipkit_device_credential_ttlv_view,
+            self._pointer(),
+        )
+        view = _wrap_owned_handle(TtlvStructureView, view_handle, owner=self)
+        previous_view_count = _ACTIVE_DEVICE_CREDENTIAL_VIEWS.get(self, 0)
+        _ACTIVE_DEVICE_CREDENTIAL_VIEWS[self] = previous_view_count + 1
+        try:
+            return callback(view)
+        finally:
+            try:
+                view.close()
+            finally:
+                if previous_view_count:
+                    _ACTIVE_DEVICE_CREDENTIAL_VIEWS[self] = previous_view_count
+                else:
+                    _ACTIVE_DEVICE_CREDENTIAL_VIEWS.pop(self, None)
+
+    @synchronized_native_call
+    def into_ttlv(self) -> Structure:
+        """Transfer the original ordered TTLV Structure without rebuilding it."""
+        if _ACTIVE_DEVICE_CREDENTIAL_VIEWS.get(self, 0):
+            errors.raise_for_status(4)
+        handle = _new_handle(
+            "kmipkit_ttlv_structure_t",
+            lib.kmipkit_device_credential_into_ttlv,
+            self,
+            consumed=(0,),
+            restore_on_statuses=(4,),
+        )
+        return _wrap_owned_handle(Structure, handle)
+
+
 __all__ = [
     "AttestationCredential",
     "Authentication",
     "Credential",
     "CredentialType",
     "CredentialView",
+    "DeviceCredential",
     "Nonce",
 ]

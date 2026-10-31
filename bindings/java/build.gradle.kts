@@ -70,6 +70,17 @@ val nativeResources = layout.buildDirectory.dir("generated/native-resources")
 
 tasks.register<org.gradle.api.tasks.Exec>("buildNativeLibrary") {
     val windows = System.getProperty("os.name").startsWith("Windows", ignoreCase = true)
+    inputs.property("nativeTarget", hostTarget)
+    inputs.files(fileTree("native") {
+        include("**/*.cpp", "**/*.h", "**/*.ps1", "**/*.sh")
+    })
+    inputs.files(fileTree("../../crates") {
+        include("**/*.rs", "**/Cargo.toml", "**/build.rs")
+        exclude("**/target/**")
+    })
+    inputs.files(fileTree("../c/include") { include("**/*.h") })
+    inputs.files(fileTree("../../tests/fixtures/api/generated") { include("**/*.h") })
+    inputs.files(file("../../Cargo.toml"), file("../../Cargo.lock"))
     workingDir(projectDir)
     if (windows) {
         commandLine(

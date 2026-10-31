@@ -1148,6 +1148,26 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::CredentialView::with_ttlv",
     ),
     (
+        "rust-observed-1855d7e9c73d11e2c187",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::DeviceCredential",
+    ),
+    (
+        "rust-observed-799f6ad797557acf260e",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::DeviceCredential::try_from_ttlv",
+    ),
+    (
+        "rust-observed-87e3855869b24ed92e38",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::DeviceCredential::with_ttlv",
+    ),
+    (
+        "rust-observed-79d21b04da67a5f69c5d",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::DeviceCredential::into_ttlv",
+    ),
+    (
         "rust-observed-b9db592df59582578b06",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::Nonce",
