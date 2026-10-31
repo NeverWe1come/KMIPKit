@@ -917,6 +917,17 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(internal["javaException"], "org.kmipkit.KmipException")
         self.assertEqual(internal["pythonException"], "kmipkit.errors.KmipKitError")
 
+    def test_ready_api_projection_omits_blocked_error_taxonomy(self) -> None:
+        projected = generate._ready_api_projection(self.checked_in_manifest)
+        projected_ids = {item["id"] for item in projected["errorCategories"]}
+
+        self.assertNotIn("internal", projected_ids)
+        self.assertNotIn("compatibility_mismatch", projected_ids)
+        self.assertIn("resource_limit", projected_ids)
+        self.assertIn("protocol", projected_ids)
+        self.assertIn("transport", projected_ids)
+        self.assertIn("server_result", projected_ids)
+
     def test_c_error_status_constant_remains_in_header_when_parity_mapping_is_blocked(self) -> None:
         header = generate.render_c_header(self.checked_in_manifest)
 
@@ -927,7 +938,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         blocked_codes = {
             item["cCode"]
             for item in self.checked_in_manifest["errorCategories"]
-            if item["id"] != "internal"
+            if not item.get("stableCHeaderCode", False)
             and not any(
                 row["packageId"] == "c-kmipkit"
                 and row["exportName"] == item["cCode"]
