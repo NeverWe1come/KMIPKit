@@ -118,6 +118,8 @@ typedef struct kmipkit_profile_validation_error_view_v1_t kmipkit_profile_valida
 typedef struct kmipkit_credential_t kmipkit_credential_t;
 typedef struct kmipkit_nonce_t kmipkit_nonce_t;
 typedef struct kmipkit_attestation_credential_t kmipkit_attestation_credential_t;
+typedef struct kmipkit_authentication_t kmipkit_authentication_t;
+typedef struct kmipkit_credential_view_t kmipkit_credential_view_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -380,6 +382,8 @@ void kmipkit_profile_validation_error_release(kmipkit_profile_validation_error_t
 void kmipkit_credential_release(kmipkit_credential_t *handle);
 void kmipkit_nonce_release(kmipkit_nonce_t *handle);
 void kmipkit_attestation_credential_release(kmipkit_attestation_credential_t *handle);
+void kmipkit_authentication_release(kmipkit_authentication_t *handle);
+void kmipkit_credential_view_release(kmipkit_credential_view_t *handle);
 #define KMIPKIT_ERROR_COMPATIBILITY_MISMATCH ((int32_t)1)
 #define KMIPKIT_ERROR_DUPLICATE_KEY ((int32_t)2)
 #define KMIPKIT_ERROR_INVALID_IDENTITY ((int32_t)3)
@@ -1490,6 +1494,27 @@ int32_t kmipkit_attestation_credential_ttlv_view(kmipkit_attestation_credential_
  */
 /* KMIPKIT-0008-FR-006, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.11-006 */
 int32_t kmipkit_attestation_credential_into_ttlv(kmipkit_attestation_credential_t * credential, kmipkit_ttlv_structure_t ** out_structure);
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0008-FR-001, KMIPKIT-0008-FR-002, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.4-001-001, KMIPKIT-REQ-SPEC-9.4-001-002, KMIPKIT-REQ-SPEC-9.4-002 */
+int32_t kmipkit_authentication_create(kmipkit_credential_t ** credentials, uint64_t credential_count, kmipkit_authentication_t ** out_authentication);
+/* KMIPKIT-0008-FR-001, KMIPKIT-0008-FR-002, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.4-001-001, KMIPKIT-REQ-SPEC-9.4-001-002, KMIPKIT-REQ-SPEC-9.4-002 */
+int32_t kmipkit_authentication_from_ttlv(kmipkit_ttlv_structure_t * structure, kmipkit_authentication_t ** out_authentication);
+/* KMIPKIT-0008-FR-001, KMIPKIT-0008-FR-002, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.4-001-001, KMIPKIT-REQ-SPEC-9.4-001-002, KMIPKIT-REQ-SPEC-9.4-002 */
+int32_t kmipkit_authentication_credential_at(kmipkit_authentication_t * authentication, uint64_t index, kmipkit_credential_view_t ** out_credential);
+/* KMIPKIT-0008-FR-001, KMIPKIT-0008-FR-002, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.4-001-001, KMIPKIT-REQ-SPEC-9.4-001-002, KMIPKIT-REQ-SPEC-9.4-002 */
+int32_t kmipkit_authentication_credential_count(kmipkit_authentication_t * authentication, uint64_t * out_count);
+/* KMIPKIT-0008-FR-001, KMIPKIT-0008-FR-002, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.4-001-001, KMIPKIT-REQ-SPEC-9.4-001-002, KMIPKIT-REQ-SPEC-9.4-002 */
+int32_t kmipkit_authentication_ttlv_view(kmipkit_authentication_t * authentication, kmipkit_ttlv_structure_view_t ** out_view);
+/* KMIPKIT-0008-FR-001, KMIPKIT-0008-FR-002, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.4-001-001, KMIPKIT-REQ-SPEC-9.4-001-002, KMIPKIT-REQ-SPEC-9.4-002 */
+int32_t kmipkit_authentication_into_ttlv(kmipkit_authentication_t * authentication, kmipkit_ttlv_structure_t ** out_structure);
+/* KMIPKIT-0008-FR-001, KMIPKIT-0008-FR-002, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.4-001-001, KMIPKIT-REQ-SPEC-9.4-001-002, KMIPKIT-REQ-SPEC-9.4-002 */
+int32_t kmipkit_credential_view_type(kmipkit_credential_view_t * credential, uint32_t * out_raw);
+/* KMIPKIT-0008-FR-001, KMIPKIT-0008-FR-002, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.4-001-001, KMIPKIT-REQ-SPEC-9.4-001-002, KMIPKIT-REQ-SPEC-9.4-002 */
+int32_t kmipkit_credential_view_type_raw(kmipkit_credential_view_t * credential, uint32_t * out_raw);
+/* KMIPKIT-0008-FR-001, KMIPKIT-0008-FR-002, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.4-001-001, KMIPKIT-REQ-SPEC-9.4-001-002, KMIPKIT-REQ-SPEC-9.4-002 */
+int32_t kmipkit_credential_view_ttlv_view(kmipkit_credential_view_t * credential, kmipkit_ttlv_structure_view_t ** out_view);
 /* KMIPKIT-0006-FR-021, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_message_extension_view_ttlv(kmipkit_message_extension_view_t * extension, kmipkit_ttlv_structure_t ** out_structure);
 /* KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */

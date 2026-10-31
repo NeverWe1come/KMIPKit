@@ -6,7 +6,7 @@ use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::ptr;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
-use std::{collections::HashMap, collections::hash_map::Entry, mem::size_of};
+use std::{collections::HashMap, collections::HashSet, collections::hash_map::Entry, mem::size_of};
 use std::{fs, io::Read};
 
 #[cfg(test)]
@@ -24,13 +24,14 @@ macro_rules! test_pointer_ffi_call {
 mod ffi_pointer_safety_tests;
 
 use crate::{
-    kmipkit_attestation_credential_t, kmipkit_client_async_operation_metadata_v1_t,
-    kmipkit_client_async_operation_outcome_t, kmipkit_client_batch_item_metadata_v1_t,
-    kmipkit_client_batch_item_metadata_v2_t, kmipkit_client_batch_item_response_t,
-    kmipkit_client_batch_item_t, kmipkit_client_batch_response_t, kmipkit_client_batch_t,
-    kmipkit_client_configuration_t, kmipkit_client_extension_registry_t,
-    kmipkit_client_request_message_extension_t, kmipkit_client_t, kmipkit_codec_limits_t,
-    kmipkit_credential_t, kmipkit_extension_child_rule_t, kmipkit_extension_compatibility_t,
+    kmipkit_attestation_credential_t, kmipkit_authentication_t,
+    kmipkit_client_async_operation_metadata_v1_t, kmipkit_client_async_operation_outcome_t,
+    kmipkit_client_batch_item_metadata_v1_t, kmipkit_client_batch_item_metadata_v2_t,
+    kmipkit_client_batch_item_response_t, kmipkit_client_batch_item_t,
+    kmipkit_client_batch_response_t, kmipkit_client_batch_t, kmipkit_client_configuration_t,
+    kmipkit_client_extension_registry_t, kmipkit_client_request_message_extension_t,
+    kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_credential_t, kmipkit_credential_view_t,
+    kmipkit_extension_child_rule_t, kmipkit_extension_compatibility_t,
     kmipkit_extension_definition_t, kmipkit_extension_discriminator_t,
     kmipkit_extension_identity_t, kmipkit_extension_information_t,
     kmipkit_extension_order_constraint_t, kmipkit_extension_recognition_t,
@@ -76,7 +77,7 @@ use kmipkit_protocol::{
     SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask, Ticket,
     UniqueIdentifier, ValidateRequest,
 };
-use kmipkit_protocol::{AttestationCredential, Credential, CredentialType, Nonce};
+use kmipkit_protocol::{AttestationCredential, Authentication, Credential, CredentialType, Nonce};
 use kmipkit_protocol::{MessageValidationError, MessageValidationErrorKind, RequestMessage};
 use kmipkit_protocol::{
     ProfileObjectState, ProfileValidationContext, ProfileValidationError,
@@ -95,6 +96,9 @@ const REQUEST_HEADER_TAG_RAW: u32 = 0x0042_0077;
 const RESPONSE_HEADER_TAG_RAW: u32 = 0x0042_007A;
 const BATCH_ITEM_TAG_RAW: u32 = 0x0042_000F;
 
+#[cfg(all(test, feature = "coverage-c-consumer"))]
+#[path = "../tests/support/authentication_abi_tests.rs"]
+mod authentication_abi_tests;
 #[cfg(all(test, feature = "coverage-c-consumer"))]
 #[path = "../tests/support/credential_type_abi_tests.rs"]
 mod credential_type_abi_tests;
@@ -409,6 +413,8 @@ enum Kind {
     RevokeRequest,
     Nonce,
     Credential,
+    Authentication,
+    CredentialView,
     AttestationCredential,
 }
 
@@ -441,6 +447,11 @@ enum HandleValue {
     RevokeRequest(Box<RevokeRequest>),
     Nonce(Nonce),
     Credential(Credential),
+    Authentication(Authentication),
+    CredentialView {
+        authentication: Arc<Handle>,
+        index: usize,
+    },
     AttestationCredential(AttestationCredential),
     ChildRule(Box<extension::ExtensionChildRule>),
     OrderConstraint(extension::ExtensionOrderConstraint),
@@ -562,6 +573,7 @@ impl ClientBatchBuilder {
 #[derive(Clone, Copy, Eq, PartialEq)]
 enum ViewRoot {
     Structure,
+    CredentialView,
     Value,
     Item,
     RecognitionGeneric,
@@ -646,6 +658,9 @@ impl TtlvView {
                 HandleValue::Credential(credential) => {
                     credential.with_ttlv(|view| resolve_structure_path(&view, steps, callback))
                 }
+                HandleValue::Authentication(authentication) => {
+                    authentication.with_ttlv(|view| resolve_structure_path(&view, steps, callback))
+                }
                 HandleValue::AttestationCredential(credential) => {
                     credential.with_ttlv(|view| resolve_structure_path(&view, steps, callback))
                 }
@@ -661,6 +676,25 @@ impl TtlvView {
                     }
                     _ => Err(ERROR_INVALID_INPUT),
                 })
+            }
+            ViewRoot::CredentialView => {
+                let HandleValue::CredentialView {
+                    authentication: owner,
+                    index,
+                } = &self.owner.value
+                else {
+                    return Err(ERROR_INVALID_INPUT);
+                };
+                let HandleValue::Authentication(authentication) = &owner.value else {
+                    return Err(ERROR_INVALID_INPUT);
+                };
+                authentication
+                    .credentials()
+                    .nth(*index)
+                    .and_then(|credential| {
+                        credential.with_ttlv(|view| resolve_structure_path(&view, steps, callback))
+                    })
+                    .ok_or(ERROR_INVALID_INPUT)?
             }
             ViewRoot::Item => {
                 let HandleValue::Item(item) = &self.owner.value else {
@@ -1178,6 +1212,50 @@ fn input_handle_array<T, U>(
         result.push(copy(&handle)?);
     }
     Ok(result)
+}
+
+fn consume_unshared_handles<T>(pointers: &[*mut T], expected: Kind) -> FfiResult<Vec<Arc<Handle>>> {
+    let mut ids = Vec::new();
+    ids.try_reserve_exact(pointers.len())
+        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    let mut seen = HashSet::new();
+    seen.try_reserve(pointers.len())
+        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    for pointer in pointers {
+        let id = handle_id(*pointer)?;
+        if !seen.insert(id) {
+            return Err(ERROR_INVALID_INPUT);
+        }
+        ids.push(id);
+    }
+
+    let mut handles = handle_registry()?
+        .handles
+        .lock()
+        .map_err(|_| ERROR_INTERNAL)?;
+    for id in &ids {
+        let Some(handle) = handles.get(id) else {
+            return Err(ERROR_INVALID_INPUT);
+        };
+        if handle.kind != expected {
+            return Err(ERROR_INVALID_INPUT);
+        }
+        if Arc::strong_count(handle) != 1 {
+            return Err(ERROR_SHARED_OWNER);
+        }
+    }
+
+    let mut consumed = Vec::new();
+    consumed
+        .try_reserve_exact(ids.len())
+        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    for id in ids {
+        let Some(handle) = handles.remove(&id) else {
+            return Err(ERROR_INTERNAL);
+        };
+        consumed.push(handle);
+    }
+    Ok(consumed)
 }
 
 fn copy_join_split_key_references(
@@ -8161,6 +8239,241 @@ pub extern "C" fn kmipkit_credential_into_ttlv(
 pub extern "C" fn kmipkit_credential_release(handle: *mut kmipkit_credential_t) {
     ffi_entrypoint(|| {
         release(handle, Kind::Credential);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_authentication_create(
+    credentials: *mut *mut kmipkit_credential_t,
+    credential_count: u64,
+    out_authentication: *mut *mut kmipkit_authentication_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_authentication);
+        let pointers = try_ffi!(input_handle_pointers(
+            credentials,
+            credential_count,
+            MAX_VALIDATE_INPUT_ITEMS
+        ));
+        if pointers.is_empty() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let mut values = Vec::new();
+        if values.try_reserve_exact(pointers.len()).is_err() {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        }
+        let owners = try_ffi!(consume_unshared_handles(pointers, Kind::Credential));
+        for owner in owners {
+            let payload = try_ffi!(unwrap_payload(owner));
+            let HandleValue::Credential(credential) = payload else {
+                return record_ffi_error(ERROR_INTERNAL);
+            };
+            values.push(credential);
+        }
+        let authentication = match Authentication::new(values) {
+            Ok(authentication) => authentication,
+            Err(_error) => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::Authentication,
+            HandleValue::Authentication(authentication)
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_authentication_from_ttlv(
+    structure: *mut kmipkit_ttlv_structure_t,
+    out_authentication: *mut *mut kmipkit_authentication_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_authentication);
+        let owner = try_ffi!(consume_unshared_ttlv_source(structure));
+        let payload = try_ffi!(unwrap_payload(owner));
+        let HandleValue::Structure(structure) = payload else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let authentication = match Authentication::try_from_ttlv(structure) {
+            Ok(authentication) => authentication,
+            Err(_error) => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::Authentication,
+            HandleValue::Authentication(authentication)
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_authentication_credential_count(
+    authentication: *mut kmipkit_authentication_t,
+    out_count: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_count);
+        *out = 0;
+        let handle = try_ffi!(reference_handle(authentication, Kind::Authentication));
+        let HandleValue::Authentication(authentication) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = match u64::try_from(authentication.credentials().len()) {
+            Ok(count) => count,
+            Err(_) => return record_ffi_error(ERROR_RESOURCE_LIMIT),
+        };
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_authentication_credential_at(
+    authentication: *mut kmipkit_authentication_t,
+    index: u64,
+    out_credential: *mut *mut kmipkit_credential_view_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_credential);
+        let Ok(index) = usize::try_from(index) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let owner = try_ffi!(clone_handle_owner(authentication, Kind::Authentication));
+        let HandleValue::Authentication(value) = &owner.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        if index >= value.credentials().len() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        *out = try_ffi!(try_make_handle(
+            Kind::CredentialView,
+            HandleValue::CredentialView {
+                authentication: owner,
+                index,
+            }
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_authentication_ttlv_view(
+    authentication: *mut kmipkit_authentication_t,
+    out_view: *mut *mut kmipkit_ttlv_structure_view_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_view);
+        let owner = try_ffi!(clone_handle_owner(authentication, Kind::Authentication));
+        let view = TtlvView::new(owner, ViewRoot::Structure, ViewTarget::Structure);
+        *out = try_ffi!(try_make_handle(
+            Kind::StructureView,
+            HandleValue::StructureView(view)
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_authentication_into_ttlv(
+    authentication: *mut kmipkit_authentication_t,
+    out_structure: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_structure);
+        let owner = try_ffi!(consume_unshared_owner(authentication, Kind::Authentication));
+        let payload = try_ffi!(unwrap_payload(owner));
+        let HandleValue::Authentication(authentication) = payload else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(authentication.into_ttlv())
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_authentication_release(handle: *mut kmipkit_authentication_t) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::Authentication);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_credential_view_type(
+    credential: *mut kmipkit_credential_view_t,
+    out_raw: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_raw);
+        *out = 0;
+        let handle = try_ffi!(reference_handle(credential, Kind::CredentialView));
+        let HandleValue::CredentialView {
+            authentication: owner,
+            index,
+        } = &handle.value
+        else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let HandleValue::Authentication(authentication) = &owner.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(view) = authentication.credentials().nth(*index) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = view.credential_type().raw();
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_credential_view_type_raw(
+    credential: *mut kmipkit_credential_view_t,
+    out_raw: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_raw);
+        *out = 0;
+        let handle = try_ffi!(reference_handle(credential, Kind::CredentialView));
+        let HandleValue::CredentialView {
+            authentication: owner,
+            index,
+        } = &handle.value
+        else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let HandleValue::Authentication(authentication) = &owner.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(view) = authentication.credentials().nth(*index) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = view.credential_type_raw();
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_credential_view_ttlv_view(
+    credential: *mut kmipkit_credential_view_t,
+    out_view: *mut *mut kmipkit_ttlv_structure_view_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_view);
+        let owner = try_ffi!(clone_handle_owner(credential, Kind::CredentialView));
+        let view = TtlvView::new(owner, ViewRoot::CredentialView, ViewTarget::Structure);
+        *out = try_ffi!(try_make_handle(
+            Kind::StructureView,
+            HandleValue::StructureView(view)
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_credential_view_release(handle: *mut kmipkit_credential_view_t) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::CredentialView);
     });
 }
 

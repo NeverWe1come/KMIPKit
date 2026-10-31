@@ -118,7 +118,15 @@ class AuthenticationTests(unittest.TestCase):
             )
         finally:
             view.close()
-            restored.close()
+        parsed = facade.from_ttlv(restored)
+        self.assertTrue(restored.closed)
+        try:
+            parsed_views = parsed.credentials
+            self.assertEqual(2, len(parsed_views))
+            for credential_view in parsed_views:
+                credential_view.close()
+        finally:
+            parsed.close()
 
     def test_authentication_rejects_empty_credentials(self) -> None:
         facade = getattr(kmipkit.credentials, "Authentication", None)
@@ -127,6 +135,23 @@ class AuthenticationTests(unittest.TestCase):
             return
         with self.assertRaises(errors.InvalidInputError):
             facade.create([])
+
+    def test_create_preserves_credentials_rejected_for_a_live_scoped_view(self) -> None:
+        facade = getattr(kmipkit.credentials, "Authentication", None)
+        self.assertIsNotNone(facade, "the Python facade must expose Authentication")
+        if facade is None:
+            return
+        credential = kmipkit.credentials.Credential.from_ttlv(credential_structure(1))
+
+        def reject_shared_credential(_view: ttlv.TtlvStructureView) -> None:
+            with self.assertRaises(errors.InvalidInputError):
+                facade.create([credential])
+
+        credential.with_ttlv(reject_shared_credential)
+        self.assertFalse(credential.closed)
+        authentication = facade.create([credential])
+        self.assertTrue(credential.closed)
+        authentication.close()
 
 
 if __name__ == "__main__":

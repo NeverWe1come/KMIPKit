@@ -63,6 +63,8 @@ public final class NativeExtensionRegistry {
     public static final int NONCE = 45;
     public static final int CREDENTIAL = 46;
     public static final int ATTESTATION_CREDENTIAL = 47;
+    public static final int AUTHENTICATION = 48;
+    public static final int CREDENTIAL_VIEW = 49;
 
     private static volatile boolean loaded;
 
@@ -103,6 +105,16 @@ public final class NativeExtensionRegistry {
     public static native long credentialTypeRaw(long credential);
     public static native long credentialTtlvView(long credential);
     public static native long credentialIntoTtlv(long credential);
+
+    public static native int authenticationCreate(long[] credentials, long[] outAuthentication);
+    public static native int authenticationFromTtlv(long structure, long[] outAuthentication);
+    public static native long authenticationCredentialCount(long authentication);
+    public static native long authenticationCredentialAt(long authentication, long index);
+    public static native long authenticationTtlvView(long authentication);
+    public static native int authenticationIntoTtlv(long authentication, long[] outStructure);
+    public static native long credentialViewType(long credential);
+    public static native long credentialViewTypeRaw(long credential);
+    public static native long credentialViewTtlvView(long credential);
 
     public static native int attestationCredentialFromTtlv(
             long structure, long[] outCredential);

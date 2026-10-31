@@ -14,7 +14,7 @@
   "$defs": {
     "requirementId": {
       "type": "string",
-      "pattern": "^KMIPKIT-(?:[0-9]{4}-(?:FR|SC)-[0-9]{3}|REQ-SPEC-(?:4\\.16|6\\.1\\.[0-9]+|7\\.12|9\\.11)-[0-9]{3}(?:-[0-9]{3})?)$",
+      "pattern": "^KMIPKIT-(?:[0-9]{4}-(?:FR|SC)-[0-9]{3}|REQ-SPEC-(?:4\\.16|6\\.1\\.[0-9]+|7\\.12|9\\.4|9\\.11)-[0-9]{3}(?:-[0-9]{3})?)$",
       "description": "Stable functional or success-criteria identifier from an approved KMIPKit feature specification."
     },
     "requirementIds": {
@@ -44,7 +44,7 @@
     "pythonFunctionName": {
       "type": "string",
       "minLength": 1,
-      "pattern": "^_?[A-Za-z][A-Za-z0-9_]*(?:\\.[A-Za-z][A-Za-z0-9_]*)*$"
+      "pattern": "^_?[A-Za-z][A-Za-z0-9_]*(?:\\._?[A-Za-z][A-Za-z0-9_]*)*$"
     },
     "rustOwner": {
       "type": "string",
@@ -896,7 +896,10 @@
               "description": "Opaque handle type of each array element; must match the declared pointer type."
             },
             "ownership": {
-              "const": "borrowed"
+              "enum": [
+                "borrowed",
+                "consumed"
+              ]
             },
             "countParameter": {
               "$ref": "#/$defs/identifier",
@@ -2005,9 +2008,12 @@
         },
         {
           "pattern": "^impl for<'a> FnOnce\\(StructureView<'a>\\) -> [A-Za-z_][A-Za-z0-9_]*$"
+        },
+        {
+          "pattern": "^impl ExactSizeIterator\\s*<\\s*Item\\s*=\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*'_\\s*>)?\\s*>\\s*\\+\\s*'_\\s*$"
         }
       ],
-      "description": "Rust type subset: identifier paths, one- or two-level generic applications with non-empty path arguments, Result<(), E> including a qualified Result path, unit and tuple types, fixed arrays, references, borrowed slices, raw pointers, mutable pointer-to-pointer output slots for reviewed C ABI declarations, and higher-ranked StructureView callbacks used for explicit TTLV inspection."
+      "description": "Rust type subset: identifier paths, one- or two-level generic applications with non-empty path arguments, Result<(), E> including a qualified Result path, unit and tuple types, fixed arrays, references, borrowed slices, raw pointers, mutable pointer-to-pointer output slots for reviewed C ABI declarations, higher-ranked StructureView callbacks used for explicit TTLV inspection, and ExactSizeIterator views over borrowed credential views."
     },
     "javaType": {
       "type": "string",
@@ -2102,7 +2108,7 @@
     },
     "v2RequirementId": {
       "type": "string",
-    "pattern": "^KMIPKIT-(?:[0-9]{4}-(?:FR|SC)-[0-9]{3}|REQ-SPEC-(?:4\\.16|6\\.1\\.[0-9]+|7\\.12|9\\.11)-[0-9]{3}(?:-[0-9]{3})?)$"
+    "pattern": "^KMIPKIT-(?:[0-9]{4}-(?:FR|SC)-[0-9]{3}|REQ-SPEC-(?:4\\.16|6\\.1\\.[0-9]+|7\\.12|9\\.4|9\\.11)-[0-9]{3}(?:-[0-9]{3})?)$"
     },
     "v2RequirementIds": {
       "type": "array",

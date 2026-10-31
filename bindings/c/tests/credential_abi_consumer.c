@@ -55,6 +55,60 @@ static int32_t tags_match(kmipkit_ttlv_structure_view_t *view, uint64_t *out_cou
     return 0;
 }
 
+static int32_t build_credential(uint32_t raw_type, kmipkit_credential_t **out_credential) {
+    kmipkit_codec_limits_t *limits = 0;
+    kmipkit_ttlv_structure_t *structure = 0;
+    kmipkit_ttlv_structure_t *payload = 0;
+    kmipkit_ttlv_value_t *value = 0;
+    int32_t status = kmipkit_codec_limits_defaults(&limits);
+    if (status == 0) status = kmipkit_ttlv_structure_create(&structure);
+    if (status == 0) status = kmipkit_ttlv_value_enumeration(raw_type, &value);
+    if (status == 0) {
+        status = append_item(&structure, limits, CREDENTIAL_TYPE_TAG, value);
+        value = 0;
+    }
+    if (status == 0) status = kmipkit_ttlv_structure_create(&payload);
+    if (status == 0) status = kmipkit_ttlv_value_integer(CREDENTIAL_PAYLOAD_VALUE, &value);
+    if (status == 0) {
+        status = append_item(&payload, limits, CREDENTIAL_PAYLOAD_TAG, value);
+        value = 0;
+    }
+    if (status == 0) status = kmipkit_ttlv_value_structure(payload, limits, &value);
+    if (status == 0) {
+        payload = 0;
+        status = append_item(&structure, limits, CREDENTIAL_VALUE_TAG, value);
+        value = 0;
+    }
+    if (status == 0) {
+        status = kmipkit_credential_from_ttlv(structure, out_credential);
+        structure = 0;
+    }
+    kmipkit_ttlv_value_release(value);
+    kmipkit_ttlv_structure_release(payload);
+    kmipkit_ttlv_structure_release(structure);
+    kmipkit_codec_limits_release(limits);
+    return status;
+}
+
+static int32_t authentication_tags_match(kmipkit_ttlv_structure_view_t *view) {
+    uint64_t count = 0;
+    int32_t status = kmipkit_ttlv_structure_view_item_count(view, &count);
+    if (status != 0 || count != 2) return status == 0 ? 1 : status;
+    for (uint64_t index = 0; index < count; index++) {
+        kmipkit_ttlv_item_view_t *item = 0;
+        kmipkit_tag_t *tag = 0;
+        uint32_t actual = 0;
+        status = kmipkit_ttlv_structure_view_item_at(view, index, &item);
+        if (status == 0) status = kmipkit_ttlv_item_view_tag(item, &tag);
+        if (status == 0) status = kmipkit_ttlv_tag_value(tag, &actual);
+        if (status == 0 && actual != 0x00420023) status = 1;
+        kmipkit_tag_release(tag);
+        kmipkit_ttlv_item_view_release(item);
+        if (status != 0) return status;
+    }
+    return 0;
+}
+
 static int32_t payload_matches(kmipkit_ttlv_structure_view_t *view) {
     kmipkit_ttlv_item_view_t *outer_item = 0;
     kmipkit_ttlv_value_view_t *outer_value = 0;
@@ -397,4 +451,82 @@ int32_t kmipkit_attestation_credential_c_consumer_rejects_missing_evidence(void)
     kmipkit_ttlv_structure_release(structure);
     kmipkit_attestation_credential_release(credential);
     return status;
+}
+
+int32_t kmipkit_authentication_c_consumer_round_trip(
+        uint32_t first_type, uint32_t second_type, uint64_t *out_count) {
+    if (out_count == 0) return 4;
+    kmipkit_credential_t *credentials[2] = {0, 0};
+    kmipkit_authentication_t *authentication = 0;
+    kmipkit_credential_view_t *first_view = 0;
+    kmipkit_credential_view_t *second_view = 0;
+    kmipkit_ttlv_structure_view_t *first_structure_view = 0;
+    kmipkit_ttlv_structure_t *restored = 0;
+    kmipkit_ttlv_structure_view_t *restored_view = 0;
+    uint64_t count = 0;
+    uint32_t observed_first = 0;
+    uint32_t observed_second = 0;
+    int32_t status = build_credential(first_type, &credentials[0]);
+    if (status == 0) status = build_credential(second_type, &credentials[1]);
+    if (status == 0) {
+        status = kmipkit_authentication_create(credentials, 2, &authentication);
+        if (status == 0) credentials[0] = credentials[1] = 0;
+    }
+    if (status == 0) {
+        status = kmipkit_authentication_credential_count(authentication, &count);
+        if (status == 0 && count != 2) status = 101;
+    }
+    if (status == 0) status = kmipkit_authentication_credential_at(
+            authentication, 0, &first_view);
+    if (status == 0) status = kmipkit_authentication_credential_at(
+            authentication, 1, &second_view);
+    if (status == 0) status = kmipkit_credential_view_type_raw(first_view, &observed_first);
+    if (status == 0) status = kmipkit_credential_view_type_raw(second_view, &observed_second);
+    if (status == 0 && (observed_first != first_type || observed_second != second_type)) status = 102;
+    if (status == 0) status = kmipkit_credential_view_ttlv_view(
+            first_view, &first_structure_view);
+    if (status == 0) status = tags_match(first_structure_view, &count);
+    if (status == 0) {
+        int32_t shared_status = kmipkit_authentication_into_ttlv(authentication, &restored);
+        if (shared_status != 4 || restored != 0) status = 103;
+    }
+    kmipkit_ttlv_structure_view_release(first_structure_view);
+    first_structure_view = 0;
+    kmipkit_credential_view_release(first_view);
+    first_view = 0;
+    kmipkit_credential_view_release(second_view);
+    second_view = 0;
+    if (status == 0) status = kmipkit_authentication_into_ttlv(authentication, &restored);
+    if (status == 0) {
+        authentication = 0;
+        status = kmipkit_ttlv_structure_view(restored, &restored_view);
+    }
+    if (status == 0) {
+        status = authentication_tags_match(restored_view);
+        if (status == 1) status = 104;
+    }
+    if (status == 0) {
+        status = kmipkit_ttlv_structure_view_item_count(restored_view, &count);
+        if (status == 0 && count != 2) status = 105;
+    }
+    if (status == 0) *out_count = count;
+    kmipkit_credential_release(credentials[0]);
+    kmipkit_credential_release(credentials[1]);
+    kmipkit_authentication_release(authentication);
+    kmipkit_credential_view_release(first_view);
+    kmipkit_credential_view_release(second_view);
+    kmipkit_ttlv_structure_view_release(first_structure_view);
+    kmipkit_ttlv_structure_release(restored);
+    kmipkit_ttlv_structure_view_release(restored_view);
+    return status;
+}
+
+int32_t kmipkit_authentication_c_consumer_rejects_empty_credentials(void) {
+    kmipkit_authentication_t *authentication = 0;
+    int32_t status = kmipkit_authentication_create(0, 0, &authentication);
+    if (status != 4 || authentication != 0) {
+        kmipkit_authentication_release(authentication);
+        return 1;
+    }
+    return 0;
 }

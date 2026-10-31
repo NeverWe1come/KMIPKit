@@ -78,6 +78,10 @@ public final class Credential implements AutoCloseable {
                 NativeExtensionRegistry.credentialIntoTtlv(handle.transfer()), this);
     }
 
+    NativeHandle nativeHandleOwner() {
+        return handle;
+    }
+
     @Override
     public void close() {
         handle.close();

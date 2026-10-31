@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from typing import TypeVar
 from weakref import WeakKeyDictionary
 
@@ -12,6 +12,7 @@ from ._handles import (
     NativeHandle,
     _integer_range,
     _new_handle,
+    _new_handle_from_array,
     _wrap_owned_handle,
     synchronized_native_call,
 )
@@ -21,6 +22,8 @@ _T = TypeVar("_T")
 _ACTIVE_NONCE_VIEWS: WeakKeyDictionary[object, int] = WeakKeyDictionary()
 _ACTIVE_CREDENTIAL_VIEWS: WeakKeyDictionary[object, int] = WeakKeyDictionary()
 _ACTIVE_ATTESTATION_CREDENTIAL_VIEWS: WeakKeyDictionary[object, int] = WeakKeyDictionary()
+_ACTIVE_AUTHENTICATION_VIEWS: WeakKeyDictionary[object, int] = WeakKeyDictionary()
+_MAX_AUTHENTICATION_CREDENTIALS = 100_000
 
 
 class CredentialType:
@@ -203,6 +206,158 @@ class Credential(NativeHandle):
         return _wrap_owned_handle(Structure, handle)
 
 
+class Authentication(NativeHandle):
+    """Ordered KMIP Authentication preserving its original TTLV structure."""
+
+    __slots__ = ("__weakref__",)
+
+    _release_name = "kmipkit_authentication_release"
+
+    @classmethod
+    def create(cls, credentials: Sequence[Credential]) -> Authentication:
+        """Consume a nonempty ordered sequence of Credential handles."""
+        if isinstance(credentials, (str, bytes, bytearray)) or not isinstance(
+            credentials, Sequence
+        ):
+            errors.raise_for_status(4)
+        if len(credentials) > _MAX_AUTHENTICATION_CREDENTIALS:
+            errors.raise_for_status(6)
+        values = tuple(credentials)
+        if not values:
+            errors.raise_for_status(4)
+        handle = _new_handle_from_array(
+            "kmipkit_credential_t",
+            "kmipkit_authentication_t",
+            lib.kmipkit_authentication_create,
+            values,
+            restore_on_statuses=(4, errors._SHARED_OWNER_STATUS),
+        )
+        return _wrap_owned_handle(cls, handle)
+
+    @classmethod
+    def from_ttlv(cls, structure: Structure) -> Authentication:
+        """Consume and validate a TTLV Structure containing Authentication."""
+        handle = _new_handle(
+            "kmipkit_authentication_t",
+            lib.kmipkit_authentication_from_ttlv,
+            structure,
+            consumed=(0,),
+            restore_on_statuses=(errors._SHARED_OWNER_STATUS,),
+        )
+        return _wrap_owned_handle(cls, handle)
+
+    @synchronized_native_call
+    def _credential_count(self) -> int:
+        """Return the number of ordered Credential entries."""
+        out_count = ffi.new("uint64_t *")
+        errors.raise_for_status(
+            lib.kmipkit_authentication_credential_count(self._pointer(), out_count)
+        )
+        return int(out_count[0])
+
+    @property
+    @synchronized_native_call
+    def credentials(self) -> tuple[CredentialView, ...]:
+        """Return owner-backed views in the Authentication wire order."""
+        result: list[CredentialView] = []
+        try:
+            for index in range(self._credential_count()):
+                handle = _new_handle(
+                    "kmipkit_credential_view_t",
+                    lib.kmipkit_authentication_credential_at,
+                    self._pointer(),
+                    index,
+                )
+                result.append(_wrap_owned_handle(CredentialView, handle, owner=self))
+        except BaseException:
+            for view in result:
+                view.close()
+            raise
+        return tuple(result)
+
+    @synchronized_native_call
+    def with_ttlv(self, callback: Callable[[TtlvStructureView], _T]) -> _T:
+        """Lend a read-only TTLV view and close it when the callback returns."""
+        if not callable(callback):
+            errors.raise_for_status(4)
+        view_handle = _new_handle(
+            "kmipkit_ttlv_structure_view_t",
+            lib.kmipkit_authentication_ttlv_view,
+            self._pointer(),
+        )
+        view = _wrap_owned_handle(TtlvStructureView, view_handle, owner=self)
+        previous_view_count = _ACTIVE_AUTHENTICATION_VIEWS.get(self, 0)
+        _ACTIVE_AUTHENTICATION_VIEWS[self] = previous_view_count + 1
+        try:
+            return callback(view)
+        finally:
+            try:
+                view.close()
+            finally:
+                if previous_view_count:
+                    _ACTIVE_AUTHENTICATION_VIEWS[self] = previous_view_count
+                else:
+                    _ACTIVE_AUTHENTICATION_VIEWS.pop(self, None)
+
+    @synchronized_native_call
+    def into_ttlv(self) -> Structure:
+        """Transfer the original ordered Authentication Structure without rebuilding it."""
+        if _ACTIVE_AUTHENTICATION_VIEWS.get(self, 0):
+            errors.raise_for_status(4)
+        handle = _new_handle(
+            "kmipkit_ttlv_structure_t",
+            lib.kmipkit_authentication_into_ttlv,
+            self,
+            consumed=(0,),
+            # The opaque-model conversion reports a live owner as invalid_input.
+            restore_on_statuses=(4,),
+        )
+        return _wrap_owned_handle(Structure, handle)
+
+
+class CredentialView(NativeHandle):
+    """Owner-backed read-only view of one Authentication Credential entry."""
+
+    __slots__ = ("__weakref__",)
+
+    _release_name = "kmipkit_credential_view_release"
+
+    @property
+    @synchronized_native_call
+    def credential_type(self) -> CredentialType:
+        """Return the raw-preserving typed Credential Type."""
+        out_raw = ffi.new("uint32_t *")
+        errors.raise_for_status(
+            lib.kmipkit_credential_view_type(self._pointer(), out_raw)
+        )
+        return CredentialType.from_raw(int(out_raw[0]))
+
+    @synchronized_native_call
+    def credential_type_raw(self) -> int:
+        """Return the original unsigned 32-bit Credential Type value."""
+        out_raw = ffi.new("uint32_t *")
+        errors.raise_for_status(
+            lib.kmipkit_credential_view_type_raw(self._pointer(), out_raw)
+        )
+        return int(out_raw[0])
+
+    @synchronized_native_call
+    def with_ttlv(self, callback: Callable[[TtlvStructureView], _T]) -> _T:
+        """Lend the Credential Structure to a callback and close the view on return."""
+        if not callable(callback):
+            errors.raise_for_status(4)
+        view_handle = _new_handle(
+            "kmipkit_ttlv_structure_view_t",
+            lib.kmipkit_credential_view_ttlv_view,
+            self._pointer(),
+        )
+        view = _wrap_owned_handle(TtlvStructureView, view_handle, owner=self)
+        try:
+            return callback(view)
+        finally:
+            view.close()
+
+
 class AttestationCredential(NativeHandle):
     """Validated Attestation Credential Value preserving its original TTLV structure.
 
@@ -265,4 +420,11 @@ class AttestationCredential(NativeHandle):
         return _wrap_owned_handle(Structure, handle)
 
 
-__all__ = ["AttestationCredential", "Credential", "CredentialType", "Nonce"]
+__all__ = [
+    "AttestationCredential",
+    "Authentication",
+    "Credential",
+    "CredentialType",
+    "CredentialView",
+    "Nonce",
+]

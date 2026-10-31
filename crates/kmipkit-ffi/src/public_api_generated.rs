@@ -1013,6 +1013,36 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::AttestationCredential::into_ttlv",
     ),
     (
+        "rust-observed-774343fd72c4e39c21e8",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Authentication",
+    ),
+    (
+        "rust-observed-dafd001a54ec9069c67e",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Authentication::new",
+    ),
+    (
+        "rust-observed-dde10f1ec49241380ee2",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Authentication::try_from_ttlv",
+    ),
+    (
+        "rust-observed-43eee40189af8aa01c01",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Authentication::credentials",
+    ),
+    (
+        "rust-observed-41917fa357b7102a2076",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Authentication::with_ttlv",
+    ),
+    (
+        "rust-observed-0d034b469db84edeeec8",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Authentication::into_ttlv",
+    ),
+    (
         "rust-observed-7d9de6376690408035d6",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::Credential",
@@ -1096,6 +1126,26 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-37dab5effc63fc149ca1",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::CredentialType::raw",
+    ),
+    (
+        "rust-observed-079139eccf04c89b6587",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialView",
+    ),
+    (
+        "rust-observed-56039caeeb56a3f6c373",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialView::credential_type",
+    ),
+    (
+        "rust-observed-5a8208d308ff8a4bab10",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialView::credential_type_raw",
+    ),
+    (
+        "rust-observed-228a0c280fe6d85eb3d6",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialView::with_ttlv",
     ),
     (
         "rust-observed-b9db592df59582578b06",

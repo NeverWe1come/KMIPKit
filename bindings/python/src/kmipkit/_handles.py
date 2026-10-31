@@ -205,6 +205,48 @@ def _new_handle(
     return output[0]
 
 
+def _new_handle_from_array(
+    input_c_type: str,
+    output_c_type: str,
+    function: Callable[..., int],
+    values: list[NativeHandle] | tuple[NativeHandle, ...],
+    *,
+    restore_on_statuses: tuple[int, ...] = (),
+) -> Any:
+    """Call a consuming array ABI function while preserving wrapper ownership on rejection."""
+    handles = tuple(values)
+    if any(not isinstance(handle, NativeHandle) for handle in handles):
+        errors.raise_for_status(4)
+    if len({id(handle) for handle in handles}) != len(handles):
+        errors.raise_for_status(4)
+
+    output = ffi.new(f"{output_c_type} **")
+    ordered_locks = sorted(handles, key=id)
+    with _NATIVE_CALL_LOCK:
+        for handle in ordered_locks:
+            handle._acquire_ownership_lock()
+        try:
+            pointers = [handle._pointer() for handle in handles]
+            pointer_array = ffi.new(f"{input_c_type} *[]", pointers)
+            try:
+                status = _invoke(function, pointer_array, len(handles), output)
+            except errors.KmipKitError:
+                raise
+            if status not in restore_on_statuses:
+                # The C ABI consumes the handles after its validation boundary. Retire
+                # the wrappers only after the call returns so concurrent close/use
+                # cannot race the transfer.
+                for handle in handles:
+                    handle._take()
+        finally:
+            for handle in reversed(ordered_locks):
+                handle._release_ownership_lock()
+    errors.raise_for_status(status)
+    if output[0] == ffi.NULL:
+        errors.raise_for_status(4)
+    return output[0]
+
+
 def _scalar(
     c_type: str,
     function: Callable[..., int],

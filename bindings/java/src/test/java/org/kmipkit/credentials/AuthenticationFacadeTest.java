@@ -55,16 +55,38 @@ final class AuthenticationFacadeTest {
             assertThrows(InvalidInputException.class, borrowed.get()::itemCount);
 
             TtlvStructure restored = authentication.intoTtlv();
-            try (restored; TtlvStructureView view = restored.view()) {
+            try (TtlvStructureView view = restored.view()) {
                 assertEquals(List.of(AUTHENTICATION_CREDENTIAL_TAG,
                                 AUTHENTICATION_CREDENTIAL_TAG), readTags(view));
             }
+            try (Authentication parsed = Authentication.fromTtlv(restored)) {
+                List<CredentialView> parsedCredentials = parsed.credentials();
+                assertEquals(2, parsedCredentials.size());
+                parsedCredentials.forEach(CredentialView::close);
+            }
+            assertThrows(InvalidInputException.class, restored::view);
         }
     }
 
     @Test
     void authenticationRejectsEmptyCredentials() {
         assertThrows(InvalidInputException.class, () -> Authentication.create(List.of()));
+    }
+
+    @Test
+    void createPreservesCredentialsRejectedForALiveScopedView() {
+        Credential credential = Credential.fromTtlv(credentialStructure(1));
+        credential.withTtlv(view -> {
+            assertThrows(InvalidInputException.class,
+                    () -> Authentication.create(List.of(credential)));
+            return null;
+        });
+        assertEquals(1L, credential.credentialTypeRaw());
+        try (Authentication authentication = Authentication.create(List.of(credential))) {
+            List<CredentialView> credentials = authentication.credentials();
+            assertEquals(1, credentials.size());
+            credentials.forEach(CredentialView::close);
+        }
     }
 
     private static List<Integer> readTags(TtlvStructureView view) {
