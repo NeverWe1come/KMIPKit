@@ -252,9 +252,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
         self.assertEqual("kmipkit_credential_type_from_raw", function["c"]["symbol"])
         self.assertEqual("from_raw", function["rust"]["name"])
 
-    def test_every_nonblocked_owner_declaration_is_mapped_or_reviewedly_excluded(
-        self,
-    ) -> None:
+    def test_partial_owner_parity_maps_credential_type_and_keeps_exact_blockers(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         declarations = [
             row
