@@ -10,6 +10,8 @@ from kmipkit import errors, ttlv
 
 CREDENTIAL_TYPE_TAG = 0x0042_0024
 CREDENTIAL_VALUE_TAG = 0x0042_0025
+CREDENTIAL_PAYLOAD_TAG = 0x0042_002A
+CREDENTIAL_PAYLOAD_VALUE = 0x13579
 
 
 def read_tags(view: ttlv.TtlvStructureView) -> tuple[int, ...]:
@@ -25,6 +27,36 @@ def read_tags(view: ttlv.TtlvStructureView) -> tuple[int, ...]:
         finally:
             item.close()
     return tuple(tags)
+
+
+def read_payload(view: ttlv.TtlvStructureView) -> tuple[int, int]:
+    outer_item = ttlv.ttlv_structure_view_item_at(view, 1)
+    try:
+        outer_value = ttlv.ttlv_item_view_value(outer_item)
+        try:
+            payload = ttlv.ttlv_value_view_structure(outer_value)
+            try:
+                payload_item = ttlv.ttlv_structure_view_item_at(payload, 0)
+                try:
+                    tag = ttlv.ttlv_item_view_tag(payload_item)
+                    try:
+                        payload_tag = ttlv.tag_value(tag)
+                    finally:
+                        tag.close()
+                    value = ttlv.ttlv_item_view_value(payload_item)
+                    try:
+                        payload_value = ttlv.ttlv_value_view_integer(value)
+                    finally:
+                        value.close()
+                    return payload_tag, payload_value
+                finally:
+                    payload_item.close()
+            finally:
+                payload.close()
+        finally:
+            outer_value.close()
+    finally:
+        outer_item.close()
 
 
 def credential_structure(raw_type: int) -> ttlv.Structure:
@@ -45,6 +77,22 @@ def credential_structure(raw_type: int) -> ttlv.Structure:
         structure = ttlv.ttlv_structure_with_item(structure, item, limits)
 
         value_structure = ttlv.ttlv_structure_create()
+        payload_tag = ttlv.raw_tag_from_raw(CREDENTIAL_PAYLOAD_TAG)
+        try:
+            checked_payload_tag = ttlv.raw_tag_try_checked(payload_tag)
+        finally:
+            payload_tag.close()
+        payload_value = ttlv.ttlv_value_integer(CREDENTIAL_PAYLOAD_VALUE)
+        try:
+            payload_item = ttlv.ttlv_item_create(
+                checked_payload_tag, payload_value, limits
+            )
+        finally:
+            checked_payload_tag.close()
+            payload_value.close()
+        value_structure = ttlv.ttlv_structure_with_item(
+            value_structure, payload_item, limits
+        )
         value = ttlv.ttlv_value_structure(value_structure, limits)
         raw_tag = ttlv.raw_tag_from_raw(CREDENTIAL_VALUE_TAG)
         try:
@@ -84,12 +132,15 @@ class CredentialTests(unittest.TestCase):
 
         borrowed: list[ttlv.TtlvStructureView] = []
 
-        def inspect(view: ttlv.TtlvStructureView) -> tuple[int, ...]:
+        def inspect(view: ttlv.TtlvStructureView) -> tuple[tuple[int, ...], tuple[int, int]]:
             borrowed.append(view)
-            return read_tags(view)
+            return read_tags(view), read_payload(view)
 
         self.assertEqual(
-            (CREDENTIAL_TYPE_TAG, CREDENTIAL_VALUE_TAG),
+            (
+                (CREDENTIAL_TYPE_TAG, CREDENTIAL_VALUE_TAG),
+                (CREDENTIAL_PAYLOAD_TAG, CREDENTIAL_PAYLOAD_VALUE),
+            ),
             credential.with_ttlv(inspect),
         )
         self.assertEqual(1, len(borrowed))
@@ -101,6 +152,9 @@ class CredentialTests(unittest.TestCase):
         view = ttlv.ttlv_structure_view(restored)
         try:
             self.assertEqual((CREDENTIAL_TYPE_TAG, CREDENTIAL_VALUE_TAG), read_tags(view))
+            self.assertEqual(
+                (CREDENTIAL_PAYLOAD_TAG, CREDENTIAL_PAYLOAD_VALUE), read_payload(view)
+            )
         finally:
             view.close()
             restored.close()
@@ -122,6 +176,26 @@ class CredentialTests(unittest.TestCase):
         restored = credential.into_ttlv()
         self.assertTrue(credential.closed)
         restored.close()
+
+    def test_failed_credential_conversion_retains_source_while_its_view_is_live(self) -> None:
+        facade = getattr(kmipkit.credentials, "Credential", None)
+        self.assertIsNotNone(facade)
+        if facade is None:
+            return
+        source = credential_structure(1)
+        view = ttlv.ttlv_structure_view(source)
+        try:
+            with self.assertRaises(errors.InvalidInputError):
+                facade.from_ttlv(source)
+            self.assertEqual(2, ttlv.ttlv_structure_view_item_count(view))
+        finally:
+            view.close()
+
+        credential = facade.from_ttlv(source)
+        try:
+            self.assertEqual(1, credential.credential_type_raw())
+        finally:
+            credential.close()
 
     def test_credential_rejects_malformed_input_without_disclosing_contents(self) -> None:
         facade = getattr(kmipkit.credentials, "Credential", None)

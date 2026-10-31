@@ -77,6 +77,19 @@ final class NonceFacadeTest {
     }
 
     @Test
+    void failedNonceConversionRetainsSourceWhileItsViewIsLive() {
+        TtlvStructure source = nonceStructure();
+        try (TtlvStructureView view = source.view()) {
+            assertThrows(InvalidInputException.class, () -> Nonce.fromTtlv(source));
+            assertEquals(2L, readNonce(view));
+        }
+
+        try (Nonce nonce = Nonce.fromTtlv(source)) {
+            assertEquals(2L, nonce.withTtlv(NonceFacadeTest::readNonce));
+        }
+    }
+
+    @Test
     void nonceRemainsUsableWhenConsumptionIsAttemptedInsideItsScopedView() {
         TtlvStructure structure = nonceStructure();
         Nonce nonce = Nonce.fromTtlv(structure);

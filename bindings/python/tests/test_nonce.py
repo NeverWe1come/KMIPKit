@@ -117,6 +117,29 @@ class NonceTests(unittest.TestCase):
         self.assertNotIn(NONCE_VALUE.hex(), str(raised.exception))
         self.assertTrue(structure.closed)
 
+    def test_failed_nonce_conversion_retains_source_while_its_view_is_live(self) -> None:
+        source = nonce_structure()
+        view = ttlv.ttlv_structure_view(source)
+        try:
+            with self.assertRaises(errors.InvalidInputError):
+                kmipkit.credentials.Nonce.from_ttlv(source)
+            self.assertFalse(source.closed)
+            self.assertEqual(
+                ((NONCE_ID_TAG, NONCE_ID), (NONCE_VALUE_TAG, NONCE_VALUE)),
+                read_structure(view),
+            )
+        finally:
+            view.close()
+
+        nonce = kmipkit.credentials.Nonce.from_ttlv(source)
+        try:
+            self.assertEqual(
+                ((NONCE_ID_TAG, NONCE_ID), (NONCE_VALUE_TAG, NONCE_VALUE)),
+                nonce.with_ttlv(read_structure),
+            )
+        finally:
+            nonce.close()
+
     def test_nonce_remains_usable_when_consumption_is_attempted_inside_its_scoped_view(self) -> None:
         nonce = kmipkit.credentials.Nonce.from_ttlv(nonce_structure())
 

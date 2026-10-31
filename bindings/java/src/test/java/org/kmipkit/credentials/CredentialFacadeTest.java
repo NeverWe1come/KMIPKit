@@ -18,11 +18,14 @@ import org.kmipkit.ttlv.TtlvItemView;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvValue;
+import org.kmipkit.ttlv.TtlvValueView;
 import org.junit.jupiter.api.Test;
 
 final class CredentialFacadeTest {
     private static final int CREDENTIAL_TYPE_TAG = 0x0042_0024;
     private static final int CREDENTIAL_VALUE_TAG = 0x0042_0025;
+    private static final int CREDENTIAL_PAYLOAD_TAG = 0x0042_002A;
+    private static final int CREDENTIAL_PAYLOAD_VALUE = 0x13579;
 
     @Test
     void credentialPreservesUnknownTypeAndMovesTheOriginalTtlv() throws Exception {
@@ -45,6 +48,7 @@ final class CredentialFacadeTest {
         assertEquals(2L, withTtlv.invoke(credential,
                 (Function<TtlvStructureView, Long>) view -> {
                     borrowed.set(view);
+                    assertEquals(CREDENTIAL_PAYLOAD_VALUE, readPayload(view));
                     return readTags(view);
                 }));
         assertThrows(InvalidInputException.class, () -> borrowed.get().itemCount());
@@ -52,6 +56,7 @@ final class CredentialFacadeTest {
         TtlvStructure restored = (TtlvStructure) intoTtlv.invoke(credential);
         try (restored; TtlvStructureView view = restored.view()) {
             assertEquals(2L, readTags(view));
+            assertEquals(CREDENTIAL_PAYLOAD_VALUE, readPayload(view));
         }
         ((AutoCloseable) credential).close();
     }
@@ -79,6 +84,19 @@ final class CredentialFacadeTest {
         ((AutoCloseable) credential).close();
     }
 
+    @Test
+    void failedCredentialConversionRetainsSourceWhileItsViewIsLive() {
+        TtlvStructure source = credentialStructure(1);
+        try (TtlvStructureView view = source.view()) {
+            assertThrows(InvalidInputException.class, () -> Credential.fromTtlv(source));
+            assertEquals(2L, view.itemCount());
+        }
+
+        try (Credential credential = Credential.fromTtlv(source)) {
+            assertEquals(1L, credential.credentialTypeRaw());
+        }
+    }
+
     private static boolean throwsInvalidInput(ThrowingSupplier action) {
         try {
             action.get();
@@ -103,6 +121,18 @@ final class CredentialFacadeTest {
         }
     }
 
+    private static int readPayload(TtlvStructureView view) {
+        try (TtlvItemView outer = view.itemAt(1);
+                TtlvValueView outerValue = outer.value();
+                TtlvStructureView payload = outerValue.structure();
+                TtlvItemView item = payload.itemAt(0);
+                Tag tag = item.tag();
+                TtlvValueView value = item.value()) {
+            assertEquals(CREDENTIAL_PAYLOAD_TAG, tag.raw());
+            return value.integer();
+        }
+    }
+
     private static TtlvStructure credentialStructure(long rawType) {
         CodecLimits limits = CodecLimits.defaults();
         TtlvStructure structure = TtlvStructure.create();
@@ -113,6 +143,12 @@ final class CredentialFacadeTest {
             structure = TtlvStructure.withItem(structure, item, limits);
         }
         TtlvStructure valueStructure = TtlvStructure.create();
+        try (RawTag payloadRaw = RawTag.fromRaw(CREDENTIAL_PAYLOAD_TAG);
+                Tag payloadTag = payloadRaw.checked();
+                TtlvValue payloadValue = TtlvValue.Integer(CREDENTIAL_PAYLOAD_VALUE)) {
+            TtlvItem item = TtlvItem.create(payloadTag, payloadValue, limits);
+            valueStructure = TtlvStructure.withItem(valueStructure, item, limits);
+        }
         try (RawTag raw = RawTag.fromRaw(CREDENTIAL_VALUE_TAG);
                 Tag tag = raw.checked();
                 TtlvValue value = TtlvValue.structure(valueStructure, limits)) {

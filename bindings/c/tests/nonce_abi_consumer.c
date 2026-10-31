@@ -73,6 +73,7 @@ int32_t kmipkit_nonce_c_consumer_round_trip(uint64_t *out_item_count) {
     kmipkit_codec_limits_t *limits = 0;
     kmipkit_ttlv_structure_t *structure = 0;
     kmipkit_nonce_t *nonce = 0;
+    kmipkit_ttlv_structure_view_t *source_view = 0;
     kmipkit_ttlv_structure_view_t *view = 0;
     kmipkit_ttlv_structure_t *restored = 0;
     kmipkit_ttlv_structure_view_t *restored_view = 0;
@@ -86,6 +87,14 @@ int32_t kmipkit_nonce_c_consumer_round_trip(uint64_t *out_item_count) {
         status = append_byte_string(
                 &structure, limits, 0x004200ca, NONCE_VALUE, sizeof(NONCE_VALUE));
     }
+    if (status == 0) status = kmipkit_ttlv_structure_view(structure, &source_view);
+    if (status == 0) {
+        int32_t shared_owner_status = kmipkit_nonce_from_ttlv(structure, &nonce);
+        if (shared_owner_status != 11) status = 1;
+    }
+    if (status == 0) status = structure_matches(source_view, &count);
+    kmipkit_ttlv_structure_view_release(source_view);
+    source_view = 0;
     if (status == 0) status = kmipkit_nonce_from_ttlv(structure, &nonce);
     if (status == 0) {
         structure = 0;
@@ -104,6 +113,7 @@ int32_t kmipkit_nonce_c_consumer_round_trip(uint64_t *out_item_count) {
     kmipkit_codec_limits_release(limits);
     kmipkit_ttlv_structure_release(structure);
     kmipkit_nonce_release(nonce);
+    kmipkit_ttlv_structure_view_release(source_view);
     kmipkit_ttlv_structure_view_release(view);
     kmipkit_ttlv_structure_release(restored);
     kmipkit_ttlv_structure_view_release(restored_view);

@@ -4,6 +4,8 @@
 
 static const uint32_t CREDENTIAL_TYPE_TAG = 0x00420024;
 static const uint32_t CREDENTIAL_VALUE_TAG = 0x00420025;
+static const uint32_t CREDENTIAL_PAYLOAD_TAG = 0x0042002A;
+static const int32_t CREDENTIAL_PAYLOAD_VALUE = 0x13579;
 
 static int32_t append_item(
         kmipkit_ttlv_structure_t **structure, kmipkit_codec_limits_t *limits,
@@ -53,6 +55,37 @@ static int32_t tags_match(kmipkit_ttlv_structure_view_t *view, uint64_t *out_cou
     return 0;
 }
 
+static int32_t payload_matches(kmipkit_ttlv_structure_view_t *view) {
+    kmipkit_ttlv_item_view_t *outer_item = 0;
+    kmipkit_ttlv_value_view_t *outer_value = 0;
+    kmipkit_ttlv_structure_view_t *payload = 0;
+    kmipkit_ttlv_item_view_t *payload_item = 0;
+    kmipkit_tag_t *payload_tag = 0;
+    kmipkit_ttlv_value_view_t *payload_value = 0;
+    uint64_t count = 0;
+    uint32_t raw_tag = 0;
+    int32_t integer = 0;
+    int32_t status = kmipkit_ttlv_structure_view_item_at(view, 1, &outer_item);
+    if (status == 0) status = kmipkit_ttlv_item_view_value(outer_item, &outer_value);
+    if (status == 0) status = kmipkit_ttlv_value_view_structure(outer_value, &payload);
+    if (status == 0) status = kmipkit_ttlv_structure_view_item_count(payload, &count);
+    if (status == 0 && count != 1) status = 1;
+    if (status == 0) status = kmipkit_ttlv_structure_view_item_at(payload, 0, &payload_item);
+    if (status == 0) status = kmipkit_ttlv_item_view_tag(payload_item, &payload_tag);
+    if (status == 0) status = kmipkit_ttlv_tag_value(payload_tag, &raw_tag);
+    if (status == 0 && raw_tag != CREDENTIAL_PAYLOAD_TAG) status = 1;
+    if (status == 0) status = kmipkit_ttlv_item_view_value(payload_item, &payload_value);
+    if (status == 0) status = kmipkit_ttlv_value_view_integer(payload_value, &integer);
+    if (status == 0 && integer != CREDENTIAL_PAYLOAD_VALUE) status = 1;
+    kmipkit_ttlv_value_view_release(payload_value);
+    kmipkit_tag_release(payload_tag);
+    kmipkit_ttlv_item_view_release(payload_item);
+    kmipkit_ttlv_structure_view_release(payload);
+    kmipkit_ttlv_value_view_release(outer_value);
+    kmipkit_ttlv_item_view_release(outer_item);
+    return status;
+}
+
 int32_t kmipkit_credential_c_consumer_round_trip(
         uint32_t raw_type, uint32_t *out_type, uint64_t *out_count) {
     if (out_type == 0 || out_count == 0) return 4;
@@ -60,6 +93,7 @@ int32_t kmipkit_credential_c_consumer_round_trip(
     kmipkit_ttlv_structure_t *structure = 0;
     kmipkit_ttlv_structure_t *value_structure = 0;
     kmipkit_credential_t *credential = 0;
+    kmipkit_ttlv_structure_view_t *source_view = 0;
     kmipkit_ttlv_structure_view_t *view = 0;
     kmipkit_ttlv_structure_t *restored = 0;
     kmipkit_ttlv_structure_view_t *restored_view = 0;
@@ -76,6 +110,12 @@ int32_t kmipkit_credential_c_consumer_round_trip(
     }
     if (status == 0) status = kmipkit_ttlv_structure_create(&value_structure);
     kmipkit_ttlv_value_t *structure_value = 0;
+    kmipkit_ttlv_value_t *payload_value = 0;
+    if (status == 0) status = kmipkit_ttlv_value_integer(CREDENTIAL_PAYLOAD_VALUE, &payload_value);
+    if (status == 0) {
+        status = append_item(&value_structure, limits, CREDENTIAL_PAYLOAD_TAG, payload_value);
+        payload_value = 0;
+    }
     if (status == 0) {
         status = kmipkit_ttlv_value_structure(value_structure, limits, &structure_value);
         value_structure = 0;
@@ -84,6 +124,14 @@ int32_t kmipkit_credential_c_consumer_round_trip(
         status = append_item(&structure, limits, CREDENTIAL_VALUE_TAG, structure_value);
         structure_value = 0;
     }
+    if (status == 0) status = kmipkit_ttlv_structure_view(structure, &source_view);
+    if (status == 0) {
+        int32_t shared_owner_status = kmipkit_credential_from_ttlv(structure, &credential);
+        if (shared_owner_status != 9) status = 1;
+    }
+    if (status == 0) status = tags_match(source_view, &count);
+    kmipkit_ttlv_structure_view_release(source_view);
+    source_view = 0;
     if (status == 0) status = kmipkit_credential_from_ttlv(structure, &credential);
     if (status == 0) {
         structure = 0;
@@ -93,6 +141,7 @@ int32_t kmipkit_credential_c_consumer_round_trip(
     if (status == 0 && (typed_raw != raw_type || field_raw != raw_type)) status = 1;
     if (status == 0) status = kmipkit_credential_ttlv_view(credential, &view);
     if (status == 0) status = tags_match(view, &count);
+    if (status == 0) status = payload_matches(view);
     kmipkit_ttlv_structure_view_release(view);
     view = 0;
     if (status == 0) status = kmipkit_credential_into_ttlv(credential, &restored);
@@ -101,6 +150,7 @@ int32_t kmipkit_credential_c_consumer_round_trip(
         status = kmipkit_ttlv_structure_view(restored, &restored_view);
     }
     if (status == 0) status = tags_match(restored_view, &count);
+    if (status == 0) status = payload_matches(restored_view);
     if (status == 0) {
         *out_type = typed_raw;
         *out_count = count;
@@ -110,7 +160,9 @@ int32_t kmipkit_credential_c_consumer_round_trip(
     kmipkit_ttlv_structure_release(value_structure);
     kmipkit_ttlv_value_release(enum_value);
     kmipkit_ttlv_value_release(structure_value);
+    kmipkit_ttlv_value_release(payload_value);
     kmipkit_credential_release(credential);
+    kmipkit_ttlv_structure_view_release(source_view);
     kmipkit_ttlv_structure_view_release(view);
     kmipkit_ttlv_structure_release(restored);
     kmipkit_ttlv_structure_view_release(restored_view);
