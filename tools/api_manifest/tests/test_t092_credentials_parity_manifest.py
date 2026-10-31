@@ -896,6 +896,45 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
         device_type = next(row for row in manifest["types"] if row["id"] == "DeviceCredential")
         self.assertEqual("kmipkit_device_credential_t", device_type["c"]["name"])
         self.assertEqual("KMIP 2.1 §9.11 Table 412", device_type["normativeSource"])
+
+    def test_device_credential_binding_glue_has_exact_owner_exclusions(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        java_bridge_exports = {
+            "org.kmipkit.NativeExtensionRegistry.DEVICE_CREDENTIAL",
+            "org.kmipkit.NativeExtensionRegistry.deviceCredentialFromTtlv",
+            "org.kmipkit.NativeExtensionRegistry.deviceCredentialTtlvView",
+            "org.kmipkit.NativeExtensionRegistry.deviceCredentialIntoTtlv",
+        }
+        python_glue_exports = {
+            "kmipkit.credentials.DeviceCredential.__init__",
+            "kmipkit.credentials.DeviceCredential.__slots__",
+        }
+        expected = {
+            **{
+                ("java-kmipkit", name): "specs/043-public-api-bindings/spec.md"
+                for name in java_bridge_exports
+            },
+            **{
+                ("python-kmipkit", name): "specs/008-credentials-attestation/spec.md"
+                for name in python_glue_exports
+            },
+        }
+        exclusions = {
+            (row["packageId"], row["exportName"]): row
+            for row in manifest["approvedExclusions"]
+            if (row.get("packageId"), row.get("exportName")) in expected
+        }
+        self.assertEqual(expected.keys(), exclusions.keys())
+        for identity, owner_path in expected.items():
+            with self.subTest(export=identity[1]):
+                exclusion = exclusions[identity]
+                self.assertEqual(owner_path, exclusion["approvalSource"]["path"])
+                self.assertEqual("Approved", exclusion["approvalSource"]["status"])
+                self.assertTrue(exclusion.get("reason"))
+                self.assertTrue(exclusion.get("evidence"))
+                if identity[0] == "python-kmipkit":
+                    self.assertEqual("KMIPKIT-0008", exclusion["candidateSpecId"])
+
     def test_attestation_credential_binding_glue_has_exact_owner_exclusions(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         expected = {
