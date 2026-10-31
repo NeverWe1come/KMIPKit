@@ -400637,11 +400637,11 @@
       "reason": "This constructor creates the Rust profile-validation ClientError variant. Foreign facades expose structured profile validation details from client execution, not a public constructor for this Rust error value.",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/007-client-execution/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
       },
-      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This constructor creates the Rust profile-validation ClientError variant. Foreign facades expose structured profile validation details from client execution, not a public constructor for this Rust error value. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015."
+      "evidence": "Reviewed under KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-019, and KMIPKIT-0043-FR-021. This constructor creates the Rust profile-validation ClientError variant. Foreign facades expose structured profile validation details from client execution, not a public constructor for this Rust error value. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015."
     },
     {
       "packageId": "rust-kmipkit-client",
@@ -400757,11 +400757,11 @@
       "reason": "This constructor creates the Rust profile-validation ClientError variant. Foreign facades expose structured profile validation details from client execution, not a public constructor for this Rust error value.",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/007-client-execution/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
       },
-      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This constructor creates the Rust profile-validation ClientError variant. Foreign facades expose structured profile validation details from client execution, not a public constructor for this Rust error value. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015."
+      "evidence": "Reviewed under KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-019, and KMIPKIT-0043-FR-021. This constructor creates the Rust profile-validation ClientError variant. Foreign facades expose structured profile validation details from client execution, not a public constructor for this Rust error value. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015."
     },
     {
       "packageId": "rust-kmipkit",
