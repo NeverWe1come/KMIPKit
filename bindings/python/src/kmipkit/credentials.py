@@ -65,6 +65,8 @@ class CredentialType:
 class Nonce(NativeHandle):
     """Server-sourced Attestation Nonce preserving its original TTLV structure."""
 
+    __slots__ = ("__active_views",)
+
     _release_name = "kmipkit_nonce_release"
 
     @classmethod
@@ -77,7 +79,7 @@ class Nonce(NativeHandle):
             consumed=(0,),
         )
         nonce = _wrap_owned_handle(cls, handle)
-        nonce._active_views = 0
+        nonce.__active_views = 0
         return nonce
 
     @synchronized_native_call
@@ -91,19 +93,19 @@ class Nonce(NativeHandle):
             self._pointer(),
         )
         view = _wrap_owned_handle(TtlvStructureView, view_handle, owner=self)
-        self._active_views += 1
+        self.__active_views += 1
         try:
             return callback(view)
         finally:
             try:
                 view.close()
             finally:
-                self._active_views -= 1
+                self.__active_views -= 1
 
     @synchronized_native_call
     def into_ttlv(self) -> Structure:
         """Transfer the original ordered TTLV Structure without rebuilding it."""
-        if self._active_views:
+        if self.__active_views:
             errors.raise_for_status(4)
         handle = _new_handle(
             "kmipkit_ttlv_structure_t",
