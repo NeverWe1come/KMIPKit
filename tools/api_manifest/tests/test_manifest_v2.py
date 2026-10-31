@@ -6320,6 +6320,186 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
         self.assertTrue(list(self.validator.iter_errors(manifest)))
 
+    def test_t091_client_batch_outcome_exports_map_to_existing_response_surfaces(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        operations = {
+            row["operationId"]: row for row in self.checked_in_manifest["operations"]
+        }
+        expected = {}
+
+        def add_case(suffix: str, canonical_name: str, package_id: str) -> None:
+            prefix = {
+                "rust-kmipkit-client": "kmipkit_client",
+                "rust-kmipkit": "kmipkit",
+            }[package_id]
+            export_name = f"{prefix}::{suffix}"
+            canonical = declarations[canonical_name]
+            mappings = {
+                language: mapping.copy()
+                for language, mapping in canonical["languageMappings"].items()
+            }
+            mappings["rust"] = {"packageId": package_id, "name": export_name}
+            owner_requirements = {
+                "KMIPKIT-ELEM-OP-C2S-REGISTER": [
+                    f"KMIPKIT-0036-FR-{number:03d}" for number in range(1, 9)
+                ],
+                "KMIPKIT-ELEM-OP-C2S-REVOKE": [
+                    *(f"KMIPKIT-0036-FR-{number:03d}" for number in range(1, 7)),
+                    "KMIPKIT-0036-FR-008",
+                ],
+            }.get(canonical["capabilityId"], [])
+            requirements = sorted(set(canonical["requirementIds"]) | set(owner_requirements))
+            expected[export_name] = (canonical, mappings, requirements)
+
+        # The Rust enum is represented by the common four-language result handle.
+        for package_id in ("rust-kmipkit-client", "rust-kmipkit"):
+            prefix = {
+                "rust-kmipkit-client": "kmipkit_client",
+                "rust-kmipkit": "kmipkit",
+            }[package_id]
+            add_case(
+                "ClientBatchOutcome",
+                "org.kmipkit.extensions.ClientBatchItemResult",
+                package_id,
+            )
+            add_case(
+                "ClientBatchOutcome::Completed",
+                f"{prefix}::ClientBatchOutcome::Pending",
+                package_id,
+            )
+            add_case(
+                "ClientBatchOutcome::Completed::0",
+                f"{prefix}::ClientBatchOutcome::discover_versions_response",
+                package_id,
+            )
+
+        # Each operation variant maps through its existing result accessor; its tuple
+        # field maps through the existing typed response declaration where one exists.
+        operation_responses = (
+            ("Certify", "certifyResponse"),
+            ("Check", "checkResponse"),
+            ("DelegatedLogin", "delegatedLoginResponse"),
+            ("Login", "loginResponse"),
+            ("Logout", "logoutResponse"),
+            ("ObtainLease", "obtainLeaseResponse"),
+            ("ReProvision", "reprovisionResponse"),
+            ("Recertify", "recertifyResponse"),
+            ("Register", "registerResponse"),
+            ("Rekey", "rekeyResponse"),
+            ("RekeyKeyPair", "rekeyKeyPairResponse"),
+            ("Revoke", "revokeResponse"),
+            ("RngRetrieve", "rngRetrieveResponse"),
+            ("RngSeed", "rngSeedResponse"),
+            ("MacVerify", "macVerifyResponse"),
+            ("SignatureVerify", "signatureVerifyResponse"),
+        )
+        for package_id in ("rust-kmipkit-client", "rust-kmipkit"):
+            prefix = {
+                "rust-kmipkit-client": "kmipkit_client",
+                "rust-kmipkit": "kmipkit",
+            }[package_id]
+            for variant, method in operation_responses:
+                method_name = f"org.kmipkit.extensions.ClientBatchItemResult.{method}"
+                add_case(f"ClientBatchOutcome::{variant}", method_name, package_id)
+                field_name = f"org.kmipkit.extensions.ClientBatchItemResult.{variant}Response"
+                if variant in ("Logout",):
+                    field_name = method_name
+                add_case(f"ClientBatchOutcome::{variant}::0", field_name, package_id)
+
+        # Five additional payload types have no corresponding outcome accessor.
+        for package_id in ("rust-kmipkit-client", "rust-kmipkit"):
+            for variant in (
+                "GetAttributeList",
+                "GetConstraints",
+                "Pkcs11",
+                "SetConstraints",
+                "SetDefaults",
+            ):
+                add_case(
+                    f"ClientBatchOutcome::{variant}::0",
+                    f"org.kmipkit.extensions.ClientBatchItemResult.{variant}Response",
+                    package_id,
+                )
+
+        # These four typed accessors return success data; their foreign accessor maps
+        # retain the existing typed/TTLV ownership contract and operation status.
+        for package_id in ("rust-kmipkit-client", "rust-kmipkit"):
+            prefix = package_id.removeprefix("rust-")
+            for method in ("export", "get", "import", "locate"):
+                java_method = method[0].upper() + method[1:] + "Response"
+                add_case(
+                    f"ClientBatchOutcome::{method}_response",
+                    f"org.kmipkit.extensions.ClientBatchItemResult.{java_method}",
+                    package_id,
+                )
+
+        self.assertEqual(88, len(expected))
+        candidates = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+            if row["exportName"] in expected
+        }
+        self.assertEqual(set(expected), set(candidates))
+        capabilities = {
+            row["capabilityId"]: row for row in self.checked_in_manifest["capabilities"]
+        }
+
+        for export_name, (canonical, mappings, requirement_ids) in expected.items():
+            declaration = candidates[export_name]
+            capability_id = canonical["capabilityId"]
+            if capability_id in operations:
+                owner = operations[capability_id]
+                self.assertEqual("approved", owner["ownerDependency"]["state"])
+                self.assertEqual(owner["apiState"], canonical["declarationState"])
+                self.assertEqual(
+                    owner["approvalEvidence"]["path"], canonical["approvalSource"]["path"]
+                )
+                self.assertEqual(
+                    owner["approvalEvidence"]["status"], canonical["approvalSource"]["status"]
+                )
+
+            with self.subTest(export=export_name):
+                self.assertEqual(canonical["declarationState"], declaration["declarationState"])
+                self.assertNotIn("candidateSpecId", declaration)
+                self.assertEqual(capability_id, declaration["capabilityId"])
+                self.assertEqual(requirement_ids, declaration["requirementIds"])
+                self.assertEqual(canonical["approvalSource"], declaration["approvalSource"])
+                self.assertEqual(mappings, declaration["languageMappings"])
+                for language, mapping in mappings.items():
+                    self.assertIn(mapping["name"], capabilities[capability_id]["mappings"][language])
+                if capability_id in operations:
+                    self.assertIn(
+                        declaration["declarationId"],
+                        operations[capability_id]["declarations"]["rust"],
+                    )
+                if "parityEvidenceIds" in canonical:
+                    self.assertEqual(
+                        canonical["parityEvidenceIds"], declaration["parityEvidenceIds"]
+                    )
+                else:
+                    self.assertNotIn("parityEvidenceIds", declaration)
+
+        # Completed is the common discriminator plus Discover Versions' typed list;
+        # Logout's response is only its presence plus shared result metadata.
+        client_execution = next(
+            row
+            for row in self.checked_in_manifest["capabilities"]
+            if row["capabilityId"] == "client_execution"
+        )
+        for language, target in (
+            ("c", "kmipkit_client_batch_item_response_discover_versions_supported_versions"),
+            ("java", "org.kmipkit.extensions.ClientBatchItemResult.supportedVersions"),
+            ("python", "kmipkit.client.BatchItemResult.supported_versions"),
+        ):
+            self.assertIn(target, client_execution["mappings"][language])
+        self.assertNotIn(
+            "org.kmipkit.extensions.ClientBatchItemResult.LogoutResponse",
+            declarations,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
