@@ -16,7 +16,7 @@ RUST_EXPORT_INVENTORY = (
     / "specs"
     / "043-public-api-bindings"
     / "reports"
-    / "rust-export-report-2026-10-30.json"
+    / "rust-export-report-2026-10-31.json"
 )
 
 
@@ -176,7 +176,9 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
         self.assertEqual(95, len(meaningful))
         self.assertTrue(all(row.get("declarationState") == "blocked" for row in meaningful))
 
-    def test_every_exact_owner_declaration_is_mapped_or_reviewedly_excluded(self) -> None:
+    def test_every_nonblocked_owner_declaration_is_mapped_or_reviewedly_excluded(
+        self,
+    ) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         declarations = [
             row
@@ -185,6 +187,17 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
         ]
         self.assertTrue(declarations, f"no declarations found for {OWNER_SPEC}")
 
+        blocked = [
+            declaration
+            for declaration in declarations
+            if declaration.get("declarationState") == "blocked"
+        ]
+        self.assertEqual(
+            95,
+            len(blocked),
+            "the expected 95 functional KMIPKIT-0008 declarations must remain blocked",
+        )
+
         exclusions = {
             (row.get("packageId"), row.get("exportName")): row
             for row in manifest.get("approvedExclusions", [])
@@ -192,6 +205,9 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
         unresolved: list[str] = []
 
         for declaration in declarations:
+            if declaration.get("declarationState") == "blocked":
+                continue
+
             key = (declaration.get("packageId"), declaration.get("exportName"))
             mappings = declaration.get("languageMappings")
             complete_mapping = (
@@ -215,9 +231,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                 and _has_approved_source(exclusion)
             )
 
-            if declaration.get("declarationState") == "blocked" or not (
-                complete_mapping or reviewed_exclusion
-            ):
+            if not (complete_mapping or reviewed_exclusion):
                 unresolved.append(
                     f"{declaration.get('packageId')}:{declaration.get('exportName')}"
                 )

@@ -2653,6 +2653,11 @@
           "type": "string",
           "minLength": 1
         },
+        "candidateSpecId": {
+          "type": "string",
+          "pattern": "^KMIPKIT-[0-9]{4}$",
+          "description": "Exact owner specification for an approved declaration exclusion."
+        },
         "cType": {
           "$ref": "#/$defs/cTypeLayout",
           "description": "Optional C-only ABI carrier layout retained in the generated header without declaring a four-language facade type."

@@ -5739,8 +5739,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for exclusion in self.checked_in_manifest["approvedExclusions"]
             if exclusion["packageId"] in rust_packages
         ]
-        self.assertEqual(len(declarations), 9034)
-        self.assertEqual(len(exclusions), 1423)
+        self.assertEqual(len(declarations), 8812)
+        self.assertEqual(len(exclusions), 1645)
         report = json.loads(RUST_EXPORT_REPORT_PATH.read_text(encoding="utf-8"))
         observed_keys = {
             (row["packageId"], _canonical_export_name(row["exportName"]), row["kind"])
@@ -6024,7 +6024,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             if item["approvalSource"]["path"] == "specs/003-core-types-errors/spec.md"
         ]
         self.assertEqual(len(t087_exclusions), 217)
-        self.assertEqual(len(rust_exclusions), 202 + len(t087_exclusions))
+        self.assertEqual(len(rust_exclusions), 202 + len(t087_exclusions) + 222)
         self.assertTrue(
             any(
                 item["exportName"] == "kmipkit_protocol::RegisterRequest::validate_local_shape"
@@ -6044,6 +6044,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "specs/006-message-batch-model/spec.md",
                 "specs/007-client-execution/spec.md",
                 "specs/043-public-api-bindings/spec.md",
+                "specs/008-credentials-attestation/spec.md",
             },
         )
 
