@@ -1719,6 +1719,12 @@ def _validate_references(manifest: dict[str, Any]) -> None:
             for record in manifest["publicDeclarations"]
         }
         for error in manifest["errorCategories"]:
+            mapping_state = error.get("mappingState")
+            if manifest.get("formatVersion") == 2:
+                if mapping_state not in {"ready", "blocked"}:
+                    raise ManifestError("v2 error category must declare its mapping state")
+                if error.get("stableCHeaderCode") and mapping_state != "blocked":
+                    raise ManifestError("stable C header exception is only valid for blocked error mappings")
             for package, field, kind, language in (
                 ("c-kmipkit", "cCode", "constant", "c"),
                 ("java-kmipkit", "javaException", "type", "java"),
@@ -1730,6 +1736,12 @@ def _validate_references(manifest: dict[str, Any]) -> None:
                     raise ManifestError(
                         "error category references an undeclared language export"
                     )
+                if (
+                    manifest.get("formatVersion") == 2
+                    and mapping_state == "ready"
+                    and declaration["declarationState"] not in {"declared", "verified"}
+                ):
+                    raise ManifestError("ready error category references a blocked language export")
                 if declaration["declarationState"] in {"declared", "verified"}:
                     mapping = declaration["languageMappings"].get(language)
                     if mapping != {"packageId": package, "name": export_name}:
@@ -2619,6 +2631,7 @@ def render_c_header(
         if (
             ready_c_exports is not None
             and error["cCode"] not in ready_c_exports
+            and not error.get("stableCHeaderCode", False)
         ):
             continue
         lines.append(f"#define {error['cCode']} ((int32_t){error['cValue']})")
@@ -2757,7 +2770,18 @@ def _registry_manifest_v2(manifest: dict[str, Any]) -> dict[str, Any]:
         "types": registry_types,
         "functions": registry_functions,
         "errorCategories": [
-            deepcopy(category)
+            {
+                key: deepcopy(value)
+                for key, value in category.items()
+                if key in {
+                    "id",
+                    "rustVariant",
+                    "cCode",
+                    "cValue",
+                    "javaException",
+                    "pythonException",
+                }
+            }
             for category in manifest["errorCategories"]
             if category["id"] in _REGISTRY_V1_ERROR_CATEGORY_IDS
         ],
@@ -2790,7 +2814,11 @@ def _ready_api_projection(manifest: dict[str, Any]) -> dict[str, Any]:
         "approvedExclusions": manifest["approvedExclusions"],
         "types": manifest["types"],
         "functions": manifest["functions"],
-        "errorCategories": manifest["errorCategories"],
+        "errorCategories": [
+            record
+            for record in manifest["errorCategories"]
+            if record["mappingState"] == "ready"
+        ],
         "limits": manifest["limits"],
         "security": manifest["security"],
     }

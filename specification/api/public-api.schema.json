@@ -628,6 +628,55 @@
       },
       "additionalProperties": false
     },
+    "errorCategoryV2": {
+      "type": "object",
+      "required": [
+        "id",
+        "rustVariant",
+        "cCode",
+        "cValue",
+        "javaException",
+        "pythonException",
+        "mappingState"
+      ],
+      "properties": {
+        "id": {"$ref": "#/$defs/errorCategoryId"},
+        "rustVariant": {"$ref": "#/$defs/identifier"},
+        "cCode": {
+          "type": "string",
+          "pattern": "^KMIPKIT_ERROR_[A-Z0-9_]+$",
+          "description": "Stable C error-code name; status values use int32_t."
+        },
+        "cValue": {
+          "type": "integer",
+          "minimum": -2147483648,
+          "maximum": 2147483647,
+          "description": "Explicit stable numeric value for the named int32_t C error code."
+        },
+        "javaException": {"$ref": "#/$defs/qualifiedName"},
+        "pythonException": {"$ref": "#/$defs/qualifiedName"},
+        "mappingState": {
+          "enum": ["ready", "blocked"],
+          "description": "Whether the full error category mapping is ready across languages."
+        },
+        "blockedReason": {"type": "string", "minLength": 1},
+        "stableCHeaderCode": {
+          "type": "boolean",
+          "description": "Keep a previously exposed stable C error code in the generated header while cross-language parity mapping is blocked."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"mappingState": {"const": "blocked"}},
+            "required": ["mappingState"]
+          },
+          "then": {"required": ["blockedReason"]},
+          "else": {"not": {"required": ["blockedReason"]}}
+        }
+      ],
+      "additionalProperties": false
+    },
     "cParameter": {
       "oneOf": [
         {
@@ -3462,7 +3511,7 @@
         "errorCategories": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/errorCategory"
+            "$ref": "#/$defs/errorCategoryV2"
           }
         },
         "limits": {

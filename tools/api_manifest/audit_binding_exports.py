@@ -824,11 +824,18 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
 def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> dict[str, Any]:
     package_rows = [row for row in manifest.get("publicDeclarations", []) if row.get("packageId") == package]
     if package == "c-kmipkit":
-        # The C header intentionally omits blocked non-symbol declarations.
-        # Blocked function symbols remain audited from the native binary ABI.
+        stable_error_codes = {
+            error.get("cCode")
+            for error in manifest.get("errorCategories", [])
+            if error.get("stableCHeaderCode") is True
+        }
+        # The C header omits blocked declarations except stable ABI status
+        # constants, which remain visible while their parity mapping is pending.
         package_rows = [
             row for row in package_rows
-            if row.get("declarationState") != "blocked" or row.get("kind") == "c-symbol"
+            if row.get("declarationState") != "blocked"
+            or row.get("kind") == "c-symbol"
+            or row.get("exportName") in stable_error_codes
         ]
     declared = {(row["packageId"], row["exportName"]): row for row in package_rows}
     duplicate_names = sorted(name for name, count in Counter(row["exportName"] for row in package_rows).items() if count > 1)

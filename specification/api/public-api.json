@@ -32909,7 +32909,9 @@
       "cCode": "KMIPKIT_ERROR_COMPATIBILITY_MISMATCH",
       "cValue": 1,
       "javaException": "org.kmipkit.extensions.ExtensionCompatibilityException",
-      "pythonException": "kmipkit.errors.CompatibilityMismatchError"
+      "pythonException": "kmipkit.errors.CompatibilityMismatchError",
+      "mappingState": "blocked",
+      "blockedReason": "The C, Java, Python, and Rust error exports for this category remain blocked pending an approved cross-language mapping."
     },
     {
       "id": "duplicate_key",
@@ -32917,7 +32919,9 @@
       "cCode": "KMIPKIT_ERROR_DUPLICATE_KEY",
       "cValue": 2,
       "javaException": "org.kmipkit.extensions.DuplicateExtensionKeyException",
-      "pythonException": "kmipkit.errors.DuplicateKeyError"
+      "pythonException": "kmipkit.errors.DuplicateKeyError",
+      "mappingState": "blocked",
+      "blockedReason": "The C, Java, Python, and Rust error exports for this category remain blocked pending an approved cross-language mapping."
     },
     {
       "id": "invalid_identity",
@@ -32925,7 +32929,9 @@
       "cCode": "KMIPKIT_ERROR_INVALID_IDENTITY",
       "cValue": 3,
       "javaException": "org.kmipkit.extensions.InvalidExtensionIdentityException",
-      "pythonException": "kmipkit.errors.InvalidIdentityError"
+      "pythonException": "kmipkit.errors.InvalidIdentityError",
+      "mappingState": "blocked",
+      "blockedReason": "The C, Java, Python, and Rust error exports for this category remain blocked pending an approved cross-language mapping."
     },
     {
       "id": "invalid_input",
@@ -32933,7 +32939,9 @@
       "cCode": "KMIPKIT_ERROR_INVALID_INPUT",
       "cValue": 4,
       "javaException": "org.kmipkit.InvalidInputException",
-      "pythonException": "kmipkit.errors.InvalidInputError"
+      "pythonException": "kmipkit.errors.InvalidInputError",
+      "mappingState": "blocked",
+      "blockedReason": "The C, Java, Python, and Rust error exports for this category remain blocked pending an approved cross-language mapping."
     },
     {
       "id": "invalid_schema",
@@ -32941,7 +32949,9 @@
       "cCode": "KMIPKIT_ERROR_INVALID_SCHEMA",
       "cValue": 5,
       "javaException": "org.kmipkit.extensions.InvalidExtensionSchemaException",
-      "pythonException": "kmipkit.errors.InvalidExtensionSchemaError"
+      "pythonException": "kmipkit.errors.InvalidExtensionSchemaError",
+      "mappingState": "blocked",
+      "blockedReason": "The C, Java, Python, and Rust error exports for this category remain blocked pending an approved cross-language mapping."
     },
     {
       "id": "resource_limit",
@@ -32949,7 +32959,8 @@
       "cCode": "KMIPKIT_ERROR_RESOURCE_LIMIT",
       "cValue": 6,
       "javaException": "org.kmipkit.ResourceLimitException",
-      "pythonException": "kmipkit.errors.ResourceLimitError"
+      "pythonException": "kmipkit.errors.ResourceLimitError",
+      "mappingState": "ready"
     },
     {
       "id": "internal",
@@ -32957,7 +32968,10 @@
       "cCode": "KMIPKIT_ERROR_INTERNAL",
       "cValue": 7,
       "javaException": "org.kmipkit.KmipException",
-      "pythonException": "kmipkit.errors.KmipKitError"
+      "pythonException": "kmipkit.errors.KmipKitError",
+      "stableCHeaderCode": true,
+      "mappingState": "blocked",
+      "blockedReason": "No public Rust binding-error type represents this generic internal status; ClientCauseCategory::Other is a client execution cause code, not a generic ABI error status."
     },
     {
       "id": "protocol",
@@ -32965,7 +32979,8 @@
       "cCode": "KMIPKIT_ERROR_PROTOCOL",
       "cValue": 8,
       "javaException": "org.kmipkit.ProtocolException",
-      "pythonException": "kmipkit.errors.ClientExecutionError"
+      "pythonException": "kmipkit.errors.ClientExecutionError",
+      "mappingState": "ready"
     },
     {
       "id": "transport",
@@ -32973,7 +32988,8 @@
       "cCode": "KMIPKIT_ERROR_TRANSPORT",
       "cValue": 9,
       "javaException": "org.kmipkit.TransportException",
-      "pythonException": "kmipkit.errors.ClientExecutionError"
+      "pythonException": "kmipkit.errors.ClientExecutionError",
+      "mappingState": "ready"
     },
     {
       "id": "server_result",
@@ -32981,7 +32997,8 @@
       "cCode": "KMIPKIT_ERROR_SERVER_RESULT",
       "cValue": 10,
       "javaException": "org.kmipkit.ServerResultException",
-      "pythonException": "kmipkit.errors.ClientExecutionError"
+      "pythonException": "kmipkit.errors.ClientExecutionError",
+      "mappingState": "ready"
     }
   ],
   "limits": [
@@ -46997,32 +47014,10 @@
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-013"
       ],
-      "declarationState": "declared",
+      "declarationState": "blocked",
       "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit::ClientCauseCategory::Other"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "KMIPKIT_ERROR_INTERNAL"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.KmipException"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.errors.KmipKitError"
-        }
-      }
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The generic binding-level internal error status and base exception have no semantically equivalent public Rust error type. ClientCauseCategory::Other is a client execution cause category (code 10), not the KMIPKit FFI internal status (code 7); keep this export blocked until a reviewed Rust equivalent or approved exclusion exists."
     },
     {
       "declarationId": "python-raise-for-status",
@@ -53189,32 +53184,10 @@
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-013"
       ],
-      "declarationState": "declared",
+      "declarationState": "blocked",
       "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit::ClientCauseCategory::Other"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "KMIPKIT_ERROR_INTERNAL"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.KmipException"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.errors.KmipKitError"
-        }
-      }
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The generic binding-level internal error status and base exception have no semantically equivalent public Rust error type. ClientCauseCategory::Other is a client execution cause category (code 10), not the KMIPKit FFI internal status (code 7); keep this export blocked until a reviewed Rust equivalent or approved exclusion exists."
     },
     {
       "declarationId": "java-observed-98e651f58bd4a1934fb4",
@@ -101917,32 +101890,10 @@
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-013"
       ],
-      "declarationState": "declared",
+      "declarationState": "blocked",
       "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit::ClientCauseCategory::Other"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "KMIPKIT_ERROR_INTERNAL"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.KmipException"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.errors.KmipKitError"
-        }
-      }
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The generic binding-level internal error status and base exception have no semantically equivalent public Rust error type. ClientCauseCategory::Other is a client execution cause category (code 10), not the KMIPKit FFI internal status (code 7); keep this export blocked until a reviewed Rust equivalent or approved exclusion exists."
     },
     {
       "declarationId": "t011-observed-c-compatibility_mismatch",
@@ -391980,7 +391931,6 @@
       "mappings": {
         "rust": [
           "kmipkit::ABI_VERSION",
-          "kmipkit::ClientCauseCategory::Other",
           "kmipkit::RuntimeMetadataError",
           "kmipkit::RuntimeMetadataError::ResourceLimit",
           "kmipkit::RuntimeVersion",
@@ -391991,13 +391941,11 @@
           "kmipkit::runtime_version"
         ],
         "c": [
-          "KMIPKIT_ERROR_INTERNAL",
           "KMIPKIT_ERROR_RESOURCE_LIMIT",
           "kmipkit_capability_is_available",
           "kmipkit_version_get"
         ],
         "java": [
-          "org.kmipkit.KmipException",
           "org.kmipkit.ResourceLimitException",
           "org.kmipkit.RuntimeMetadata.Version",
           "org.kmipkit.RuntimeMetadata.Version.abiVersion",
@@ -392005,7 +391953,6 @@
           "org.kmipkit.RuntimeMetadata.version"
         ],
         "python": [
-          "kmipkit.errors.KmipKitError",
           "kmipkit.errors.ResourceLimitError",
           "kmipkit.metadata.Version",
           "kmipkit.metadata.Version.abi_version",

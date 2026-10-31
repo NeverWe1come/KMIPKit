@@ -178,6 +178,10 @@ def _valid_v2_manifest() -> dict[str, object]:
             ],
         }
     )
+    manifest["errorCategories"] = [
+        {**category, "mappingState": "ready"}
+        for category in manifest["errorCategories"]
+    ]
     return manifest
 
 
@@ -768,7 +772,15 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 elif field == "errorCategories":
                     expected = registry[field]
                     registry_ids = {row["id"] for row in expected}
-                    actual = [row for row in manifest[field] if row["id"] in registry_ids]
+                    actual = [
+                        {
+                            key: value
+                            for key, value in row.items()
+                            if key in expected[0]
+                        }
+                        for row in manifest[field]
+                        if row["id"] in registry_ids
+                    ]
                 else:
                     actual = manifest[field]
                     expected = registry[field]
@@ -906,7 +918,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             [1, 2, 3],
         )
 
-    def test_checked_in_internal_error_status_is_additive_and_uses_generic_facades(self) -> None:
+    def test_checked_in_internal_status_is_stable_but_parity_remains_blocked(self) -> None:
         categories = {
             item["id"]: item for item in self.checked_in_manifest["errorCategories"]
         }
@@ -916,11 +928,20 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(internal["cValue"], 7)
         self.assertEqual(internal["javaException"], "org.kmipkit.KmipException")
         self.assertEqual(internal["pythonException"], "kmipkit.errors.KmipKitError")
+        self.assertEqual(internal["mappingState"], "blocked")
+        self.assertTrue(internal["stableCHeaderCode"])
+        self.assertIn("no public rust", internal["blockedReason"].lower())
 
     def test_ready_api_projection_omits_blocked_error_taxonomy(self) -> None:
         projected = generate._ready_api_projection(self.checked_in_manifest)
         projected_ids = {item["id"] for item in projected["errorCategories"]}
+        expected_ids = {
+            item["id"]
+            for item in self.checked_in_manifest["errorCategories"]
+            if item["mappingState"] == "ready"
+        }
 
+        self.assertEqual(expected_ids, projected_ids)
         self.assertNotIn("internal", projected_ids)
         self.assertNotIn("compatibility_mismatch", projected_ids)
         self.assertIn("resource_limit", projected_ids)
@@ -1017,13 +1038,15 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "specs/004-generic-ttlv-model/spec.md",
         )
         generic_python_error = declarations["kmipkit.errors.KmipKitError"]
-        self.assertEqual(generic_python_error["declarationState"], "declared")
+        self.assertEqual(generic_python_error["declarationState"], "blocked")
         self.assertEqual(generic_python_error["capabilityId"], "ffi_runtime_metadata")
-        self.assertIn("languageMappings", generic_python_error)
+        self.assertEqual(generic_python_error["candidateSpecId"], "KMIPKIT-0043")
+        self.assertNotIn("languageMappings", generic_python_error)
         generic_java_error = declarations["org.kmipkit.KmipException"]
-        self.assertEqual(generic_java_error["declarationState"], "declared")
+        self.assertEqual(generic_java_error["declarationState"], "blocked")
         self.assertEqual(generic_java_error["capabilityId"], "ffi_runtime_metadata")
-        self.assertIn("languageMappings", generic_java_error)
+        self.assertEqual(generic_java_error["candidateSpecId"], "KMIPKIT-0043")
+        self.assertNotIn("languageMappings", generic_java_error)
         batch_item = declarations["kmipkit.extensions.ClientBatchItem"]
         self.assertEqual(batch_item["declarationState"], "declared")
         self.assertIn("languageMappings", batch_item)
@@ -5645,6 +5668,11 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             and item["declarationState"] in {"declared", "verified"}
             and item["exportName"].startswith("KMIPKIT_ERROR_")
         }
+        manifest_error_macros.update(
+            item["cCode"]
+            for item in self.checked_in_manifest["errorCategories"]
+            if item.get("stableCHeaderCode", False)
+        )
         self.assertEqual(header_error_macros, manifest_error_macros)
 
     def test_c_header_only_declares_ready_manifest_entries(self) -> None:
