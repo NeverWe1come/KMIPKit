@@ -1,6 +1,7 @@
 package org.kmipkit.credentials;
 
 import java.util.function.Function;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
@@ -16,6 +17,7 @@ import org.kmipkit.ttlv.TtlvStructureView;
  */
 public final class Nonce implements AutoCloseable {
     private final NativeHandle handle;
+    private final AtomicInteger activeViews = new AtomicInteger();
 
     private Nonce(long nativeHandle) {
         handle = NativeHandle.owned(nativeHandle, NativeExtensionRegistry.NONCE);
@@ -31,7 +33,10 @@ public final class Nonce implements AutoCloseable {
                 structure.nativeHandleOwner().transfer()));
     }
 
-    /** Lends a read-only TTLV view and closes its native view when the callback returns. */
+    /**
+     * Lends a read-only TTLV view and closes its native view when the callback returns.
+     * The Nonce cannot be consumed until the callback has returned.
+     */
     public <T> T withTtlv(Function<TtlvStructureView, T> callback) {
         if (callback == null) {
             throw new org.kmipkit.InvalidInputException("nonce view callback is invalid");
@@ -39,14 +44,22 @@ public final class Nonce implements AutoCloseable {
         return handle.withValue(value -> {
             TtlvStructureView view = TtlvStructureView.fromNative(
                     NativeExtensionRegistry.nonceTtlvView(value), this);
-            try (view) {
-                return callback.apply(view);
+            activeViews.incrementAndGet();
+            try {
+                try (view) {
+                    return callback.apply(view);
+                }
+            } finally {
+                activeViews.decrementAndGet();
             }
         });
     }
 
     /** Transfers the original ordered TTLV Structure without rebuilding it. */
     public TtlvStructure intoTtlv() {
+        if (activeViews.get() != 0) {
+            throw new org.kmipkit.InvalidInputException("nonce is in use by a scoped view");
+        }
         return TtlvStructure.fromNative(
                 NativeExtensionRegistry.nonceIntoTtlv(handle.transfer()), this);
     }
