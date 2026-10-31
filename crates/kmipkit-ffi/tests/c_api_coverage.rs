@@ -11,6 +11,11 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::thread;
 
+#[link(name = "kmipkit_nonce_abi_c_consumer", kind = "static")]
+unsafe extern "C" {
+    fn kmipkit_nonce_c_consumer_round_trip(out_item_count: *mut u64) -> i32;
+}
+
 use kmipkit_ffi::kmipkit_codec_limits_t;
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_ttlv::{Item, ValueView};
@@ -20,6 +25,15 @@ use rustls::{RootCertStore, ServerConfig, ServerConnection, StreamOwned};
 
 const MAX_TEST_TTLV_VALUE_BYTES: usize = 8_388_608;
 static TEMP_DIRECTORY_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
+#[test]
+fn compiled_c_consumer_preserves_nonce_bytes_and_ttlv_structure() {
+    let mut item_count = 0;
+    // SAFETY: The C consumer receives a writable count slot and owns its temporary ABI handles.
+    let status = unsafe { kmipkit_nonce_c_consumer_round_trip(&raw mut item_count) };
+    assert_eq!(status, 0);
+    assert_eq!(item_count, 2);
+}
 
 #[link(name = "kmipkit_extension_registry_c_consumer", kind = "static")]
 unsafe extern "C" {

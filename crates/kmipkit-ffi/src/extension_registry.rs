@@ -98,6 +98,9 @@ const BATCH_ITEM_TAG_RAW: u32 = 0x0042_000F;
 #[cfg(all(test, feature = "coverage-c-consumer"))]
 #[path = "../tests/support/credential_type_abi_tests.rs"]
 mod credential_type_abi_tests;
+#[cfg(all(test, feature = "coverage-c-consumer"))]
+#[path = "../tests/support/nonce_abi_tests.rs"]
+mod nonce_abi_tests;
 #[cfg(test)]
 #[path = "../tests/support/cryptographic_operation_abi_tests.rs"]
 mod cryptographic_operation_abi_tests;

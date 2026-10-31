@@ -26,6 +26,25 @@ EXPECTED_CREDENTIAL_TYPE_EXPORTS = {
     "kmipkit_protocol::CredentialType::Extensions::0",
     "kmipkit_protocol::CredentialType::Unknown::0",
 }
+EXPECTED_NONCE_EXPORTS = {
+    "kmipkit_protocol::Nonce",
+    "kmipkit_protocol::Nonce::try_from_ttlv",
+    "kmipkit_protocol::Nonce::with_ttlv",
+    "kmipkit_protocol::Nonce::into_ttlv",
+}
+EXPECTED_MAPPED_CREDENTIAL_EXPORTS = (
+    EXPECTED_CREDENTIAL_TYPE_EXPORTS | EXPECTED_NONCE_EXPORTS
+)
+NONCE_REQUIREMENTS = {
+    "KMIPKIT-0008-FR-006",
+    "KMIPKIT-REQ-SPEC-9.11-006",
+    "KMIPKIT-0043-FR-004",
+    "KMIPKIT-0043-FR-005",
+    "KMIPKIT-0043-FR-010",
+    "KMIPKIT-0043-FR-017",
+    "KMIPKIT-0043-FR-021",
+    "KMIPKIT-0043-FR-022",
+}
 RUST_EXPORT_INVENTORY = (
     ROOT
     / "specs"
@@ -61,7 +80,8 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             and (
                 row.get("candidateSpecId") == OWNER_SPEC
                 or (
-                    row.get("exportName") == "kmipkit_protocol::CredentialType"
+                    row.get("exportName")
+                    in {"kmipkit_protocol::CredentialType", "kmipkit_protocol::Nonce"}
                     and row.get("approvalSource", {}).get("path")
                     == "specs/008-credentials-attestation/spec.md"
                 )
@@ -70,7 +90,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             if inventory_row.get("exportName") == row["exportName"]
             and isinstance(inventory_row.get("identity"), str)
         }
-        self.assertEqual(17, len(owner_paths), "the credential owner type inventory changed")
+        self.assertEqual(18, len(owner_paths), "the credential owner type inventory changed")
 
         inventory_rows = inventory["declarations"] + inventory["conditionalDeclarations"]
         trait_exports: set[str] = set()
@@ -198,7 +218,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                 and row.get("exportName") not in trait_exports
             )
             or (
-                row.get("exportName") in EXPECTED_CREDENTIAL_TYPE_EXPORTS
+                row.get("exportName") in EXPECTED_MAPPED_CREDENTIAL_EXPORTS
                 and row.get("approvalSource", {}).get("path")
                 == "specs/008-credentials-attestation/spec.md"
             )
@@ -207,9 +227,9 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
         credential_type_rows = {
             row["exportName"]: row
             for row in meaningful
-            if row.get("exportName") in EXPECTED_CREDENTIAL_TYPE_EXPORTS
+            if row.get("exportName") in EXPECTED_MAPPED_CREDENTIAL_EXPORTS
         }
-        self.assertEqual(EXPECTED_CREDENTIAL_TYPE_EXPORTS, credential_type_rows.keys())
+        self.assertEqual(EXPECTED_MAPPED_CREDENTIAL_EXPORTS, credential_type_rows.keys())
         self.assertTrue(
             all(row.get("declarationState") == "declared" for row in credential_type_rows.values())
         )
@@ -218,9 +238,9 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
         )
         remaining = [
             row for row in meaningful
-            if row.get("exportName") not in EXPECTED_CREDENTIAL_TYPE_EXPORTS
+            if row.get("exportName") not in EXPECTED_MAPPED_CREDENTIAL_EXPORTS
         ]
-        self.assertEqual(82, len(remaining))
+        self.assertEqual(78, len(remaining))
         self.assertTrue(all(row.get("declarationState") == "blocked" for row in remaining))
 
     def test_credential_type_is_mapped_as_an_open_raw_enum(self) -> None:
@@ -283,7 +303,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             for declaration in declarations
             if declaration.get("declarationState") == "blocked"
         ]
-        self.assertEqual(82, len(blocked))
+        self.assertEqual(78, len(blocked))
 
         exclusions = {
             (row.get("packageId"), row.get("exportName")): row
@@ -329,6 +349,83 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             f"unresolved {OWNER_SPEC} declarations ({len(unresolved)} rows): "
             f"{unresolved[:5]}",
         )
+
+    def test_nonce_type_and_lifecycle_map_through_all_four_languages(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        declarations = {
+            row["exportName"]: row
+            for row in manifest["publicDeclarations"]
+            if row.get("exportName") in EXPECTED_NONCE_EXPORTS
+        }
+        self.assertEqual(EXPECTED_NONCE_EXPORTS, declarations.keys())
+
+        expected_names = {
+            "kmipkit_protocol::Nonce": {
+                "rust": "kmipkit_protocol::Nonce",
+                "c": "kmipkit_nonce_t",
+                "java": "org.kmipkit.credentials.Nonce",
+                "python": "kmipkit.credentials.Nonce",
+            },
+            "kmipkit_protocol::Nonce::try_from_ttlv": {
+                "rust": "kmipkit_protocol::Nonce::try_from_ttlv",
+                "c": "kmipkit_nonce_from_ttlv",
+                "java": "org.kmipkit.credentials.Nonce.fromTtlv",
+                "python": "kmipkit.credentials.Nonce.from_ttlv",
+            },
+            "kmipkit_protocol::Nonce::with_ttlv": {
+                "rust": "kmipkit_protocol::Nonce::with_ttlv",
+                "c": "kmipkit_nonce_ttlv_view",
+                "java": "org.kmipkit.credentials.Nonce.withTtlv",
+                "python": "kmipkit.credentials.Nonce.with_ttlv",
+            },
+            "kmipkit_protocol::Nonce::into_ttlv": {
+                "rust": "kmipkit_protocol::Nonce::into_ttlv",
+                "c": "kmipkit_nonce_into_ttlv",
+                "java": "org.kmipkit.credentials.Nonce.intoTtlv",
+                "python": "kmipkit.credentials.Nonce.into_ttlv",
+            },
+        }
+        for export_name, declaration in declarations.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual("declared", declaration.get("declarationState"))
+                self.assertEqual("four-language", declaration.get("parityScope"))
+                self.assertNotIn("candidateSpecId", declaration)
+                self.assertTrue(_has_approved_source(declaration))
+                self.assertEqual(
+                    "specs/008-credentials-attestation/spec.md",
+                    declaration["approvalSource"]["path"],
+                )
+                self.assertTrue(
+                    NONCE_REQUIREMENTS <= set(declaration.get("requirementIds", []))
+                )
+                mappings = declaration.get("languageMappings")
+                self.assertIsInstance(mappings, dict)
+                if not isinstance(mappings, dict):
+                    continue
+                self.assertEqual(LANGUAGES, set(mappings))
+                for language, expected_name in expected_names[export_name].items():
+                    self.assertEqual(expected_name, mappings[language]["name"])
+
+        nonce_type = next(
+            (row for row in manifest["types"] if row["id"] == "Nonce"), None
+        )
+        self.assertIsNotNone(nonce_type, "Nonce opaque handle record is missing")
+        if nonce_type is None:
+            return
+        self.assertEqual("kmipkit_nonce_t", nonce_type["c"]["name"])
+        self.assertEqual("kmipkit_nonce_release", nonce_type["c"]["releaseFunction"])
+        self.assertEqual("org.kmipkit.credentials", nonce_type["java"]["package"])
+        self.assertEqual("Nonce", nonce_type["java"]["name"])
+        self.assertEqual("kmipkit.credentials", nonce_type["python"]["module"])
+        self.assertEqual("Nonce", nonce_type["python"]["name"])
+
+        for function_id, symbol in (
+            ("nonce_from_ttlv", "kmipkit_nonce_from_ttlv"),
+            ("nonce_ttlv_view", "kmipkit_nonce_ttlv_view"),
+            ("nonce_into_ttlv", "kmipkit_nonce_into_ttlv"),
+        ):
+            function = next(row for row in manifest["functions"] if row["id"] == function_id)
+            self.assertEqual(symbol, function["c"]["symbol"])
 
 
 if __name__ == "__main__":
