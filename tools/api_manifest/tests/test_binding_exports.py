@@ -1039,6 +1039,35 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertFalse(missing["matchesManifest"])
         self.assertIn("java-overload-signatures-not-declared", {row["reason"] for row in missing["issues"]})
 
+    def test_c_audit_counts_blocked_stable_error_code_as_accounted(self):
+        name = "KMIPKIT_ERROR_INTERNAL"
+        manifest = {
+            "publicDeclarations": [
+                {
+                    "packageId": "c-kmipkit",
+                    "exportName": name,
+                    "kind": "constant",
+                    "declarationState": "blocked",
+                }
+            ],
+            "approvedExclusions": [],
+            "errorCategories": [
+                {"id": "internal", "cCode": name, "stableCHeaderCode": True}
+            ],
+        }
+        report = {
+            "complete": True,
+            "declarations": [
+                {"packageId": "c-kmipkit", "exportName": name, "kind": "constant"}
+            ],
+            "issues": [],
+        }
+
+        result = AUDIT.compare(report, manifest, "c-kmipkit")
+
+        self.assertTrue(result["matchesManifest"])
+        self.assertEqual(result["counts"]["exactMatches"], 1)
+
     def test_javap_inventory_keeps_compiler_generated_enum_members(self):
         output = """
             public final class org.example.Kind extends java.lang.Enum<org.example.Kind> {
