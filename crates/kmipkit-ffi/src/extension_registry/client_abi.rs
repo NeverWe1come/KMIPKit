@@ -1553,6 +1553,64 @@ pub extern "C" fn kmipkit_client_async_operation_outcome_response_payload_ttlv(
     })
 }
 
+/// Returns the number of accepted response Message Extensions in wire order.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_async_operation_outcome_extension_count(
+    outcome: *mut kmipkit_client_async_operation_outcome_t,
+    out_count: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let count = scalar_out!(out_count);
+        let handle = read_handle!(outcome, ClientAsyncOperationOutcome);
+        let HandleValue::ClientAsyncOperationOutcome(outcome) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(outcome) = outcome.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        *count =
+            try_ffi!(u64::try_from(outcome.extensions().len()).map_err(|_| ERROR_RESOURCE_LIMIT));
+        SUCCESS
+    })
+}
+
+/// Copies one accepted response Message Extension as generic TTLV.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_async_operation_outcome_extension_ttlv_at(
+    outcome: *mut kmipkit_client_async_operation_outcome_t,
+    index: u64,
+    out_present: *mut u8,
+    out_extension: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let extension_out = out_slot!(out_extension);
+        *present = 0;
+
+        let handle = read_handle!(outcome, ClientAsyncOperationOutcome);
+        let HandleValue::ClientAsyncOperationOutcome(outcome) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(outcome) = outcome.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Ok(index) = usize::try_from(index) else {
+            return SUCCESS;
+        };
+        let Some(extension) = outcome.extensions().get(index) else {
+            return SUCCESS;
+        };
+        let structure = extension.with_ttlv(|view| super::clone_structure_view(&view));
+        let structure = try_ffi!(structure);
+        *extension_out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(structure)
+        ));
+        *present = 1;
+        SUCCESS
+    })
+}
+
 /// Creates local accounting from a live successful Get Usage Allocation item.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_usage_allocation_context_create(

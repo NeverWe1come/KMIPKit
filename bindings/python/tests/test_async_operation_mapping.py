@@ -137,7 +137,7 @@ def test_async_outcome_exposes_owned_generic_response_extension_copy(
         assert calls == [0]
         with pytest.raises(errors.InvalidInputError):
             outcome.extension_ttlv_at(1)
-        assert calls == [0, 1]
+        assert calls == [0]
     finally:
         outcome.close()
 

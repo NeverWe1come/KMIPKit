@@ -1131,6 +1131,44 @@ class AsyncOperationOutcome(_ClientHandle):
             return True
 
     @property
+    def extension_count(self) -> int:
+        """Return the number of accepted response Message Extensions in wire order."""
+        return _client_scalar(
+            "uint64_t",
+            lib.kmipkit_client_async_operation_outcome_extension_count,
+            self,
+        )
+
+    def extension_ttlv_at(self, index: int) -> ttlv.Structure:
+        """Return a caller-owned generic TTLV copy of the response extension at ``index``.
+
+        Close the returned structure when it is no longer needed. Extension contents are omitted
+        from this outcome's default representation.
+        """
+        position = _unsigned(index, 64)
+        if position >= self.extension_count:
+            errors.raise_for_status(4)
+
+        with _NATIVE_CALL_LOCK:
+            present = ffi.new("uint8_t *")
+            output = ffi.new("kmipkit_ttlv_structure_t **")
+            _raise_abi_status(
+                lib.kmipkit_client_async_operation_outcome_extension_ttlv_at(
+                    self._pointer(), position, present, output
+                )
+            )
+            if present[0] != 1 or output[0] == ffi.NULL:
+                if output[0] != ffi.NULL:
+                    lib.kmipkit_ttlv_structure_release(output[0])
+                errors.raise_for_status(4)
+            address = int(ffi.cast("uintptr_t", output[0]))
+            try:
+                return ttlv._structure_from_native_address(address)
+            except Exception:
+                lib.kmipkit_ttlv_structure_release(output[0])
+                raise
+
+    @property
     def response_payload_ttlv(self) -> ttlv.Structure | None:
         """Copy a successful generic Response Payload into an owned TTLV handle."""
         present = ffi.new("uint8_t *")

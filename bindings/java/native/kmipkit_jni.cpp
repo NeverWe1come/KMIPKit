@@ -273,6 +273,10 @@ int32_t kmipkit_client_batch_item_response_signature_verify(
 int32_t kmipkit_client_batch_item_response_unique_batch_item_id(kmipkit_client_batch_item_response_t*, uint8_t*, kmipkit_byte_span_v1_t*);
 int32_t kmipkit_client_batch_item_response_extension_count(kmipkit_client_batch_item_response_t*, uint64_t*);
 int32_t kmipkit_client_batch_item_response_extension_ttlv_at(kmipkit_client_batch_item_response_t*, uint64_t, uint8_t*, kmipkit_ttlv_structure_t**);
+int32_t kmipkit_client_async_operation_outcome_extension_count(
+        kmipkit_client_async_operation_outcome_t*, uint64_t*);
+int32_t kmipkit_client_async_operation_outcome_extension_ttlv_at(
+        kmipkit_client_async_operation_outcome_t*, uint64_t, uint8_t*, kmipkit_ttlv_structure_t**);
 int32_t kmipkit_client_batch_item_response_pending_correlation_value(kmipkit_client_batch_item_response_t*, uint8_t*, kmipkit_byte_span_v1_t*);
 int32_t kmipkit_client_batch_item_response_discover_versions_supported_versions(
         kmipkit_client_batch_item_response_t*, uint8_t*, kmipkit_protocol_version_v1_t*, uint64_t, uint64_t*);
@@ -9142,6 +9146,51 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientAsyncOper
             return static_cast<jlong>(0);
         }
         return to_java_handle(payload);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientAsyncOperationOutcomeExtensionCount(
+        JNIEnv* env, jclass, jlong raw_outcome) {
+    return guarded<jlong>(env, 0, [&] {
+        uint64_t count = 0;
+        const int32_t status = kmipkit_client_async_operation_outcome_extension_count(
+                from_java_handle<kmipkit_client_async_operation_outcome_t>(raw_outcome), &count);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jlong>(0);
+        }
+        if (count > static_cast<uint64_t>(std::numeric_limits<jlong>::max())) {
+            throw_java(env, "org/kmipkit/ResourceLimitException", "extension count exceeds Java range");
+            return static_cast<jlong>(0);
+        }
+        return static_cast<jlong>(count);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientAsyncOperationOutcomeExtensionTtlvAt(
+        JNIEnv* env, jclass, jlong raw_outcome, jlong raw_index) {
+    return guarded<jlong>(env, 0, [&] {
+        if (raw_index < 0) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        uint8_t present = 0;
+        kmipkit_ttlv_structure_t* extension = nullptr;
+        const int32_t status = kmipkit_client_async_operation_outcome_extension_ttlv_at(
+                from_java_handle<kmipkit_client_async_operation_outcome_t>(raw_outcome),
+                static_cast<uint64_t>(raw_index), &present, &extension);
+        if (status != 0) {
+            if (extension != nullptr) kmipkit_ttlv_structure_release(extension);
+            throw_status(env, status);
+            return static_cast<jlong>(0);
+        }
+        if (present == 0 && extension == nullptr) return static_cast<jlong>(0);
+        if (present != 1 || extension == nullptr) {
+            if (extension != nullptr) kmipkit_ttlv_structure_release(extension);
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        return to_java_handle(extension);
     });
 }
 

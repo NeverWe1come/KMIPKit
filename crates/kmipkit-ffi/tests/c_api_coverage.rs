@@ -3306,7 +3306,10 @@ fn cancel_success_response(correlation: &[u8]) -> Vec<u8> {
             ttlv_item(0x0042_0026, 0x06, &[0; 8]),
             structure(
                 0x0042_009c,
-                [ttlv_item(0x0054_0173, 0x07, b"opaque-v1"), enumeration(0x0054_0174, u32::MAX)],
+                [
+                    ttlv_item(0x0054_0173, 0x07, b"opaque-v1"),
+                    enumeration(0x0054_0174, u32::MAX),
+                ],
             ),
         ],
     );

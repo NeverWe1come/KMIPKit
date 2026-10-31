@@ -373,6 +373,14 @@ ffi.cdef(
         kmipkit_client_async_operation_outcome_t *outcome,
         uint8_t *out_present,
         kmipkit_ttlv_structure_t **out_payload);
+    int32_t kmipkit_client_async_operation_outcome_extension_count(
+        kmipkit_client_async_operation_outcome_t *outcome,
+        uint64_t *out_count);
+    int32_t kmipkit_client_async_operation_outcome_extension_ttlv_at(
+        kmipkit_client_async_operation_outcome_t *outcome,
+        uint64_t index,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_extension);
 
     int32_t kmipkit_usage_allocation_context_create(
         kmipkit_client_batch_item_response_t *item,

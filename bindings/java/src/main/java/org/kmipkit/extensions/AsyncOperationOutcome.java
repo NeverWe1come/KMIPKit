@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.kmipkit.InvalidInputException;
+import org.kmipkit.ResourceLimitException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.TtlvStructure;
@@ -44,6 +45,34 @@ public final class AsyncOperationOutcome implements AutoCloseable {
         return handle.withValue(value ->
                 NativeExtensionRegistry.withClientAsyncOperationOutcomeCorrelationValue(
                         value, callback));
+    }
+
+    /** Returns the number of accepted response Message Extensions in wire order. */
+    public long extensionCount() {
+        NativeExtensionRegistry.ensureLoaded();
+        long count = handle.withValue(
+                NativeExtensionRegistry::clientAsyncOperationOutcomeExtensionCount);
+        if (count < 0) {
+            throw new ResourceLimitException("response extension count exceeds the Java range");
+        }
+        return count;
+    }
+
+    /**
+     * Returns a caller-owned generic TTLV copy of the response Message Extension at the given
+     * index. Close the returned structure when it is no longer needed.
+     */
+    public TtlvStructure extensionTtlvAt(long index) {
+        if (index < 0 || index >= extensionCount()) {
+            throw new InvalidInputException("response extension index is outside the outcome");
+        }
+        NativeExtensionRegistry.ensureLoaded();
+        long structure = handle.withValue(value ->
+                NativeExtensionRegistry.clientAsyncOperationOutcomeExtensionTtlvAt(value, index));
+        if (structure <= 0) {
+            throw new InvalidInputException("native response extension is invalid");
+        }
+        return TtlvStructure.fromNative(structure, null);
     }
 
     /** Returns a caller-owned generic TTLV copy of a successful operation response payload. */

@@ -85,7 +85,10 @@ fn async_outcome_extension_abi_returns_owned_ordered_generic_ttlv_copy() {
             ttlv_item(0x0042_0026, 0x06, &[0; 8]),
             ttlv_structure(
                 0x0042_009c,
-                [ttlv_item(0x0054_0173, 0x07, b"opaque-v1"), ttlv_enumeration(0x0054_0174, u32::MAX)],
+                [
+                    ttlv_item(0x0054_0173, 0x07, b"opaque-v1"),
+                    ttlv_enumeration(0x0054_0174, u32::MAX),
+                ],
             ),
         ],
     );

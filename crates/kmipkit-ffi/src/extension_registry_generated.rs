@@ -330,4 +330,8 @@ unsafe extern "C" {
     pub fn kmipkit_client_batch_item_response_extension_count(item: *mut kmipkit_client_batch_item_response_t, out_count: *mut u64) -> i32;
     // KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011
     pub fn kmipkit_client_batch_item_response_extension_ttlv_at(item: *mut kmipkit_client_batch_item_response_t, index: u64, out_present: *mut u8, out_extension: *mut *mut kmipkit_ttlv_structure_t) -> i32;
+    // KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011
+    pub fn kmipkit_client_async_operation_outcome_extension_count(outcome: *mut kmipkit_client_async_operation_outcome_t, out_count: *mut u64) -> i32;
+    // KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011
+    pub fn kmipkit_client_async_operation_outcome_extension_ttlv_at(outcome: *mut kmipkit_client_async_operation_outcome_t, index: u64, out_present: *mut u8, out_extension: *mut *mut kmipkit_ttlv_structure_t) -> i32;
 }

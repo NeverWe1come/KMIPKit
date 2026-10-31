@@ -332,6 +332,8 @@ public final class NativeExtensionRegistry {
     public static native boolean withClientAsyncOperationOutcomeCorrelationValue(
             long outcome, Consumer<ByteBuffer> callback);
     public static native long clientAsyncOperationOutcomeResponsePayloadTtlv(long outcome);
+    public static native long clientAsyncOperationOutcomeExtensionCount(long outcome);
+    public static native long clientAsyncOperationOutcomeExtensionTtlvAt(long outcome, long index);
     public static native long usageAllocationContextCreate(
             long itemResponse, long requestedUnits, long usageLimitsUnit);
     public static native long usageAllocationContextUsageLimitsUnit(long context);

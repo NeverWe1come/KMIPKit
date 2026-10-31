@@ -22,6 +22,11 @@ REQUIREMENTS = [
     "KMIPKIT-0043-FR-013",
     "KMIPKIT-0043-FR-021",
 ]
+ASYNC_REQUIREMENTS = sorted(REQUIREMENTS + [
+    "KMIPKIT-0009-FR-008",
+    "KMIPKIT-0009-FR-010",
+    "KMIPKIT-0043-FR-017",
+])
 
 APPROVAL_SOURCE = {
     "kind": "feature-specification",
@@ -75,7 +80,12 @@ class T091ClientResponseExtensionAccessTests(unittest.TestCase):
                     self.assertEqual("declared", declaration["declarationState"])
                     self.assertNotIn("candidateSpecId", declaration)
                     self.assertEqual("client_execution", declaration["capabilityId"])
-                    self.assertEqual(REQUIREMENTS, declaration["requirementIds"])
+                    expected_requirements = (
+                        ASYNC_REQUIREMENTS
+                        if export_name == "kmipkit_client::ClientOperationOutcome::extensions"
+                        else REQUIREMENTS
+                    )
+                    self.assertEqual(expected_requirements, declaration["requirementIds"])
                     self.assertEqual(APPROVAL_SOURCE, declaration["approvalSource"])
                     mappings = declaration["languageMappings"]
                     self.assertEqual(
@@ -96,6 +106,8 @@ class T091ClientResponseExtensionAccessTests(unittest.TestCase):
                         target = declarations.get((package_id, target_name))
                         self.assertIsNotNone(target, f"Missing {language} API {target_name}")
                         self.assertEqual("declared", target["declarationState"])
+                        self.assertEqual(expected_requirements, target["requirementIds"])
+                        self.assertEqual("four-language", target["parityScope"])
 
     def test_async_extension_ttlv_access_maps_to_the_async_outcome_handle(self) -> None:
         manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
@@ -104,19 +116,53 @@ class T091ClientResponseExtensionAccessTests(unittest.TestCase):
             for row in manifest["publicDeclarations"]
         }
         expected = {
-            "c-kmipkit": "kmipkit_client_async_operation_outcome_extension_ttlv_at",
-            "java-kmipkit": "org.kmipkit.extensions.AsyncOperationOutcome.extensionTtlvAt",
-            "python-kmipkit": "kmipkit.client.AsyncOperationOutcome.extension_ttlv_at",
+            "c": (
+                "c-kmipkit",
+                "kmipkit_client_async_operation_outcome_extension_count",
+                "kmipkit_client_async_operation_outcome_extension_ttlv_at",
+            ),
+            "java": (
+                "java-kmipkit",
+                "org.kmipkit.extensions.AsyncOperationOutcome.extensionCount",
+                "org.kmipkit.extensions.AsyncOperationOutcome.extensionTtlvAt",
+            ),
+            "python": (
+                "python-kmipkit",
+                "kmipkit.client.AsyncOperationOutcome.extension_count",
+                "kmipkit.client.AsyncOperationOutcome.extension_ttlv_at",
+            ),
         }
-        for package_id, export_name in expected.items():
-            with self.subTest(package=package_id):
-                declaration = declarations.get((package_id, export_name))
-                self.assertIsNotNone(declaration, f"Missing async API {export_name}")
-                assert declaration is not None
-                self.assertEqual("declared", declaration["declarationState"])
-                self.assertEqual("client_execution", declaration["capabilityId"])
-                self.assertEqual(REQUIREMENTS, declaration["requirementIds"])
-                self.assertEqual("four-language", declaration["parityScope"])
+        for language, (package_id, count_name, ttlv_name) in expected.items():
+            for export_name, target_name in (("count", count_name), ("ttlv_at", ttlv_name)):
+                with self.subTest(package=package_id, accessor=export_name):
+                    declaration = declarations.get((package_id, target_name))
+                    self.assertIsNotNone(declaration, f"Missing async API {target_name}")
+                    assert declaration is not None
+                    self.assertEqual("declared", declaration["declarationState"])
+                    self.assertEqual("client_execution", declaration["capabilityId"])
+                    self.assertEqual(ASYNC_REQUIREMENTS, declaration["requirementIds"])
+                    self.assertEqual("four-language", declaration["parityScope"])
+                    self.assertEqual(
+                        {
+                            "rust": {
+                                "packageId": "rust-kmipkit-client",
+                                "name": "kmipkit_client::ClientOperationOutcome::extensions",
+                            },
+                            "c": {
+                                "packageId": "c-kmipkit",
+                                "name": expected["c"][1 if export_name == "count" else 2],
+                            },
+                            "java": {
+                                "packageId": "java-kmipkit",
+                                "name": expected["java"][1 if export_name == "count" else 2],
+                            },
+                            "python": {
+                                "packageId": "python-kmipkit",
+                                "name": expected["python"][1 if export_name == "count" else 2],
+                            },
+                        },
+                        declaration["languageMappings"],
+                    )
 
     def test_message_extension_type_maps_to_the_generic_ttlv_structure(self) -> None:
         manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
