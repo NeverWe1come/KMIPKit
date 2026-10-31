@@ -2834,7 +2834,7 @@ final class ClientFacadeTlsIntegrationTest {
                         .build();
                 Client client = Client.create(extensions, transport);
                 AsyncOperationOutcome outcome = client.executePollWithOptions(
-                        correlation, CodecLimits.defaults(), RequestOptions.defaults())) {
+                        correlation, CodecLimits.defaults(), asyncRequestOptions())) {
             var metadata = outcome.metadataV1();
             assertEquals(0x1a, metadata.operation());
             assertTrue(metadata.outcomeKind().isPending());
@@ -2916,7 +2916,7 @@ final class ClientFacadeTlsIntegrationTest {
                         .build();
                 Client client = Client.create(extensions, transport)) {
             try (AsyncOperationOutcome outcome = client.executeCancelWithOptions(
-                    correlation, CodecLimits.defaults(), RequestOptions.defaults())) {
+                    correlation, CodecLimits.defaults(), asyncRequestOptions())) {
                 assertEquals(0x19, outcome.metadataV1().operation());
                 assertEquals(1, outcome.metadataV1().cancellationResult().orElseThrow());
                 try (TtlvStructure payload = outcome.responsePayloadTtlv().orElseThrow();
@@ -2925,7 +2925,7 @@ final class ClientFacadeTlsIntegrationTest {
                 }
             }
             try (AsyncOperationOutcome outcome = client.executeProcessWithOptions(
-                    correlation, CodecLimits.defaults(), OptionalLong.empty(), RequestOptions.defaults())) {
+                    correlation, CodecLimits.defaults(), OptionalLong.empty(), asyncRequestOptions())) {
                 assertEquals(0x3a, outcome.metadataV1().operation());
                 assertFalse(outcome.withAsynchronousCorrelationValue(value -> {
                     throw new AssertionError("unexpected correlation callback: " + value.remaining());
@@ -2937,7 +2937,7 @@ final class ClientFacadeTlsIntegrationTest {
             }
             try (AsyncOperationOutcome outcome = client.executeQueryAsyncRequestsWithOptions(
                     CodecLimits.defaults(), List.of(queryCorrelation), List.of(0xdead_beefL),
-                    OptionalLong.of(2), RequestOptions.defaults())) {
+                    OptionalLong.of(2), asyncRequestOptions())) {
                 assertEquals(0x39, outcome.metadataV1().operation());
                 assertFalse(outcome.withAsynchronousCorrelationValue(value -> {
                     throw new AssertionError("unexpected correlation callback: " + value.remaining());
@@ -5688,6 +5688,14 @@ final class ClientFacadeTlsIntegrationTest {
                 item(0x42005c, 5, integer(8)),
                 item(0x42007f, 5, integer(0)), payload);
         return structure(0x42007b, header, responseItem);
+    }
+
+    private static RequestOptions asyncRequestOptions() {
+        return new RequestOptions(
+                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(11)),
+                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(12)),
+                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(13)),
+                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(14)));
     }
 
     private static byte[] uniqueBatchItemId(int index) {

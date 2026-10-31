@@ -74,6 +74,72 @@ fn poll_execution_returns_exact_pending_metadata_and_correlation_without_polling
     kmipkit_client_release(client_handle);
 }
 
+#[test]
+fn poll_execution_with_options_returns_one_exact_async_outcome() {
+    let expected_correlation = [0x00, 0xff, 0x80, 0x13, 0x00];
+    let response = ttlv_structure(
+        0x0042_007b,
+        [
+            ttlv_structure(
+                0x0042_007a,
+                [
+                    ttlv_structure(
+                        0x0042_0069,
+                        [ttlv_integer(0x0042_006a, 2), ttlv_integer(0x0042_006b, 1)],
+                    ),
+                    ttlv_datetime(0x0042_0092, 1),
+                    ttlv_integer(0x0042_000d, 1),
+                ],
+            ),
+            ttlv_structure(
+                0x0042_000f,
+                [
+                    ttlv_enumeration(0x0042_005c, 0x1a),
+                    ttlv_enumeration(0x0042_007f, 2),
+                    ttlv_item(0x0042_0006, 0x08, &expected_correlation),
+                ],
+            ),
+        ],
+    );
+    let (client, peer, exchange_count) = client_with_responses(vec![response]);
+    let client_handle = make_handle(
+        Kind::Client,
+        HandleValue::Client(Box::new(Mutex::new(client))),
+    );
+    let limits_handle = make_handle(
+        Kind::CodecLimits,
+        HandleValue::CodecLimits(Arc::new(CodecLimits::defaults())),
+    );
+    let options = request_options(
+        timeout(1, 3, 0),
+        timeout(1, 4, 0),
+        timeout(1, 5, 0),
+        timeout(1, 6, 0),
+    );
+    let mut outcome = ptr::null_mut();
+
+    let status = kmipkit_client_execute_poll_with_options_v1(
+        client_handle,
+        expected_correlation.as_ptr(),
+        u64::try_from(expected_correlation.len()).expect("correlation length fits ABI"),
+        limits_handle,
+        &options,
+        &mut outcome,
+    );
+    peer.join().expect("the one-exchange TLS peer completes");
+
+    assert_eq!(status, SUCCESS);
+    assert_eq!(exchange_count.load(Ordering::Relaxed), 1);
+    assert!(!outcome.is_null());
+    assert_pending_metadata(outcome);
+    assert_exact_correlation(outcome, &expected_correlation);
+    assert_response_payload_is_absent(outcome);
+
+    kmipkit_client_async_operation_outcome_release(outcome);
+    kmipkit_codec_limits_release(limits_handle);
+    kmipkit_client_release(client_handle);
+}
+
 fn assert_pending_metadata(outcome: *mut kmipkit_client_async_operation_outcome_t) {
     let mut metadata = kmipkit_client_async_operation_metadata_v1_t {
         struct_size: 0,
