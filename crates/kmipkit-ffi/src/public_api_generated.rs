@@ -2350,6 +2350,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientRequest::SignatureVerify",
     ),
     (
+        "rust-observed-aafd626368580ae189d7",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::discover_versions",
+    ),
+    (
         "rust-observed-7cc46b70a35514bf0bf6",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::hash",
@@ -2838,6 +2843,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-87cadcaa8b330e82fec0",
         "rust-kmipkit",
         "kmipkit::ClientRequest::SignatureVerify",
+    ),
+    (
+        "rust-observed-83880d9e03bc61b56b86",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::discover_versions",
     ),
     (
         "rust-observed-ef90ad73fdd1935fad25",
