@@ -2906,6 +2906,93 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 client_execution["mappings"][language],
             )
 
+    def test_t091_async_operation_options_map_to_shared_execute_options(self) -> None:
+        cases = {
+            "execute_poll_with_options": "KMIPKIT-ELEM-OP-C2S-POLL",
+            "execute_cancel_with_options": "KMIPKIT-ELEM-OP-C2S-CANCEL",
+            "execute_process_with_options": "KMIPKIT-ELEM-OP-C2S-PROCESS",
+            "execute_query_async_requests_with_options": (
+                "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS"
+            ),
+        }
+        declarations = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        declarations_by_id = {
+            row["declarationId"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        operations_by_id = {
+            row["operationId"]: row for row in self.checked_in_manifest["operations"]
+        }
+        client_execution = next(
+            row
+            for row in self.checked_in_manifest["capabilities"]
+            if row["capabilityId"] == "client_execution"
+        )
+
+        for method, operation_id in cases.items():
+            operation = operations_by_id[operation_id]
+            owner_declarations = [
+                declarations_by_id[declaration_id]
+                for declaration_id in operation["declarations"]["rust"]
+            ]
+            owner_requirements = {
+                requirement_id
+                for owner_declaration in owner_declarations
+                for requirement_id in owner_declaration["requirementIds"]
+            }
+            owner_source = next(
+                owner_declaration["approvalSource"]
+                for owner_declaration in owner_declarations
+                if "approvalSource" in owner_declaration
+            )
+            expected_requirements = sorted(
+                owner_requirements
+                | {"KMIPKIT-0013-FR-011", "KMIPKIT-0043-FR-021"}
+            )
+
+            for package_id, rust_prefix in (
+                ("rust-kmipkit-client", "kmipkit_client::"),
+                ("rust-kmipkit", "kmipkit::"),
+            ):
+                export_name = f"{rust_prefix}Client::{method}"
+                with self.subTest(export=export_name):
+                    declaration = declarations[export_name]
+                    self.assertEqual(operation["apiState"], declaration["declarationState"])
+                    self.assertEqual(operation_id, declaration["capabilityId"])
+                    self.assertNotIn("candidateSpecId", declaration)
+                    self.assertNotIn("blockedReason", declaration)
+                    self.assertEqual(owner_source, declaration["approvalSource"])
+                    self.assertEqual(expected_requirements, declaration["requirementIds"])
+                    self.assertEqual(
+                        {
+                            "rust": {"packageId": package_id, "name": export_name},
+                            "c": {
+                                "packageId": "c-kmipkit",
+                                "name": "kmipkit_client_execute_with_options_v1",
+                            },
+                            "java": {
+                                "packageId": "java-kmipkit",
+                                "name": "org.kmipkit.extensions.Client.executeWithOptions",
+                            },
+                            "python": {
+                                "packageId": "python-kmipkit",
+                                "name": "kmipkit.client.Client.execute_with_options",
+                            },
+                        },
+                        declaration["languageMappings"],
+                    )
+                    self.assertIn(
+                        declaration["declarationId"], operation["declarations"]["rust"]
+                    )
+                    for language in ("c", "java", "python"):
+                        self.assertIn(
+                            declaration["languageMappings"][language]["name"],
+                            client_execution["mappings"][language],
+                        )
+
     def test_t091_client_operation_options_methods_map_to_shared_execute_options(self) -> None:
         cases = (
             (
