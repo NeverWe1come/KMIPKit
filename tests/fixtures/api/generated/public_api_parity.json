@@ -10604,6 +10604,114 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
+      "evidence": "Reviewed for KMIPKIT-0010-FR-013 and KMIPKIT-0043-FR-021. ProfileValidationDetails contains only safe structured validation metadata; these exact generated members add no capability and expose no raw response TTLV. The supported details remain mapped across Rust, C, Java, and Python.",
+      "exportName": "kmipkit.errors.ProfileValidationDetails.__dataclass_fields__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for ProfileValidationDetails and has no independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed for KMIPKIT-0010-FR-013 and KMIPKIT-0043-FR-021. ProfileValidationDetails contains only safe structured validation metadata; these exact generated members add no capability and expose no raw response TTLV. The supported details remain mapped across Rust, C, Java, and Python.",
+      "exportName": "kmipkit.errors.ProfileValidationDetails.__dataclass_params__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for ProfileValidationDetails and has no independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed for KMIPKIT-0010-FR-013 and KMIPKIT-0043-FR-021. ProfileValidationDetails contains only safe structured validation metadata; these exact generated members add no capability and expose no raw response TTLV. The supported details remain mapped across Rust, C, Java, and Python.",
+      "exportName": "kmipkit.errors.ProfileValidationDetails.__delattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for ProfileValidationDetails and has no independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed for KMIPKIT-0010-FR-013 and KMIPKIT-0043-FR-021. ProfileValidationDetails contains only safe structured validation metadata; these exact generated members add no capability and expose no raw response TTLV. The supported details remain mapped across Rust, C, Java, and Python.",
+      "exportName": "kmipkit.errors.ProfileValidationDetails.__eq__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for ProfileValidationDetails and has no independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed for KMIPKIT-0010-FR-013 and KMIPKIT-0043-FR-021. ProfileValidationDetails contains only safe structured validation metadata; these exact generated members add no capability and expose no raw response TTLV. The supported details remain mapped across Rust, C, Java, and Python.",
+      "exportName": "kmipkit.errors.ProfileValidationDetails.__hash__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for ProfileValidationDetails and has no independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed for KMIPKIT-0010-FR-013 and KMIPKIT-0043-FR-021. ProfileValidationDetails contains only safe structured validation metadata; these exact generated members add no capability and expose no raw response TTLV. The supported details remain mapped across Rust, C, Java, and Python.",
+      "exportName": "kmipkit.errors.ProfileValidationDetails.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for ProfileValidationDetails and has no independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed for KMIPKIT-0010-FR-013 and KMIPKIT-0043-FR-021. ProfileValidationDetails contains only safe structured validation metadata; these exact generated members add no capability and expose no raw response TTLV. The supported details remain mapped across Rust, C, Java, and Python.",
+      "exportName": "kmipkit.errors.ProfileValidationDetails.__match_args__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for ProfileValidationDetails and has no independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed for KMIPKIT-0010-FR-013 and KMIPKIT-0043-FR-021. ProfileValidationDetails contains only safe structured validation metadata; these exact generated members add no capability and expose no raw response TTLV. The supported details remain mapped across Rust, C, Java, and Python.",
+      "exportName": "kmipkit.errors.ProfileValidationDetails.__repr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for ProfileValidationDetails and has no independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed for KMIPKIT-0010-FR-013 and KMIPKIT-0043-FR-021. ProfileValidationDetails contains only safe structured validation metadata; these exact generated members add no capability and expose no raw response TTLV. The supported details remain mapped across Rust, C, Java, and Python.",
+      "exportName": "kmipkit.errors.ProfileValidationDetails.__setattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for ProfileValidationDetails and has no independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
       "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
       "exportName": "kmipkit.extensions.ClientBatchItem.__init__",
       "packageId": "python-kmipkit",
