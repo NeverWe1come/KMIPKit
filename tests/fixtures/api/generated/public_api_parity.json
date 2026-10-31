@@ -29628,6 +29628,18 @@
       "exportName": "kmipkit::ClientError::ServerResult::0",
       "packageId": "rust-kmipkit",
       "reason": "This tuple field exposes a KMIP operation result stored inside the Rust ClientError enum. Foreign facades expose the typed KMIP result only through the separately mapped batch response model."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T091. `ClientBatchItem.__slots__` stores the private read-only state used by indexed batch readback; the ClientBatchItem type and public factory/readback methods remain individually inventoried.",
+      "exportName": "kmipkit.extensions.ClientBatchItem.__slots__",
+      "packageId": "python-kmipkit",
+      "reason": "This Python-only slot descriptor is implementation-level storage metadata for the ClientBatchItem read-only wrapper state, not an independent KMIPKit capability."
     }
   ],
   "capabilities": [

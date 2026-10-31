@@ -805,6 +805,9 @@ class PublicApiParityTests(unittest.TestCase):
                 )
 
                 if function["id"] in {
+                    # This Java accessor reads the batch's locally maintained
+                    # count; it intentionally has no JNI bridge symbol.
+                    "client_batch_item_count",
                     "client_batch_item_response_delegated_login_ttlv",
                     "client_batch_item_response_login_ttlv",
                     "client_batch_item_response_locate_unique_identifier_at",
@@ -823,6 +826,8 @@ class PublicApiParityTests(unittest.TestCase):
                     "kmipkit_client_batch_item_response_rng_seed_ttlv",
                 }:
                     self.assertNotIn("jniSymbol", java)
+                    if function["id"] == "client_batch_item_count":
+                        self.assertNotIn("jniAggregateSymbol", java)
                     if "jniAggregateSymbol" in java:
                         self.assertTrue(
                             java["jniAggregateSymbol"].startswith("Java_org_kmipkit_")

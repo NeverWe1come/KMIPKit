@@ -400822,6 +400822,18 @@
         "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
       },
       "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This tuple field exposes a KMIP operation result stored inside the Rust ClientError enum. Foreign facades expose the typed KMIP result only through the separately mapped batch response model. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.ClientBatchItem.__slots__",
+      "reason": "This Python-only slot descriptor is implementation-level storage metadata for the ClientBatchItem read-only wrapper state, not an independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T091. `ClientBatchItem.__slots__` stores the private read-only state used by indexed batch readback; the ClientBatchItem type and public factory/readback methods remain individually inventoried."
     }
   ],
   "apiLevels": [
