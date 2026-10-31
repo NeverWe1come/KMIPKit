@@ -230,6 +230,16 @@ class SharedRustInventoryTests(unittest.TestCase):
             )
             self.assertEqual(capability["mappings"][language], expected)
 
+    def test_c_only_capability_is_not_added_to_the_shared_rust_inventory(self) -> None:
+        inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
+
+        self.assertFalse(
+            any(
+                row["capabilityId"] == "ffi_shared_owner_status"
+                for row in inventory["mappedDeclarations"]
+            )
+        )
+
     def test_response_ttlv_access_uses_its_approved_crypto_operation_owner(self) -> None:
         response_ttlv = next(
             row
