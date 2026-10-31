@@ -8,6 +8,7 @@ import pytest
 
 from kmipkit import client, errors, ttlv
 from kmipkit._client_ffi import ffi
+from _test_support import batch_result_test_symbols
 
 
 def test_batch_item_result_returns_caller_owned_generic_extension_copy(
@@ -77,3 +78,38 @@ def test_batch_item_result_without_native_extensions_is_empty() -> None:
     assert result.extension_count == 0
     with pytest.raises(errors.InvalidInputError):
         result.extension_ttlv_at(0)
+
+
+def test_batch_result_without_extensions_uses_the_native_empty_response_contract(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    response_pointer = ffi.cast("kmipkit_client_batch_response_t *", 51)
+    item_pointer = ffi.cast("kmipkit_client_batch_item_response_t *", 52)
+
+    def metadata(_item: object, output: object) -> int:
+        output.struct_size = ffi.sizeof("kmipkit_client_batch_item_metadata_v2_t")  # type: ignore[attr-defined]
+        output.abi_version = 2  # type: ignore[attr-defined]
+        output.operation = 0x35  # type: ignore[attr-defined]
+        output.outcome_kind = int(client.BatchOutcome.COMPLETED)  # type: ignore[attr-defined]
+        output.result_status = 0  # type: ignore[attr-defined]
+        output.has_result_reason = 0  # type: ignore[attr-defined]
+        output.result_reason = 0  # type: ignore[attr-defined]
+        output.has_result_message = 0  # type: ignore[attr-defined]
+        output.reserved = 0  # type: ignore[attr-defined]
+        output.result_message_data = ffi.NULL  # type: ignore[attr-defined]
+        output.result_message_length = 0  # type: ignore[attr-defined]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(**batch_result_test_symbols(ffi, item_pointer, metadata)),
+    )
+
+    result = client._batch_result(response_pointer)
+    try:
+        assert result.items[0].extension_count == 0
+        with pytest.raises(errors.InvalidInputError):
+            result.items[0].extension_ttlv_at(0)
+    finally:
+        result.close()
