@@ -5071,6 +5071,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
         requirement_ids = {
             "KMIPKIT-0006-FR-004",
+            "KMIPKIT-0006-FR-008",
             "KMIPKIT-0043-FR-004",
             "KMIPKIT-0043-FR-005",
             "KMIPKIT-0043-FR-010",
