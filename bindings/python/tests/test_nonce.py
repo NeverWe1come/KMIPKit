@@ -150,8 +150,9 @@ class NonceTests(unittest.TestCase):
         nonce = kmipkit.credentials.Nonce.from_ttlv(nonce_structure())
 
         def inspect(view: ttlv.TtlvStructureView) -> None:
-            with self.assertRaises(AttributeError):
-                setattr(nonce, "_active_views", 0)
+            for attribute in ("_active_views", "_Nonce__active_views"):
+                with self.subTest(attribute=attribute), self.assertRaises(AttributeError):
+                    setattr(nonce, attribute, 0)
             with self.assertRaises(errors.InvalidInputError):
                 nonce.into_ttlv()
             self.assertEqual(
