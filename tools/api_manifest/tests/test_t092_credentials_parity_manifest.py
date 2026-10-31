@@ -58,6 +58,12 @@ AUTHENTICATION_EXPORTS = {
     "kmipkit_protocol::CredentialView::credential_type_raw",
     "kmipkit_protocol::CredentialView::with_ttlv",
 }
+DEVICE_CREDENTIAL_EXPORTS = {
+    "kmipkit_protocol::DeviceCredential",
+    "kmipkit_protocol::DeviceCredential::try_from_ttlv",
+    "kmipkit_protocol::DeviceCredential::with_ttlv",
+    "kmipkit_protocol::DeviceCredential::into_ttlv",
+}
 EXPECTED_MAPPED_CREDENTIAL_EXPORTS = (
     EXPECTED_CREDENTIAL_TYPE_EXPORTS
     | EXPECTED_NONCE_EXPORTS
@@ -262,7 +268,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                 == "specs/008-credentials-attestation/spec.md"
             )
         ]
-        self.assertEqual(95, len(meaningful))
+        self.assertEqual(96, len(meaningful))
         credential_type_rows = {
             row["exportName"]: row
             for row in meaningful
@@ -279,7 +285,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             row for row in meaningful
             if row.get("exportName") not in EXPECTED_MAPPED_CREDENTIAL_EXPORTS
         ]
-        self.assertEqual(58, len(remaining))
+        self.assertEqual(55, len(remaining))
         self.assertTrue(all(row.get("declarationState") == "blocked" for row in remaining))
 
     def test_credential_type_is_mapped_as_an_open_raw_enum(self) -> None:
@@ -342,7 +348,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             for declaration in declarations
             if declaration.get("declarationState") == "blocked"
         ]
-        self.assertEqual(58, len(blocked))
+        self.assertEqual(55, len(blocked))
 
         exclusions = {
             (row.get("packageId"), row.get("exportName")): row
@@ -826,6 +832,68 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                     for language, expected_name in expected_names[export_name].items():
                         self.assertEqual(expected_name, mappings[language]["name"])
 
+    def test_device_credential_maps_the_approved_table_412_view_through_all_languages(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        declarations = {
+            row["exportName"]: row
+            for row in manifest["publicDeclarations"]
+            if row.get("exportName") in DEVICE_CREDENTIAL_EXPORTS
+        }
+        self.assertEqual(DEVICE_CREDENTIAL_EXPORTS, declarations.keys())
+        expected_names = {
+            "kmipkit_protocol::DeviceCredential": {
+                "rust": "kmipkit_protocol::DeviceCredential",
+                "c": "kmipkit_device_credential_t",
+                "java": "org.kmipkit.credentials.DeviceCredential",
+                "python": "kmipkit.credentials.DeviceCredential",
+            },
+            "kmipkit_protocol::DeviceCredential::try_from_ttlv": {
+                "rust": "kmipkit_protocol::DeviceCredential::try_from_ttlv",
+                "c": "kmipkit_device_credential_from_ttlv",
+                "java": "org.kmipkit.credentials.DeviceCredential.fromTtlv",
+                "python": "kmipkit.credentials.DeviceCredential.from_ttlv",
+            },
+            "kmipkit_protocol::DeviceCredential::with_ttlv": {
+                "rust": "kmipkit_protocol::DeviceCredential::with_ttlv",
+                "c": "kmipkit_device_credential_ttlv_view",
+                "java": "org.kmipkit.credentials.DeviceCredential.withTtlv",
+                "python": "kmipkit.credentials.DeviceCredential.with_ttlv",
+            },
+            "kmipkit_protocol::DeviceCredential::into_ttlv": {
+                "rust": "kmipkit_protocol::DeviceCredential::into_ttlv",
+                "c": "kmipkit_device_credential_into_ttlv",
+                "java": "org.kmipkit.credentials.DeviceCredential.intoTtlv",
+                "python": "kmipkit.credentials.DeviceCredential.into_ttlv",
+            },
+        }
+        requirements = {
+            "KMIPKIT-0008-FR-005",
+            "KMIPKIT-REQ-SPEC-9.11-004-001",
+            "KMIPKIT-REQ-SPEC-9.11-004-002",
+            "KMIPKIT-REQ-SPEC-9.11-004-003",
+            "KMIPKIT-0043-FR-004",
+            "KMIPKIT-0043-FR-005",
+            "KMIPKIT-0043-FR-010",
+            "KMIPKIT-0043-FR-017",
+            "KMIPKIT-0043-FR-021",
+            "KMIPKIT-0043-FR-022",
+        }
+        for export_name, declaration in declarations.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual("declared", declaration.get("declarationState"))
+                self.assertEqual("four-language", declaration.get("parityScope"))
+                self.assertTrue(_has_approved_source(declaration))
+                self.assertEqual("specs/008-credentials-attestation/spec.md", declaration["approvalSource"]["path"])
+                self.assertTrue(requirements <= set(declaration.get("requirementIds", [])))
+                mappings = declaration.get("languageMappings")
+                self.assertIsInstance(mappings, dict)
+                self.assertEqual(LANGUAGES, set(mappings))
+                for language, expected_name in expected_names[export_name].items():
+                    self.assertEqual(expected_name, mappings[language]["name"])
+
+        device_type = next(row for row in manifest["types"] if row["id"] == "DeviceCredential")
+        self.assertEqual("kmipkit_device_credential_t", device_type["c"]["name"])
+        self.assertEqual("KMIP 2.1 §9.11 Table 412", device_type["normativeSource"])
     def test_attestation_credential_binding_glue_has_exact_owner_exclusions(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         expected = {
