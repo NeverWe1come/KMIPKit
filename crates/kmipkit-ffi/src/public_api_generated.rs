@@ -2170,6 +2170,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientBatchOutcome::operation",
     ),
     (
+        "rust-observed-4992b4bd41a66008f3d6",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchOutcome::discover_versions_response",
+    ),
+    (
         "rust-observed-541706c47bcf8bcaf9b5",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchOutcome::activate_response",
@@ -2415,6 +2420,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientResponseView::supported_versions",
     ),
     (
+        "rust-observed-62682512f0e5190f957b",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientResponseView::discover_versions",
+    ),
+    (
         "T041:ping:response:rust",
         "rust-kmipkit-client",
         "kmipkit_client::ClientResponseView::ping",
@@ -2648,6 +2658,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-91c3543200e39cdd0fa7",
         "rust-kmipkit",
         "kmipkit::ClientBatchOutcome::operation",
+    ),
+    (
+        "rust-observed-b90226b2c716620a3ed1",
+        "rust-kmipkit",
+        "kmipkit::ClientBatchOutcome::discover_versions_response",
     ),
     (
         "rust-observed-aa4b192087168981006d",
