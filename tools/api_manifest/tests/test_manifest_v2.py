@@ -1992,8 +1992,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             ),
             "kmipkit_client::ClientResponseView::result": (
                 "kmipkit_protocol::KmipOperationResult",
-                "rust-kmipkit-protocol",
-                "kmipkit_protocol::KmipOperationResult",
+                "rust-kmipkit-client",
+                "kmipkit_client::ClientResponseView::result",
             ),
         }
 
