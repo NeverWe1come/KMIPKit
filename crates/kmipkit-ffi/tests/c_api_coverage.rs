@@ -878,6 +878,114 @@ fn generated_public_c_consumer_maps_rekey_key_pair_request_over_mtls() {
 }
 
 #[test]
+// OASIS KMIP v2.1 §6.1.5, Table 177; §11.7, Tables 437–438.
+// Exercise the public Cancel response-payload accessor from compiled C over mTLS.
+#[allow(clippy::too_many_lines)]
+fn generated_public_c_consumer_reads_cancel_echo_from_response_payload_over_mtls() {
+    const CORRELATION: &[u8] = &[0x61, 0x00, 0xfe, 0x62];
+
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
+    let client_chain = pki.client_identity().certificate_chain_der();
+    let paths = TemporaryCredentialFiles::create([
+        client_chain[0],
+        client_chain[1],
+        pki.client_identity().private_key_der(),
+        pki.authority_certificate_der(),
+    ]);
+    let listener =
+        TcpListener::bind(("127.0.0.1", 0)).expect("an ephemeral local TCP port is available");
+    listener
+        .set_nonblocking(true)
+        .expect("the listener allows a bounded wait for the C consumer");
+    let port = listener
+        .local_addr()
+        .expect("listener has a local address")
+        .port();
+    let server_config = mtls_server_config(&pki);
+    let exchange_count = Arc::new(AtomicU64::new(0));
+    let peer_exchange_count = Arc::clone(&exchange_count);
+    let peer = thread::spawn(move || {
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(3);
+        let stream = loop {
+            match listener.accept() {
+                Ok((stream, _)) => break stream,
+                Err(error) if error.kind() == io::ErrorKind::WouldBlock => {
+                    if std::time::Instant::now() >= deadline {
+                        return;
+                    }
+                    thread::sleep(std::time::Duration::from_millis(10));
+                }
+                Err(error) => panic!("the compiled C client listener failed: {error}"),
+            }
+        };
+        peer_exchange_count.fetch_add(1, Ordering::Relaxed);
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server read timeout is configured");
+        stream
+            .set_write_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server write timeout is configured");
+        let connection = ServerConnection::new(server_config)
+            .expect("the TLS 1.3 server connection is configured");
+        let mut tls = StreamOwned::new(connection, stream);
+        let request = read_ttlv_frame(&mut tls).expect("the bounded Cancel request arrives");
+        assert_eq!(
+            c_cancel_request_issue(&request, CORRELATION),
+            "",
+            "the C API sends Cancel with the exact opaque correlation bytes"
+        );
+        tls.write_all(&cancel_success_response(CORRELATION))
+            .expect("the successful Cancel response is written");
+        tls.flush().expect("the TLS response is flushed");
+        let _ = tls.get_ref().shutdown(Shutdown::Both);
+    });
+
+    let executable = CString::new("kmipkit_cancel_payload_c_consumer")
+        .expect("test executable name has no NUL byte");
+    let certificate = CString::new(paths.paths[0].to_string_lossy().as_bytes())
+        .expect("temporary certificate path has no NUL byte");
+    let authority = CString::new(paths.paths[1].to_string_lossy().as_bytes())
+        .expect("temporary authority path has no NUL byte");
+    let private_key = CString::new(paths.paths[2].to_string_lossy().as_bytes())
+        .expect("temporary key path has no NUL byte");
+    let trust_root = CString::new(paths.paths[3].to_string_lossy().as_bytes())
+        .expect("temporary trust root path has no NUL byte");
+    let port = CString::new(port.to_string()).expect("port has no NUL byte");
+    let mode = CString::new("cancel-payload").expect("mode has no NUL byte");
+    let correlation_hex = CString::new("6100fe62").expect("hex correlation has no NUL byte");
+    let mut arguments = vec![
+        executable.as_ptr().cast_mut(),
+        certificate.as_ptr().cast_mut(),
+        authority.as_ptr().cast_mut(),
+        private_key.as_ptr().cast_mut(),
+        trust_root.as_ptr().cast_mut(),
+        port.as_ptr().cast_mut(),
+        mode.as_ptr().cast_mut(),
+        correlation_hex.as_ptr().cast_mut(),
+    ];
+    let argument_count = i32::try_from(arguments.len()).expect("C argv count fits in i32");
+    let mut limits = std::ptr::null_mut();
+    // SAFETY: `limits` is a writable output slot held through the synchronous C call.
+    let status =
+        unsafe { kmipkit_codec_limits_create(16 * 1024 * 1024, 64, 400_000, &raw mut limits) };
+    assert_eq!(status, 0, "configured codec limits must succeed");
+    assert!(!limits.is_null(), "configured codec limits return a handle");
+    // SAFETY: argv values and the codec-limits handle remain live for the synchronous C call.
+    let result = unsafe {
+        kmipkit_client_abi_c_consumer_execute_tls(argument_count, arguments.as_mut_ptr(), limits)
+    };
+    // SAFETY: the test owns this limits handle and the C consumer only borrows it.
+    unsafe { kmipkit_codec_limits_release(limits) };
+    peer.join()
+        .expect("the Cancel loopback mTLS peer completes");
+    assert_eq!(
+        result, 0,
+        "the compiled C consumer reads the exact two-field Cancel response payload"
+    );
+    assert_eq!(exchange_count.load(Ordering::Relaxed), 1);
+}
+
+#[test]
 // OASIS KMIP v2.1 §6.1.10, Tables 193–195; §5.1, Table 157.
 // Keep the TLS peer, certificate files, argv, and C ABI call in one runtime test.
 #[allow(clippy::too_many_lines)]
@@ -2044,6 +2152,72 @@ fn decode_test_request(encoded: &[u8]) -> Option<Item> {
     kmipkit_ttlv::codec::decode_with_limits(encoded, &limits).ok()
 }
 
+fn c_cancel_request_issue(encoded: &[u8], expected_correlation: &[u8]) -> &'static str {
+    const BATCH_ITEM: u32 = 0x0042_000f;
+    const OPERATION: u32 = 0x0042_005c;
+    const CANCEL: u32 = 0x19;
+    const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+    const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
+
+    let Some(root) = decode_test_request(encoded) else {
+        return "request is not valid TTLV";
+    };
+    root.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return "request root is not a Structure";
+        };
+        let batch_items = message
+            .children()
+            .iter()
+            .filter(|item| item.tag().raw() == BATCH_ITEM)
+            .collect::<Vec<_>>();
+        if batch_items.len() != 1 {
+            return "request does not contain exactly one batch item";
+        }
+        batch_items[0].with_value(|value| {
+            let ValueView::Structure(batch_item) = value else {
+                return "Cancel batch item is not a Structure";
+            };
+            let operation_is_cancel = batch_item.children().iter().any(|item| {
+                item.tag().raw() == OPERATION
+                    && item.with_value(
+                        |value| matches!(value, ValueView::Enumeration(actual) if *actual == CANCEL),
+                    )
+            });
+            if !operation_is_cancel {
+                return "Operation is not Cancel";
+            }
+            let Some(payload) = batch_item
+                .children()
+                .iter()
+                .find(|item| item.tag().raw() == REQUEST_PAYLOAD)
+            else {
+                return "Request Payload is missing";
+            };
+            payload.with_value(|value| {
+                let ValueView::Structure(payload) = value else {
+                    return "Request Payload is not a Structure";
+                };
+                let correlations = payload
+                    .children()
+                    .iter()
+                    .filter(|item| item.tag().raw() == ASYNCHRONOUS_CORRELATION_VALUE)
+                    .collect::<Vec<_>>();
+                if correlations.len() != 1 {
+                    return "Request Payload does not contain exactly one correlation value";
+                }
+                if correlations[0].with_value(
+                    |value| matches!(value, ValueView::ByteString(actual) if actual == expected_correlation),
+                ) {
+                    ""
+                } else {
+                    "correlation value differs from the opaque C input"
+                }
+            })
+        })
+    })
+}
+
 fn c_request_matches_pkcs11_fixture(encoded: &[u8]) -> bool {
     const BATCH_ITEM: u32 = 0x0042_000f;
     const OPERATION: u32 = 0x0042_005c;
@@ -3101,6 +3275,36 @@ fn test_peer_rejects_remote_ttlv_length_before_allocating() {
     let mut stream = std::io::Cursor::new([0_u8, 0, 0, 0, 0xff, 0xff, 0xff, 0xff]);
     let error = read_ttlv_frame(&mut stream).expect_err("oversized frame is rejected");
     assert_eq!(error.kind(), io::ErrorKind::InvalidData);
+}
+
+fn cancel_success_response(correlation: &[u8]) -> Vec<u8> {
+    let header = structure(
+        0x0042_007a,
+        [
+            structure(
+                0x0042_0069,
+                [integer(0x0042_006a, 2), integer(0x0042_006b, 1)],
+            ),
+            date_time(0x0042_0092, 1),
+            integer(0x0042_000d, 1),
+        ],
+    );
+    let response_payload = structure(
+        0x0042_007c,
+        [
+            ttlv_item(0x0042_0006, 0x08, correlation),
+            enumeration(0x0042_0012, 1),
+        ],
+    );
+    let cancel_item = structure(
+        0x0042_000f,
+        [
+            enumeration(0x0042_005c, 0x19),
+            enumeration(0x0042_007f, 0),
+            response_payload,
+        ],
+    );
+    structure(0x0042_007b, [header, cancel_item])
 }
 
 fn discover_versions_response() -> Vec<u8> {
