@@ -3385,6 +3385,169 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual(canonical["parityEvidenceIds"], declaration["parityEvidenceIds"])
                 self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])
 
+    def test_t091_pending_outcome_metadata_maps_to_existing_four_language_result(
+        self,
+    ) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        capabilities = {
+            row["capabilityId"]: row for row in self.checked_in_manifest["capabilities"]
+        }
+        metadata_function = next(
+            row
+            for row in self.checked_in_manifest["functions"]
+            if row["id"] == "client_batch_item_response_metadata_v2"
+        )
+        metadata_mappings = {
+            "c": {
+                "packageId": "c-kmipkit",
+                "name": metadata_function["c"]["symbol"],
+            },
+            "java": {
+                "packageId": "java-kmipkit",
+                "name": ".".join(
+                    (
+                        metadata_function["java"]["package"],
+                        metadata_function["java"]["class"],
+                        metadata_function["java"]["method"],
+                    )
+                ),
+            },
+            "python": {
+                "packageId": "python-kmipkit",
+                "name": ".".join(
+                    (
+                        metadata_function["python"]["module"],
+                        metadata_function["python"]["function"],
+                    )
+                ),
+            },
+        }
+        pending_discriminator_mappings = {
+            "c": {
+                "packageId": "c-kmipkit",
+                "name": "kmipkit_client_batch_item_metadata_v2_t.outcome_kind",
+            },
+            "java": {
+                "packageId": "java-kmipkit",
+                "name": "org.kmipkit.extensions.ClientBatchItemResult.outcomeKind",
+            },
+            "python": {
+                "packageId": "python-kmipkit",
+                "name": "kmipkit.client.BatchItemResult.outcome",
+            },
+        }
+
+        cases = []
+        for prefix, package_id in (
+            ("kmipkit_client", "rust-kmipkit-client"),
+            ("kmipkit", "rust-kmipkit"),
+        ):
+            response_basis = declarations[f"{prefix}::ClientBatchOutcome::response"]
+            operation_basis = declarations[f"{prefix}::ClientBatchOutcome::operation"]
+            correlation_basis = declarations[
+                f"{prefix}::ClientBatchOutcome::asynchronous_correlation_value"
+            ]
+
+            def mappings_from(basis: dict[str, object], export_name: str) -> dict[str, dict[str, str]]:
+                mappings = {
+                    language: mapping.copy()
+                    for language, mapping in basis["languageMappings"].items()
+                }
+                mappings["rust"] = {"packageId": package_id, "name": export_name}
+                return mappings
+
+            def add_case(
+                export_name: str,
+                basis: dict[str, object],
+                mappings: dict[str, dict[str, str]],
+                requirement_ids: list[str] | None = None,
+            ) -> None:
+                cases.append(
+                    (
+                        export_name,
+                        basis,
+                        mappings,
+                        requirement_ids or basis["requirementIds"],
+                    )
+                )
+
+            add_case(
+                f"{prefix}::ClientBatchOutcome::Pending",
+                response_basis,
+                {
+                    **pending_discriminator_mappings,
+                    "rust": {
+                        "packageId": package_id,
+                        "name": f"{prefix}::ClientBatchOutcome::Pending",
+                    },
+                },
+            )
+            for export_name in (
+                f"{prefix}::ClientBatchOutcome::Pending::0",
+                f"{prefix}::PendingOutcome",
+                f"{prefix}::PendingOutcome::response",
+            ):
+                add_case(
+                    export_name,
+                    response_basis,
+                    mappings_from(response_basis, export_name),
+                )
+            add_case(
+                f"{prefix}::PendingOutcome::operation",
+                operation_basis,
+                mappings_from(operation_basis, f"{prefix}::PendingOutcome::operation"),
+            )
+            add_case(
+                f"{prefix}::PendingOutcome::result",
+                operation_basis,
+                {
+                    **metadata_mappings,
+                    "rust": {
+                        "packageId": package_id,
+                        "name": f"{prefix}::PendingOutcome::result",
+                    },
+                },
+                metadata_function["requirementIds"],
+            )
+            add_case(
+                f"{prefix}::ClientBatchOutcome::result",
+                operation_basis,
+                {
+                    **metadata_mappings,
+                    "rust": {
+                        "packageId": package_id,
+                        "name": f"{prefix}::ClientBatchOutcome::result",
+                    },
+                },
+                metadata_function["requirementIds"],
+            )
+            add_case(
+                f"{prefix}::PendingOutcome::asynchronous_correlation_value",
+                correlation_basis,
+                mappings_from(
+                    correlation_basis,
+                    f"{prefix}::PendingOutcome::asynchronous_correlation_value",
+                ),
+            )
+
+        self.assertEqual(16, len(cases))
+        for export_name, basis, expected_mappings, requirement_ids in cases:
+            declaration = declarations[export_name]
+            capability = capabilities[basis["capabilityId"]]
+            with self.subTest(export=export_name):
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertNotIn("candidateSpecId", declaration)
+                self.assertEqual(basis["capabilityId"], declaration["capabilityId"])
+                self.assertEqual(requirement_ids, declaration["requirementIds"])
+                self.assertEqual(basis["approvalSource"], declaration["approvalSource"])
+                self.assertEqual(expected_mappings, declaration["languageMappings"])
+                self.assertEqual(basis["approvalSource"], capability["approvalEvidence"])
+                for language, mapping in expected_mappings.items():
+                    self.assertIn(mapping["name"], capability["mappings"][language])
+
     def test_t091_validate_request_and_outcome_paths_map_to_verified_operation(
         self,
     ) -> None:
