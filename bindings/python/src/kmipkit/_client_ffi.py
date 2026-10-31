@@ -24,6 +24,8 @@ ffi.cdef(
     typedef unsigned short uint16_t;
     typedef unsigned long long uintptr_t;
 
+    int32_t kmipkit_credential_type_from_raw(uint32_t raw, uint32_t *out_raw);
+
     typedef struct kmipkit_client_configuration_t kmipkit_client_configuration_t;
     typedef struct kmipkit_transport_config_t kmipkit_transport_config_t;
     typedef struct kmipkit_client_t kmipkit_client_t;

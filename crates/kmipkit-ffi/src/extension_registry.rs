@@ -56,6 +56,7 @@ use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientBatchResponse, ClientCauseCategory, ClientError,
     ClientErrorCategory, ClientRequest,
 };
+use kmipkit_protocol::CredentialType;
 use kmipkit_protocol::Pkcs11Request;
 use kmipkit_protocol::extension;
 use kmipkit_protocol::{
@@ -94,6 +95,9 @@ const REQUEST_HEADER_TAG_RAW: u32 = 0x0042_0077;
 const RESPONSE_HEADER_TAG_RAW: u32 = 0x0042_007A;
 const BATCH_ITEM_TAG_RAW: u32 = 0x0042_000F;
 
+#[cfg(all(test, feature = "coverage-c-consumer"))]
+#[path = "../tests/support/credential_type_abi_tests.rs"]
+mod credential_type_abi_tests;
 #[cfg(test)]
 #[path = "../tests/support/cryptographic_operation_abi_tests.rs"]
 mod cryptographic_operation_abi_tests;
@@ -115,9 +119,6 @@ mod message_model_abi_tests;
 #[cfg(test)]
 #[path = "../tests/support/metadata_tests.rs"]
 mod metadata_tests;
-#[cfg(all(test, feature = "coverage-c-consumer"))]
-#[path = "../tests/support/credential_type_abi_tests.rs"]
-mod credential_type_abi_tests;
 #[cfg(test)]
 #[path = "../tests/support/opaque_handle_validation_tests.rs"]
 mod opaque_handle_validation_tests;
@@ -6554,6 +6555,15 @@ pub extern "C" fn kmipkit_ttlv_tag_value(tag: *mut kmipkit_tag_t, out_raw: *mut 
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         *out = tag.raw();
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_credential_type_from_raw(raw: u32, out_raw: *mut u32) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_raw);
+        *out = CredentialType::from_raw(raw).raw();
         SUCCESS
     })
 }

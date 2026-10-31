@@ -57,7 +57,15 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
         owner_paths = {
             row["exportName"]: tuple(json.loads(inventory_row["identity"])[3])
             for row in declarations
-            if row.get("candidateSpecId") == OWNER_SPEC and row.get("kind") == "type"
+            if row.get("kind") == "type"
+            and (
+                row.get("candidateSpecId") == OWNER_SPEC
+                or (
+                    row.get("exportName") == "kmipkit_protocol::CredentialType"
+                    and row.get("approvalSource", {}).get("path")
+                    == "specs/008-credentials-attestation/spec.md"
+                )
+            )
             for inventory_row in inventory["declarations"]
             if inventory_row.get("exportName") == row["exportName"]
             and isinstance(inventory_row.get("identity"), str)

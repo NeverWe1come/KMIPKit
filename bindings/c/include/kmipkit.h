@@ -6,6 +6,14 @@
 extern "C" {
 #endif
 
+typedef uint32_t kmipkit_credential_type_t;
+#define KMIPKIT_CREDENTIAL_TYPE_USERNAME_AND_PASSWORD ((kmipkit_credential_type_t)1)
+#define KMIPKIT_CREDENTIAL_TYPE_DEVICE ((kmipkit_credential_type_t)2)
+#define KMIPKIT_CREDENTIAL_TYPE_ATTESTATION ((kmipkit_credential_type_t)3)
+#define KMIPKIT_CREDENTIAL_TYPE_ONE_TIME_PASSWORD ((kmipkit_credential_type_t)4)
+#define KMIPKIT_CREDENTIAL_TYPE_HASHED_PASSWORD ((kmipkit_credential_type_t)5)
+#define KMIPKIT_CREDENTIAL_TYPE_TICKET ((kmipkit_credential_type_t)6)
+
 typedef uint8_t kmipkit_ttlv_item_type_t;
 #define KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE ((kmipkit_ttlv_item_type_t)1)
 #define KMIPKIT_TTLV_ITEM_TYPE_INTEGER ((kmipkit_ttlv_item_type_t)2)
@@ -363,6 +371,10 @@ void kmipkit_profile_validation_error_release(kmipkit_profile_validation_error_t
  */
 /* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008, KMIPKIT-REQ-SPEC-6.1.14-001-001, KMIPKIT-REQ-SPEC-6.1.14-001-002, KMIPKIT-REQ-SPEC-6.1.14-001-003, KMIPKIT-REQ-SPEC-6.1.14-001-004, KMIPKIT-REQ-SPEC-6.1.14-002, KMIPKIT-REQ-SPEC-6.1.14-006-001, KMIPKIT-REQ-SPEC-6.1.14-006-002, KMIPKIT-REQ-SPEC-6.1.14-007-001, KMIPKIT-REQ-SPEC-6.1.14-007-002, KMIPKIT-REQ-SPEC-7.12-003, KMIPKIT-REQ-SPEC-7.12-005-001 */
 int32_t kmipkit_client_batch_item_derive_key(uint32_t object_type, const kmipkit_unique_identifier_v1_t * unique_identifiers, uint64_t unique_identifier_count, uint32_t derivation_method, kmipkit_ttlv_structure_t * derivation_parameters, kmipkit_ttlv_structure_t * attributes, kmipkit_client_batch_item_t ** out_item);
+/* Reconstructs the open KMIP Credential Type discriminator through the canonical Rust model and returns the exact raw value, including extension and unknown values.
+ */
+/* KMIPKIT-0008-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_credential_type_from_raw(uint32_t raw, uint32_t * out_raw);
 /* KMIPKIT-0012-FR-002, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
 int32_t kmipkit_extension_identity_create(const uint8_t * vendor_identifier_data, uint64_t vendor_identifier_length, const uint8_t * name_data, uint64_t name_length, const uint8_t * version_data, uint64_t version_length, kmipkit_extension_identity_t ** out_identity);
 /* KMIPKIT-0012-FR-009, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */

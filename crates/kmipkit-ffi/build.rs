@@ -60,8 +60,12 @@ fn main() {
         .flag_if_supported("-std=c11")
         .compile("kmipkit_message_model_abi_c_consumer");
 
-    let credential_type_consumer = workspace_root.join("bindings/c/tests/credential_type_abi_consumer.c");
-    println!("cargo:rerun-if-changed={}", credential_type_consumer.display());
+    let credential_type_consumer =
+        workspace_root.join("bindings/c/tests/credential_type_abi_consumer.c");
+    println!(
+        "cargo:rerun-if-changed={}",
+        credential_type_consumer.display()
+    );
     cc::Build::new()
         .file(credential_type_consumer)
         .include(&consumer_header)

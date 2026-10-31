@@ -7,11 +7,14 @@ caller-owned input. Immutable Python ``bytes`` and ``str`` values and other
 runtime copies cannot be deterministically zeroized.
 """
 
-from . import client, errors, extensions, messages, metadata, ttlv
+from . import client, credentials, errors, extensions, messages, metadata, ttlv
 from .extensions import with_extension
+from .credentials import CredentialType
 
 __all__ = [
     "client",
+    "credentials",
+    "CredentialType",
     "errors",
     "extensions",
     "messages",

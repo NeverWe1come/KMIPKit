@@ -1704,6 +1704,24 @@ kmipkit::jni::ResponseBridgeOperations response_bridge_operations(
 
 extern "C" {
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_credentialTypeFromRaw(
+        JNIEnv* env, jclass, jlong raw) {
+    return guarded<jlong>(env, 0, [&] {
+        if (raw < 0 || static_cast<uint64_t>(raw) > UINT32_MAX) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        uint32_t out_raw = 0;
+        const int32_t status = kmipkit_credential_type_from_raw(
+                static_cast<uint32_t>(raw), &out_raw);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jlong>(0);
+        }
+        return static_cast<jlong>(out_raw);
+    });
+}
+
 JNIEXPORT jstring JNICALL Java_org_kmipkit_NativeExtensionRegistry_extensionIdentityVendorIdentifier(
         JNIEnv* env, jclass, jlong identity) {
     return identity_text(env, identity, kmipkit_extension_identity_vendor_identifier);

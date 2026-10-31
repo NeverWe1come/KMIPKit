@@ -3,8 +3,10 @@ package org.kmipkit.credentials;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.lang.reflect.Method;
+import org.kmipkit.InvalidInputException;
 import org.junit.jupiter.api.Test;
 
 final class CredentialTypeParityTest {
@@ -15,6 +17,13 @@ final class CredentialTypeParityTest {
         Method fromRaw = facade.getMethod("fromRaw", long.class);
         Method raw = facade.getMethod("raw");
         Method kind = facade.getMethod("kind");
+
+        assertEquals(1L, facade.getField("USERNAME_AND_PASSWORD").getLong(null));
+        assertEquals(2L, facade.getField("DEVICE").getLong(null));
+        assertEquals(3L, facade.getField("ATTESTATION").getLong(null));
+        assertEquals(4L, facade.getField("ONE_TIME_PASSWORD").getLong(null));
+        assertEquals(5L, facade.getField("HASHED_PASSWORD").getLong(null));
+        assertEquals(6L, facade.getField("TICKET").getLong(null));
 
         Object[][] cases = {
             {1L, "UsernameAndPassword"},
@@ -33,5 +42,11 @@ final class CredentialTypeParityTest {
             assertEquals(testCase[0], raw.invoke(value));
             assertEquals(testCase[1], kind.invoke(value));
         }
+    }
+
+    @Test
+    void fromRawRejectsValuesOutsideUnsigned32BitRange() {
+        assertThrows(InvalidInputException.class, () -> CredentialType.fromRaw(-1));
+        assertThrows(InvalidInputException.class, () -> CredentialType.fromRaw(0x1_0000_0000L));
     }
 }

@@ -14,6 +14,12 @@ class CredentialTypeTests(unittest.TestCase):
             credential_type,
             "the Python facade must expose the canonical CredentialType model",
         )
+        self.assertEqual(1, credential_type.USERNAME_AND_PASSWORD)
+        self.assertEqual(2, credential_type.DEVICE)
+        self.assertEqual(3, credential_type.ATTESTATION)
+        self.assertEqual(4, credential_type.ONE_TIME_PASSWORD)
+        self.assertEqual(5, credential_type.HASHED_PASSWORD)
+        self.assertEqual(6, credential_type.TICKET)
 
         cases = (
             (1, "UsernameAndPassword"),
@@ -36,7 +42,7 @@ class CredentialTypeTests(unittest.TestCase):
         credential_type = getattr(kmipkit, "CredentialType", None)
         self.assertIsNotNone(credential_type)
         for raw in (-1, 0x1_0000_0000, True):
-            with self.subTest(raw=raw), self.assertRaises(ValueError):
+            with self.subTest(raw=raw), self.assertRaises(kmipkit.errors.InvalidInputError):
                 credential_type.from_raw(raw)
 
 
