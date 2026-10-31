@@ -5021,7 +5021,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     self.assertNotIn("response_ttlv", serialized)
                     self.assertNotIn("response-ttlv", serialized)
 
-        remain_unmapped = (
+        exact_exclusions = (
             "ClientError::Protocol::error",
             "ClientError::ProtocolResponse::error",
             "ClientError::ServerResult::0",
@@ -5033,12 +5033,34 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "ClientError::server_result",
             "ClientError::profile_validation",
         )
-        for prefix, _ in prefixes:
-            for suffix in remain_unmapped:
-                declaration = declarations[f"{prefix}::{suffix}"]
-                with self.subTest(unmapped=f"{prefix}::{suffix}"):
-                    self.assertEqual("blocked", declaration["declarationState"])
-                    self.assertEqual("KMIPKIT-0007", declaration["candidateSpecId"])
+        exclusions = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.checked_in_manifest["approvedExclusions"]
+        }
+        for prefix, rust_package in prefixes:
+            for suffix in exact_exclusions:
+                export_name = f"{prefix}::{suffix}"
+                with self.subTest(excluded=export_name):
+                    self.assertNotIn(export_name, declarations)
+                    exclusion = exclusions[(rust_package, export_name)]
+                    if suffix == "ClientError::profile_validation":
+                        self.assertEqual(
+                            "specs/010-profile-conformance/spec.md",
+                            exclusion["approvalSource"]["path"],
+                        )
+                        self.assertEqual(
+                            "Accepted", exclusion["approvalSource"]["status"]
+                        )
+                    else:
+                        self.assertEqual(
+                            "specs/007-client-execution/spec.md",
+                            exclusion["approvalSource"]["path"],
+                        )
+                        self.assertEqual(
+                            "Approved", exclusion["approvalSource"]["status"]
+                        )
+                    self.assertTrue(exclusion["reason"].strip())
+                    self.assertTrue(exclusion["evidence"].strip())
 
     def test_t091_generic_ffi_errors_do_not_map_to_client_cause_other(self) -> None:
         declaration_ids = {
@@ -5717,8 +5739,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for exclusion in self.checked_in_manifest["approvedExclusions"]
             if exclusion["packageId"] in rust_packages
         ]
-        self.assertEqual(len(declarations), 9058)
-        self.assertEqual(len(exclusions), 1399)
+        self.assertEqual(len(declarations), 9032)
+        self.assertEqual(len(exclusions), 1425)
         report = json.loads(RUST_EXPORT_REPORT_PATH.read_text(encoding="utf-8"))
         observed_keys = {
             (row["packageId"], _canonical_export_name(row["exportName"]), row["kind"])
@@ -6185,7 +6207,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
-        self.assertEqual(len(declarations), 958)
+        self.assertEqual(len(declarations), 960)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         batch_item = by_name["org.kmipkit.extensions.ClientBatchItem"]
         self.assertEqual(batch_item["kind"], "type")
@@ -6557,7 +6579,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_python_exports_and_lifecycle(self) -> None:
         declarations = self.declarations_for_package("python-kmipkit")
-        self.assertEqual(len(declarations), 926)
+        self.assertEqual(len(declarations), 928)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         close_method = by_name["kmipkit.extensions.ClientBatchItem.close"]
         self.assertEqual(close_method["kind"], "python-export")
