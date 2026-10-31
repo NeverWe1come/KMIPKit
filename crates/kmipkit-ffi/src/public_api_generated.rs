@@ -3861,6 +3861,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::ClientRequest::import",
     ),
     (
+        "rust-observed-598637b136a2bf66fbec",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::interop",
+    ),
+    (
         "rust-observed-2cf591ed609686a81c14",
         "rust-kmipkit",
         "kmipkit::ClientRequest::join_split_key",
@@ -3869,6 +3874,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-8024779493eb6adf2f22",
         "rust-kmipkit",
         "kmipkit::ClientRequest::locate",
+    ),
+    (
+        "rust-observed-14780aec980a7864192e",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::log",
     ),
     (
         "rust-observed-02603a2a5d2e9906e9f7",
@@ -4726,6 +4736,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientRequest::import",
     ),
     (
+        "rust-observed-ab12ee141af19b6e7acd",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::interop",
+    ),
+    (
         "rust-observed-a3e377d6e7a53a4f6928",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::join_split_key",
@@ -4734,6 +4749,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-d9c65fa5caa0d0edfecc",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::locate",
+    ),
+    (
+        "rust-observed-685605e67cfe89c0ae13",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::log",
     ),
     (
         "rust-observed-1ff86025ebef596ee4e8",
