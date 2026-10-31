@@ -6,6 +6,63 @@
 
 #define T076_ERROR_INVALID_INPUT ((int32_t)4)
 
+int kmipkit_client_abi_c_consumer_batch_item_readback(void) {
+    static const uint8_t item_id[] = {0x00, 0xff, 0x41};
+    kmipkit_client_batch_t *batch = 0;
+    kmipkit_client_batch_t *second_batch = 0;
+    kmipkit_client_batch_item_t *item = 0;
+    kmipkit_client_batch_item_t *indexed_item = 0;
+    kmipkit_client_batch_item_t *out_of_range_item =
+        (kmipkit_client_batch_item_t *)(uintptr_t)1;
+    kmipkit_byte_span_v1_t item_id_span = {0};
+    uint8_t item_id_present = 0;
+    uint64_t item_count = UINT64_MAX;
+    int result = 0;
+
+    if (kmipkit_client_batch_create(&batch) != 0 ||
+        kmipkit_client_batch_create(&second_batch) != 0 ||
+        kmipkit_client_batch_item_ping(&item) != 0 ||
+        kmipkit_client_batch_item_with_unique_batch_item_id(
+            item, item_id, sizeof(item_id), &item) != 0 ||
+        kmipkit_client_batch_add_item(batch, &item) != 0 || item != 0 ||
+        kmipkit_client_batch_item_count(batch, &item_count) != 0 || item_count != 1 ||
+        kmipkit_client_batch_item_at(batch, 0, &indexed_item) != 0 || indexed_item == 0 ||
+        kmipkit_client_batch_item_at(batch, 1, &out_of_range_item) != T076_ERROR_INVALID_INPUT ||
+        out_of_range_item != 0) {
+        goto cleanup;
+    }
+    kmipkit_client_batch_release(batch);
+    batch = 0;
+    if (kmipkit_client_batch_item_unique_batch_item_id(
+            indexed_item, &item_id_present, &item_id_span) != 0 ||
+        item_id_present != 1 || item_id_span.length != sizeof(item_id) ||
+        item_id_span.data == 0 || memcmp(item_id_span.data, item_id, sizeof(item_id)) != 0) {
+        goto cleanup;
+    }
+    if (kmipkit_client_batch_add_item(second_batch, &indexed_item) != T076_ERROR_INVALID_INPUT ||
+        indexed_item == 0) {
+        goto cleanup;
+    }
+    item_id_present = 0;
+    item_id_span.data = 0;
+    item_id_span.length = 0;
+    if (kmipkit_client_batch_item_unique_batch_item_id(
+            indexed_item, &item_id_present, &item_id_span) != 0 ||
+        item_id_present != 1 || item_id_span.length != sizeof(item_id) ||
+        item_id_span.data == 0 || memcmp(item_id_span.data, item_id, sizeof(item_id)) != 0) {
+        goto cleanup;
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_client_batch_item_release(item);
+    kmipkit_client_batch_item_release(indexed_item);
+    kmipkit_client_batch_item_release(out_of_range_item);
+    kmipkit_client_batch_release(batch);
+    kmipkit_client_batch_release(second_batch);
+    return result;
+}
+
 static int check_view_tags(
     kmipkit_ttlv_structure_view_t *view, const uint32_t *expected, uint64_t expected_count);
 

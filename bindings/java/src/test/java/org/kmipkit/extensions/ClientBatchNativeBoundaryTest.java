@@ -1,6 +1,7 @@
 package org.kmipkit.extensions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -57,6 +58,23 @@ final class ClientBatchNativeBoundaryTest {
                     InvalidInputException.class,
                     () -> NativeExtensionRegistry.clientBatchSetAsynchronousIndicator(
                             nativeBatch, 0x1_0000_0000L));
+        }
+    }
+
+    @Test
+    void itemAtReturnsAnOwnedItemAfterBatchCloseAndRejectsOutOfRangeIndexes() {
+        ClientBatch batch = ClientBatch.create();
+        batch.add(ClientBatchItem.ping().withUniqueBatchItemId(new byte[] {0, (byte) 0xff}));
+        assertEquals(1, batch.itemCount());
+
+        ClientBatchItem item = batch.itemAt(0);
+        assertThrows(InvalidInputException.class, () -> batch.itemAt(-1));
+        assertThrows(InvalidInputException.class, () -> batch.itemAt(1));
+        assertThrows(InvalidInputException.class,
+                () -> item.withUniqueBatchItemId(new byte[] {1}));
+        batch.close();
+        try (item) {
+            assertArrayEquals(new byte[] {0, (byte) 0xff}, item.uniqueBatchItemId().orElseThrow());
         }
     }
 

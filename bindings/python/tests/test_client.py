@@ -758,6 +758,53 @@ def test_batch_factory_and_setters_map_arguments_to_native_calls(
         batch.close()
 
 
+def test_batch_item_readback_clones_owned_handle_and_checks_index(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    batch_pointer, _batch_storage = _opaque("kmipkit_client_batch_t")
+    item_pointer, _item_storage = _opaque("kmipkit_client_batch_item_t")
+    observed: list[tuple[str, int]] = []
+
+    def create(output: object) -> int:
+        output[0] = batch_pointer  # type: ignore[index]
+        return 0
+
+    def item_count(batch: object, output: object) -> int:
+        assert batch == batch_pointer
+        output[0] = 1  # type: ignore[index]
+        return 0
+
+    def item_at(batch: object, index: int, output: object) -> int:
+        assert batch == batch_pointer
+        observed.append(("item_at", index))
+        if index != 0:
+            return 4
+        output[0] = item_pointer  # type: ignore[index]
+        return 0
+
+    fake = SimpleNamespace(
+        kmipkit_client_batch_create=create,
+        kmipkit_client_batch_release=lambda _pointer: observed.append(("release_batch", 0)),
+        kmipkit_client_batch_item_count=item_count,
+        kmipkit_client_batch_item_at=item_at,
+        kmipkit_client_batch_item_release=lambda _pointer: observed.append(("release_item", 0)),
+    )
+    monkeypatch.setattr(client, "lib", fake)
+    batch = client.Batch.create()
+    assert batch.item_count == 1
+    item = batch.item_at(0)
+    assert isinstance(item, client.extensions.ClientBatchItem)
+    item_pointer_before_rejected_mutation = item._pointer()
+    with pytest.raises(errors.InvalidInputError):
+        extensions.with_unique_batch_item_id(item, b"new-id")
+    assert item._pointer() == item_pointer_before_rejected_mutation
+    batch.close()
+    item.close()
+    assert observed == [("item_at", 0), ("release_batch", 0), ("release_item", 0)]
+    with pytest.raises(errors.InvalidInputError):
+        batch.item_at(1)
+
+
 def test_batch_request_timestamp_preserves_absence_and_signed_boundaries(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

@@ -45,6 +45,7 @@ unsafe extern "C" {
 #[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
 unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_main(argc: i32, argv: *mut *mut c_char) -> i32;
+    fn kmipkit_client_abi_c_consumer_batch_item_readback() -> i32;
     fn kmipkit_client_abi_c_consumer_async_output_errors_clear() -> i32;
     fn shared_ttlv_fixture_preserves_open_values_and_order(
         raw_tags: *const u32,
@@ -83,6 +84,13 @@ unsafe extern "C" {
         argv: *mut *mut c_char,
         limits: *mut kmipkit_codec_limits_t,
     ) -> i32;
+}
+
+#[test]
+fn generated_public_c_consumer_reads_an_owned_batch_item_after_batch_release() {
+    // SAFETY: The C helper calls only the public ABI with its own handles and buffers.
+    let result = unsafe { kmipkit_client_abi_c_consumer_batch_item_readback() };
+    assert_eq!(result, 1);
 }
 
 #[test]
