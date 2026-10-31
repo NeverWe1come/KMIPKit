@@ -1903,6 +1903,45 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             f"{len(unresolved)} remain, including {unresolved[:10]}",
         )
 
+    def test_t091_discover_versions_request_constructors_map_to_four_language_operation(
+        self,
+    ) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        canonical = declarations["kmipkit_client::ClientBatchItem::discover_versions"]
+        capability = next(
+            row
+            for row in self.checked_in_manifest["capabilities"]
+            if row["capabilityId"] == canonical["capabilityId"]
+        )
+        request_constructors = {
+            "kmipkit_client::ClientRequest::discover_versions": "rust-kmipkit-client",
+            "kmipkit::ClientRequest::discover_versions": "rust-kmipkit",
+        }
+
+        for export_name, rust_package in request_constructors.items():
+            with self.subTest(export=export_name):
+                declaration = declarations[export_name]
+                expected_mappings = {
+                    language: mapping.copy()
+                    for language, mapping in canonical["languageMappings"].items()
+                }
+                expected_mappings["rust"] = {
+                    "packageId": rust_package,
+                    "name": export_name,
+                }
+
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertNotIn("candidateSpecId", declaration)
+                self.assertEqual(canonical["capabilityId"], declaration["capabilityId"])
+                self.assertEqual(canonical["requirementIds"], declaration["requirementIds"])
+                self.assertEqual(canonical["approvalSource"], declaration["approvalSource"])
+                self.assertEqual(expected_mappings, declaration["languageMappings"])
+                for language, mapping in expected_mappings.items():
+                    self.assertIn(mapping["name"], capability["mappings"][language])
+
     def test_t091_transport_exchange_error_contract_maps_rust_only_under_adr_0014(self) -> None:
         expected_exports = {
             "kmipkit_transport::RequestDeliveryState",
