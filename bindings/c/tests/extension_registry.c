@@ -81,6 +81,10 @@ extern int32_t kmipkit_client_batch_item_with_unique_batch_item_id(
 extern int32_t kmipkit_client_batch_set_request_time_stamp(
     struct kmipkit_client_batch_t *batch,
     int64_t time_stamp);
+extern int32_t kmipkit_client_batch_request_time_stamp(
+    struct kmipkit_client_batch_t *batch,
+    uint32_t *out_has_value,
+    int64_t *out_time_stamp);
 extern int32_t kmipkit_client_batch_set_order_option(
     struct kmipkit_client_batch_t *batch,
     uint8_t enabled);
@@ -580,6 +584,18 @@ static bool test_t076_validated_client_reports_delivery_state(
                    KMIPKIT_SUCCESS);
     REQUIRE_STATUS(kmipkit_client_batch_set_request_time_stamp(batch, INT64_C(1)),
                    KMIPKIT_SUCCESS);
+    {
+        uint32_t has_time_stamp = UINT32_C(1);
+        int64_t time_stamp = INT64_C(0);
+        REQUIRE_STATUS(kmipkit_client_batch_request_time_stamp(
+                           batch, &has_time_stamp, &time_stamp),
+                       KMIPKIT_SUCCESS);
+        REQUIRE(has_time_stamp == UINT32_C(1));
+        REQUIRE(time_stamp == INT64_C(1));
+        REQUIRE_STATUS(kmipkit_client_batch_request_time_stamp(
+                           batch, NULL, &time_stamp),
+                       KMIPKIT_ERROR_INVALID_INPUT);
+    }
     REQUIRE_STATUS(kmipkit_client_batch_add_error_continuation_value(batch, UINT32_C(2)),
                    KMIPKIT_SUCCESS);
     REQUIRE_STATUS(kmipkit_client_batch_set_asynchronous_indicator(batch, UINT32_C(2)),

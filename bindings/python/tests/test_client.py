@@ -740,6 +740,38 @@ def test_batch_factory_and_setters_map_arguments_to_native_calls(
         batch.close()
 
 
+def test_batch_request_timestamp_preserves_absence_and_signed_boundaries(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    batch_pointer, _storage = _opaque("kmipkit_client_batch_t")
+    values = [(0, 0), (1, -(1 << 63)), (1, (1 << 63) - 1)]
+
+    def create(output: object) -> int:
+        output[0] = batch_pointer  # type: ignore[index]
+        return 0
+
+    def request_timestamp(_batch: object, has_value: object, value: object) -> int:
+        present, timestamp = values.pop(0)
+        has_value[0] = present  # type: ignore[index]
+        value[0] = timestamp  # type: ignore[index]
+        return 0
+
+    fake = SimpleNamespace(
+        kmipkit_client_batch_create=create,
+        kmipkit_client_batch_release=lambda _pointer: None,
+        kmipkit_client_batch_request_time_stamp=request_timestamp,
+    )
+    monkeypatch.setattr(client, "lib", fake)
+    batch = client.Batch.create()
+    try:
+        assert batch.request_timestamp is None
+        assert batch.request_timestamp == -(1 << 63)
+        assert batch.request_timestamp == (1 << 63) - 1
+        assert values == []
+    finally:
+        batch.close()
+
+
 def test_batch_add_item_restores_ownership_when_native_does_not_consume(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

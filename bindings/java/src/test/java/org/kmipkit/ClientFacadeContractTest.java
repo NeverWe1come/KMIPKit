@@ -10,6 +10,7 @@ import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.RequestOptions;
 import org.kmipkit.extensions.TransportConfiguration;
+import java.util.OptionalLong;
 
 /** Exercises the shared Java client and ordered batch facade over the native ABI. */
 final class ClientFacadeContractTest {
@@ -67,6 +68,17 @@ final class ClientFacadeContractTest {
         batch.close();
 
         assertThrows(InvalidInputException.class, batch::itemCount);
+    }
+
+    @Test
+    void requestTimestampGetterPreservesAbsenceAndSignedBoundaries() {
+        try (ClientBatch batch = ClientBatch.create()) {
+            assertEquals(OptionalLong.empty(), batch.requestTimestamp());
+            batch.requestTimestamp(Long.MIN_VALUE);
+            assertEquals(OptionalLong.of(Long.MIN_VALUE), batch.requestTimestamp());
+            batch.requestTimestamp(Long.MAX_VALUE);
+            assertEquals(OptionalLong.of(Long.MAX_VALUE), batch.requestTimestamp());
+        }
     }
 
     @Test
