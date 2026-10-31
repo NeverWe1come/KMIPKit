@@ -1593,6 +1593,20 @@ class T076ClientMappingTests(unittest.TestCase):
                 "__slots__",
             )
         }
+        profile_validation_details_dataclass_exclusions = {
+            f"kmipkit.errors.ProfileValidationDetails.{member}"
+            for member in (
+                "__dataclass_fields__",
+                "__dataclass_params__",
+                "__delattr__",
+                "__eq__",
+                "__hash__",
+                "__init__",
+                "__match_args__",
+                "__repr__",
+                "__setattr__",
+            )
+        }
         profile_validation_selection_repr_exclusion = {
             "kmipkit.client.ProfileValidationSelection.__repr__"
         }
@@ -1648,6 +1662,7 @@ class T076ClientMappingTests(unittest.TestCase):
             | async_outcome_constructor_exclusion
             | async_outcome_lifecycle_exclusions
             | profile_model_dataclass_exclusions
+            | profile_validation_details_dataclass_exclusions
             | profile_validation_selection_repr_exclusion
             | {"kmipkit.metadata.Version.__init__"}
         )
@@ -1741,6 +1756,11 @@ class T076ClientMappingTests(unittest.TestCase):
                         exclusion["reason"],
                     )
                     self.assertIn("T036", exclusion["evidence"])
+                elif path in profile_validation_details_dataclass_exclusions:
+                    self.assertIn("dataclass-generated", exclusion["reason"])
+                    self.assertIn("interpreter mechanics", exclusion["reason"])
+                    self.assertIn("KMIPKIT-0010-FR-013", exclusion["evidence"])
+                    self.assertIn("ProfileValidationDetails", exclusion["evidence"])
                 elif path in profile_validation_selection_repr_exclusion:
                     self.assertIn("Python presentation behavior", exclusion["reason"])
                     self.assertIn("T036", exclusion["evidence"])

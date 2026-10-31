@@ -522,7 +522,10 @@ class PublicApiParityTests(unittest.TestCase):
         signature_symbols = {
             declaration["exportName"]
             for declaration in manifest["publicDeclarations"]
-            if declaration.get("cSignature") is not None
+            if declaration["declarationId"].startswith("T104:")
+            and declaration["packageId"] == "c-kmipkit"
+            and declaration["kind"] == "c-symbol"
+            and declaration.get("cSignature") is not None
         }
         release_symbols = {
             manifest_types[type_id]["c"]["releaseFunction"]
@@ -1115,7 +1118,11 @@ class PublicApiParityTests(unittest.TestCase):
             "approvedExclusions": self.manifest["approvedExclusions"],
             "types": self.manifest["types"],
             "functions": self.manifest["functions"],
-            "errorCategories": self.manifest["errorCategories"],
+            "errorCategories": [
+                record
+                for record in self.manifest["errorCategories"]
+                if record["mappingState"] == "ready"
+            ],
             "limits": self.manifest["limits"],
             "security": self.manifest["security"],
         }

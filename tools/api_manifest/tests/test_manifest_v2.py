@@ -4551,6 +4551,73 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     for language, mapping in expected_mappings.items():
                         self.assertIn(mapping["name"], capability["mappings"][language])
 
+        profile_validation_suffixes = {
+            "ClientError::ProfileValidation": "profile-validation-error",
+            "ClientError::ProfileValidation::error": "profile-validation-details",
+            "ClientError::profile_validation_error": "profile-validation-error",
+        }
+        profile_validation_foreign_names = {
+            "profile-validation-error": (
+                "kmipkit_last_error_profile_validation_error_get_v1",
+                "org.kmipkit.ClientOperationException.profileValidation",
+                "kmipkit.errors.ClientExecutionError.profile_validation",
+            ),
+            "profile-validation-details": (
+                "kmipkit_profile_validation_error_t",
+                "org.kmipkit.ProfileValidationDetails",
+                "kmipkit.errors.ProfileValidationDetails",
+            ),
+        }
+        profile_validation_requirements = [
+            "KMIPKIT-0010-FR-012",
+            "KMIPKIT-0010-FR-013",
+            "KMIPKIT-0010-FR-019",
+            "KMIPKIT-0043-FR-007",
+            "KMIPKIT-0043-FR-013",
+            "KMIPKIT-0043-FR-021",
+        ]
+        profile_validation_approval = declarations[
+            "kmipkit_client::ClientError::ProfileValidation"
+        ]["approvalSource"]
+        profile_capability = next(
+            row
+            for row in self.checked_in_manifest["capabilities"]
+            if row["capabilityId"] == "client_profile_validation"
+        )
+        for prefix, rust_package in prefixes:
+            for suffix, group in profile_validation_suffixes.items():
+                export_name = f"{prefix}::{suffix}"
+                java_name, python_name = profile_validation_foreign_names[group][1:]
+                c_name = profile_validation_foreign_names[group][0]
+                expected_mappings = {
+                    "rust": {"packageId": rust_package, "name": export_name},
+                    "c": {"packageId": "c-kmipkit", "name": c_name},
+                    "java": {"packageId": "java-kmipkit", "name": java_name},
+                    "python": {"packageId": "python-kmipkit", "name": python_name},
+                }
+                with self.subTest(profile_validation=export_name):
+                    declaration = declarations[export_name]
+                    self.assertEqual("declared", declaration["declarationState"])
+                    self.assertNotIn("candidateSpecId", declaration)
+                    self.assertNotIn("blockedReason", declaration)
+                    self.assertEqual(
+                        "client_profile_validation", declaration["capabilityId"]
+                    )
+                    self.assertEqual(
+                        profile_validation_requirements, declaration["requirementIds"]
+                    )
+                    self.assertEqual(
+                        profile_validation_approval, declaration["approvalSource"]
+                    )
+                    self.assertEqual(expected_mappings, declaration["languageMappings"])
+                    for language, mapping in expected_mappings.items():
+                        self.assertIn(
+                            mapping["name"], profile_capability["mappings"][language]
+                        )
+                    serialized = json.dumps(declaration).casefold()
+                    self.assertNotIn("response_ttlv", serialized)
+                    self.assertNotIn("response-ttlv", serialized)
+
         remain_unmapped = (
             "ClientError::Protocol::error",
             "ClientError::ProtocolResponse::error",
@@ -4561,10 +4628,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "ClientError::protocol",
             "ClientError::transport",
             "ClientError::server_result",
-            "ClientError::ProfileValidation",
-            "ClientError::ProfileValidation::error",
             "ClientError::profile_validation",
-            "ClientError::profile_validation_error",
         )
         for prefix, _ in prefixes:
             for suffix in remain_unmapped:
@@ -5585,7 +5649,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
-        self.assertEqual(len(declarations), 939)
+        self.assertEqual(len(declarations), 948)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         batch_item = by_name["org.kmipkit.extensions.ClientBatchItem"]
         self.assertEqual(batch_item["kind"], "type")
@@ -5932,7 +5996,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_python_exports_and_lifecycle(self) -> None:
         declarations = self.declarations_for_package("python-kmipkit")
-        self.assertEqual(len(declarations), 907)
+        self.assertEqual(len(declarations), 916)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         close_method = by_name["kmipkit.extensions.ClientBatchItem.close"]
         self.assertEqual(close_method["kind"], "python-export")
