@@ -2183,6 +2183,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "name": "kmipkit.client.Client.execute",
             },
         }
+        required_facade_requirements = {
+            "KMIPKIT-0043-FR-005",
+            "KMIPKIT-0043-FR-007",
+            "KMIPKIT-0043-FR-008",
+            "KMIPKIT-0043-FR-009",
+        }
 
         for method, (operation_id, *constructor_names) in cases.items():
             operation = operations[operation_id]
@@ -2227,6 +2233,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                         operation["approvalEvidence"], declaration["approvalSource"]
                     )
                     self.assertEqual(expected_mappings, declaration["languageMappings"])
+                    self.assertLessEqual(
+                        required_facade_requirements,
+                        set(declaration["requirementIds"]),
+                    )
                     required_parity_evidence = {
                         evidence_id
                         for constructor in constructor_declarations.values()
@@ -2235,6 +2245,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     required_parity_evidence.update(
                         {
                             f"crates/kmipkit-client/tests/unit/{method}_execution_tests.rs",
+                            "bindings/python/tests/test_direct_client_helper_execution.py",
                             "tools/api_manifest/tests/test_manifest_v2.py",
                             "tools/api_manifest/tests/test_t091_root_reexport_aliases.py",
                         }
