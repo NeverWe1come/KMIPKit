@@ -178,6 +178,69 @@ class T036ProfileMappingTests(unittest.TestCase):
         self.assertIn("KMIPKIT-0010-FR-019", capability["requirementIds"])
         self.assertIn("KMIPKIT-0043-FR-021", capability["requirementIds"])
 
+    def test_profile_validation_error_details_map_to_all_four_public_facades(self) -> None:
+        capability = self.capabilities["client_profile_validation"]
+        expected_mappings = {
+            "rust": {
+                "kmipkit::ClientError::profile_validation_error",
+                "kmipkit_client::ClientError::profile_validation_error",
+                "kmipkit::ProfileValidationError::code",
+                "kmipkit_client::ProfileValidationError::code",
+                "kmipkit_protocol::ProfileValidationError::code",
+                "kmipkit::ProfileValidationError::source_gap_locator",
+                "kmipkit_client::ProfileValidationError::source_gap_locator",
+                "kmipkit_protocol::ProfileValidationError::source_gap_locator",
+                "kmipkit::ProfileValidationError::batch_item_index",
+                "kmipkit_client::ProfileValidationError::batch_item_index",
+                "kmipkit_protocol::ProfileValidationError::batch_item_index",
+            },
+            "c": {
+                "kmipkit_profile_validation_error_t",
+                "kmipkit_profile_validation_error_view_v1_t",
+                "kmipkit_last_error_profile_validation_error_get_v1",
+                "kmipkit_profile_validation_error_view_get_v1",
+                "kmipkit_profile_validation_error_release",
+            },
+            "java": {
+                "org.kmipkit.ClientOperationException.profileValidation",
+                "org.kmipkit.ProfileValidationDetails",
+                "org.kmipkit.ProfileValidationDetails.errorCode",
+                "org.kmipkit.ProfileValidationDetails.sourceGapLocator",
+                "org.kmipkit.ProfileValidationDetails.batchItemIndex",
+            },
+            "python": {
+                "kmipkit.errors.ClientExecutionError.profile_validation",
+                "kmipkit.errors.ProfileValidationDetails",
+                "kmipkit.errors.ProfileValidationDetails.error_code",
+                "kmipkit.errors.ProfileValidationDetails.source_gap_locator",
+                "kmipkit.errors.ProfileValidationDetails.batch_item_index",
+            },
+        }
+        for language, expected in expected_mappings.items():
+            with self.subTest(language=language):
+                self.assertTrue(expected <= set(capability["mappings"][language]))
+
+        for requirement_id in (
+            "KMIPKIT-0010-FR-012",
+            "KMIPKIT-0010-FR-019",
+            "KMIPKIT-0043-FR-007",
+            "KMIPKIT-0043-FR-013",
+            "KMIPKIT-0043-FR-021",
+        ):
+            self.assertIn(requirement_id, capability["requirementIds"])
+
+        declaration = next(
+            row for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "rust-kmipkit-client"
+            and row["exportName"] == "kmipkit_client::ClientError::profile_validation_error"
+        )
+        self.assertEqual("client_profile_validation", declaration["capabilityId"])
+        self.assertEqual("declared", declaration["declarationState"])
+        self.assertEqual(
+            {"rust", "c", "java", "python"},
+            set(declaration["languageMappings"]),
+        )
+
     def test_profile_readiness_remains_incomplete_and_unclaimed(self) -> None:
         catalog = json.loads(PROFILE_CATALOG_PATH.read_text(encoding="utf-8"))
         baseline = next(

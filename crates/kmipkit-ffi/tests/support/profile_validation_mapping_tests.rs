@@ -85,3 +85,48 @@ fn c_selection_rejects_offsets_outside_the_flat_buffer() {
         Err(ERROR_INVALID_INPUT)
     );
 }
+
+#[test]
+fn profile_validation_details_remain_owned_after_last_error_changes() {
+    let validation_error = ProfileValidationSelection::new(["KMIPKIT-PROFILE-BASELINE-CLIENT"])
+        .validate()
+        .expect_err("incomplete Baseline evidence fails closed");
+    let error = ClientError::profile_validation(validation_error, RequestDeliveryState::NotSent);
+    assert_eq!(record_client_error(&error), ERROR_INVALID_INPUT);
+
+    let mut handle = ptr::null_mut();
+    assert_eq!(
+        kmipkit_last_error_profile_validation_error_get_v1(&mut handle),
+        SUCCESS
+    );
+    assert!(!handle.is_null());
+    assert_eq!(record_ffi_error(ERROR_INVALID_INPUT), ERROR_INVALID_INPUT);
+
+    let mut view = kmipkit_profile_validation_error_view_v1_t {
+        struct_size: u32::try_from(size_of::<kmipkit_profile_validation_error_view_v1_t>())
+            .expect("profile error view size fits u32"),
+        abi_version: 1,
+        ..kmipkit_profile_validation_error_view_v1_t::default()
+    };
+    assert_eq!(
+        kmipkit_profile_validation_error_view_get_v1(handle, &mut view),
+        SUCCESS
+    );
+    assert_eq!(view.source_kind, PROFILE_ERROR_SOURCE_CLAUSE);
+    assert_eq!(view.batch_item_index_present, 0);
+    assert_eq!(unsafe { span_text(view.error_code) }, "profile_unavailable");
+    assert_eq!(
+        unsafe { span_text(view.profile_id) },
+        "KMIPKIT-PROFILE-BASELINE-CLIENT"
+    );
+    assert_eq!(
+        unsafe { span_text(view.requirement_id) },
+        "KMIPKIT-REQ-SPEC-14.1-001"
+    );
+    assert_eq!(
+        unsafe { span_text(view.source_id) },
+        "KMIPKIT-CLAUSE-SPEC-14.1-001"
+    );
+    assert_eq!(view.source_locator.length, 0);
+    assert_eq!(kmipkit_profile_validation_error_release(handle), SUCCESS);
+}

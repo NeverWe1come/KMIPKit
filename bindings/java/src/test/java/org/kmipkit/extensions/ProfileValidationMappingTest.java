@@ -79,6 +79,14 @@ final class ProfileValidationMappingTest {
                                         List.of("KMIPKIT-PROFILE-BASELINE-CLIENT"))));
                 assertEquals(1, failure.categoryCode());
                 assertEquals(1, failure.deliveryStateCode());
+                var details = failure.profileValidation().orElseThrow();
+                assertEquals("profile_unavailable", details.errorCode());
+                assertEquals("KMIPKIT-PROFILE-BASELINE-CLIENT", details.profileId().orElseThrow());
+                assertEquals("KMIPKIT-REQ-SPEC-14.1-001", details.requirementId().orElseThrow());
+                assertEquals("KMIPKIT-CLAUSE-SPEC-14.1-001", details.sourceClauseId().orElseThrow());
+                assertFalse(details.sourceGapId().isPresent());
+                assertFalse(details.batchItemIndex().isPresent());
+                assertFalse(failure.getMessage().contains("KMIPKIT-PROFILE-BASELINE-CLIENT"));
             }
 
             assertFalse(accepted.get(2, TimeUnit.SECONDS),

@@ -121,6 +121,17 @@ def test_baseline_selection_fails_closed_before_a_cffi_transport_connection() ->
 
     assert failure.value.client_category is errors.ClientErrorCategory.VALIDATION
     assert failure.value.delivery is errors.DeliveryState.NOT_SENT
+    details = failure.value.profile_validation
+    assert details == errors.ProfileValidationDetails(
+        error_code="profile_unavailable",
+        profile_id="KMIPKIT-PROFILE-BASELINE-CLIENT",
+        requirement_id="KMIPKIT-REQ-SPEC-14.1-001",
+        source_clause_id="KMIPKIT-CLAUSE-SPEC-14.1-001",
+        source_gap_id=None,
+        source_gap_locator=None,
+        batch_item_index=None,
+    )
+    assert "KMIPKIT-PROFILE-BASELINE-CLIENT" not in str(failure.value)
     peer.join(timeout=2)
     assert not peer.is_alive(), "the connection observer must finish"
     assert accepted == [False], "incomplete Baseline readiness must make zero TCP connections"

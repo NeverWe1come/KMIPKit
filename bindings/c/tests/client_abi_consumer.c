@@ -48,6 +48,8 @@ static int baseline_profile_fails_closed_before_c_transport_write(
     uint32_t error_category = 0;
     uint32_t error_cause = 0;
     uint32_t error_delivery = 0;
+    kmipkit_profile_validation_error_t *profile_error = 0;
+    kmipkit_profile_validation_error_view_v1_t profile_view = {0};
     int result = 0;
 
     selection.struct_size = (uint32_t)sizeof(selection);
@@ -70,9 +72,33 @@ static int baseline_profile_fails_closed_before_c_transport_write(
             &error_status, &error_category, &error_cause, &error_delivery) != 0) {
         goto cleanup;
     }
-    result = error_status == status && error_category == 1 && error_delivery == 1;
+    if (kmipkit_last_error_profile_validation_error_get_v1(&profile_error) != 0 ||
+        profile_error == 0 || kmipkit_last_error_clear() != 0) {
+        goto cleanup;
+    }
+    profile_view.struct_size = (uint32_t)sizeof(profile_view);
+    profile_view.abi_version = 1;
+    if (kmipkit_profile_validation_error_view_get_v1(profile_error, &profile_view) != 0) {
+        goto cleanup;
+    }
+    result = error_status == status && error_category == 1 && error_delivery == 1 &&
+        profile_view.source_kind == 1 && profile_view.batch_item_index_present == 0 &&
+        profile_view.error_code.length == sizeof("profile_unavailable") - 1 &&
+        memcmp(profile_view.error_code.data, "profile_unavailable",
+               profile_view.error_code.length) == 0 &&
+        profile_view.profile_id.length == sizeof(baseline_profile) - 1 &&
+        memcmp(profile_view.profile_id.data, baseline_profile,
+               profile_view.profile_id.length) == 0 &&
+        profile_view.requirement_id.length == sizeof("KMIPKIT-REQ-SPEC-14.1-001") - 1 &&
+        memcmp(profile_view.requirement_id.data, "KMIPKIT-REQ-SPEC-14.1-001",
+               profile_view.requirement_id.length) == 0 &&
+        profile_view.source_id.length == sizeof("KMIPKIT-CLAUSE-SPEC-14.1-001") - 1 &&
+        memcmp(profile_view.source_id.data, "KMIPKIT-CLAUSE-SPEC-14.1-001",
+               profile_view.source_id.length) == 0 &&
+        profile_view.source_locator.length == 0;
 
 cleanup:
+    kmipkit_profile_validation_error_release(profile_error);
     kmipkit_client_batch_response_release(response);
     kmipkit_client_batch_release(batch);
     kmipkit_client_batch_item_release(item);
