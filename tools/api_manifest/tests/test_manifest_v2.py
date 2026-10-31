@@ -2069,6 +2069,57 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 for language, mapping in expected_mappings.items():
                     self.assertIn(mapping["name"], capability["mappings"][language])
 
+    def test_t091_discover_versions_response_accessors_map_to_generic_result_handles(
+        self,
+    ) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        canonical_name = "kmipkit_client::ClientBatchItemResponse"
+        canonical = declarations[canonical_name]
+        expected_requirements = sorted(
+            set(canonical["requirementIds"])
+            | {"KMIPKIT-0007-FR-002", "KMIPKIT-0043-FR-010"}
+        )
+        response_accessors = {
+            "kmipkit_client::ClientResponseView::discover_versions": (
+                "rust-kmipkit-client",
+            ),
+            "kmipkit_client::ClientBatchOutcome::discover_versions_response": (
+                "rust-kmipkit-client",
+            ),
+            "kmipkit::ClientBatchOutcome::discover_versions_response": (
+                "rust-kmipkit",
+            ),
+        }
+
+        for export_name, (rust_package,) in response_accessors.items():
+            declaration = declarations[export_name]
+            capability = next(
+                row
+                for row in self.checked_in_manifest["capabilities"]
+                if row["capabilityId"] == canonical["capabilityId"]
+            )
+            expected_mappings = {
+                language: mapping.copy()
+                for language, mapping in canonical["languageMappings"].items()
+            }
+            expected_mappings["rust"] = {
+                "packageId": rust_package,
+                "name": export_name,
+            }
+
+            with self.subTest(export=export_name):
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertNotIn("candidateSpecId", declaration)
+                self.assertEqual(canonical["capabilityId"], declaration["capabilityId"])
+                self.assertEqual(expected_requirements, declaration["requirementIds"])
+                self.assertEqual(canonical["approvalSource"], declaration["approvalSource"])
+                self.assertEqual(expected_mappings, declaration["languageMappings"])
+                for language, mapping in expected_mappings.items():
+                    self.assertIn(mapping["name"], capability["mappings"][language])
+
     def test_t091_transport_exchange_error_contract_maps_rust_only_under_adr_0014(self) -> None:
         expected_exports = {
             "kmipkit_transport::RequestDeliveryState",
