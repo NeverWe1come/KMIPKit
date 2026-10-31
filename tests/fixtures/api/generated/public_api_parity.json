@@ -29640,6 +29640,78 @@
       "exportName": "kmipkit.extensions.ClientBatchItem.__slots__",
       "packageId": "python-kmipkit",
       "reason": "This Python-only slot descriptor is implementation-level storage metadata for the ClientBatchItem read-only wrapper state, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T091. KMIPKIT-0007-FR-001 owns the typed client-request boundary; this exclusion covers only the Rust aggregate representation or generic readback path, not any concrete operation. The individual request, response, and factory declarations remain subject to their own owner mappings and evidence.",
+      "exportName": "kmipkit_client::ClientRequest",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This Rust enum is the aggregate union for typed operation requests. The foreign facades expose operation-specific request item factories rather than a generic request-union type; each concrete operation remains separately inventoried under its owner."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T091. KMIPKIT-0007-FR-001 owns the typed client-request boundary; this exclusion covers only the Rust aggregate representation or generic readback path, not any concrete operation. The individual request, response, and factory declarations remain subject to their own owner mappings and evidence.",
+      "exportName": "kmipkit_client::ClientBatchItem::new",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This generic Rust constructor accepts any ClientRequest. C, Java, and Python construct items through operation-specific factories rather than a generic ClientBatchItem constructor; the concrete factories remain separately inventoried."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T091. KMIPKIT-0007-FR-001 owns the typed client-request boundary; this exclusion covers only the Rust aggregate representation or generic readback path, not any concrete operation. The individual request, response, and factory declarations remain subject to their own owner mappings and evidence.",
+      "exportName": "kmipkit_client::ClientBatchItem::request",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This Rust accessor returns the generic typed request from a batch item. Foreign batch readback intentionally exposes owned metadata only and no request payload; the typed request models and operation-specific factories remain separately inventoried."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T091. KMIPKIT-0007-FR-001 owns the typed client-request boundary; this exclusion covers only the Rust aggregate representation or generic readback path, not any concrete operation. The individual request, response, and factory declarations remain subject to their own owner mappings and evidence.",
+      "exportName": "kmipkit::ClientRequest",
+      "packageId": "rust-kmipkit",
+      "reason": "This Rust enum is the aggregate union for typed operation requests. The foreign facades expose operation-specific request item factories rather than a generic request-union type; each concrete operation remains separately inventoried under its owner."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T091. KMIPKIT-0007-FR-001 owns the typed client-request boundary; this exclusion covers only the Rust aggregate representation or generic readback path, not any concrete operation. The individual request, response, and factory declarations remain subject to their own owner mappings and evidence.",
+      "exportName": "kmipkit::ClientBatchItem::new",
+      "packageId": "rust-kmipkit",
+      "reason": "This generic Rust constructor accepts any ClientRequest. C, Java, and Python construct items through operation-specific factories rather than a generic ClientBatchItem constructor; the concrete factories remain separately inventoried."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T091. KMIPKIT-0007-FR-001 owns the typed client-request boundary; this exclusion covers only the Rust aggregate representation or generic readback path, not any concrete operation. The individual request, response, and factory declarations remain subject to their own owner mappings and evidence.",
+      "exportName": "kmipkit::ClientBatchItem::request",
+      "packageId": "rust-kmipkit",
+      "reason": "This Rust accessor returns the generic typed request from a batch item. Foreign batch readback intentionally exposes owned metadata only and no request payload; the typed request models and operation-specific factories remain separately inventoried."
     }
   ],
   "capabilities": [

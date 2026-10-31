@@ -89013,20 +89013,6 @@
       ]
     },
     {
-      "declarationId": "rust-observed-40eec4f2c7463cb92f74",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "kmipkit_client::ClientBatchItem::new",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
       "declarationId": "rust-observed-e830770db1404f15498c",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
@@ -89064,20 +89050,6 @@
           "name": "kmipkit.extensions.with_unique_batch_item_id"
         }
       }
-    },
-    {
-      "declarationId": "rust-observed-5c3085bfc5d5023a37fa",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "kmipkit_client::ClientBatchItem::request",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
       "declarationId": "rust-observed-70496571c728a5f026a6",
@@ -92486,20 +92458,6 @@
       ]
     },
     {
-      "declarationId": "rust-observed-ed557d5cd4630fd24c4a",
-      "packageId": "rust-kmipkit-client",
-      "kind": "type",
-      "exportName": "kmipkit_client::ClientRequest",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
       "declarationId": "rust-observed-6fa4a3ed6ac774b3c741",
       "packageId": "rust-kmipkit-client",
       "kind": "variant",
@@ -95842,20 +95800,6 @@
       }
     },
     {
-      "declarationId": "rust-observed-c4534d9a911e68230eb7",
-      "packageId": "rust-kmipkit",
-      "kind": "type",
-      "exportName": "kmipkit::ClientRequest",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
       "declarationId": "rust-observed-22743c10b7c47b3d4ffb",
       "packageId": "rust-kmipkit",
       "kind": "type",
@@ -98297,20 +98241,6 @@
       ]
     },
     {
-      "declarationId": "rust-observed-b0569fe8b3ada77b3a30",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "kmipkit::ClientBatchItem::new",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
       "declarationId": "rust-observed-ea1b662a4682f9194600",
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
@@ -98500,20 +98430,6 @@
           "name": "kmipkit.extensions.client_batch_item_extension_criticality_indicator_at"
         }
       }
-    },
-    {
-      "declarationId": "rust-observed-ba435cff9cb4abd90525",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "kmipkit::ClientBatchItem::request",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
       "declarationId": "rust-observed-c451fe54d899aa14bb1f",
@@ -400834,6 +400750,78 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T091. `ClientBatchItem.__slots__` stores the private read-only state used by indexed batch readback; the ClientBatchItem type and public factory/readback methods remain individually inventoried."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientRequest",
+      "reason": "This Rust enum is the aggregate union for typed operation requests. The foreign facades expose operation-specific request item factories rather than a generic request-union type; each concrete operation remains separately inventoried under its owner.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T091. KMIPKIT-0007-FR-001 owns the typed client-request boundary; this exclusion covers only the Rust aggregate representation or generic readback path, not any concrete operation. The individual request, response, and factory declarations remain subject to their own owner mappings and evidence."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientBatchItem::new",
+      "reason": "This generic Rust constructor accepts any ClientRequest. C, Java, and Python construct items through operation-specific factories rather than a generic ClientBatchItem constructor; the concrete factories remain separately inventoried.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T091. KMIPKIT-0007-FR-001 owns the typed client-request boundary; this exclusion covers only the Rust aggregate representation or generic readback path, not any concrete operation. The individual request, response, and factory declarations remain subject to their own owner mappings and evidence."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientBatchItem::request",
+      "reason": "This Rust accessor returns the generic typed request from a batch item. Foreign batch readback intentionally exposes owned metadata only and no request payload; the typed request models and operation-specific factories remain separately inventoried.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T091. KMIPKIT-0007-FR-001 owns the typed client-request boundary; this exclusion covers only the Rust aggregate representation or generic readback path, not any concrete operation. The individual request, response, and factory declarations remain subject to their own owner mappings and evidence."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientRequest",
+      "reason": "This Rust enum is the aggregate union for typed operation requests. The foreign facades expose operation-specific request item factories rather than a generic request-union type; each concrete operation remains separately inventoried under its owner.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T091. KMIPKIT-0007-FR-001 owns the typed client-request boundary; this exclusion covers only the Rust aggregate representation or generic readback path, not any concrete operation. The individual request, response, and factory declarations remain subject to their own owner mappings and evidence."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientBatchItem::new",
+      "reason": "This generic Rust constructor accepts any ClientRequest. C, Java, and Python construct items through operation-specific factories rather than a generic ClientBatchItem constructor; the concrete factories remain separately inventoried.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T091. KMIPKIT-0007-FR-001 owns the typed client-request boundary; this exclusion covers only the Rust aggregate representation or generic readback path, not any concrete operation. The individual request, response, and factory declarations remain subject to their own owner mappings and evidence."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientBatchItem::request",
+      "reason": "This Rust accessor returns the generic typed request from a batch item. Foreign batch readback intentionally exposes owned metadata only and no request payload; the typed request models and operation-specific factories remain separately inventoried.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T091. KMIPKIT-0007-FR-001 owns the typed client-request boundary; this exclusion covers only the Rust aggregate representation or generic readback path, not any concrete operation. The individual request, response, and factory declarations remain subject to their own owner mappings and evidence."
     }
   ],
   "apiLevels": [
