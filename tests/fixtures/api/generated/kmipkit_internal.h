@@ -644,6 +644,12 @@ int32_t kmipkit_client_batch_item_with_unique_batch_item_id(kmipkit_client_batch
 int32_t kmipkit_client_batch_response_item_count(kmipkit_client_batch_response_t * response, uint64_t * out_count);
 /* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_response_item_at(kmipkit_client_batch_response_t * response, uint64_t index, kmipkit_client_batch_item_response_t ** out_item);
+/* The item handle is borrowed and is not consumed.
+ * The returned out_value is a borrowed byte span into the item-owned buffer. It remains valid and unchanged while this item handle remains open; copy the bytes before releasing the item handle.
+ * out_present distinguishes an absent ID from a present empty Byte String; when out_present is zero, out_value is cleared.
+ */
+/* KMIPKIT-0006-FR-004, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_item_unique_batch_item_id(kmipkit_client_batch_item_t * item, uint8_t * out_present, kmipkit_byte_span_v1_t * out_value);
 /* The item-response handle retains its parent response, so closing the parent batch-response handle does not invalidate this span.
  * The returned out_value is a borrowed byte span into the response-owned buffer. It remains valid and unchanged only while this item-response handle remains open; copy the bytes before releasing the handle.
  */

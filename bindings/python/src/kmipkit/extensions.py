@@ -1606,6 +1606,28 @@ def with_unique_batch_item_id(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_unique_batch_item_id(item: ClientBatchItem) -> bytes | None:
+    """Return a copied request-item ID, preserving absence and present-empty values."""
+    if not isinstance(item, ClientBatchItem):
+        errors.raise_for_status(4)
+    present = ffi.new("uint8_t *")
+    value = ffi.new("kmipkit_byte_span_v1_t *")
+    status = lib.kmipkit_client_batch_item_unique_batch_item_id(
+        item._pointer(), present, value
+    )
+    errors.raise_for_status(status)
+    if present[0] == 0:
+        if value.data != ffi.NULL or value.length != 0:
+            errors.raise_for_status(4)
+        return None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    length = int(value.length)
+    if length > _MAX_UNIQUE_BATCH_ITEM_ID_BYTES or (length > 0 and value.data == ffi.NULL):
+        errors.raise_for_status(4)
+    return bytes(ffi.buffer(value.data, length)) if length else b""
+
+
 def client_batch_item_discover_versions() -> ClientBatchItem:
     """Create an empty Discover Versions request batch item."""
     handle = _make_handle(
@@ -3532,6 +3554,7 @@ __all__ = [
     "TtlvPath",
     "ValidatedExtensionValue",
     "client_batch_item_discover_versions",
+    "client_batch_item_unique_batch_item_id",
     "client_batch_item_ping",
     "client_batch_item_query",
     "client_batch_item_query_with_limits",

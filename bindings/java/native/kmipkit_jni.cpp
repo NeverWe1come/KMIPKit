@@ -4216,6 +4216,21 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
     });
 }
 
+JNIEXPORT jbyteArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemUniqueBatchItemId(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jbyteArray>(env, nullptr, [&] {
+        uint8_t present = 0;
+        kmipkit_byte_span_v1_t value{};
+        const int32_t status = kmipkit_client_batch_item_unique_batch_item_id(
+                from_java_handle<kmipkit_client_batch_item_t>(raw_item), &present, &value);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jbyteArray>(nullptr);
+        }
+        return span_to_java_bytes(env, present, value);
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_extensionInformationCreate(
         JNIEnv* env, jclass, jstring raw_name) {
     return guarded<jlong>(env, 0, [&] {

@@ -4782,6 +4782,35 @@ pub extern "C" fn kmipkit_client_batch_item_response_create_split_key_unique_ide
 }
 
 #[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_unique_batch_item_id(
+    item: *mut kmipkit_client_batch_item_t,
+    out_present: *mut u8,
+    out_value: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let value = scalar_out!(out_value);
+        *present = 0;
+        *value = crate::kmipkit_byte_span_v1_t {
+            data: ptr::null(),
+            length: 0,
+        };
+        let item_handle = read_handle!(item, BatchItem);
+        let HandleValue::BatchItem(item) = &item_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        if let Some(bytes) = item.unique_batch_item_id() {
+            *present = 1;
+            *value = crate::kmipkit_byte_span_v1_t {
+                data: bytes.as_ptr(),
+                length: u64::try_from(bytes.len()).unwrap_or(u64::MAX),
+            };
+        }
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_response_unique_batch_item_id(
     item: *mut kmipkit_client_batch_item_response_t,
     out_present: *mut u8,

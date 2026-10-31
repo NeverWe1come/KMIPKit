@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
@@ -1525,6 +1526,13 @@ public final class ClientBatchItem implements AutoCloseable {
         long nextHandle = NativeExtensionRegistry.clientBatchItemWithUniqueBatchItemId(
                 consumedItem, copy);
         return new ClientBatchItem(nextHandle, extensions);
+    }
+
+    /** Returns a copy of this request item's Unique Batch Item ID, preserving absence. */
+    public Optional<byte[]> uniqueBatchItemId() {
+        NativeExtensionRegistry.ensureLoaded();
+        byte[] value = handle.withValue(NativeExtensionRegistry::clientBatchItemUniqueBatchItemId);
+        return value == null ? Optional.empty() : Optional.of(value.clone());
     }
 
     List<ClientRequestMessageExtension> extensions() {

@@ -281,6 +281,7 @@ public final class NativeExtensionRegistry {
             boolean hasCompromiseOccurrenceDate, long compromiseOccurrenceDate);
     public static native long clientBatchItemRevoke(long request);
     public static native long clientBatchItemWithUniqueBatchItemId(long item, byte[] id);
+    public static native @Nullable byte[] clientBatchItemUniqueBatchItemId(long item);
     public static native long clientBatchItemExtensionCount(long item);
     public static native long clientBatchItemExtensionIdentityAt(long item, long index);
     public static native boolean clientBatchItemExtensionCriticalityIndicatorAt(long item, long index);

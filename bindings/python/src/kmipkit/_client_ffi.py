@@ -426,6 +426,10 @@ ffi.cdef(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
         kmipkit_byte_span_v1_t *out_value);
+    int32_t kmipkit_client_batch_item_unique_batch_item_id(
+        kmipkit_client_batch_item_t *item,
+        uint8_t *out_present,
+        kmipkit_byte_span_v1_t *out_value);
     int32_t kmipkit_client_batch_item_response_pending_correlation_value(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
