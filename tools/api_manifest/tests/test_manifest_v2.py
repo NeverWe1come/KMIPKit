@@ -917,6 +917,11 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(internal["javaException"], "org.kmipkit.KmipException")
         self.assertEqual(internal["pythonException"], "kmipkit.errors.KmipKitError")
 
+    def test_c_error_status_constant_remains_in_header_when_parity_mapping_is_blocked(self) -> None:
+        header = generate.render_c_header(self.checked_in_manifest)
+
+        self.assertIn("#define KMIPKIT_ERROR_INTERNAL ((int32_t)7)", header)
+
     def test_readiness_rejects_duplicate_package_export_declarations(self) -> None:
         manifest = json.loads(json.dumps(self.checked_in_manifest))
         declaration = next(
