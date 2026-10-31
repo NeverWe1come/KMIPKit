@@ -2123,6 +2123,114 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                             declaration["declarationId"], operation["declarations"]["rust"]
                         )
 
+    def test_t091_direct_client_helpers_map_to_single_item_batch_execution(
+        self,
+    ) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        declarations_by_id = {
+            row["declarationId"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        operations = {
+            row["operationId"]: row for row in self.checked_in_manifest["operations"]
+        }
+        cases = {
+            "get_usage_allocation": (
+                "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+                "kmipkit_client_batch_item_get_usage_allocation",
+                "org.kmipkit.extensions.ClientBatchItem.getUsageAllocation",
+                "kmipkit.extensions.client_batch_item_get_usage_allocation",
+            ),
+            "import": (
+                "KMIPKIT-ELEM-OP-C2S-IMPORT",
+                "kmipkit_client_batch_item_import",
+                "org.kmipkit.extensions.ClientBatchItem.importObject",
+                "kmipkit.extensions.client_batch_item_import",
+            ),
+            "interop": (
+                "KMIPKIT-ELEM-OP-C2S-INTEROP",
+                "kmipkit_client_batch_item_interop",
+                "org.kmipkit.extensions.ClientBatchItem.interop",
+                "kmipkit.extensions.client_batch_item_interop",
+            ),
+            "log": (
+                "KMIPKIT-ELEM-OP-C2S-LOG",
+                "kmipkit_client_batch_item_log",
+                "org.kmipkit.extensions.ClientBatchItem.log",
+                "kmipkit.extensions.client_batch_item_log",
+            ),
+            "validate": (
+                "KMIPKIT-ELEM-OP-C2S-VALIDATE",
+                "kmipkit_client_batch_item_validate",
+                "org.kmipkit.extensions.ClientBatchItem.validate",
+                "kmipkit.extensions.client_batch_item_validate",
+            ),
+        }
+        execute_mappings = {
+            "c": {
+                "packageId": "c-kmipkit",
+                "name": "kmipkit_client_execute",
+            },
+            "java": {
+                "packageId": "java-kmipkit",
+                "name": "org.kmipkit.extensions.Client.execute",
+            },
+            "python": {
+                "packageId": "python-kmipkit",
+                "name": "kmipkit.client.Client.execute",
+            },
+        }
+
+        for method, (operation_id, *constructor_names) in cases.items():
+            operation = operations[operation_id]
+            self.assertEqual("verified", operation["apiState"])
+            self.assertTrue(operation["ownerDependency"]["state"] == "approved")
+
+            constructor_declarations = {}
+            for language, constructor_name in zip(
+                ("c", "java", "python"), constructor_names, strict=True
+            ):
+                constructor = declarations[constructor_name]
+                self.assertEqual(operation_id, constructor["capabilityId"])
+                self.assertEqual("verified", constructor["declarationState"])
+                self.assertIn(
+                    constructor["declarationId"], operation["declarations"][language]
+                )
+                constructor_declarations[language] = constructor
+
+            for rust_prefix, package_id in (
+                ("kmipkit_client", "rust-kmipkit-client"),
+                ("kmipkit", "rust-kmipkit"),
+            ):
+                export_name = f"{rust_prefix}::Client::{method}"
+                with self.subTest(export=export_name):
+                    declaration = declarations[export_name]
+                    expected_mappings = {
+                        **execute_mappings,
+                        "rust": {
+                            "packageId": package_id,
+                            "name": export_name,
+                        },
+                    }
+
+                    self.assertEqual("verified", declaration["declarationState"])
+                    self.assertNotIn("candidateSpecId", declaration)
+                    self.assertEqual(operation_id, declaration["capabilityId"])
+                    self.assertEqual(
+                        constructor_declarations["c"]["requirementIds"],
+                        declaration["requirementIds"],
+                    )
+                    self.assertEqual(
+                        operation["approvalEvidence"], declaration["approvalSource"]
+                    )
+                    self.assertEqual(expected_mappings, declaration["languageMappings"])
+                    self.assertIn(
+                        declaration["declarationId"], operation["declarations"]["rust"]
+                    )
+
     def test_t091_add_attribute_request_variants_map_to_verified_operation(self) -> None:
         declarations = {
             row["exportName"]: row
