@@ -255,6 +255,20 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
         self.assertTrue(validator.is_valid("*mut *mut kmipkit_ttlv_structure_t"))
 
+    def test_rust_type_schema_accepts_credential_view_iterator(self) -> None:
+        validator = Draft202012Validator(self.schema["$defs"]["rustType"])
+
+        self.assertTrue(
+            validator.is_valid(
+                "impl ExactSizeIterator<Item = CredentialView<'_>> + '_"
+            )
+        )
+
+    def test_python_function_name_schema_accepts_private_class_helpers(self) -> None:
+        validator = Draft202012Validator(self.schema["$defs"]["pythonFunctionName"])
+
+        self.assertTrue(validator.is_valid("Authentication._credential_count"))
+
     def test_c_parameter_schema_accepts_counted_fixed_width_input_arrays(self) -> None:
         validator = Draft202012Validator(
             {"$defs": self.schema["$defs"], "$ref": "#/$defs/cParameter"}
@@ -271,12 +285,35 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
         self.assertTrue(validator.is_valid(parameter))
 
+    def test_c_parameter_schema_accepts_consumed_handle_arrays(self) -> None:
+        validator = Draft202012Validator(
+            {"$defs": self.schema["$defs"], "$ref": "#/$defs/cParameter"}
+        )
+        parameter = {
+            "name": "credentials",
+            "kind": "handle-array",
+            "type": "kmipkit_credential_t **",
+            "handleType": "kmipkit_credential_t",
+            "ownership": "consumed",
+            "countParameter": "credential_count",
+            "nullable": False,
+        }
+
+        self.assertTrue(validator.is_valid(parameter))
+
     def test_requirement_ids_accept_referenced_kmip_7_12_sections(self) -> None:
         for definition in ("requirementId", "v2RequirementId"):
             validator = Draft202012Validator(self.schema["$defs"][definition])
             self.assertTrue(validator.is_valid("KMIPKIT-REQ-SPEC-7.12-003"))
             self.assertTrue(validator.is_valid("KMIPKIT-REQ-SPEC-7.12-005-001"))
         self.assertFalse(validator.is_valid("*mut *mut *mut kmipkit_ttlv_structure_t"))
+
+    def test_v2_requirement_ids_accept_referenced_kmip_9_4_sections(self) -> None:
+        for definition in ("requirementId", "v2RequirementId"):
+            validator = Draft202012Validator(self.schema["$defs"][definition])
+            self.assertTrue(validator.is_valid("KMIPKIT-REQ-SPEC-9.4-001-001"))
+            self.assertTrue(validator.is_valid("KMIPKIT-REQ-SPEC-9.4-001-002"))
+            self.assertTrue(validator.is_valid("KMIPKIT-REQ-SPEC-9.4-002"))
 
     def test_blocked_condition_schema_round_trips_lifetime_and_trait_bounds(self) -> None:
         manifest = _valid_v2_manifest()
