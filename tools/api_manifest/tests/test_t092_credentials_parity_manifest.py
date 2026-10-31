@@ -69,6 +69,7 @@ EXPECTED_MAPPED_CREDENTIAL_EXPORTS = (
     | EXPECTED_NONCE_EXPORTS
     | CREDENTIAL_EXPORTS
     | ATTESTATION_CREDENTIAL_EXPORTS
+    | DEVICE_CREDENTIAL_EXPORTS
     | AUTHENTICATION_EXPORTS
 )
 NONCE_REQUIREMENTS = {
@@ -122,6 +123,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                         "kmipkit_protocol::Nonce",
                         "kmipkit_protocol::Credential",
                         "kmipkit_protocol::AttestationCredential",
+                        "kmipkit_protocol::DeviceCredential",
                         "kmipkit_protocol::Authentication",
                         "kmipkit_protocol::CredentialView",
                     }
