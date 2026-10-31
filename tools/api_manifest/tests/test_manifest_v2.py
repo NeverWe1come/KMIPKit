@@ -2196,6 +2196,80 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual(expected_mappings, declaration["languageMappings"])
                 self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])
 
+    def test_t091_constraint_request_fields_and_helpers_map_to_verified_operations(
+        self,
+    ) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        operations = {
+            row["operationId"]: row for row in self.checked_in_manifest["operations"]
+        }
+        variants = {
+            "GetConstraints": (
+                "KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS",
+                "kmipkit_client::ClientRequest::GetConstraints",
+            ),
+            "GetUsageAllocation": (
+                "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+                "kmipkit_client::ClientRequest::get_usage_allocation",
+            ),
+            "SetConstraints": (
+                "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS",
+                "kmipkit_client::ClientRequest::SetConstraints",
+            ),
+            "SetDefaults": (
+                "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
+                "kmipkit_client::ClientRequest::SetDefaults",
+            ),
+        }
+        helpers = {
+            "get_constraints": "KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS",
+            "set_constraints": "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS",
+            "set_defaults": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
+        }
+        expected_exports = []
+        for variant, (operation_id, canonical_name) in variants.items():
+            for prefix in ("kmipkit_client", "kmipkit"):
+                expected_exports.append(
+                    (f"{prefix}::ClientRequest::{variant}::0", operation_id, canonical_name)
+                )
+        for method, operation_id in helpers.items():
+            canonical_name = next(
+                canonical
+                for candidate_id, canonical in variants.values()
+                if candidate_id == operation_id
+            )
+            for prefix in ("kmipkit_client", "kmipkit"):
+                expected_exports.append(
+                    (f"{prefix}::ClientRequest::{method}", operation_id, canonical_name)
+                )
+
+        self.assertEqual(14, len(expected_exports))
+        for export_name, operation_id, canonical_name in expected_exports:
+            declaration = declarations[export_name]
+            operation = operations[operation_id]
+            canonical = declarations[canonical_name]
+            with self.subTest(export=export_name):
+                expected_mappings = {
+                    language: mapping.copy()
+                    for language, mapping in canonical["languageMappings"].items()
+                }
+                expected_mappings["rust"] = {
+                    "packageId": declaration["packageId"],
+                    "name": export_name,
+                }
+                self.assertEqual("verified", operation["apiState"])
+                self.assertEqual("KMIPKIT-0039", operation["featureSpecId"])
+                self.assertEqual("verified", declaration["declarationState"])
+                self.assertNotIn("candidateSpecId", declaration)
+                self.assertEqual(operation_id, declaration["capabilityId"])
+                self.assertEqual(canonical["requirementIds"], declaration["requirementIds"])
+                self.assertEqual(operation["approvalEvidence"], declaration["approvalSource"])
+                self.assertEqual(expected_mappings, declaration["languageMappings"])
+                self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])
+
     def test_t091_discover_versions_response_view_maps_to_existing_version_accessor(
         self,
     ) -> None:
