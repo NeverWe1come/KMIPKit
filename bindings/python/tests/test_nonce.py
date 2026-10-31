@@ -146,6 +146,26 @@ class NonceTests(unittest.TestCase):
             view.close()
             restored.close()
 
+    def test_nonce_callback_cannot_reset_the_scoped_view_guard(self) -> None:
+        nonce = kmipkit.credentials.Nonce.from_ttlv(nonce_structure())
+
+        def inspect(view: ttlv.TtlvStructureView) -> None:
+            with self.assertRaises(AttributeError):
+                setattr(nonce, "_active_views", 0)
+            with self.assertRaises(errors.InvalidInputError):
+                nonce.into_ttlv()
+            self.assertEqual(
+                ((NONCE_ID_TAG, NONCE_ID), (NONCE_VALUE_TAG, NONCE_VALUE)),
+                read_structure(view),
+            )
+
+        nonce.with_ttlv(inspect)
+        self.assertEqual(
+            ((NONCE_ID_TAG, NONCE_ID), (NONCE_VALUE_TAG, NONCE_VALUE)),
+            nonce.with_ttlv(read_structure),
+        )
+        nonce.close()
+
 
 if __name__ == "__main__":
     unittest.main()
