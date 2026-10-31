@@ -922,6 +922,24 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
         self.assertIn("#define KMIPKIT_ERROR_INTERNAL ((int32_t)7)", header)
 
+    def test_c_header_does_not_emit_unreleased_blocked_error_statuses(self) -> None:
+        header = generate.render_c_header(self.checked_in_manifest)
+        blocked_codes = {
+            item["cCode"]
+            for item in self.checked_in_manifest["errorCategories"]
+            if item["id"] != "internal"
+            and not any(
+                row["packageId"] == "c-kmipkit"
+                and row["exportName"] == item["cCode"]
+                and row["declarationState"] in {"declared", "verified"}
+                for row in self.checked_in_manifest["publicDeclarations"]
+            )
+        }
+
+        for code in blocked_codes:
+            with self.subTest(code=code):
+                self.assertNotIn(f"#define {code} ", header)
+
     def test_readiness_rejects_duplicate_package_export_declarations(self) -> None:
         manifest = json.loads(json.dumps(self.checked_in_manifest))
         declaration = next(
