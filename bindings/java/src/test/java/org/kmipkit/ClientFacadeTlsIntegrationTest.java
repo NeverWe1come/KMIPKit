@@ -2922,6 +2922,17 @@ final class ClientFacadeTlsIntegrationTest {
                 try (TtlvStructure payload = outcome.responsePayloadTtlv().orElseThrow();
                         TtlvStructureView view = payload.view()) {
                     assertEquals(2, view.itemCount());
+                    try (TtlvItemView correlationItem = view.itemAt(0);
+                            Tag correlationTag = correlationItem.tag();
+                            TtlvValueView correlationValue = correlationItem.value()) {
+                        assertEquals(0x420006, correlationTag.raw());
+                        assertEquals(TtlvItemType.ByteString, correlationItem.itemType());
+                        assertEquals(correlation.length, correlationValue.byteLength());
+                        for (int index = 0; index < correlation.length; index++) {
+                            assertEquals(
+                                    correlation[index], (byte) correlationValue.byteAt(index));
+                        }
+                    }
                 }
             }
             try (AsyncOperationOutcome outcome = client.executeProcessWithOptions(

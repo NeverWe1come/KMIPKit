@@ -100,6 +100,7 @@ def _outcome_stubs(
     *,
     response_correlation: bytes | None = None,
     cancellation_result: int | None = None,
+    response_payload_structure: ttlv.Structure | None = None,
 ) -> SimpleNamespace:
     outcome_handle = ffi.cast("kmipkit_client_async_operation_outcome_t *", 42)
     native_correlation = (
@@ -131,8 +132,14 @@ def _outcome_stubs(
         return 0
 
     def response_payload(_outcome, present, output) -> int:
-        present[0] = 0
-        output[0] = ffi.NULL
+        if response_payload_structure is None:
+            present[0] = 0
+            output[0] = ffi.NULL
+        else:
+            present[0] = 1
+            native_payload, _owner = response_payload_structure._take()
+            address = int(ttlv.ffi.cast("uintptr_t", native_payload))
+            output[0] = ffi.cast("kmipkit_ttlv_structure_t *", address)
         return 0
 
     return SimpleNamespace(
@@ -146,18 +153,39 @@ def _outcome_stubs(
     )
 
 
-def test_cancel_preserves_the_exact_binary_correlation(monkeypatch) -> None:
+def _cancel_response_payload(
+    correlation: bytes, limits: ttlv.CodecLimits
+) -> ttlv.Structure:
+    raw_tag = ttlv.raw_tag_from_raw(0x0042_0006)
+    tag = ttlv.raw_tag_try_checked(raw_tag)
+    value = ttlv.ttlv_value_byte_string(correlation, limits)
+    item = ttlv.ttlv_item_create(tag, value, limits)
+    empty = ttlv.ttlv_structure_create()
+    try:
+        return ttlv.ttlv_structure_with_item(empty, item, limits)
+    finally:
+        raw_tag.close()
+        tag.close()
+        value.close()
+        item.close()
+        empty.close()
+
+
+def test_cancel_preserves_exact_echo_in_response_payload(monkeypatch) -> None:
     expected = b"\x00\xff\x80\x12\x00"
     echoed = b"\x80\x00\xfe"
     cancellation_result = 0xF000_0001
     observed: list[bytes] = []
     released: list[object] = []
+    limits = ttlv.codec_limits_create(16 * 1024 * 1024, 64, 100_000)
+    payload_structure = _cancel_response_payload(echoed, limits)
     # KMIP 2.1 section 11.36, Table 470 assigns Cancel the Operation value 0x19.
     stubs = _outcome_stubs(
         0x19,
         released,
         response_correlation=None,
         cancellation_result=cancellation_result,
+        response_payload_structure=payload_structure,
     )
 
     def execute_cancel(_client, data, length, _limits, output) -> int:
@@ -174,7 +202,7 @@ def test_cancel_preserves_the_exact_binary_correlation(monkeypatch) -> None:
     monkeypatch.setattr(client, "lib", fake)
     monkeypatch.setattr(client.Client, "_pointer", lambda _self: object())
     instance = object.__new__(client.Client)
-    limits = ttlv.codec_limits_create(16 * 1024 * 1024, 64, 100_000)
+    payload: ttlv.Structure | None = None
 
     try:
         outcome = client.Client.execute_cancel(instance, expected, limits)
@@ -188,7 +216,7 @@ def test_cancel_preserves_the_exact_binary_correlation(monkeypatch) -> None:
             payload = outcome.response_payload_ttlv
             assert payload is not None
             with ttlv.ttlv_structure_view(payload) as payload_view:
-                assert ttlv.ttlv_structure_view_item_count(payload_view) == 1
+                assert ttlv.ttlv_structure_view_item_count(payload_view) == 2
                 with ttlv.ttlv_structure_view_item_at(payload_view, 0) as item_view:
                     with ttlv.ttlv_item_view_tag(item_view) as tag:
                         assert ttlv.tag_value(tag) == 0x0042_0006
@@ -202,10 +230,25 @@ def test_cancel_preserves_the_exact_binary_correlation(monkeypatch) -> None:
                             ttlv.ttlv_value_view_byte_at(value_view, index)
                             for index in range(length)
                         )
-            assert observed_echo == echoed
+                with ttlv.ttlv_structure_view_item_at(payload_view, 1) as item_view:
+                    with ttlv.ttlv_item_view_tag(item_view) as tag:
+                        assert ttlv.tag_value(tag) == 0x0042_0012
+                    assert (
+                        ttlv.ttlv_item_view_type(item_view)
+                        == ttlv.ItemType.Enumeration
+                    )
+                    with ttlv.ttlv_item_view_value(item_view) as value_view:
+                        assert (
+                            ttlv.ttlv_value_view_enumeration(value_view)
+                            == cancellation_result
+                        )
+            assert observed_echo == expected
         finally:
             outcome.close()
     finally:
+        if payload is not None:
+            payload.close()
+        payload_structure.close()
         limits.close()
 
     assert released == [stubs.outcome_handle]
