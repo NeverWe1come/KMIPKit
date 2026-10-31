@@ -115,6 +115,8 @@ def test_baseline_selection_fails_closed_before_a_cffi_transport_connection() ->
     unknown_batch = client.Batch.create()
     unknown_batch.add_item(extensions.client_batch_item_discover_versions())
     with (
+        batch,
+        unknown_batch,
         configuration,
         client.Client.create(
             configuration, mtls_transport_config(port, _TLS_FIXTURES)
