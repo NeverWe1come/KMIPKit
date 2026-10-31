@@ -688,9 +688,13 @@ class BindingExportAuditTests(unittest.TestCase):
         native_members = {
             "CLIENT", "CLIENT_BATCH", "CLIENT_BATCH_ITEM_RESPONSE",
             "CLIENT_BATCH_RESPONSE", "CODEC_LIMITS", "TRANSPORT_CONFIGURATION",
+            "CREDENTIAL", "NONCE",
             "SPLIT_KEY_REFERENCE", "USAGE_ALLOCATION_CONTEXT",
             "clientBatchAddErrorContinuationValue", "clientBatchAddItem",
             "clientExecuteWithOptions",
+            "credentialFromTtlv", "credentialIntoTtlv", "credentialTtlvView",
+            "credentialType", "credentialTypeRaw",
+            "nonceFromTtlv", "nonceTtlvView", "nonceIntoTtlv",
             "clientBatchCreate", "clientBatchItemResponseMetadata",
             "clientBatchItemResponsePendingCorrelationValue",
             "clientBatchItemResponseDiscoverVersionsSupportedVersions",

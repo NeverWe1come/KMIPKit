@@ -6208,7 +6208,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
-        self.assertEqual(len(declarations), 978)
+        self.assertEqual(len(declarations), 986)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         batch_item = by_name["org.kmipkit.extensions.ClientBatchItem"]
         self.assertEqual(batch_item["kind"], "type")
@@ -6245,6 +6245,14 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(async_extension_ttlv["declarationState"], "declared")
         native_handle = by_name["org.kmipkit.internal.NativeHandle"]
         self.assertEqual(native_handle["declarationState"], "blocked")
+        credential = by_name["org.kmipkit.credentials.Credential"]
+        self.assertEqual(credential["kind"], "type")
+        self.assertEqual(credential["declarationState"], "declared")
+        credential_from_ttlv = by_name[
+            "org.kmipkit.credentials.Credential.fromTtlv"
+        ]
+        self.assertEqual(credential_from_ttlv["kind"], "java-member")
+        self.assertEqual(credential_from_ttlv["declarationState"], "declared")
 
     def test_crypto_response_java_types_and_accessors_are_inventoried(self) -> None:
         by_name = {
@@ -6580,7 +6588,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_python_exports_and_lifecycle(self) -> None:
         declarations = self.declarations_for_package("python-kmipkit")
-        self.assertEqual(len(declarations), 949)
+        self.assertEqual(len(declarations), 959)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         close_method = by_name["kmipkit.extensions.ClientBatchItem.close"]
         self.assertEqual(close_method["kind"], "python-export")
@@ -6612,6 +6620,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(async_extension_ttlv["declarationState"], "declared")
         item_type = by_name["kmipkit.ttlv.ItemType"]
         self.assertEqual(item_type["declarationState"], "declared")
+        credential = by_name["kmipkit.credentials.Credential"]
+        self.assertEqual(credential["kind"], "type")
+        self.assertEqual(credential["declarationState"], "declared")
+        credential_from_ttlv = by_name["kmipkit.credentials.Credential.from_ttlv"]
+        self.assertEqual(credential_from_ttlv["kind"], "python-export")
+        self.assertEqual(credential_from_ttlv["declarationState"], "declared")
         enum_value = by_name["kmipkit.ttlv.ItemType.Structure"]
         self.assertEqual(enum_value["declarationState"], "declared")
         error_type = by_name["kmipkit.errors.CompatibilityMismatchError"]
