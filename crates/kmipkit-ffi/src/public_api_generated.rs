@@ -3426,9 +3426,19 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::ClientRequest::Certify",
     ),
     (
+        "rust-observed-cd342d2660a92322c217",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::Certify::0",
+    ),
+    (
         "rust-observed-8a97c84f665c60d4b3c4",
         "rust-kmipkit",
         "kmipkit::ClientRequest::Check",
+    ),
+    (
+        "rust-observed-7d0a0d3b5012f4f4d679",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::Check::0",
     ),
     (
         "rust-observed-a1fa33e7195590862bae",
@@ -3506,6 +3516,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::ClientRequest::ObtainLease",
     ),
     (
+        "rust-observed-f1b82ff813b0893bad1e",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::ObtainLease::0",
+    ),
+    (
         "rust-observed-f64599d7d04fbe0202f8",
         "rust-kmipkit",
         "kmipkit::ClientRequest::Pkcs11",
@@ -3516,9 +3531,19 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::ClientRequest::ReProvision",
     ),
     (
+        "rust-observed-dbede12607e5ca651b35",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::ReProvision::0",
+    ),
+    (
         "rust-observed-2e85d64836128fdd1bb6",
         "rust-kmipkit",
         "kmipkit::ClientRequest::Recertify",
+    ),
+    (
+        "rust-observed-d5527a5f01b746b4daa2",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::Recertify::0",
     ),
     (
         "rust-observed-46f5af9fe110693e47ff",
@@ -3526,9 +3551,19 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::ClientRequest::Register",
     ),
     (
+        "rust-observed-9b94cf8e6674f17012f2",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::Register::0",
+    ),
+    (
         "rust-observed-ab0c8fbacb89f8088739",
         "rust-kmipkit",
         "kmipkit::ClientRequest::Rekey",
+    ),
+    (
+        "rust-observed-8375df735b12188700eb",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::Rekey::0",
     ),
     (
         "rust-observed-85efc189fa4defe3324f",
@@ -3536,9 +3571,19 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::ClientRequest::RekeyKeyPair",
     ),
     (
+        "rust-observed-d2e1e440cc7838c81692",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::RekeyKeyPair::0",
+    ),
+    (
         "rust-observed-27bee41682417623e4b7",
         "rust-kmipkit",
         "kmipkit::ClientRequest::Revoke",
+    ),
+    (
+        "rust-observed-19629c5fe423355859ad",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::Revoke::0",
     ),
     (
         "rust-observed-2d9d58af46509cacef8b",
@@ -3564,6 +3609,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-10cdec8ac838c7ffc5ba",
         "rust-kmipkit",
         "kmipkit::ClientRequest::SetDefaults",
+    ),
+    (
+        "rust-observed-680108555def35d5803e",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::certify",
     ),
     (
         "rust-observed-93ba766af4a8d63c0373",
@@ -3601,9 +3651,34 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::ClientRequest::pkcs11",
     ),
     (
+        "rust-observed-f12ee8b89c80c88461c7",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::recertify",
+    ),
+    (
+        "rust-observed-18689269a09f80e02fa6",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::register",
+    ),
+    (
+        "rust-observed-e20c504a3bc9d8be18cf",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::rekey",
+    ),
+    (
+        "rust-observed-f396916f1529c64fd411",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::rekey_key_pair",
+    ),
+    (
         "rust-observed-bdb4e85f71385f7583f7",
         "rust-kmipkit",
         "kmipkit::ClientRequest::reprovision",
+    ),
+    (
+        "rust-observed-117be67a13ea5ae3a9f1",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::revoke",
     ),
     (
         "rust-observed-55cc724aa1f6075434b4",
@@ -3961,9 +4036,19 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientRequest::Certify",
     ),
     (
+        "rust-observed-30de307d2133d8c0d3d2",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::Certify::0",
+    ),
+    (
         "rust-observed-4d05f9d9fc8377cd7a6f",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::Check",
+    ),
+    (
+        "rust-observed-4101af17eabc6602faaa",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::Check::0",
     ),
     (
         "rust-observed-ed5979e0f30e4e217c74",
@@ -4041,6 +4126,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientRequest::ObtainLease",
     ),
     (
+        "rust-observed-0cfe2e835f6add03002b",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::ObtainLease::0",
+    ),
+    (
         "rust-observed-861ab9714c5d1ea6823a",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::Pkcs11",
@@ -4051,9 +4141,19 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientRequest::ReProvision",
     ),
     (
+        "rust-observed-45a2ade01f4ee70c0372",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::ReProvision::0",
+    ),
+    (
         "rust-observed-0d0bac2451886e74583a",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::Recertify",
+    ),
+    (
+        "rust-observed-5dd12d4ecfe06212aa42",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::Recertify::0",
     ),
     (
         "rust-observed-3e8cb4486c0a6d525092",
@@ -4061,9 +4161,19 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientRequest::Register",
     ),
     (
+        "rust-observed-be954cfee94f2d78145e",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::Register::0",
+    ),
+    (
         "rust-observed-c04397047a73d2d560fd",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::Rekey",
+    ),
+    (
+        "rust-observed-39e2392a430e5aec384e",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::Rekey::0",
     ),
     (
         "rust-observed-ea621624ffc08446e4eb",
@@ -4071,9 +4181,19 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientRequest::RekeyKeyPair",
     ),
     (
+        "rust-observed-6866150b70bd57c825d2",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::RekeyKeyPair::0",
+    ),
+    (
         "rust-observed-0e315a6510ccb54d69ef",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::Revoke",
+    ),
+    (
+        "rust-observed-a8cfbccc5dd9cddd9df3",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::Revoke::0",
     ),
     (
         "rust-observed-78417d6a93db022ae787",
@@ -4099,6 +4219,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-4d1210647d305501dc77",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::SetDefaults",
+    ),
+    (
+        "rust-observed-8ec4bffbbf2d4498daeb",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::certify",
     ),
     (
         "rust-observed-1cc0c37b6e3da35277b2",
@@ -4136,9 +4261,34 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientRequest::pkcs11",
     ),
     (
+        "rust-observed-ef05c2a46dbe1a74a5c5",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::recertify",
+    ),
+    (
+        "rust-observed-b493d9b230f2563cff02",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::register",
+    ),
+    (
+        "rust-observed-eaad70a397b68ad3dff9",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::rekey",
+    ),
+    (
+        "rust-observed-4ab6ba3b1c05356bdc16",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::rekey_key_pair",
+    ),
+    (
         "rust-observed-62f5f2ac47be3ef58afc",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::reprovision",
+    ),
+    (
+        "rust-observed-3d8d2fc817470e0a8c18",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::revoke",
     ),
     (
         "rust-observed-ff657987e32f03b3a43d",
