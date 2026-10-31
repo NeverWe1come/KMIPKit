@@ -2906,92 +2906,115 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 client_execution["mappings"][language],
             )
 
-    def test_t091_async_operation_options_map_to_shared_execute_options(self) -> None:
+    def test_t091_async_operation_options_map_to_direct_specialized_methods(self) -> None:
         cases = {
-            "execute_poll_with_options": "KMIPKIT-ELEM-OP-C2S-POLL",
-            "execute_cancel_with_options": "KMIPKIT-ELEM-OP-C2S-CANCEL",
-            "execute_process_with_options": "KMIPKIT-ELEM-OP-C2S-PROCESS",
-            "execute_query_async_requests_with_options": (
-                "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS"
+            "poll": (
+                "KMIPKIT-ELEM-OP-C2S-POLL",
+                "KMIPKIT-0009-FR-003",
+                "kmipkit_client_execute_poll_with_options_v1",
+                "executePollWithOptions",
+                "execute_poll_with_options",
+            ),
+            "cancel": (
+                "KMIPKIT-ELEM-OP-C2S-CANCEL",
+                "KMIPKIT-0009-FR-004",
+                "kmipkit_client_execute_cancel_with_options_v1",
+                "executeCancelWithOptions",
+                "execute_cancel_with_options",
+            ),
+            "process": (
+                "KMIPKIT-ELEM-OP-C2S-PROCESS",
+                "KMIPKIT-0009-FR-005",
+                "kmipkit_client_execute_process_with_options_v1",
+                "executeProcessWithOptions",
+                "execute_process_with_options",
+            ),
+            "query_async_requests": (
+                "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS",
+                "KMIPKIT-0009-FR-006",
+                "kmipkit_client_execute_query_async_requests_with_options_v1",
+                "executeQueryAsyncRequestsWithOptions",
+                "execute_query_async_requests_with_options",
             ),
         }
         declarations = {
             row["exportName"]: row
             for row in self.checked_in_manifest["publicDeclarations"]
         }
-        declarations_by_id = {
-            row["declarationId"]: row
-            for row in self.checked_in_manifest["publicDeclarations"]
+        functions = {
+            row["id"]: row for row in self.checked_in_manifest["functions"]
         }
         operations_by_id = {
             row["operationId"]: row for row in self.checked_in_manifest["operations"]
         }
-        client_execution = next(
+        async_capability = next(
             row
             for row in self.checked_in_manifest["capabilities"]
-            if row["capabilityId"] == "client_execution"
+            if row["capabilityId"] == "client_asynchronous_operations"
         )
 
-        for method, operation_id in cases.items():
+        for method, (operation_id, owner_requirement, c_symbol, java_method, python_method) in cases.items():
             operation = operations_by_id[operation_id]
-            owner_declarations = [
-                declarations_by_id[declaration_id]
-                for declaration_id in operation["declarations"]["rust"]
-            ]
-            owner_requirements = {
-                requirement_id
-                for owner_declaration in owner_declarations
-                for requirement_id in owner_declaration["requirementIds"]
-            }
-            owner_source = next(
-                owner_declaration["approvalSource"]
-                for owner_declaration in owner_declarations
-                if "approvalSource" in owner_declaration
-            )
-            expected_requirements = sorted(
-                owner_requirements
-                | {"KMIPKIT-0013-FR-011", "KMIPKIT-0043-FR-021"}
-            )
+            function_id = f"client_execute_{method}_with_options"
+            with self.subTest(function=function_id):
+                function = functions[function_id]
+                self.assertEqual(
+                    f"execute_{method}_with_options", function["rust"]["name"]
+                )
+                self.assertEqual(c_symbol, function["c"]["symbol"])
+                self.assertEqual(java_method, function["java"]["method"])
+                self.assertEqual(
+                    f"Client.{python_method}", function["python"]["function"]
+                )
+                self.assertIn(owner_requirement, function["requirementIds"])
+                self.assertIn("KMIPKIT-0013-FR-011", function["requirementIds"])
+                self.assertIn("KMIPKIT-0043-FR-010", function["requirementIds"])
+                self.assertIn("KMIPKIT-0043-FR-021", function["requirementIds"])
+                self.assertIn("KMIPKIT-0043-FR-022", function["requirementIds"])
 
             for package_id, rust_prefix in (
                 ("rust-kmipkit-client", "kmipkit_client::"),
                 ("rust-kmipkit", "kmipkit::"),
             ):
-                export_name = f"{rust_prefix}Client::{method}"
+                export_name = f"{rust_prefix}Client::execute_{method}_with_options"
                 with self.subTest(export=export_name):
                     declaration = declarations[export_name]
-                    self.assertEqual(operation["apiState"], declaration["declarationState"])
-                    self.assertEqual(operation_id, declaration["capabilityId"])
-                    self.assertNotIn("candidateSpecId", declaration)
-                    self.assertNotIn("blockedReason", declaration)
-                    self.assertEqual(owner_source, declaration["approvalSource"])
-                    self.assertEqual(expected_requirements, declaration["requirementIds"])
+                    self.assertEqual("declared", declaration["declarationState"])
+                    self.assertEqual("client_asynchronous_operations", declaration["capabilityId"])
+                    self.assertEqual(package_id, declaration["packageId"])
+                    self.assertEqual(
+                        operation["approvalEvidence"]["path"],
+                        declaration["approvalSource"]["path"],
+                    )
+                    self.assertIn(owner_requirement, declaration["requirementIds"])
+                    self.assertIn("KMIPKIT-0013-FR-011", declaration["requirementIds"])
+                    self.assertIn("KMIPKIT-0043-FR-010", declaration["requirementIds"])
+                    self.assertIn("KMIPKIT-0043-FR-021", declaration["requirementIds"])
+                    self.assertIn("KMIPKIT-0043-FR-022", declaration["requirementIds"])
                     self.assertEqual(
                         {
                             "rust": {"packageId": package_id, "name": export_name},
-                            "c": {
-                                "packageId": "c-kmipkit",
-                                "name": "kmipkit_client_execute_with_options_v1",
-                            },
+                            "c": {"packageId": "c-kmipkit", "name": c_symbol},
                             "java": {
                                 "packageId": "java-kmipkit",
-                                "name": "org.kmipkit.extensions.Client.executeWithOptions",
+                                "name": f"org.kmipkit.extensions.Client.{java_method}",
                             },
                             "python": {
                                 "packageId": "python-kmipkit",
-                                "name": "kmipkit.client.Client.execute_with_options",
+                                "name": f"kmipkit.client.Client.{python_method}",
                             },
                         },
                         declaration["languageMappings"],
                     )
-                    self.assertIn(
-                        declaration["declarationId"], operation["declarations"]["rust"]
-                    )
-                    for language in ("c", "java", "python"):
-                        self.assertIn(
-                            declaration["languageMappings"][language]["name"],
-                            client_execution["mappings"][language],
-                        )
+                    self.assertNotIn("execute_with_options", str(declaration["languageMappings"]))
+                    self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])
+
+            for language, name in (
+                ("c", c_symbol),
+                ("java", f"org.kmipkit.extensions.Client.{java_method}"),
+                ("python", f"kmipkit.client.Client.{python_method}"),
+            ):
+                self.assertIn(name, async_capability["mappings"][language])
 
     def test_t091_client_operation_options_methods_map_to_shared_execute_options(self) -> None:
         cases = (

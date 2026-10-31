@@ -2833,7 +2833,8 @@ final class ClientFacadeTlsIntegrationTest {
                                 TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
                         .build();
                 Client client = Client.create(extensions, transport);
-                AsyncOperationOutcome outcome = client.executePoll(correlation, CodecLimits.defaults())) {
+                AsyncOperationOutcome outcome = client.executePollWithOptions(
+                        correlation, CodecLimits.defaults(), RequestOptions.defaults())) {
             var metadata = outcome.metadataV1();
             assertEquals(0x1a, metadata.operation());
             assertTrue(metadata.outcomeKind().isPending());
@@ -2914,7 +2915,8 @@ final class ClientFacadeTlsIntegrationTest {
                                 TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
                         .build();
                 Client client = Client.create(extensions, transport)) {
-            try (AsyncOperationOutcome outcome = client.executeCancel(correlation, CodecLimits.defaults())) {
+            try (AsyncOperationOutcome outcome = client.executeCancelWithOptions(
+                    correlation, CodecLimits.defaults(), RequestOptions.defaults())) {
                 assertEquals(0x19, outcome.metadataV1().operation());
                 assertEquals(1, outcome.metadataV1().cancellationResult().orElseThrow());
                 try (TtlvStructure payload = outcome.responsePayloadTtlv().orElseThrow();
@@ -2922,8 +2924,8 @@ final class ClientFacadeTlsIntegrationTest {
                     assertEquals(2, view.itemCount());
                 }
             }
-            try (AsyncOperationOutcome outcome = client.executeProcess(
-                    correlation, CodecLimits.defaults(), OptionalLong.empty())) {
+            try (AsyncOperationOutcome outcome = client.executeProcessWithOptions(
+                    correlation, CodecLimits.defaults(), OptionalLong.empty(), RequestOptions.defaults())) {
                 assertEquals(0x3a, outcome.metadataV1().operation());
                 assertFalse(outcome.withAsynchronousCorrelationValue(value -> {
                     throw new AssertionError("unexpected correlation callback: " + value.remaining());
@@ -2933,9 +2935,9 @@ final class ClientFacadeTlsIntegrationTest {
                     assertEquals(0, view.itemCount());
                 }
             }
-            try (AsyncOperationOutcome outcome = client.executeQueryAsyncRequests(
+            try (AsyncOperationOutcome outcome = client.executeQueryAsyncRequestsWithOptions(
                     CodecLimits.defaults(), List.of(queryCorrelation), List.of(0xdead_beefL),
-                    OptionalLong.of(2))) {
+                    OptionalLong.of(2), RequestOptions.defaults())) {
                 assertEquals(0x39, outcome.metadataV1().operation());
                 assertFalse(outcome.withAsynchronousCorrelationValue(value -> {
                     throw new AssertionError("unexpected correlation callback: " + value.remaining());

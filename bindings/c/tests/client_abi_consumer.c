@@ -17,6 +17,37 @@ static int execute_with_options_and_error_ttlv_clears_outputs(void) {
     return status == T076_ERROR_INVALID_INPUT && response == 0 && error_response == 0;
 }
 
+static int async_operation_options_symbols_clear_outputs(void) {
+    kmipkit_request_options_v1_t options = {0};
+    options.struct_size = (uint32_t)sizeof(options);
+    options.abi_version = UINT32_C(1);
+    kmipkit_client_async_operation_outcome_t *outcome =
+        (kmipkit_client_async_operation_outcome_t *)(uintptr_t)1;
+
+    if (kmipkit_client_execute_poll_with_options_v1(
+            0, 0, 0, 0, &options, &outcome) != T076_ERROR_INVALID_INPUT || outcome != 0) {
+        return 0;
+    }
+    outcome = (kmipkit_client_async_operation_outcome_t *)(uintptr_t)1;
+    if (kmipkit_client_execute_cancel_with_options_v1(
+            0, 0, 0, 0, &options, &outcome) != T076_ERROR_INVALID_INPUT || outcome != 0) {
+        return 0;
+    }
+    outcome = (kmipkit_client_async_operation_outcome_t *)(uintptr_t)1;
+    if (kmipkit_client_execute_process_with_options_v1(
+            0, 0, 0, 0, 0, 0, &options, &outcome) !=
+            T076_ERROR_INVALID_INPUT || outcome != 0) {
+        return 0;
+    }
+    outcome = (kmipkit_client_async_operation_outcome_t *)(uintptr_t)1;
+    if (kmipkit_client_execute_query_async_requests_with_options_v1(
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &options, &outcome) !=
+            T076_ERROR_INVALID_INPUT || outcome != 0) {
+        return 0;
+    }
+    return 1;
+}
+
 static int execute_with_error_ttlv_clears_outputs(void) {
     kmipkit_client_batch_response_t *response = (kmipkit_client_batch_response_t *)(uintptr_t)1;
     kmipkit_ttlv_structure_t *error_response = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
@@ -6307,6 +6338,9 @@ int kmipkit_client_abi_c_consumer_execute_tls(
 int main(int argc, char **argv) {
     if (!execute_with_options_and_error_ttlv_clears_outputs()) {
         return 22;
+    }
+    if (!async_operation_options_symbols_clear_outputs()) {
+        return 25;
     }
     if (!execute_with_error_ttlv_clears_outputs()) {
         return 23;
