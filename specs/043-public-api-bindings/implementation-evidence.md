@@ -7544,3 +7544,17 @@ Approved KMIPKIT-0006-FR-008 applies across public accessors for Client Correlat
 | Refactor/evidence — record the normative field distinction and owner boundaries | this commit | Feature traceability tests; `git diff --check` | No runtime behavior changed; T091 remains open and 40 KMIPKIT-0007 candidates remain. |
 
 The manifest now carries FR-008 through the request and response Unique Batch Item ID surfaces, Client Correlation Value setters and views, generic response-header Client/Server Correlation Value views, Pending-result correlation accessors, and asynchronous outcome correlation inputs. It does not add a typed outgoing Server Correlation Value setter. Blocked declarations remain blocked until their own approved mapping work is complete. This is a traceability correction only; it makes no conformance, profile-support, or interoperability claim.
+
+### T091 facade inventory and Interop operation parity follow-up (2026-10-31)
+
+The new Java and Python Unique Batch Item ID getters add one declared access path to each facade inventory. The full manifest suite exposed stale expected totals (Java 954 versus 953 and Python 922 versus 921). It also showed both Rust `ClientOperation::Interop` rows missing KMIPKIT-0043-FR-005/007/008/009, which the canonical Interop request surface carries.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red — check the operation-variant parity contract and facade inventory counts | existing getter Red `1aebdf294`; operation-variant contract `bcad14556` | `test_checked_in_manifest_inventories_all_java_public_access_paths`; `test_checked_in_manifest_inventories_python_exports_and_lifecycle`; `test_t091_client_operation_variants_map_to_four_language_raw_metadata` | Expected failures: both inventories were short by the new getter and both Rust Interop enum declarations lacked the four facade requirements. |
+| Green — inventory each new getter and add the four parity links to both Rust Interop enum declarations | `0303a352a`, `3085503ed` | Java/Python inventory tests; Interop operation-variant test; API generator `--check`; shared Rust inventory `--check`; `git diff --check` | Pass: inventories assert the new exports, both Rust enum rows match the canonical Interop requirements, and generated output is current. |
+| Refactor/evidence — record the resulting inventory and mapping evidence | this commit | Full API-manifest suite; feature traceability tests; generated checks | The API-manifest suite ran 144 tests: 143 passed; the sole remaining failure is the intentional zero-candidate gate because 40 KMIPKIT-0007 declarations remain. T091 stays open; no runtime or wire behavior changed. |
+
+The Interop correction is limited to API requirement links and generated parity fixtures. It does not alter the KMIP operation encoding or imply server conformance.
+
+The unresolved candidate gate is `test_t091_client_execution_candidate_exports_are_reconciled`; it correctly requires all remaining KMIPKIT-0007 public declarations to be mapped or specifically excluded before T091 can close. Current unresolved count is 40.
