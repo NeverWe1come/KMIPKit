@@ -1,5 +1,6 @@
 package org.kmipkit.credentials;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -16,6 +17,7 @@ import org.kmipkit.ttlv.TtlvItemView;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvValue;
+import org.kmipkit.ttlv.TtlvValueView;
 import org.junit.jupiter.api.Test;
 
 final class AttestationCredentialFacadeTest {
@@ -54,6 +56,7 @@ final class AttestationCredentialFacadeTest {
         try (restored; TtlvStructureView view = restored.view()) {
             assertEquals(List.of(NONCE_TAG, ATTESTATION_TYPE_TAG, MEASUREMENT_TAG, ASSERTION_TAG),
                     readTags(view));
+            assertAttestationValues(view);
         }
     }
 
@@ -86,6 +89,30 @@ final class AttestationCredentialFacadeTest {
             }
         }
         return tags;
+    }
+
+    private static void assertAttestationValues(TtlvStructureView view) {
+        try (TtlvItemView item = view.itemAt(1); TtlvValueView value = item.value()) {
+            assertEquals(0xF123_4567L, value.enumeration());
+        }
+        try (TtlvItemView item = view.itemAt(0);
+                TtlvValueView value = item.value();
+                TtlvStructureView nonce = value.structure()) {
+            assertArrayEquals(new byte[] {0x01, 0x02, (byte) 0xFE}, readBytes(nonce, 0));
+            assertArrayEquals(new byte[] {(byte) 0xA1, 0x00, (byte) 0xFF}, readBytes(nonce, 1));
+        }
+        assertArrayEquals(new byte[] {0x10, 0x20, 0x30}, readBytes(view, 2));
+        assertArrayEquals(new byte[] {0x40, 0x50, 0x60}, readBytes(view, 3));
+    }
+
+    private static byte[] readBytes(TtlvStructureView view, long index) {
+        try (TtlvItemView item = view.itemAt(index); TtlvValueView value = item.value()) {
+            byte[] bytes = new byte[Math.toIntExact(value.byteLength())];
+            for (int offset = 0; offset < bytes.length; offset++) {
+                bytes[offset] = (byte) value.byteAt(offset);
+            }
+            return bytes;
+        }
     }
 
     private static TtlvStructure attestationStructure(

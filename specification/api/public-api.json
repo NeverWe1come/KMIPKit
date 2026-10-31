@@ -405783,32 +405783,6 @@
       "candidateSpecId": "KMIPKIT-0008"
     },
     {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.credentials.AttestationAttestationCredential.__init__",
-      "reason": "Inherited native-handle initializer requires KMIPKit\u2019s private ownership token; callers construct AttestationCredential only with from_ttlv.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/008-credentials-attestation/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md)."
-      },
-      "evidence": "The AttestationCredential API exposes validated construction from a TTLV Structure; callers do not create native handles or depend on Python slot layout.",
-      "candidateSpecId": "KMIPKIT-0008"
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.credentials.AttestationAttestationCredential.__slots__",
-      "reason": "Exact Python slot layout used for internal wrapper state; it is not a KMIP AttestationCredential field or a product-level capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/008-credentials-attestation/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md)."
-      },
-      "evidence": "The AttestationCredential API exposes validated construction from a TTLV Structure; callers do not create native handles or depend on Python slot layout.",
-      "candidateSpecId": "KMIPKIT-0008"
-    },
-    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ATTESTATION_CREDENTIAL",
       "reason": "This exact public static member is a raw-handle JNI bridge or internal handle-kind constant. Java applications use the typed KMIPKit credential facade; the bridge member has no independent product capability.",

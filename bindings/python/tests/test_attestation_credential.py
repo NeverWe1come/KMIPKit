@@ -91,6 +91,56 @@ def tags(view: ttlv.TtlvStructureView) -> tuple[int, ...]:
     return tuple(result)
 
 
+def byte_string(view: ttlv.TtlvStructureView, index: int) -> bytes:
+    item = ttlv.ttlv_structure_view_item_at(view, index)
+    try:
+        value = ttlv.ttlv_item_view_value(item)
+        try:
+            length = ttlv.ttlv_value_view_byte_length(value)
+            return bytes(
+                ttlv.ttlv_value_view_byte_at(value, offset)
+                for offset in range(length)
+            )
+        finally:
+            value.close()
+    finally:
+        item.close()
+
+
+def attestation_values(view: ttlv.TtlvStructureView) -> tuple[int, bytes, bytes, bytes, bytes]:
+    attestation_item = ttlv.ttlv_structure_view_item_at(view, 1)
+    try:
+        attestation_value = ttlv.ttlv_item_view_value(attestation_item)
+        try:
+            attestation_type = ttlv.ttlv_value_view_enumeration(attestation_value)
+        finally:
+            attestation_value.close()
+    finally:
+        attestation_item.close()
+
+    nonce_item = ttlv.ttlv_structure_view_item_at(view, 0)
+    try:
+        nonce_value = ttlv.ttlv_item_view_value(nonce_item)
+        try:
+            nonce_view = ttlv.ttlv_value_view_structure(nonce_value)
+            try:
+                nonce_id = byte_string(nonce_view, 0)
+                nonce_value_bytes = byte_string(nonce_view, 1)
+            finally:
+                nonce_view.close()
+        finally:
+            nonce_value.close()
+    finally:
+        nonce_item.close()
+    return (
+        attestation_type,
+        nonce_id,
+        nonce_value_bytes,
+        byte_string(view, 2),
+        byte_string(view, 3),
+    )
+
+
 class AttestationCredentialTests(unittest.TestCase):
     def test_attestation_credential_preserves_structure_and_scoped_views(self) -> None:
         facade = getattr(kmipkit.credentials, "AttestationCredential", None)
@@ -132,6 +182,16 @@ class AttestationCredentialTests(unittest.TestCase):
             self.assertEqual(
                 (NONCE_TAG, ATTESTATION_TYPE_TAG, MEASUREMENT_TAG, ASSERTION_TAG),
                 tags(view),
+            )
+            self.assertEqual(
+                (
+                    0xF123_4567,
+                    b"\x01\x02\xfe",
+                    b"\xa1\x00\xff",
+                    b"\x10\x20\x30",
+                    b"\x40\x50\x60",
+                ),
+                attestation_values(view),
             )
         finally:
             view.close()

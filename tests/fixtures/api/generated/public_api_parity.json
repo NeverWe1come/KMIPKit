@@ -32881,32 +32881,6 @@
     },
     {
       "approvalSource": {
-        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
-        "kind": "feature-specification",
-        "path": "specs/008-credentials-attestation/spec.md",
-        "status": "Approved"
-      },
-      "candidateSpecId": "KMIPKIT-0008",
-      "evidence": "The AttestationCredential API exposes validated construction from a TTLV Structure; callers do not create native handles or depend on Python slot layout.",
-      "exportName": "kmipkit.credentials.AttestationAttestationCredential.__init__",
-      "packageId": "python-kmipkit",
-      "reason": "Inherited native-handle initializer requires KMIPKit’s private ownership token; callers construct AttestationCredential only with from_ttlv."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
-        "kind": "feature-specification",
-        "path": "specs/008-credentials-attestation/spec.md",
-        "status": "Approved"
-      },
-      "candidateSpecId": "KMIPKIT-0008",
-      "evidence": "The AttestationCredential API exposes validated construction from a TTLV Structure; callers do not create native handles or depend on Python slot layout.",
-      "exportName": "kmipkit.credentials.AttestationAttestationCredential.__slots__",
-      "packageId": "python-kmipkit",
-      "reason": "Exact Python slot layout used for internal wrapper state; it is not a KMIP AttestationCredential field or a product-level capability."
-    },
-    {
-      "approvalSource": {
         "evidence": "**Status**: Approved for implementation",
         "kind": "feature-specification",
         "path": "specs/043-public-api-bindings/spec.md",

@@ -213,6 +213,69 @@ static int32_t attestation_tags_match(
     return status;
 }
 
+static int32_t attestation_byte_string_matches(
+        kmipkit_ttlv_structure_view_t *view, uint64_t index,
+        uint32_t expected_tag, const uint8_t *expected_bytes, uint64_t expected_length) {
+    kmipkit_ttlv_item_view_t *item = 0;
+    kmipkit_tag_t *tag = 0;
+    kmipkit_ttlv_value_view_t *value = 0;
+    uint32_t actual_tag = 0;
+    uint64_t actual_length = 0;
+    int32_t status = kmipkit_ttlv_structure_view_item_at(view, index, &item);
+    if (status == 0) status = kmipkit_ttlv_item_view_tag(item, &tag);
+    if (status == 0) status = kmipkit_ttlv_tag_value(tag, &actual_tag);
+    if (status == 0 && actual_tag != expected_tag) status = 1;
+    if (status == 0) status = kmipkit_ttlv_item_view_value(item, &value);
+    if (status == 0) status = kmipkit_ttlv_value_view_byte_length(value, &actual_length);
+    if (status == 0 && actual_length != expected_length) status = 1;
+    for (uint64_t offset = 0; status == 0 && offset < expected_length; offset++) {
+        uint8_t actual_byte = 0;
+        status = kmipkit_ttlv_value_view_byte_at(value, offset, &actual_byte);
+        if (status == 0 && actual_byte != expected_bytes[offset]) status = 1;
+    }
+    kmipkit_ttlv_value_view_release(value);
+    kmipkit_tag_release(tag);
+    kmipkit_ttlv_item_view_release(item);
+    return status;
+}
+
+static int32_t attestation_values_match(kmipkit_ttlv_structure_view_t *view) {
+    static const uint8_t expected_nonce_id[] = {0x01, 0x02, 0xFE};
+    static const uint8_t expected_nonce_value[] = {0xA1, 0x00, 0xFF};
+    static const uint8_t expected_measurement[] = {0x10, 0x20, 0x30};
+    static const uint8_t expected_assertion[] = {0x40, 0x50, 0x60};
+    kmipkit_ttlv_item_view_t *attestation_item = 0;
+    kmipkit_ttlv_value_view_t *attestation_value = 0;
+    kmipkit_ttlv_item_view_t *nonce_item = 0;
+    kmipkit_ttlv_value_view_t *nonce_value = 0;
+    kmipkit_ttlv_structure_view_t *nonce = 0;
+    uint32_t attestation_type = 0;
+    int32_t status = kmipkit_ttlv_structure_view_item_at(view, 1, &attestation_item);
+    if (status == 0) status = kmipkit_ttlv_item_view_value(attestation_item, &attestation_value);
+    if (status == 0) status = kmipkit_ttlv_value_view_enumeration(
+            attestation_value, &attestation_type);
+    if (status == 0 && attestation_type != 0xF1234567u) status = 1;
+    if (status == 0) status = kmipkit_ttlv_structure_view_item_at(view, 0, &nonce_item);
+    if (status == 0) status = kmipkit_ttlv_item_view_value(nonce_item, &nonce_value);
+    if (status == 0) status = kmipkit_ttlv_value_view_structure(nonce_value, &nonce);
+    if (status == 0) status = attestation_byte_string_matches(
+            nonce, 0, NONCE_ID_TAG, expected_nonce_id, sizeof(expected_nonce_id));
+    if (status == 0) status = attestation_byte_string_matches(
+            nonce, 1, NONCE_VALUE_TAG, expected_nonce_value, sizeof(expected_nonce_value));
+    if (status == 0) status = attestation_byte_string_matches(
+            view, 2, ATTESTATION_MEASUREMENT_TAG,
+            expected_measurement, sizeof(expected_measurement));
+    if (status == 0) status = attestation_byte_string_matches(
+            view, 3, ATTESTATION_ASSERTION_TAG,
+            expected_assertion, sizeof(expected_assertion));
+    kmipkit_ttlv_structure_view_release(nonce);
+    kmipkit_ttlv_value_view_release(nonce_value);
+    kmipkit_ttlv_item_view_release(nonce_item);
+    kmipkit_ttlv_value_view_release(attestation_value);
+    kmipkit_ttlv_item_view_release(attestation_item);
+    return status;
+}
+
 static int32_t build_attestation_structure(
         int include_evidence, kmipkit_ttlv_structure_t **out_structure) {
     static const uint8_t nonce_id[] = {0x01, 0x02, 0xFE};
@@ -294,6 +357,7 @@ int32_t kmipkit_attestation_credential_c_consumer_round_trip(uint64_t *out_count
         status = kmipkit_attestation_credential_ttlv_view(credential, &view);
     }
     if (status == 0) status = attestation_tags_match(view, 4);
+    if (status == 0) status = attestation_values_match(view);
     if (status == 0) {
         int32_t view_conflict_status = kmipkit_attestation_credential_into_ttlv(
                 credential, &restored);
@@ -308,6 +372,7 @@ int32_t kmipkit_attestation_credential_c_consumer_round_trip(uint64_t *out_count
         status = kmipkit_ttlv_structure_view(restored, &restored_view);
     }
     if (status == 0) status = attestation_tags_match(restored_view, 4);
+    if (status == 0) status = attestation_values_match(restored_view);
     if (status == 0) status = kmipkit_ttlv_structure_view_item_count(restored_view, &count);
     if (status == 0) *out_count = count;
     kmipkit_ttlv_structure_release(structure);
