@@ -3050,6 +3050,71 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual(expected_mappings, declaration["languageMappings"])
                 self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])
 
+    def test_t091_validate_request_and_outcome_paths_map_to_verified_operation(
+        self,
+    ) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        operation_id = "KMIPKIT-ELEM-OP-C2S-VALIDATE"
+        operation = next(
+            row
+            for row in self.checked_in_manifest["operations"]
+            if row["operationId"] == operation_id
+        )
+        request_canonical = declarations[
+            "kmipkit.extensions.client_batch_item_validate"
+        ]
+        response_canonical = declarations["org.kmipkit.extensions.ClientBatchItemResult.validateResponse"]
+        response_payload_canonical = declarations[
+            "org.kmipkit.extensions.ClientBatchItemResult.ValidateResponse.validityIndicatorRaw"
+        ]
+        cases = []
+        for prefix, package_id in (
+            ("kmipkit_client", "rust-kmipkit-client"),
+            ("kmipkit", "rust-kmipkit"),
+        ):
+            cases.extend(
+                (
+                    (f"{prefix}::ClientRequest::Validate", package_id, request_canonical),
+                    (f"{prefix}::ClientRequest::Validate::0", package_id, request_canonical),
+                    (f"{prefix}::ClientRequest::validate", package_id, request_canonical),
+                    (
+                        f"{prefix}::ClientBatchOutcome::Validate",
+                        package_id,
+                        response_canonical,
+                    ),
+                    (
+                        f"{prefix}::ClientBatchOutcome::Validate::0",
+                        package_id,
+                        response_payload_canonical,
+                    ),
+                )
+            )
+
+        self.assertEqual(10, len(cases))
+        for export_name, package_id, canonical in cases:
+            declaration = declarations[export_name]
+            expected_mappings = {
+                language: mapping.copy()
+                for language, mapping in canonical["languageMappings"].items()
+            }
+            expected_mappings["rust"] = {
+                "packageId": package_id,
+                "name": export_name,
+            }
+            with self.subTest(export=export_name):
+                self.assertEqual("verified", operation["apiState"])
+                self.assertEqual("KMIPKIT-0042", operation["featureSpecId"])
+                self.assertEqual("verified", declaration["declarationState"])
+                self.assertNotIn("candidateSpecId", declaration)
+                self.assertEqual(operation_id, declaration["capabilityId"])
+                self.assertEqual(canonical["requirementIds"], declaration["requirementIds"])
+                self.assertEqual(operation["approvalEvidence"], declaration["approvalSource"])
+                self.assertEqual(expected_mappings, declaration["languageMappings"])
+                self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])
+
     def test_t091_verified_client_operations_map_options_to_shared_execute(self) -> None:
         cases = (
             (
