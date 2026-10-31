@@ -296,6 +296,7 @@ public final class NativeExtensionRegistry {
     public static native void clientBatchAddItem(long batch, long item);
     public static native void clientBatchSetAsynchronousIndicator(long batch, long indicator);
     public static native void clientBatchSetRequestTimestamp(long batch, long timestamp);
+    public static native java.util.OptionalLong clientBatchRequestTimestamp(long batch);
     public static native void clientBatchSetOrderOption(long batch, boolean enabled);
     public static native void clientBatchAddErrorContinuationValue(long batch, long value);
     public static native void clientBatchSetClientCorrelationValue(long batch, byte[] value);

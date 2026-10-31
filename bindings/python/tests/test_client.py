@@ -744,7 +744,7 @@ def test_batch_request_timestamp_preserves_absence_and_signed_boundaries(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     batch_pointer, _storage = _opaque("kmipkit_client_batch_t")
-    values = [(0, 0), (1, -(1 << 63)), (1, (1 << 63) - 1)]
+    values = [(0, 0), (1, 0), (1, -(1 << 63)), (1, (1 << 63) - 1)]
 
     def create(output: object) -> int:
         output[0] = batch_pointer  # type: ignore[index]
@@ -765,6 +765,7 @@ def test_batch_request_timestamp_preserves_absence_and_signed_boundaries(
     batch = client.Batch.create()
     try:
         assert batch.request_timestamp is None
+        assert batch.request_timestamp == 0
         assert batch.request_timestamp == -(1 << 63)
         assert batch.request_timestamp == (1 << 63) - 1
         assert values == []

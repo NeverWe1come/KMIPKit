@@ -79,6 +79,7 @@ T076_SYMBOLS = {
     "kmipkit_client_batch_item_response_release",
     "kmipkit_client_batch_item_response_t",
     "kmipkit_client_batch_item_response_unique_batch_item_id",
+    "kmipkit_client_batch_request_time_stamp",
     "kmipkit_client_batch_release",
     "kmipkit_client_batch_response_item_at",
     "kmipkit_client_batch_response_item_count",
@@ -317,7 +318,7 @@ class T076ClientMappingTests(unittest.TestCase):
             if row.get("declarationId", "").startswith("T076:")
         ]
 
-    def test_all_27_t076_exports_are_mapped_or_remain_exactly_blocked(self) -> None:
+    def test_all_28_t076_exports_are_mapped_or_remain_exactly_blocked(self) -> None:
         c_rows = [
             row
             for row in self.declarations
@@ -337,7 +338,7 @@ class T076ClientMappingTests(unittest.TestCase):
             T076_SYMBOLS,
             {row["exportName"] for row in c_rows} | {row["exportName"] for row in exclusions},
         )
-        self.assertEqual(27, len(c_rows) + len(exclusions))
+        self.assertEqual(28, len(c_rows) + len(exclusions))
 
         ready = {
             row["exportName"]
@@ -1100,6 +1101,12 @@ class T076ClientMappingTests(unittest.TestCase):
                 "kmipkit_client_batch_set_request_time_stamp",
                 "org.kmipkit.extensions.ClientBatch.requestTimestamp",
                 "kmipkit.client.Batch.set_request_timestamp",
+            ),
+            "client_batch_request_time_stamp": (
+                "kmipkit_client::ClientBatch::request_time_stamp",
+                "kmipkit_client_batch_request_time_stamp",
+                "org.kmipkit.extensions.ClientBatch.getRequestTimestamp",
+                "kmipkit.client.Batch.request_timestamp",
             ),
             "client_create": (
                 "kmipkit_client::Client::new",

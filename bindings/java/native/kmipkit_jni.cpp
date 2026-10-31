@@ -41,6 +41,8 @@ typedef struct kmipkit_response_batch_item_view_t kmipkit_response_batch_item_vi
 typedef struct kmipkit_message_validation_error_t kmipkit_message_validation_error_t;
 extern "C" int32_t kmipkit_client_batch_set_request_time_stamp(
         kmipkit_client_batch_t* batch, int64_t timestamp);
+extern "C" int32_t kmipkit_client_batch_request_time_stamp(
+        kmipkit_client_batch_t* batch, uint8_t* out_present, int64_t* out_timestamp);
 extern "C" int32_t kmipkit_client_batch_set_order_option(
         kmipkit_client_batch_t* batch, uint8_t enabled);
 extern "C" int32_t kmipkit_client_batch_add_error_continuation_value(
@@ -4993,6 +4995,46 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchSetRe
                 static_cast<int64_t>(timestamp));
         if (status != 0) throw_status(env, status);
         return 0;
+    });
+}
+
+JNIEXPORT jobject JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchRequestTimestamp(
+        JNIEnv* env, jclass, jlong raw_batch) {
+    return guarded<jobject>(env, nullptr, [&] {
+        if (raw_batch == 0) {
+            throw_invalid_input(env);
+            return static_cast<jobject>(nullptr);
+        }
+        uint8_t present = 0;
+        int64_t timestamp = 0;
+        const int32_t status = kmipkit_client_batch_request_time_stamp(
+                from_java_handle<kmipkit_client_batch_t>(raw_batch), &present, &timestamp);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jobject>(nullptr);
+        }
+        if (present > 1) {
+            throw_invalid_input(env);
+            return static_cast<jobject>(nullptr);
+        }
+        jclass optional_long_class = env->FindClass("java/util/OptionalLong");
+        if (optional_long_class == nullptr) return static_cast<jobject>(nullptr);
+        const char* method_name = present == 0 ? "empty" : "of";
+        const char* method_signature = present == 0
+                ? "()Ljava/util/OptionalLong;"
+                : "(J)Ljava/util/OptionalLong;";
+        jmethodID factory = env->GetStaticMethodID(
+                optional_long_class, method_name, method_signature);
+        if (factory == nullptr) {
+            env->DeleteLocalRef(optional_long_class);
+            return static_cast<jobject>(nullptr);
+        }
+        jobject result = present == 0
+                ? env->CallStaticObjectMethod(optional_long_class, factory)
+                : env->CallStaticObjectMethod(
+                        optional_long_class, factory, static_cast<jlong>(timestamp));
+        env->DeleteLocalRef(optional_long_class);
+        return env->ExceptionCheck() ? static_cast<jobject>(nullptr) : result;
     });
 }
 

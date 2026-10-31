@@ -1205,6 +1205,23 @@ class Batch(_ClientHandle):
             )
         return self
 
+    @property
+    def request_timestamp(self) -> int | None:
+        """Return the exact caller-selected request timestamp, if present."""
+        present = ffi.new("uint8_t *")
+        value = ffi.new("int64_t *")
+        with _NATIVE_CALL_LOCK:
+            _raise_abi_status(
+                lib.kmipkit_client_batch_request_time_stamp(
+                    self._pointer(), present, value
+                )
+            )
+        if present[0] == 0:
+            return None
+        if present[0] != 1:
+            errors.raise_for_status(4)
+        return int(value[0])
+
     def set_ordered(self, enabled: bool) -> Self:
         """Set the KMIP Batch Order Option explicitly."""
         if not isinstance(enabled, bool):

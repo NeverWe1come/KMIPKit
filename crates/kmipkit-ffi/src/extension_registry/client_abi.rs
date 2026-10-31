@@ -934,6 +934,51 @@ pub extern "C" fn kmipkit_client_batch_set_request_time_stamp(
     })
 }
 
+/// Reads the caller-selected Request Header Time Stamp without synthesizing a value.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_request_time_stamp(
+    batch: *mut kmipkit_client_batch_t,
+    out_present: *mut u8,
+    out_time_stamp: *mut i64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_present.is_null() || out_time_stamp.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present_start = out_present as usize;
+        let time_stamp_start = out_time_stamp as usize;
+        let Some(present_end) = present_start.checked_add(std::mem::size_of::<u8>()) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(time_stamp_end) = time_stamp_start.checked_add(std::mem::size_of::<i64>()) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        if out_time_stamp.align_offset(std::mem::align_of::<i64>()) != 0
+            || (present_start < time_stamp_end && time_stamp_start < present_end)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+
+        let present = scalar_out!(out_present);
+        let time_stamp = scalar_out!(out_time_stamp);
+        *present = 0;
+        *time_stamp = 0;
+
+        let batch = read_handle!(batch, ClientBatch);
+        let HandleValue::ClientBatch(batch) = &batch.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(batch) = batch.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if let Some(value) = batch.request_time_stamp {
+            *present = 1;
+            *time_stamp = value;
+        }
+        SUCCESS
+    })
+}
+
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_set_order_option(
     batch: *mut kmipkit_client_batch_t,

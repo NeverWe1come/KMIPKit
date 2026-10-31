@@ -234,6 +234,8 @@ ffi.cdef(
         kmipkit_client_batch_item_t **inout_item);
     int32_t kmipkit_client_batch_set_request_time_stamp(
         kmipkit_client_batch_t *batch, int64_t time_stamp);
+    int32_t kmipkit_client_batch_request_time_stamp(
+        kmipkit_client_batch_t *batch, uint8_t *out_present, int64_t *out_time_stamp);
     int32_t kmipkit_client_batch_set_order_option(
         kmipkit_client_batch_t *batch, uint8_t enabled);
     int32_t kmipkit_client_batch_add_error_continuation_value(

@@ -600,8 +600,10 @@ int32_t kmipkit_register_request_with_opaque_object_context(kmipkit_register_req
 int32_t kmipkit_client_batch_item_register(kmipkit_register_request_t * request, kmipkit_client_batch_item_t ** out_item);
 /* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_create(kmipkit_client_batch_t ** out_batch);
-/* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
+/* KMIPKIT-0006-FR-002, KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_set_request_time_stamp(kmipkit_client_batch_t * batch, int64_t time_stamp);
+/* KMIPKIT-0006-FR-002, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_request_time_stamp(kmipkit_client_batch_t * batch, uint8_t * out_present, int64_t * out_time_stamp);
 /* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_set_order_option(kmipkit_client_batch_t * batch, uint8_t enabled);
 /* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */

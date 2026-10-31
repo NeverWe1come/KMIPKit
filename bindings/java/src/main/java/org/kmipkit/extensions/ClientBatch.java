@@ -1,5 +1,6 @@
 package org.kmipkit.extensions;
 
+import java.util.OptionalLong;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.ResourceLimitException;
@@ -61,6 +62,12 @@ public final class ClientBatch implements AutoCloseable {
             return null;
         });
         return this;
+    }
+
+    /** Returns the exact caller-selected request timestamp, if present. */
+    public OptionalLong getRequestTimestamp() {
+        NativeExtensionRegistry.ensureLoaded();
+        return handle.withValue(NativeExtensionRegistry::clientBatchRequestTimestamp);
     }
 
     /** Sets the KMIP Batch Order Option explicitly. */

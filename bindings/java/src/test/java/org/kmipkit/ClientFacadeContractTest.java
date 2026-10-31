@@ -4,13 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.OptionalLong;
 import org.junit.jupiter.api.Test;
 import org.kmipkit.extensions.Client;
 import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.RequestOptions;
 import org.kmipkit.extensions.TransportConfiguration;
-import java.util.OptionalLong;
 
 /** Exercises the shared Java client and ordered batch facade over the native ABI. */
 final class ClientFacadeContractTest {
@@ -73,11 +73,13 @@ final class ClientFacadeContractTest {
     @Test
     void requestTimestampGetterPreservesAbsenceAndSignedBoundaries() {
         try (ClientBatch batch = ClientBatch.create()) {
-            assertEquals(OptionalLong.empty(), batch.requestTimestamp());
+            assertEquals(OptionalLong.empty(), batch.getRequestTimestamp());
+            batch.requestTimestamp(0);
+            assertEquals(OptionalLong.of(0), batch.getRequestTimestamp());
             batch.requestTimestamp(Long.MIN_VALUE);
-            assertEquals(OptionalLong.of(Long.MIN_VALUE), batch.requestTimestamp());
+            assertEquals(OptionalLong.of(Long.MIN_VALUE), batch.getRequestTimestamp());
             batch.requestTimestamp(Long.MAX_VALUE);
-            assertEquals(OptionalLong.of(Long.MAX_VALUE), batch.requestTimestamp());
+            assertEquals(OptionalLong.of(Long.MAX_VALUE), batch.getRequestTimestamp());
         }
     }
 
