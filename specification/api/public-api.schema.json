@@ -1164,6 +1164,10 @@
         "id": {
           "$ref": "#/$defs/identifier"
         },
+        "legacyRegistry": {
+          "type": "boolean",
+          "description": "Whether this full-manifest function belongs to the preserved KMIPKIT-0012 v1 registry parity slice. Defaults to true when omitted."
+        },
         "requirementIds": {
           "$ref": "#/$defs/requirementIds"
         },

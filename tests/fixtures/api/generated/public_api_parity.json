@@ -63398,6 +63398,7 @@
         "parameters": [],
         "returnType": "long"
       },
+      "legacyRegistry": false,
       "ordering": "not-applicable",
       "python": {
         "cffiSymbol": "kmipkit_client_async_operation_outcome_extension_count",
@@ -63493,6 +63494,7 @@
         ],
         "returnType": "TtlvStructure"
       },
+      "legacyRegistry": false,
       "ordering": "preserves-response-extension-order",
       "python": {
         "cffiSymbol": "kmipkit_client_async_operation_outcome_extension_ttlv_at",

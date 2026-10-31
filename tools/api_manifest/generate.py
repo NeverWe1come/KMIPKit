@@ -2727,6 +2727,7 @@ def _encode_generated_text(value: str) -> bytes:
 def _registry_function_v1_projection(record: dict[str, Any]) -> dict[str, Any]:
     """Preserve one full-manifest function in the original registry-slice shape."""
     projected = deepcopy(record)
+    projected.pop("legacyRegistry", None)
     projected.get("c", {}).pop("documentation", None)
     projected["requirementIds"] = [
         requirement for requirement in projected["requirementIds"]
@@ -2756,7 +2757,8 @@ def _registry_manifest_v2(manifest: dict[str, Any]) -> dict[str, Any]:
             record["python"] = {**record["python"], "module": "kmipkit"}
     registry_functions = [
         _registry_function_v1_projection(record) for record in manifest["functions"]
-        if any(requirement.startswith("KMIPKIT-0012-") for requirement in record["requirementIds"])
+        if record.get("legacyRegistry", True)
+        and any(requirement.startswith("KMIPKIT-0012-") for requirement in record["requirementIds"])
     ]
     requirement_ids = [
         identifier

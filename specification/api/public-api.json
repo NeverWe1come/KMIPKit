@@ -34237,6 +34237,7 @@
     },
     {
       "id": "client_async_operation_outcome_extension_count",
+      "legacyRegistry": false,
       "requirementIds": [
         "KMIPKIT-0006-FR-011",
         "KMIPKIT-0007-FR-010",
@@ -34313,6 +34314,7 @@
     },
     {
       "id": "client_async_operation_outcome_extension_ttlv_at",
+      "legacyRegistry": false,
       "requirementIds": [
         "KMIPKIT-0006-FR-011",
         "KMIPKIT-0007-FR-010",
