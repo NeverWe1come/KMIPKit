@@ -117,6 +117,8 @@ class Nonce(NativeHandle):
             lib.kmipkit_nonce_into_ttlv,
             self,
             consumed=(0,),
+            # The native ABI reports an active shared view before removing the owner.
+            restore_on_statuses=(4,),
         )
         return _wrap_owned_handle(Structure, handle)
 

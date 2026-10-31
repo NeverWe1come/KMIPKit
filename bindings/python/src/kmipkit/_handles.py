@@ -184,12 +184,18 @@ def _new_handle(
     function: Callable[..., int],
     *arguments: object,
     consumed: tuple[int, ...] = (),
+    restore_on_statuses: tuple[int, ...] = (),
 ) -> Any:
     """Call an out-handle ABI function and return its private CFFI value."""
     output = ffi.new(f"{c_type} **")
     call_arguments = (*arguments, output)
     status = (
-        _invoke_consuming(function, call_arguments, consumed)
+        _invoke_consuming(
+            function,
+            call_arguments,
+            consumed,
+            restore_on_statuses=restore_on_statuses,
+        )
         if consumed
         else _invoke(function, *call_arguments)
     )
@@ -222,8 +228,10 @@ def _invoke_consuming(
     function: Callable[..., int],
     arguments: tuple[object, ...],
     consumed_indices: tuple[int, ...],
+    *,
+    restore_on_statuses: tuple[int, ...] = (),
 ) -> int:
-    """Transfer selected handle arguments and call their consuming C ABI function."""
+    """Transfer selected handles, optionally restoring them for pre-consume statuses."""
     normalized_arguments = _normalize_integer_arguments(function, arguments)
     handles: list[tuple[int, NativeHandle]] = []
     seen: set[int] = set()
@@ -250,7 +258,11 @@ def _invoke_consuming(
             call_arguments[index] = pointer
             tickets.append((handle, pointer, owner))
         try:
-            return int(function(*call_arguments))
+            status = int(function(*call_arguments))
+            if status in restore_on_statuses:
+                for handle, pointer, owner in reversed(tickets):
+                    handle._restore(pointer, owner)
+            return status
         except (OverflowError, TypeError, ValueError):
             for handle, pointer, owner in reversed(tickets):
                 handle._restore(pointer, owner)
