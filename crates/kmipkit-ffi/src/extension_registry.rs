@@ -2057,6 +2057,7 @@ pub extern "C" fn kmipkit_last_error_profile_validation_error_get_v1(
             LAST_PROFILE_VALIDATION_ERROR.with(|last_error| last_error.borrow().clone())
         else {
             *out = ptr::null_mut();
+            // Optional detail lookup is observational; preserve the primary LAST_ERROR snapshot.
             return SUCCESS;
         };
         *out = try_ffi!(try_make_handle(
