@@ -257132,6 +257132,7 @@
       "cSignature": {
         "documentation": [
           "Returns an owned snapshot of safe profile validation IDs when the calling thread's last error is a profile validation failure.",
+          "Returns success and writes a null handle when no profile validation details are present; this leaves the last-error snapshot unchanged.",
           "The returned handle remains valid when the thread-local error snapshot changes and must be released with kmipkit_profile_validation_error_release."
         ],
         "errorCategories": [

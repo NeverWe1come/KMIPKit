@@ -168,13 +168,7 @@ fn absent_profile_error_snapshot_does_not_clobber_client_error_metadata() {
 
     assert!(handle.is_null());
     assert_eq!(
-        (
-            detail_status,
-            status,
-            category,
-            cause,
-            delivery,
-        ),
+        (detail_status, status, category, cause, delivery,),
         (
             SUCCESS,
             ERROR_TRANSPORT,

@@ -36,7 +36,11 @@ oversized identifier produces the shared validation/resource-limit failure.
 
 `kmipkit_last_error_get` copies the calling thread's most recent nonzero C
 status and safe metadata without clearing it. `kmipkit_last_error_clear` resets
-that snapshot. The category values are `0` none, `1` validation, `2` protocol,
+that snapshot. `kmipkit_last_error_profile_validation_error_get_v1` returns an
+owned detail handle when the snapshot contains profile-validation details; it
+returns success with a null handle when those optional details are absent and
+does not change the last-error snapshot. The category values are `0` none, `1`
+validation, `2` protocol,
 `3` transport, `4` server result, and `5` other. Cause values currently
 exposed by the C surface are `0` none, `1` invalid input, `2` protocol invalid
 value, `3` protocol invalid encoding, `4` other protocol, `5` transport I/O,
@@ -86,6 +90,11 @@ secrets. Snapshots contain no source strings or request payloads.
   while the item-response handle remains open and remains unchanged throughout
   that lifetime, including after the parent batch-response handle is closed.
   Copy the bytes to keep them longer before releasing the item-response handle.
+- The UTF-8 pointer/length spans in `kmipkit_profile_validation_error_view_v1_t`
+  borrow from the owned profile-validation error handle. They remain valid until
+  `kmipkit_profile_validation_error_release` closes that handle; changing or
+  clearing the thread-local error snapshot does not change them. Copy the bytes
+  before releasing the detail handle to keep them longer.
 - Secret outputs use zeroizing opaque handles.
 
 ## Generated and manual portions
