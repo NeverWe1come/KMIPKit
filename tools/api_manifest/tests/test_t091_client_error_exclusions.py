@@ -9,6 +9,18 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
+CLIENT_EXECUTION_APPROVAL_SOURCE = {
+    "kind": "feature-specification",
+    "path": "specs/007-client-execution/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+}
+PROFILE_APPROVAL_SOURCE = {
+    "kind": "feature-specification",
+    "path": "specs/010-profile-conformance/spec.md",
+    "status": "Accepted",
+    "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+}
 
 ERROR_DECLARATIONS = {
     (package_id, f"{prefix}ClientError::{member}")
@@ -48,14 +60,15 @@ class T091ClientErrorExclusionTests(unittest.TestCase):
                 exclusion = exclusions.get(key)
                 self.assertIsNotNone(exclusion, f"missing exact approved exclusion: {key}")
                 self.assertNotIn(key, declarations, "an export cannot be both declared and excluded")
-                self.assertIn("KMIPKIT-0007-FR-013", exclusion["evidence"])
+                if key[1].endswith("ClientError::profile_validation"):
+                    self.assertIn("KMIPKIT-0010-FR-013", exclusion["evidence"])
+                    expected_source = PROFILE_APPROVAL_SOURCE
+                else:
+                    self.assertIn("KMIPKIT-0007-FR-013", exclusion["evidence"])
+                    expected_source = CLIENT_EXECUTION_APPROVAL_SOURCE
                 self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
                 self.assertEqual(
-                    {
-                        "kind": "feature-specification",
-                        "path": "specs/007-client-execution/spec.md",
-                        "status": "Approved",
-                    },
+                    {field: expected_source[field] for field in ("kind", "path", "status")},
                     {
                         field: exclusion["approvalSource"][field]
                         for field in ("kind", "path", "status")
