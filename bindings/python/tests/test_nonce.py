@@ -153,6 +153,7 @@ class NonceTests(unittest.TestCase):
             for attribute in ("_active_views", "_Nonce__active_views"):
                 with self.subTest(attribute=attribute), self.assertRaises(AttributeError):
                     setattr(nonce, attribute, 0)
+            kmipkit.credentials._ACTIVE_NONCE_VIEWS[nonce] = 0
             with self.assertRaises(errors.InvalidInputError):
                 nonce.into_ttlv()
             self.assertEqual(
