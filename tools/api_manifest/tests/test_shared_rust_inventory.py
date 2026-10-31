@@ -77,7 +77,7 @@ class SharedRustInventoryTests(unittest.TestCase):
 
     def test_shared_inventory_report_names_the_rust_audit_it_reads(self) -> None:
         expected_source = (
-            "specs/043-public-api-bindings/reports/rust-export-report-2026-10-30.json"
+            "specs/043-public-api-bindings/reports/rust-export-report-2026-10-31.json"
         )
         generated = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
         checked_in = json.loads(
@@ -90,10 +90,10 @@ class SharedRustInventoryTests(unittest.TestCase):
     def test_inventory_accounts_for_exact_approved_rust_exclusions_separately(self) -> None:
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
-        self.assertEqual(inventory["approvedExcludedRustDeclarationCount"], 1399)
+        self.assertEqual(inventory["approvedExcludedRustDeclarationCount"], 1645)
         self.assertEqual(
             sum(record["excludedDeclarationCount"] for record in inventory["crates"]),
-            1399,
+            1645,
         )
         self.assertEqual(
             sum(record["blockedDeclarationCount"] for record in inventory["crates"]),
