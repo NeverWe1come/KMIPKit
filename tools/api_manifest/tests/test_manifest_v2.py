@@ -2028,6 +2028,78 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual(expected_mappings, declaration["languageMappings"])
                 self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])
 
+    def test_t091_attribute_request_variants_map_to_verified_operations(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        operations = {
+            row["operationId"]: row for row in self.checked_in_manifest["operations"]
+        }
+        cases = {
+            "AdjustAttribute": (
+                "KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE",
+                "adjust_attribute",
+                ("", "::0"),
+            ),
+            "DeleteAttribute": (
+                "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE",
+                "delete_attribute",
+                ("", "::0"),
+            ),
+            "GetAttributeList": (
+                "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST",
+                "get_attribute_list",
+                ("::0",),
+            ),
+            "GetAttributes": (
+                "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
+                "get_attributes",
+                ("::0",),
+            ),
+            "ModifyAttribute": (
+                "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
+                "modify_attribute",
+                ("", "::0"),
+            ),
+            "SetAttribute": (
+                "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE",
+                "set_attribute",
+                ("", "::0"),
+            ),
+        }
+
+        for variant, (operation_id, method, suffixes) in cases.items():
+            operation = operations[operation_id]
+            canonical = declarations[f"kmipkit_client::ClientRequest::{method}"]
+            self.assertEqual("verified", operation["apiState"])
+            self.assertEqual("KMIPKIT-0016", operation["featureSpecId"])
+
+            for prefix, package_id in (
+                ("kmipkit_client", "rust-kmipkit-client"),
+                ("kmipkit", "rust-kmipkit"),
+            ):
+                for suffix in suffixes:
+                    export_name = f"{prefix}::ClientRequest::{variant}{suffix}"
+                    with self.subTest(export=export_name):
+                        declaration = declarations[export_name]
+                        expected_mappings = {
+                            language: mapping.copy()
+                            for language, mapping in canonical["languageMappings"].items()
+                        }
+                        expected_mappings["rust"] = {
+                            "packageId": package_id,
+                            "name": export_name,
+                        }
+
+                        self.assertEqual("verified", declaration["declarationState"])
+                        self.assertNotIn("candidateSpecId", declaration)
+                        self.assertEqual(operation_id, declaration["capabilityId"])
+                        self.assertEqual(canonical["requirementIds"], declaration["requirementIds"])
+                        self.assertEqual(operation["approvalEvidence"], declaration["approvalSource"])
+                        self.assertEqual(expected_mappings, declaration["languageMappings"])
+                        self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])
+
     def test_t091_discover_versions_response_view_maps_to_existing_version_accessor(
         self,
     ) -> None:
