@@ -52,9 +52,9 @@ fn profiled_response_copy_preserves_the_complete_ttlv_tree() {
 #[test]
 fn profile_validator_trait_forwards_standalone_request_and_response_checks() {
     let limits = CodecLimits::defaults();
-    let profiles = ProfileValidationSelection::new(["KMIPKIT-PROFILE-BASELINE-CLIENT"])
+    let profiles = ProfileValidationSelection::for_test(["KMIPKIT-PROFILE-BASELINE-CLIENT"])
         .validate()
-        .expect("the Baseline profile selection has a complete typed registry");
+        .expect("the Baseline test selection has a complete typed registry");
     let request = request_message_for_test(
         ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions())),
         &limits,

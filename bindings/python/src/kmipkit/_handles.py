@@ -10,13 +10,60 @@ from collections.abc import Callable
 from functools import wraps
 from threading import RLock
 from types import FunctionType
-from typing import Any, Self
+from typing import Any, Self, TypeVar
 
 from . import errors
 from ._ffi import ffi, lib
 
 
 _NATIVE_CALL_LOCK = RLock()
+_NATIVE_HANDLE_TOKEN = object()
+_NativeHandleT = TypeVar("_NativeHandleT", bound="NativeHandle")
+
+
+def _integer_range(value: int, minimum: int, maximum: int) -> int:
+    """Return a canonical built-in integer after checking a fixed-width range."""
+    if not isinstance(value, int) or isinstance(value, bool):
+        errors.raise_for_status(4)
+    number = int.__index__(value)
+    if number < minimum or number > maximum:
+        errors.raise_for_status(4)
+    return number
+
+
+def _fixed_width_integer_bounds(argument_type: Any) -> tuple[int, int] | None:
+    """Return the representable range for a fixed-width C integer argument."""
+    if argument_type.kind != "primitive":
+        return None
+    name = argument_type.cname
+    if not name.endswith("_t"):
+        return None
+    width = ffi.sizeof(argument_type) * 8
+    if name.startswith("uint"):
+        return 0, (1 << width) - 1
+    if name.startswith("int"):
+        return -(1 << (width - 1)), (1 << (width - 1)) - 1
+    return None
+
+
+def _normalize_integer_arguments(
+    function: Callable[..., int], arguments: tuple[object, ...]
+) -> tuple[object, ...]:
+    """Canonicalize C ABI integer inputs before CFFI conversion or ownership transfer."""
+    try:
+        signature = ffi.typeof(function)
+    except (AttributeError, TypeError):
+        return arguments
+    if signature.kind != "function":
+        return arguments
+
+    normalized = list(arguments)
+    for index, argument_type in enumerate(signature.args[: len(arguments)]):
+        bounds = _fixed_width_integer_bounds(argument_type)
+        if bounds is None:
+            continue
+        normalized[index] = _integer_range(normalized[index], *bounds)
+    return tuple(normalized)
 
 
 def synchronized_native_call(function: Callable[..., Any]) -> Callable[..., Any]:
@@ -44,7 +91,16 @@ class NativeHandle:
     __slots__ = ("__handle", "__lock", "_owner")
     _release_name: str
 
-    def __init__(self, handle: Any, owner: object | None = None) -> None:
+    def __new__(cls, *arguments: object, **keywords: object) -> Self:
+        if keywords.get("_token") is not _NATIVE_HANDLE_TOKEN:
+            errors.raise_for_status(4)
+        return super().__new__(cls)
+
+    def __init__(
+        self, handle: Any, *, _token: object, owner: object | None = None
+    ) -> None:
+        if _token is not _NATIVE_HANDLE_TOKEN:
+            errors.raise_for_status(4)
         if handle == ffi.NULL:
             errors.raise_for_status(4)
         self.__handle = handle
@@ -116,6 +172,13 @@ class NativeHandle:
         return f"{type(self).__name__}(closed={self.closed})"
 
 
+def _wrap_owned_handle(
+    wrapper: type[_NativeHandleT], *arguments: object, **keywords: object
+) -> _NativeHandleT:
+    """Construct one wrapper for a handle returned by an internal C ABI call."""
+    return wrapper(*arguments, _token=_NATIVE_HANDLE_TOKEN, **keywords)
+
+
 def _new_handle(
     c_type: str,
     function: Callable[..., int],
@@ -148,8 +211,9 @@ def _scalar(
 
 def _invoke(function: Callable[..., int], *arguments: object) -> int:
     """Normalize CFFI argument conversion failures without echoing inputs."""
+    normalized = _normalize_integer_arguments(function, arguments)
     try:
-        return int(function(*arguments))
+        return int(function(*normalized))
     except (OverflowError, TypeError, ValueError):
         raise errors.InvalidInputError() from None
 
@@ -160,6 +224,7 @@ def _invoke_consuming(
     consumed_indices: tuple[int, ...],
 ) -> int:
     """Transfer selected handle arguments and call their consuming C ABI function."""
+    normalized_arguments = _normalize_integer_arguments(function, arguments)
     handles: list[tuple[int, NativeHandle]] = []
     seen: set[int] = set()
     for index in consumed_indices:
@@ -178,7 +243,7 @@ def _invoke_consuming(
         # Check every source before transferring any of them.
         for _, handle in handles:
             handle._pointer()
-        call_arguments = list(arguments)
+        call_arguments = list(normalized_arguments)
         tickets: list[tuple[NativeHandle, Any, object | None]] = []
         for index, handle in handles:
             pointer, owner = handle._take()
@@ -233,6 +298,15 @@ def _owned_bytes(
     if len(raw) > maximum:
         errors.raise_for_status(6)
     return raw, ffi.new("uint8_t[]", raw)
+
+
+def _wipe_staging_buffer(buffer: Any) -> None:
+    """Overwrite a temporary CFFI byte array owned by the Python adapter."""
+    if buffer is None or buffer == ffi.NULL:
+        return
+    length = ffi.sizeof(buffer)
+    if length:
+        ffi.buffer(buffer, length)[:] = b"\x00" * length
 
 
 def _handle_array(

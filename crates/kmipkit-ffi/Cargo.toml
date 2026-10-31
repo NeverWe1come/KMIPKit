@@ -15,6 +15,7 @@ crate-type = ["cdylib", "staticlib", "rlib"]
 coverage-c-consumer = []
 
 [dependencies]
+aws-lc-rs.workspace = true
 kmipkit.workspace = true
 kmipkit-client.workspace = true
 kmipkit-protocol.workspace = true
@@ -27,9 +28,11 @@ cc = "=1.6.0"
 
 [dev-dependencies]
 kmipkit-test-support = { workspace = true, features = ["fixtures"] }
+kmipkit-protocol = { workspace = true, features = ["test-support"] }
 base64 = "=0.23.1"
 rcgen = { workspace = true, features = ["pem"] }
 rustls.workspace = true
+serde_json.workspace = true
 
 [lints]
 workspace = true

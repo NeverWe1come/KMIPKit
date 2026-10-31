@@ -136,11 +136,38 @@ class PackageDocumentationContractTests(unittest.TestCase):
         blocked_operations = sum(
             operation["apiState"] == "blocked" for operation in operations
         )
-        self.assertEqual(len(operations), blocked_operations)
+        verified_operation_count = sum(
+            operation["apiState"] == "verified" for operation in operations
+        )
+        declared_operations = [
+            operation for operation in operations if operation["apiState"] == "declared"
+        ]
+        verified_operations = [
+            operation for operation in operations if operation["apiState"] == "verified"
+        ]
+        self.assertEqual(
+            len(operations),
+            blocked_operations + len(declared_operations) + verified_operation_count,
+        )
 
-        for guide, operation_phrase in (
-            (self.english, "full operation parity"),
-            (self.spanish, "paridad completa de operaciones"),
+        register = next(
+            operation for operation in operations if operation["name"] == "Register"
+        )
+        self.assertEqual("verified", register["apiState"])
+
+        for guide, operation_phrase, declared_marker, verified_marker in (
+            (
+                self.english,
+                "full operation parity",
+                f"**{len(declared_operations)}** rows are `declared`:",
+                f"**{verified_operation_count}** operation mappings are `verified`:",
+            ),
+            (
+                self.spanish,
+                "paridad completa de operaciones",
+                f"**{len(declared_operations)}** filas están en estado `declared`:",
+                f"**{verified_operation_count}** mapeos de operación están en estado `verified`:",
+            ),
         ):
             for capability in capabilities:
                 self.assertIn(capability["capabilityId"], guide)
@@ -152,8 +179,206 @@ class PackageDocumentationContractTests(unittest.TestCase):
             self.assertIn(f"{blocked_operations} / {len(operations)}", guide)
             normalized_guide = re.sub(r"\s+", " ", guide.lower())
             self.assertIn(operation_phrase, normalized_guide)
+            declared_start = normalized_guide.index(declared_marker.lower())
+            verified_start = normalized_guide.index(
+                verified_marker.lower(), declared_start + len(declared_marker)
+            )
+            declared_section = normalized_guide[declared_start:verified_start]
+            verified_section = normalized_guide[verified_start:]
+            for operation in (*declared_operations, *verified_operations):
+                self.assertIn(operation["name"].lower(), normalized_guide)
+            for operation in declared_operations:
+                self.assertIn(operation["name"].lower(), declared_section)
+            for operation in verified_operations:
+                self.assertIn(operation["name"].lower(), verified_section)
+        self.assertIn(
+            f"**{len(declared_operations)}** rows are `declared`", self.english
+        )
+        self.assertIn(
+            f"**{verified_operation_count}** operation mappings are `verified`",
+            self.english,
+        )
+        self.assertIn(
+            f"**{len(declared_operations)}** filas están en estado `declared`",
+            self.spanish,
+        )
+        self.assertIn(
+            f"**{verified_operation_count}** mapeos de operación están en estado `verified`",
+            self.spanish,
+        )
+        self.assertNotIn("full Register operation parity remains blocked", self.english)
+        self.assertNotIn(
+            "la paridad completa de la operación Register sigue bloqueada",
+            self.spanish.lower(),
+        )
+        self.assertIn("The Register operation row is verified.", self.english)
+        self.assertIn("La fila de la operación Register está `verified`.", self.spanish)
 
-    def test_vendor_extension_examples_disclose_blocked_release_parity(self) -> None:
+    def test_bilingual_client_execution_guides_scope_operation_rows_to_rust(self) -> None:
+        guides = {
+            "en": (ROOT / "docs/user-guide/en/client-execution.md").read_text(
+                encoding="utf-8"
+            ),
+            "es": (ROOT / "docs/user-guide/es/ejecucion-cliente.md").read_text(
+                encoding="utf-8"
+            ),
+        }
+        required_scope = {
+            "en": (
+                "This guide describes the Rust `kmipkit-client` API surface.",
+                "A Rust model or accessor does not establish four-language 1.0 operation availability.",
+                "`blocked` means the complete four-language 1.0 operation mapping is unavailable, even if Rust types exist.",
+                "[language and package status](language-packages.md)",
+            ),
+            "es": (
+                "Esta guía describe la superficie de la API Rust de `kmipkit-client`.",
+                "Un modelo o accesor de Rust no establece la disponibilidad de una operación en los cuatro lenguajes de la versión 1.0.",
+                "`blocked` significa que el mapeo completo de operaciones 1.0 para los cuatro lenguajes no está disponible, aunque existan tipos de Rust.",
+                "[estado de paquetes e idiomas](paquetes-de-idiomas.md)",
+            ),
+        }
+        for language, guide in guides.items():
+            normalized_guide = re.sub(r"\s+", " ", guide)
+            with self.subTest(language=language):
+                for statement in required_scope[language]:
+                    self.assertIn(statement, normalized_guide)
+
+    def test_public_api_reference_marks_async_followups_declared(self) -> None:
+        reference = (ROOT / "docs/architecture/public-api.md").read_text(
+            encoding="utf-8"
+        )
+        operations = {
+            operation["name"]: operation for operation in self.manifest["operations"]
+        }
+        documented_states = {
+            name.strip(): state.strip()
+            for name, state in re.findall(
+                r"(?m)^\|\s*([^|]+?)\s*\|\s*(blocked|declared|verified)\s*\|$",
+                reference,
+            )
+        }
+        asynchronous_followups = (
+            "Cancel",
+            "Poll",
+            "Process",
+            "Query Asynchronous Requests",
+        )
+
+        for operation_name in asynchronous_followups:
+            with self.subTest(operation=operation_name):
+                self.assertEqual("declared", operations[operation_name]["apiState"])
+                self.assertEqual("declared", documented_states.get(operation_name))
+
+    def test_public_api_reference_lists_every_verified_rust_operation(self) -> None:
+        reference = (ROOT / "docs/architecture/public-api.md").read_text(
+            encoding="utf-8"
+        )
+        typed_protocol = reference.split("### Typed protocol", maxsplit=1)[1].split(
+            "### ", maxsplit=1
+        )[0]
+        documented_operation_list = re.sub(
+            r"\s+",
+            " ",
+            typed_protocol.split("The API does not accept", maxsplit=1)[0],
+        )
+
+        for operation in self.manifest["operations"]:
+            if operation["apiState"] != "verified":
+                continue
+            with self.subTest(operation=operation["name"]):
+                self.assertIn(operation["name"], documented_operation_list)
+
+    def test_manifest_maintenance_doc_counts_all_v2_output_destinations(self) -> None:
+        documentation = (ROOT / "docs/development/api-manifest.md").read_text(
+            encoding="utf-8"
+        )
+        normalized_documentation = re.sub(r"\s+", " ", documentation)
+        outputs = self.manifest["generatedOutputs"]
+        registry_outputs = outputs[:6]
+
+        self.assertEqual(6, len(registry_outputs))
+        self.assertEqual(6, len(outputs) - len(registry_outputs))
+        self.assertIn("six additional destinations", normalized_documentation)
+
+    def test_bilingual_package_guides_match_current_operation_readiness(self) -> None:
+        operations = [
+            operation
+            for operation in self.manifest["operations"]
+            if operation["scope"] == "client_1_0"
+        ]
+        counts = {
+            state: sum(operation["apiState"] == state for operation in operations)
+            for state in ("verified", "declared", "blocked")
+        }
+
+        for language, guide in (("en", self.english), ("es", self.spanish)):
+            normalized = re.sub(r"\s+", " ", guide).lower()
+            with self.subTest(language=language):
+                self.assertIn(f"**{counts['blocked']} / {len(operations)}**", normalized)
+                self.assertIn(f"**{counts['declared']}**", normalized)
+                self.assertIn(f"**{counts['verified']}**", normalized)
+                for operation in operations:
+                    with self.subTest(operation=operation["name"]):
+                        self.assertIn(operation["name"].lower(), normalized)
+
+    def test_t071_checkpoint_records_active_manifest_snapshot_and_remains_open(self) -> None:
+        tasks = (ROOT / "specs/043-public-api-bindings/tasks.md").read_text(
+            encoding="utf-8"
+        )
+        operations = self.manifest["operations"]
+        operation_counts = {
+            state: sum(operation["apiState"] == state for operation in operations)
+            for state in ("verified", "declared", "blocked")
+        }
+        capabilities = self.manifest["capabilities"]
+        capability_counts = {
+            state: sum(
+                capability["capabilityState"] == state for capability in capabilities
+            )
+            for state in ("verified", "declared", "blocked")
+        }
+        declarations = self.manifest["publicDeclarations"]
+        declaration_counts = {
+            state: sum(
+                declaration["declarationState"] == state
+                for declaration in declarations
+            )
+            for state in ("verified", "declared", "blocked")
+        }
+        checkpoint = re.search(
+            r"(?s)\*\*Checkpoint \(manifest snapshot, [^)]+\)\*\*: (.*?)(?=\n\n)",
+            tasks,
+        )
+        self.assertIsNotNone(checkpoint)
+        assert checkpoint is not None
+        for audited_status in (
+            f"{operation_counts['verified']}/{len(operations)} `client_1_0` operations as verified, "
+            f"{operation_counts['declared']} as declared, and {operation_counts['blocked']} as blocked",
+            f"{capability_counts['verified']}/{len(capabilities)} verified "
+            f"({capability_counts['declared']} declared, {capability_counts['blocked']} blocked)",
+            f"{declaration_counts['verified']:,}/{len(declarations):,} verified, "
+            f"{declaration_counts['declared']:,} declared, and "
+            f"{declaration_counts['blocked']:,} blocked",
+            f"{len(self.manifest['approvedExclusions'])} approved exclusions",
+            "T071 remains open",
+        ):
+            self.assertIn(audited_status, checkpoint.group(1))
+        self.assertRegex(tasks, r"(?m)^- \[ \] T071 \[US2\]")
+
+    def test_recertify_summary_names_every_mapped_request_field(self) -> None:
+        request_fields = (
+            "Certificate Request Unique Identifier",
+            "Certificate Request Type",
+            "Certificate Request Value",
+            "Protection Storage Masks",
+        )
+        for language, guide in (("en", self.english), ("es", self.spanish)):
+            with self.subTest(language=language):
+                normalized_guide = " ".join(guide.split())
+                for field in request_fields:
+                    self.assertIn(field, normalized_guide)
+
+    def test_vendor_extension_examples_document_native_handle_release_parity(self) -> None:
         english = (ROOT / "docs/user-guide/en/vendor-extensions.md").read_text(
             encoding="utf-8"
         )
@@ -162,12 +387,21 @@ class PackageDocumentationContractTests(unittest.TestCase):
         )
         self.assertIn("vendor_extension_registry", english)
         self.assertIn("declared", english)
-        self.assertIn("blocked", english)
-        self.assertIn("verified four-language 1.0 capability", english)
+        self.assertIn("Rust drops the value", english)
+        self.assertIn("C calls its matching `_release` function", english)
+        self.assertIn("Java and Python expose `close()`", english)
+        self.assertIn("No extension-handle release remains blocked", english)
+        self.assertIn(
+            "verified four-language 1.0 capability",
+            " ".join(english.split()),
+        )
         self.assertIn("vendor_extension_registry", spanish)
         self.assertIn("declared", spanish)
-        self.assertIn("bloqueados", spanish)
-        self.assertIn("capacidad 1.0 verificada", spanish)
+        self.assertIn("Rust descarta el valor", spanish)
+        self.assertIn("C llama a su función `_release` correspondiente", spanish)
+        self.assertIn("Java y Python exponen", spanish)
+        self.assertIn("El manifiesto ya no bloquea la liberación", spanish)
+        self.assertIn("capacidad 1.0 verificada", " ".join(spanish.split()))
 
 
 if __name__ == "__main__":

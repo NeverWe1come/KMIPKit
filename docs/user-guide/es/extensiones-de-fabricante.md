@@ -14,12 +14,13 @@ y no abren una conexión de red.
 Los ejemplos siguientes documentan el comportamiento implementado y los
 consumidores locales disponibles. El manifiesto de API pública marca
 `vendor_extension_registry` como `declared`: existen mapeos compartidos
-exactos, pero la verificación de paridad sigue pendiente. Las funciones C de
-liberación sin equivalente Rust invocable y los helpers TTLV sin mapeo Rust
-público exacto permanecen bloqueados individualmente. Esta guía no afirma que
-el registro sea una capacidad 1.0 verificada en los cuatro lenguajes. Consulta
-el [alcance de los paquetes Java y Python](paquetes-de-idiomas.md) para ver el
-estado actual del manifiesto.
+exactos, pero la verificación de paridad sigue pendiente. Cada handle público
+de extensión tiene un mapeo de ciclo de vida explícito: Rust descarta el valor,
+C llama a su función `_release` correspondiente y Java y Python exponen
+`close()`. El manifiesto ya no bloquea la liberación de estos handles. Esta guía
+no afirma que el registro sea una capacidad 1.0 verificada en los cuatro
+lenguajes. Consulta el [alcance de los paquetes Java y Python](paquetes-de-idiomas.md)
+para ver el estado actual del manifiesto.
 
 ## Definir una extensión
 

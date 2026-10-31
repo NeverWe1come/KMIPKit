@@ -84,11 +84,28 @@ impl AttributeReference {
     /// Returns a sanitized protocol error if the fixed KMIP tags or generic
     /// TTLV model reject this internally defined structure.
     pub(crate) fn to_ttlv_item(&self) -> Result<Item, ProtocolError> {
+        self.to_ttlv_item_with_tag_validation(true)
+    }
+
+    /// Re-encodes a parsed response reference without closing its raw Enumeration domain.
+    ///
+    /// Response values are already validated as structurally valid TTLV. Preserve their raw
+    /// values when a caller asks for a generic response view; this path is never used to build
+    /// an outbound request.
+    pub(crate) fn to_ttlv_response_item(&self) -> Result<Item, ProtocolError> {
+        self.to_ttlv_item_with_tag_validation(false)
+    }
+
+    fn to_ttlv_item_with_tag_validation(
+        &self,
+        validate_tag_allocation: bool,
+    ) -> Result<Item, ProtocolError> {
         let value = match &self.kind {
             AttributeReferenceKind::Tag(raw_tag) => {
-                // Outbound tag identities must pass the accepted §11.56
-                // allocation policy; the decoder below keeps raw values.
-                tag(*raw_tag)?;
+                if validate_tag_allocation {
+                    // Outbound tag identities must pass the accepted §11.56 allocation policy.
+                    tag(*raw_tag)?;
+                }
                 Value::enumeration(*raw_tag)
             }
             AttributeReferenceKind::Name {

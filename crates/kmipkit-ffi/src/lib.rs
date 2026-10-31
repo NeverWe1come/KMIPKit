@@ -61,6 +61,40 @@ pub struct kmipkit_client_batch_response_t {
 pub struct kmipkit_client_batch_item_response_t {
     _private: [u8; 0],
 }
+#[repr(C)]
+pub struct kmipkit_client_async_operation_outcome_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_profile_validation_error_t {
+    _private: [u8; 0],
+}
+
+/// Common result fields for one explicit asynchronous follow-up operation.
+#[repr(C)]
+pub struct kmipkit_client_async_operation_metadata_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub operation: u32,
+    pub outcome_kind: u32,
+    pub result_status: u32,
+    pub has_result_reason: u32,
+    pub result_reason: u32,
+    pub has_cancellation_result: u32,
+    pub cancellation_result: u32,
+    pub has_result_message: u32,
+    pub reserved: u32,
+    pub result_message_data: *const u8,
+    pub result_message_length: u64,
+}
+#[repr(C)]
+pub struct kmipkit_usage_allocation_context_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_split_key_reference_t {
+    _private: [u8; 0],
+}
 
 /// Common operation outcome fields, versioned independently from opaque handles.
 #[repr(C)]
@@ -73,6 +107,34 @@ pub struct kmipkit_client_batch_item_metadata_v1_t {
     pub has_result_reason: u32,
     pub result_reason: u32,
 }
+
+/// Version 2 adds the source operation and exact optional Result Message while
+/// leaving the version 1 metadata record unchanged.
+#[repr(C)]
+pub struct kmipkit_client_batch_item_metadata_v2_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub operation: u32,
+    /// `1` for a completed outcome and `2` for a Pending outcome.
+    pub outcome_kind: u32,
+    pub result_status: u32,
+    pub has_result_reason: u32,
+    pub result_reason: u32,
+    pub has_result_message: u32,
+    pub reserved: u32,
+    /// Borrowed UTF-8 bytes, valid while the item-response handle remains open.
+    pub result_message_data: *const u8,
+    pub result_message_length: u64,
+}
+
+/// One exact signed KMIP Protocol Version Major/Minor pair.
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct kmipkit_protocol_version_v1_t {
+    pub major: i32,
+    pub minor: i32,
+}
+
 #[repr(C)]
 pub struct kmipkit_validated_extension_value_t {
     _private: [u8; 0],
@@ -90,11 +152,51 @@ pub struct kmipkit_ttlv_structure_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_request_message_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_request_header_view_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_request_batch_item_view_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_response_message_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_response_header_view_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_response_batch_item_view_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_message_extension_view_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_message_validation_error_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
 pub struct kmipkit_client_batch_item_t {
     _private: [u8; 0],
 }
 #[repr(C)]
 pub struct kmipkit_register_request_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_revocation_reason_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_revoke_request_t {
     _private: [u8; 0],
 }
 #[repr(C)]
@@ -185,6 +287,72 @@ pub struct kmipkit_byte_span_v1_t {
     pub length: u64,
 }
 
+/// Versioned, redacted profile validation details. UTF-8 pointer/length pairs remain valid while
+/// the owning `kmipkit_profile_validation_error_t` handle remains open.
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct kmipkit_profile_validation_error_view_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    /// 0 for no source, 1 for a clause ID, or 2 for a source-gap ID and locator.
+    pub source_kind: u32,
+    /// 1 when `batch_item_index` contains a zero-based request item index; otherwise 0.
+    pub batch_item_index_present: u32,
+    pub batch_item_index: u64,
+    pub error_code_data: *const u8,
+    pub error_code_length: u64,
+    pub profile_id_data: *const u8,
+    pub profile_id_length: u64,
+    pub requirement_id_data: *const u8,
+    pub requirement_id_length: u64,
+    /// Clause ID for source kind 1, gap ID for source kind 2, otherwise an empty span.
+    pub source_id_data: *const u8,
+    pub source_id_length: u64,
+    /// Catalogued locator for source kind 2, otherwise an empty span.
+    pub source_locator_data: *const u8,
+    pub source_locator_length: u64,
+}
+
+/// Exact wire value for the three Unique Identifier forms accepted by KMIP
+/// §§6.1.8–6.1.10. Text bytes are borrowed on input and output.
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct kmipkit_unique_identifier_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    /// 1 `TextString`, 2 `Enumeration`, or 3 `Integer`.
+    pub kind: u32,
+    pub reserved: u32,
+    pub text_data: *const u8,
+    pub text_length: u64,
+    pub enumeration_value: u32,
+    pub integer_value: i32,
+}
+
+/// One lossless KMIP Attribute Reference returned by a successful operation.
+/// Name-form spans are borrowed while the response handle remains open.
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct kmipkit_attribute_reference_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub kind: u32,
+    pub reserved: u32,
+    pub tag_value: u32,
+    pub reserved2: u32,
+    pub vendor_identification_data: *const u8,
+    pub vendor_identification_length: u64,
+    pub attribute_name_data: *const u8,
+    pub attribute_name_length: u64,
+}
+
+pub const KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG: u32 = 1;
+pub const KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME: u32 = 2;
+
+pub const KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING: u32 = 1;
+pub const KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION: u32 = 2;
+pub const KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER: u32 = 3;
+
 /// One explicitly encoded transport certificate, key, or revocation input.
 #[repr(C)]
 pub struct kmipkit_transport_input_v1_t {
@@ -201,6 +369,63 @@ pub struct kmipkit_timeout_limit_v1_t {
     pub seconds: u64,
     pub nanoseconds: u32,
     pub reserved2: u32,
+}
+
+/// Versioned per-exchange timeout overrides for `kmipkit_client_execute_with_options_v1`.
+/// A timeout with kind zero and zero duration inherits the client's configured policy.
+#[repr(C)]
+pub struct kmipkit_request_options_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub connect_timeout: kmipkit_timeout_limit_v1_t,
+    pub write_timeout: kmipkit_timeout_limit_v1_t,
+    pub read_timeout: kmipkit_timeout_limit_v1_t,
+    pub total_timeout: kmipkit_timeout_limit_v1_t,
+}
+
+/// Borrowed, explicit profile selection for one client exchange.
+#[repr(C)]
+pub struct kmipkit_profile_validation_selection_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub profile_id_data: *const u8,
+    pub profile_id_data_length: u64,
+    pub profile_id_offsets: *const u64,
+    pub profile_id_lengths: *const u64,
+    pub profile_id_count: u64,
+}
+
+/// Caller-owned object state for one request batch item.
+#[repr(C)]
+pub struct kmipkit_profile_object_state_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub batch_item_index: u64,
+    pub unique_identifier_data: *const u8,
+    pub unique_identifier_length: u64,
+    pub known_fields: u32,
+    pub boolean_values: u32,
+    pub usage_limits_total: i64,
+    pub usage_limits_count: i64,
+}
+
+/// Borrowed caller-owned state supplied only for one profile-validated exchange.
+#[repr(C)]
+pub struct kmipkit_profile_validation_context_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub object_states: *const kmipkit_profile_object_state_v1_t,
+    pub object_state_count: u64,
+}
+
+/// Versioned, payload-free details for one generic TTLV decoder failure.
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct kmipkit_ttlv_decode_error_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub kind: u32,
+    pub byte_offset: u64,
 }
 
 /// Versioned production transport inputs. All spans are borrowed only for the

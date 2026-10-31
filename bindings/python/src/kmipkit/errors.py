@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-from enum import IntEnum
+from dataclasses import dataclass as _dataclass
+from enum import IntEnum as _IntEnum
+
+from . import ttlv as _ttlv
 
 
 class KmipKitError(Exception):
@@ -50,7 +53,43 @@ class ResourceLimitError(KmipKitError):
     category = "resource_limit"
 
 
-class ClientErrorCategory(IntEnum):
+class TtlvDecodeErrorKind(_IntEnum):
+    """Stable generic TTLV decoder categories; unknown integer values remain preservable."""
+
+    MESSAGE_TOO_LARGE = 1
+    TRUNCATED_HEADER = 2
+    TRUNCATED_VALUE = 3
+    INVALID_ITEM_LENGTH = 4
+    EMPTY_BIG_INTEGER = 5
+    INVALID_UTF8 = 6
+    INVALID_BOOLEAN = 7
+    UNSUPPORTED_ITEM_TYPE = 8
+    TRAILING_BYTES = 9
+    STRUCTURE_BOUNDARY = 10
+    RESERVED_TAG = 11
+    UNALLOCATED_TAG = 12
+    INVALID_PADDING_EXTENT = 13
+    STRUCTURE_DEPTH_EXCEEDED = 14
+    ELEMENT_LIMIT_EXCEEDED = 15
+    ALLOCATION_FAILED = 16
+    MODEL_CONSTRAINT = 17
+
+
+class TtlvDecodeError(KmipKitError):
+    """A redacted decoder failure containing only a stable category and byte offset."""
+
+    category = "ttlv_decode"
+
+    def __init__(self, kind: int, byte_offset: int) -> None:
+        self.kind = _known_or_raw(TtlvDecodeErrorKind, int(kind))
+        self.byte_offset = int(byte_offset)
+        super().__init__()
+        self.args = (
+            f"KMIPKit TTLV decoding failed ({self.kind}; byte offset {self.byte_offset})",
+        )
+
+
+class ClientErrorCategory(_IntEnum):
     """Stable client execution categories returned by the C ABI."""
 
     VALIDATION = 1
@@ -60,7 +99,7 @@ class ClientErrorCategory(IntEnum):
     OTHER = 5
 
 
-class ClientErrorCause(IntEnum):
+class ClientErrorCause(_IntEnum):
     """Redacted client failure cause classifications returned by the C ABI."""
 
     NONE = 0
@@ -76,7 +115,7 @@ class ClientErrorCause(IntEnum):
     OTHER = 10
 
 
-class DeliveryState(IntEnum):
+class DeliveryState(_IntEnum):
     """Whether a failed client request reached the remote endpoint."""
 
     NONE = 0
@@ -85,7 +124,20 @@ class DeliveryState(IntEnum):
     RESPONSE_STARTED = 3
 
 
-def _known_or_raw(enum_type: type[IntEnum], value: int) -> IntEnum | int:
+@_dataclass(frozen=True)
+class ProfileValidationDetails:
+    """Safe source-backed IDs describing a fail-closed profile validation error."""
+
+    error_code: str
+    profile_id: str | None
+    requirement_id: str | None
+    source_clause_id: str | None
+    source_gap_id: str | None
+    source_gap_locator: str | None
+    batch_item_index: int | None
+
+
+def _known_or_raw(enum_type: type[_IntEnum], value: int) -> _IntEnum | int:
     try:
         return enum_type(value)
     except ValueError:
@@ -93,7 +145,12 @@ def _known_or_raw(enum_type: type[IntEnum], value: int) -> IntEnum | int:
 
 
 class ClientExecutionError(KmipKitError):
-    """A client call failed; fields expose only stable categories and delivery state."""
+    """A client call failed with sanitized metadata and optional approved UID-error TTLV.
+
+    ``response_ttlv`` is owned by this exception and may be closed by the caller. It is present
+    only for a missing, repeated, or malformed required Unique Identifier in a successful MAC,
+    MAC Verify, Sign, or Signature Verify response; all other failures expose no response TTLV.
+    """
 
     category = "client_execution"
 
@@ -104,11 +161,15 @@ class ClientExecutionError(KmipKitError):
         category: ClientErrorCategory | int,
         cause: ClientErrorCause | int,
         delivery: DeliveryState | int,
+        response_ttlv: _ttlv.Structure | None = None,
+        profile_validation: ProfileValidationDetails | None = None,
     ) -> None:
         self.status = int(status)
         self.client_category = _known_or_raw(ClientErrorCategory, int(category))
         self.cause = _known_or_raw(ClientErrorCause, int(cause))
         self.delivery = _known_or_raw(DeliveryState, int(delivery))
+        self.response_ttlv = response_ttlv
+        self.profile_validation = profile_validation
         super().__init__()
         self.args = (
             f"KMIPKit client operation failed ({self.client_category!s}; "

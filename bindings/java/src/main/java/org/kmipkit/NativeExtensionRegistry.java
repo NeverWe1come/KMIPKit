@@ -1,5 +1,8 @@
 package org.kmipkit;
 
+import java.nio.ByteBuffer;
+import java.util.function.Consumer;
+
 import org.jspecify.annotations.Nullable;
 import org.kmipkit.ttlv.CodecLimits;
 
@@ -45,6 +48,18 @@ public final class NativeExtensionRegistry {
     public static final int CLIENT_BATCH_RESPONSE = 30;
     public static final int CLIENT_BATCH_ITEM_RESPONSE = 31;
     public static final int REGISTER_REQUEST = 32;
+    public static final int SPLIT_KEY_REFERENCE = 33;
+    public static final int USAGE_ALLOCATION_CONTEXT = 34;
+    public static final int REVOCATION_REASON = 35;
+    public static final int REVOKE_REQUEST = 36;
+    public static final int CLIENT_ASYNC_OPERATION_OUTCOME = 37;
+    public static final int REQUEST_MESSAGE = 38;
+    public static final int REQUEST_HEADER_VIEW = 39;
+    public static final int REQUEST_BATCH_ITEM_VIEW = 40;
+    public static final int MESSAGE_EXTENSION_VIEW = 41;
+    public static final int RESPONSE_MESSAGE = 42;
+    public static final int RESPONSE_HEADER_VIEW = 43;
+    public static final int RESPONSE_BATCH_ITEM_VIEW = 44;
 
     private static volatile boolean loaded;
 
@@ -112,9 +127,161 @@ public final class NativeExtensionRegistry {
             boolean criticalityIndicator);
     public static native long clientBatchItemWithExtension(long item, long requestExtension);
     public static native long clientBatchItemDiscoverVersions();
+    public static native long clientBatchItemPing();
+    public static native long clientBatchItemQuery(int[] functions, @Nullable byte[][] objectGroups);
+    public static native long clientBatchItemQueryWithLimits(
+            int[] functions, @Nullable byte[][] objectGroups, long[] codecLimits);
+    public static native long clientBatchItemCreate(long objectType, long attributes, long protectionStorageMasks);
+    public static native long clientBatchItemCreateKeyPair(long commonAttributes, long privateKeyAttributes,
+            long publicKeyAttributes, long commonProtectionStorageMasks,
+            long privateProtectionStorageMasks, long publicProtectionStorageMasks);
+    public static native long clientBatchItemCreateSplitKey(long objectType, int parts, int threshold,
+            long method, int identifierKind, byte[] identifierText, long identifierNumber,
+            byte[] primeFieldSize, long attributes, long protectionStorageMasks);
+    public static native long clientBatchItemCertify(int identifierKind, @Nullable byte[] identifierText,
+            long identifierNumber, boolean hasCertificateRequestType, long certificateRequestType,
+            @Nullable byte[] certificateRequestValue, long attributes, long protectionStorageMasks);
+    public static native long clientBatchItemRecertify(int identifierKind,
+            @Nullable byte[] identifierText, long identifierNumber,
+            int certificateRequestIdentifierKind, @Nullable byte[] certificateRequestIdentifierText,
+            long certificateRequestIdentifierNumber, boolean hasCertificateRequestType,
+            long certificateRequestType, @Nullable byte[] certificateRequestValue,
+            boolean hasOffset, long offset, long attributes, long protectionStorageMasks);
+    public static native long clientBatchItemRekey(int identifierKind,
+            @Nullable byte[] identifierText, long identifierNumber,
+            boolean hasOffset, long offset, long attributes, long protectionStorageMasks);
+    public static native long clientBatchItemRekeyKeyPair(int identifierKind,
+            @Nullable byte[] identifierText, long identifierNumber, boolean hasOffset, long offset,
+            long commonAttributes, long privateKeyAttributes, long publicKeyAttributes,
+            long commonProtectionStorageMasks, long privateProtectionStorageMasks,
+            long publicProtectionStorageMasks);
+    public static native long clientBatchItemReprovision(long certificateRequest, long certificate);
+    public static native long clientBatchItemRngRetrieve(int dataLength);
+    public static native long clientBatchItemRngSeed(@Nullable byte[] data);
+    public static native long clientBatchItemCheck(int identifierKind, @Nullable byte[] identifierText,
+            long identifierNumber, boolean hasUsageLimitsCount, long usageLimitsCount,
+            boolean hasCryptographicUsageMask, int cryptographicUsageMask,
+            boolean hasLeaseTime, long leaseTime);
+    public static native long clientBatchItemDelegatedLogin(long rights, int leaseTimeKind,
+            long leaseTimeValue, boolean hasRequestCount, int requestCount, long usageLimits);
+    public static native long clientBatchItemLogin(int leaseTimeKind, long leaseTimeValue,
+            boolean hasRequestCount, int requestCount, long usageLimits);
+    public static native long clientBatchItemLogout(long ticket);
+    public static native long clientBatchItemGetUsageAllocation(int identifierKind,
+            @Nullable byte[] identifierText, long identifierNumber, long usageLimitsCount);
+    public static native long clientBatchItemActivate(int identifierKind,
+            @Nullable byte[] identifierText, long identifierNumber);
+    public static native long clientBatchItemArchive(int identifierKind,
+            @Nullable byte[] identifierText, long identifierNumber);
+    public static native long clientBatchItemDestroy(int identifierKind,
+            @Nullable byte[] identifierText, long identifierNumber);
+    public static native long clientBatchItemRecover(int identifierKind,
+            @Nullable byte[] identifierText, long identifierNumber);
+    public static native long clientBatchItemObtainLease(int identifierKind,
+            @Nullable byte[] identifierText, long identifierNumber);
+    public static native long clientBatchItemImport(int identifierKind, byte[] identifierText,
+            long identifierNumber, long objectType, boolean hasReplaceExisting,
+            boolean replaceExisting, boolean hasKeyWrapType, long keyWrapType,
+            long attributes, long anyObject);
+    public static native long splitKeyReferenceCreate(int identifierKind, byte[] identifierText,
+            long identifierNumber, long splitKeyThreshold);
+    public static native long clientBatchItemJoinSplitKey(long objectType, long[] references,
+            boolean hasSecretDataType, long secretDataType, long attributes,
+            long protectionStorageMasks);
+    public static native long clientBatchItemGet(int identifierKind,
+            @Nullable byte[] identifierText, long identifierNumber,
+            boolean hasKeyFormatType, long keyFormatType,
+            boolean hasKeyWrapType, long keyWrapType,
+            boolean hasKeyCompressionType, long keyCompressionType,
+            long keyWrappingSpecification);
+    public static native long clientBatchItemLocate(
+            boolean hasMaximumItems, int maximumItems,
+            boolean hasOffsetItems, int offsetItems,
+            boolean hasStorageStatusMask, long storageStatusMask,
+            boolean hasObjectGroupMember, long objectGroupMember,
+            long attributes);
+    public static native long clientBatchItemGetConstraints();
+    public static native long clientBatchItemGetAttributeList(
+            int identifierKind, @Nullable byte[] identifierText, long identifierNumber);
+    public static native long clientBatchItemGetAttributes(int identifierKind,
+            @Nullable byte[] identifierText, long identifierNumber, int[] referenceKinds,
+            long[] referenceTags, byte[][] vendorIdentifications, byte[][] attributeNames);
+    public static native long clientBatchItemAddAttribute(
+            int identifierKind, @Nullable byte[] identifierText, long identifierNumber,
+            long newAttribute);
+    public static native long clientBatchItemAdjustAttribute(
+            int identifierKind, @Nullable byte[] identifierText, long identifierNumber,
+            int referenceKind, long referenceTag, @Nullable byte[] vendorIdentification,
+            @Nullable byte[] attributeName, long adjustmentType, long adjustmentValue);
+    public static native long clientBatchItemDeleteAttribute(
+            int identifierKind, @Nullable byte[] identifierText, long identifierNumber,
+            long currentAttribute, int referenceKind, long referenceTag,
+            @Nullable byte[] vendorIdentification, @Nullable byte[] attributeName);
+    public static native long clientBatchItemModifyAttribute(
+            int identifierKind, @Nullable byte[] identifierText, long identifierNumber,
+            long currentAttribute, long newAttribute);
+    public static native long clientBatchItemSetAttribute(
+            int identifierKind, @Nullable byte[] identifierText, long identifierNumber,
+            long newAttribute);
+    public static native long clientBatchItemSetConstraints(long constraints);
+    public static native long clientBatchItemSetDefaults(long defaultsInformation);
+    public static native long clientBatchItemInterop(long interopFunction, byte[] interopIdentifier);
+    public static native long clientBatchItemPkcs11(
+            long function, long interfaceStructure, byte[] correlationValue, long inputParameters);
+    public static native long clientBatchItemLog(byte[] logMessage);
+    public static native long clientBatchItemValidate(long[] certificates,
+            int[] identifierKinds, byte[][] identifierTexts, long[] identifierNumbers,
+            long[] payloadExtensions,
+            boolean hasValidityDate, long validityDate);
+    public static native long clientBatchItemExport(int identifierKind,
+            @Nullable byte[] identifierText, long identifierNumber,
+            boolean hasKeyFormatType, long keyFormatType,
+            boolean hasKeyWrapType, long keyWrapType,
+            boolean hasKeyCompressionType, long keyCompressionType,
+            long keyWrappingSpecification);
+    public static native long clientBatchItemDeriveKey(long objectType, int[] identifierKinds,
+            byte[][] identifierTexts, long[] identifierNumbers, long derivationMethod,
+            long derivationParameters, long attributes);
+    public static native long clientBatchItemEncrypt(
+            int identifierKind, @Nullable byte[] identifierText, long identifierNumber,
+            long parameters, long data, @Nullable byte[] ivCounterNonce,
+            @Nullable byte[] correlationValue, int initIndicator, int finalIndicator,
+            @Nullable byte[] authenticatedEncryptionAdditionalData);
+    public static native long clientBatchItemDecrypt(
+            int identifierKind, @Nullable byte[] identifierText, long identifierNumber,
+            long parameters, long data, @Nullable byte[] ivCounterNonce,
+            @Nullable byte[] authenticatedEncryptionTag, @Nullable byte[] correlationValue,
+            int initIndicator, int finalIndicator,
+            @Nullable byte[] authenticatedEncryptionAdditionalData);
+    public static native long clientBatchItemHash(
+            long parameters, long data, @Nullable byte[] correlationValue,
+            int initIndicator, int finalIndicator);
+    public static native long clientBatchItemMac(
+            int identifierKind, @Nullable byte[] identifierText, long identifierNumber,
+            long parameters, long data, @Nullable byte[] correlationValue,
+            int initIndicator, int finalIndicator);
+    public static native long clientBatchItemMacVerify(
+            int identifierKind, @Nullable byte[] identifierText, long identifierNumber,
+            long parameters, long data, @Nullable byte[] macData, @Nullable byte[] correlationValue,
+            int initIndicator, int finalIndicator);
+    public static native long clientBatchItemSign(
+            int identifierKind, @Nullable byte[] identifierText, long identifierNumber,
+            long parameters, long data, @Nullable byte[] digestedData, @Nullable byte[] correlationValue,
+            int initIndicator, int finalIndicator);
+    public static native long clientBatchItemSignatureVerify(
+            int identifierKind, @Nullable byte[] identifierText, long identifierNumber,
+            long parameters, long data, @Nullable byte[] digestedData, @Nullable byte[] signatureData,
+            @Nullable byte[] correlationValue, int initIndicator, int finalIndicator);
     public static native long registerRequestCreate(int objectType, long attributes, long object);
     public static native long registerRequestWithOpaqueObjectContext(long request, int context);
     public static native long clientBatchItemRegister(long request);
+    public static native long revocationReasonCreate(long rawCode, @Nullable byte[] message);
+    public static native long revokeRequestCreate(int identifierKind,
+            @Nullable byte[] identifierText, long identifierNumber, long reason,
+            boolean hasCompromiseOccurrenceDate, long compromiseOccurrenceDate);
+    public static native long clientBatchItemRevoke(long request);
+    public static native long clientBatchItemWithUniqueBatchItemId(long item, byte[] id);
+    public static native @Nullable byte[] clientBatchItemUniqueBatchItemId(long item);
     public static native long clientBatchItemExtensionCount(long item);
     public static native long clientBatchItemExtensionIdentityAt(long item, long index);
     public static native boolean clientBatchItemExtensionCriticalityIndicatorAt(long item, long index);
@@ -129,12 +296,119 @@ public final class NativeExtensionRegistry {
     public static native long clientBatchCreate();
     public static native void clientBatchAddItem(long batch, long item);
     public static native void clientBatchSetAsynchronousIndicator(long batch, long indicator);
+    public static native void clientBatchSetRequestTimestamp(long batch, long timestamp);
+    public static native java.util.OptionalLong clientBatchRequestTimestamp(long batch);
+    public static native void clientBatchSetOrderOption(long batch, boolean enabled);
+    public static native void clientBatchAddErrorContinuationValue(long batch, long value);
+    public static native void clientBatchSetClientCorrelationValue(long batch, byte[] value);
     public static native long clientExecute(long client, long batch, long[] codecLimits);
+    public static native long clientExecuteWithOptions(
+            long client, long batch, long[] codecLimits, long[] requestTimeouts);
+    public static native long clientExecuteWithProfiles(
+            long client, long batch, long[] codecLimits, String[] profileIds,
+            long[] stateItemIndexes, String[] uniqueIdentifiers, int[] knownFields,
+            int[] booleanValues, long[] usageLimitsTotals, long[] usageLimitsCounts,
+            long[] requestTimeouts);
+    public static native long clientExecutePoll(long client, byte[] correlationValue, long[] codecLimits);
+    public static native long clientExecutePollWithOptions(
+            long client, byte[] correlationValue, long[] codecLimits, long[] requestTimeouts);
+    public static native long clientExecuteCancel(long client, byte[] correlationValue, long[] codecLimits);
+    public static native long clientExecuteCancelWithOptions(
+            long client, byte[] correlationValue, long[] codecLimits, long[] requestTimeouts);
+    public static native long clientExecuteProcess(
+            long client, byte[] correlationValue, boolean hasAsynchronousIndicator,
+            long asynchronousIndicator, long[] codecLimits);
+    public static native long clientExecuteProcessWithOptions(
+            long client, byte[] correlationValue, boolean hasAsynchronousIndicator,
+            long asynchronousIndicator, long[] codecLimits, long[] requestTimeouts);
+    public static native long clientExecuteQueryAsyncRequests(
+            long client, byte[][] correlationValues, long[] operations,
+            boolean hasAsynchronousIndicator, long asynchronousIndicator, long[] codecLimits);
+    public static native long clientExecuteQueryAsyncRequestsWithOptions(
+            long client, byte[][] correlationValues, long[] operations,
+            boolean hasAsynchronousIndicator, long asynchronousIndicator,
+            long[] codecLimits, long[] requestTimeouts);
+    public static native Object[] clientAsyncOperationOutcomeMetadataV1(long outcome);
+    public static native boolean withClientAsyncOperationOutcomeCorrelationValue(
+            long outcome, Consumer<ByteBuffer> callback);
+    public static native long clientAsyncOperationOutcomeResponsePayloadTtlv(long outcome);
+    public static native long clientAsyncOperationOutcomeExtensionCount(long outcome);
+    public static native long clientAsyncOperationOutcomeExtensionTtlvAt(long outcome, long index);
+    public static native long usageAllocationContextCreate(
+            long itemResponse, long requestedUnits, long usageLimitsUnit);
+    public static native long usageAllocationContextUsageLimitsUnit(long context);
+    public static native long usageAllocationContextAllocatedUnits(long context);
+    public static native long usageAllocationContextAvailableUnits(long context);
+    public static native long usageAllocationContextReservedUnits(long context);
+    public static native Object[] usageAllocationContextUniqueIdentifier(long context);
+    public static native long clientExecuteGuardedProtectionItem(
+            long client, long context, long item, long cost, long[] codecLimits);
+    public static native long clientExecuteGuardedProtectionItemWithAsynchronousIndicator(
+            long client, long context, long item, long cost, long asynchronousIndicator,
+            long[] codecLimits);
     public static native long clientBatchResponseItemCount(long response);
     public static native long clientBatchResponseItemAt(long response, long index);
     public static native long[] clientBatchItemResponseMetadata(long itemResponse);
+    public static native Object[] clientBatchItemResponseMetadataV2(long itemResponse);
     public static native @Nullable byte[] clientBatchItemResponseUniqueBatchItemId(long itemResponse);
+    public static native long clientBatchItemResponseExtensionCount(long itemResponse);
+    public static native long clientBatchItemResponseExtensionTtlvAt(long itemResponse, long index);
     public static native @Nullable byte[] clientBatchItemResponsePendingCorrelationValue(long itemResponse);
+    public static native @Nullable long[] clientBatchItemResponseDiscoverVersionsSupportedVersions(
+            long itemResponse);
+    public static native Object[] clientBatchItemResponseCreate(long itemResponse);
+    public static native Object[] clientBatchItemResponseCertify(long itemResponse);
+    public static native Object[] clientBatchItemResponseRecertify(long itemResponse);
+    public static native Object[] clientBatchItemResponseRekey(long itemResponse);
+    public static native Object[] clientBatchItemResponseRekeyKeyPair(long itemResponse);
+    public static native Object[] clientBatchItemResponseReprovision(long itemResponse);
+    public static native Object[] clientBatchItemResponseReprovisionTtlv(long itemResponse);
+    public static native Object[] clientBatchItemResponseRegister(long itemResponse);
+    public static native Object[] clientBatchItemResponseRevoke(long itemResponse);
+    public static native Object[] clientBatchItemResponseRngRetrieve(long itemResponse);
+    public static native Object[] clientBatchItemResponseRngSeed(long itemResponse);
+    public static native Object[] clientBatchItemResponseActivate(long itemResponse);
+    public static native Object[] clientBatchItemResponseArchive(long itemResponse);
+    public static native Object[] clientBatchItemResponseDestroy(long itemResponse);
+    public static native Object[] clientBatchItemResponseRecover(long itemResponse);
+    public static native Object[] clientBatchItemResponseCheck(long itemResponse);
+    public static native Object[] clientBatchItemResponseDelegatedLogin(long itemResponse);
+    public static native Object[] clientBatchItemResponseLogin(long itemResponse);
+    public static native long[] clientBatchItemResponseLogout(long itemResponse);
+    public static native Object[] clientBatchItemResponseGetUsageAllocation(long itemResponse);
+    public static native Object[] clientBatchItemResponseObtainLease(long itemResponse);
+    public static native Object[] clientBatchItemResponseImport(long itemResponse);
+    public static native Object[] clientBatchItemResponseJoinSplitKey(long itemResponse);
+    public static native Object[] clientBatchItemResponseGet(long itemResponse);
+    public static native Object[] clientBatchItemResponseLocate(long itemResponse);
+    public static native Object[] clientBatchItemResponseGetConstraints(long itemResponse);
+    public static native Object[] clientBatchItemResponseGetAttributeList(
+            long itemResponse, long maxElements, long maxMessageBytes);
+    public static native Object[] clientBatchItemResponseGetAttributes(long itemResponse);
+    public static native Object[] clientBatchItemResponseAddAttribute(long itemResponse);
+    public static native Object[] clientBatchItemResponseAdjustAttribute(long itemResponse);
+    public static native Object[] clientBatchItemResponseDeleteAttribute(long itemResponse);
+    public static native Object[] clientBatchItemResponseModifyAttribute(long itemResponse);
+    public static native Object[] clientBatchItemResponseSetAttribute(long itemResponse);
+    public static native Object[] clientBatchItemResponseSetConstraints(long itemResponse);
+    public static native Object[] clientBatchItemResponseSetDefaults(long itemResponse);
+    public static native Object[] clientBatchItemResponseValidate(long itemResponse);
+    public static native long[] clientBatchItemResponsePing(long itemResponse);
+    public static native Object[] clientBatchItemResponseQueryTtlv(long itemResponse);
+    public static native Object[] clientBatchItemResponseInterop(long itemResponse);
+    public static native Object[] clientBatchItemResponsePkcs11(long itemResponse);
+    public static native Object[] clientBatchItemResponseLog(long itemResponse);
+    public static native Object[] clientBatchItemResponseExport(long itemResponse);
+    public static native Object[] clientBatchItemResponseDeriveKey(long itemResponse);
+    public static native Object[] clientBatchItemResponseCreateKeyPair(long itemResponse);
+    public static native Object[] clientBatchItemResponseCreateSplitKey(long itemResponse);
+    public static native Object[] clientBatchItemResponseHash(long itemResponse);
+    public static native Object[] clientBatchItemResponseMac(long itemResponse);
+    public static native Object[] clientBatchItemResponseMacVerify(long itemResponse);
+    public static native Object[] clientBatchItemResponseSign(long itemResponse);
+    public static native Object[] clientBatchItemResponseSignatureVerify(long itemResponse);
+    public static native Object[] clientBatchItemResponseDecrypt(long itemResponse);
+    public static native Object[] clientBatchItemResponseEncrypt(long itemResponse);
     public static native long extensionInformationCreate(String extensionName);
     public static native long extensionInformationWithTag(long information, int tag);
     public static native long extensionInformationWithType(long information, int type);
@@ -191,5 +465,32 @@ public final class NativeExtensionRegistry {
     public static native long ttlvValueViewByteLength(long valueView);
     public static native short ttlvValueViewByteAt(long valueView, long index);
     public static native long ttlvStructureViewItemCount(long structureView);
+    public static native long[] requestMessageFromTtlv(long structure);
+    public static native long requestMessageTtlv(long message);
+    public static native long requestMessageHeader(long message);
+    public static native long requestHeaderViewTtlv(long header);
+    public static native int[] requestHeaderViewProtocolVersion(long header);
+    public static native int requestHeaderViewBatchCount(long header);
+    public static native long requestMessageBatchItemCount(long message);
+    public static native long requestMessageBatchItemAt(long message, long index);
+    public static native long requestBatchItemViewTtlv(long item);
+    public static native long[] requestBatchItemViewOperation(long item);
+    public static native long requestBatchItemExtensionCount(long item);
+    public static native long requestBatchItemExtensionAt(long item, long extensionIndex);
+    public static native long[] responseMessageFromTtlv(long structure);
+    public static native long responseMessageTtlv(long message);
+    public static native long responseMessageHeader(long message);
+    public static native long responseHeaderViewTtlv(long header);
+    public static native int[] responseHeaderViewProtocolVersion(long header);
+    public static native long responseHeaderViewTimeStamp(long header);
+    public static native int responseHeaderViewBatchCount(long header);
+    public static native long responseMessageBatchItemCount(long message);
+    public static native long responseMessageBatchItemAt(long message, long index);
+    public static native long responseBatchItemViewTtlv(long item);
+    public static native long[] responseBatchItemViewOperation(long item);
+    public static native long[] responseBatchItemViewResultStatus(long item);
+    public static native long responseBatchItemExtensionCount(long item);
+    public static native long responseBatchItemExtensionAt(long item, long extensionIndex);
+    public static native long messageExtensionViewTtlv(long extension);
     public static native long codecLimitsCreate(long maxMessageBytes, long maxStructureDepth, long maxElements);
 }

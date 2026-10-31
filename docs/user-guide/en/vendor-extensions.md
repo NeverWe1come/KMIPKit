@@ -13,10 +13,11 @@ connection.
 The examples below document implementation behavior and available local
 consumers. The current public API manifest marks `vendor_extension_registry`
 as `declared`: exact shared mappings are recorded, while parity verification
-remains pending. C release functions without callable Rust equivalents and
-TTLV helpers without exact public Rust mappings remain individually blocked.
-This guide does not claim a verified four-language 1.0 capability. See [Java
-and Python package scope](language-packages.md) for the
+remains pending. Every public extension handle now has an explicit lifecycle
+mapping: Rust drops the value, C calls its matching `_release` function, and
+Java and Python expose `close()`. No extension-handle release remains blocked
+in the manifest. This guide does not claim a verified four-language 1.0
+capability. See [Java and Python package scope](language-packages.md) for the
 current manifest status.
 
 ## Define an extension

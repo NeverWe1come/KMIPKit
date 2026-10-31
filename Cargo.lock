@@ -326,6 +326,7 @@ dependencies = [
  "kmipkit-protocol",
  "kmipkit-transport",
  "kmipkit-ttlv",
+ "serde_json",
 ]
 
 [[package]]
@@ -339,6 +340,7 @@ dependencies = [
  "quickcheck",
  "rustls",
  "serde",
+ "serde_json",
  "static_assertions",
  "syn 2.0.119",
  "tokio",
@@ -350,6 +352,7 @@ dependencies = [
 name = "kmipkit-ffi"
 version = "1.0.0"
 dependencies = [
+ "aws-lc-rs",
  "base64",
  "cc",
  "kmipkit",
@@ -360,6 +363,7 @@ dependencies = [
  "kmipkit-ttlv",
  "rcgen",
  "rustls",
+ "serde_json",
  "zeroize",
 ]
 
@@ -370,6 +374,7 @@ dependencies = [
  "kmipkit-ttlv",
  "quickcheck",
  "roxmltree",
+ "serde_json",
  "zeroize",
 ]
 
@@ -407,6 +412,7 @@ name = "kmipkit-ttlv"
 version = "1.0.0"
 dependencies = [
  "serde",
+ "serde_json",
  "trybuild",
  "zeroize",
 ]

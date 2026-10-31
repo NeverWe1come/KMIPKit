@@ -36,12 +36,21 @@ oversized identifier produces the shared validation/resource-limit failure.
 
 `kmipkit_last_error_get` copies the calling thread's most recent nonzero C
 status and safe metadata without clearing it. `kmipkit_last_error_clear` resets
-that snapshot. The category values are `0` none, `1` validation, `2` protocol,
+that snapshot. `kmipkit_last_error_profile_validation_error_get_v1` returns an
+owned detail handle when the snapshot contains profile-validation details; it
+returns success with a null handle when those optional details are absent and
+does not change the last-error snapshot. The category values are `0` none, `1`
+validation, `2` protocol,
 `3` transport, `4` server result, and `5` other. Cause values currently
-exposed by the C surface are `0` none, `1` invalid input, and `10` other. The
-delivery value `0` means no KMIP request delivery information is attached;
-the current C surface does not execute client requests. Status values remain
-the existing `KMIPKIT_ERROR_*` codes and are independent from category/cause
+exposed by the C surface are `0` none, `1` invalid input, `2` protocol invalid
+value, `3` protocol invalid encoding, `4` other protocol, `5` transport I/O,
+`6` TLS, `7` HTTP, `8` timeout, `9` other transport, and `10` other. Delivery
+values are `0` none, `1` not sent, `2` possibly sent, and `3` response started.
+Client execution status `8` means protocol (category `2`), status `9` means
+transport (category `3`), and status `10` means a complete server result
+(category `4`). Protocol and transport failures include the strongest observed
+delivery state; a complete server result uses `0`. Status values remain the
+existing `KMIPKIT_ERROR_*` codes and are independent from category/cause
 values. `KMIPKIT_ERROR_INTERNAL` (`7`) is the fixed fallback when a Rust panic
 is caught at an exported boundary; its snapshot uses category `5` (other),
 cause `10` (other), and delivery `0` (none). Bindings map it to their generic
@@ -55,8 +64,37 @@ secrets. Snapshots contain no source strings or request payloads.
 - Input memory is borrowed only for the duration of the call.
 - Results are Rust-owned handles or buffers with matching free functions.
 - Callers never use the platform allocator to release Rust memory.
+- Opaque handle pointer values are process-local tokens backed by a Rust
+  live-handle table. A per-library random HMAC-SHA-256 key drives an eight-round
+  Feistel permutation over the pointer-width domain; cycle walking excludes null
+  and high-bit values required to keep handles representable as positive Java
+  `long` values. Each walk is limited to 128 permutation steps and returns
+  `KMIPKIT_ERROR_RESOURCE_LIMIT` if it cannot find an in-range token; the
+  sequence is consumed on that failure. The internal sequence is monotonic, but
+  its tokens are keyed and are never reused, including after release. KMIPKit
+  reads only address bits as table keys and never dereferences a caller-supplied
+  handle. Tokens are opaque identifiers, not an isolation boundary: callers
+  that obtain a valid token can reuse it. Callers must not persist handles over
+  process restarts or transfer them between library images. Independent images
+  use separate registries, but their numeric tokens can theoretically collide.
+- Each lookup validates that the token is live and has the expected handle
+  kind before reading its payload. Accessors and consuming operations return
+  `KMIPKIT_ERROR_INVALID_INPUT` for forged, stale, null, or wrong-kind handles.
+  The void release functions ignore those invalid values and repeated release.
+  The table serializes lookup, consumption, and release; a successful lookup
+  retains an `Arc` owner for the duration of the operation.
 - Text is UTF-8 with an explicit length.
-- Borrowed views with parent-dependent lifetimes are avoided.
+- Borrowed views with parent-dependent lifetimes are avoided except for the
+  zero-copy C spans returned by `ClientBatchItemResponse` accessors. The child
+  item-response handle retains the response owner, so each span is valid only
+  while the item-response handle remains open and remains unchanged throughout
+  that lifetime, including after the parent batch-response handle is closed.
+  Copy the bytes to keep them longer before releasing the item-response handle.
+- The UTF-8 pointer/length spans in `kmipkit_profile_validation_error_view_v1_t`
+  borrow from the owned profile-validation error handle. They remain valid until
+  `kmipkit_profile_validation_error_release` closes that handle; changing or
+  clearing the thread-local error snapshot does not change them. Copy the bytes
+  before releasing the detail handle to keep them longer.
 - Secret outputs use zeroizing opaque handles.
 
 ## Generated and manual portions
@@ -74,7 +112,7 @@ The v2 [public API manifest](../../specification/api/public-api.json) owns the
 C declaration inventory. Its generated [public C header](../../bindings/c/include/kmipkit.h)
 contains only C mappings in the manifest's `declared` or `verified` state;
 blocked rows remain inventory records and do not create callable declarations.
-The [binding export report](../../specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json)
+The [binding export report](../../specs/043-public-api-bindings/reports/binding-export-report-2026-10-28.json)
 records the observed C, Java, and Python exports and their reconciliation with
 the manifest. Regenerate or validate that inventory with the pinned commands
 in [the export audit guide](../../tools/api_manifest/binding-export-audit.md).
@@ -85,6 +123,24 @@ python -B tools/api_manifest/audit_binding_exports.py --repo-root . --c-only --c
 ```
 
 CI additionally audits the compiled C library on Windows, Linux, and macOS.
+
+## PKCS#11 public mapping
+
+The KMIP 2.1 PKCS#11 request and response have public Rust, C, Java, and Python
+API mappings under OASIS KMIP v2.1 §6.1.37, Tables 273–275. The KMIPKIT-0040
+specification remains **Approved for implementation**; the maintainer's direct
+instruction dated 2026-10-20 authorized implementation without changing its
+formal acceptance status (`formalAcceptance: false`). Manifest state
+`verified` records implemented mappings and parity evidence, not formal
+acceptance, complete KMIP conformance, Profile support, or interoperability.
+
+Function and Return Code are represented by the typed operation model;
+Interface and parameter structures remain opaque TTLV values. The bindings
+preserve unknown members and order, optional absence, and the complete response
+TTLV while applying the existing redaction and ownership rules. Java/JNI and
+Python/CFFI expose caller-owned response data and document runtime copy limits.
+The default Rust, C, Java, and Python builds include these public APIs. The
+compiled C and JNI export checks require their manifest-backed symbols.
 
 ## C distribution
 
@@ -148,3 +204,10 @@ fast on ABI mismatch.
 A 1.0 feature is complete only when Rust, C, Java, and Python expose equivalent
 high level, typed, and generic TTLV capability with tests and documentation.
 Language APIs remain idiomatic; parity concerns semantics rather than spelling.
+Typed request and response messages use one checked-in executable fixture
+consumed by Rust, a compiled C caller, Java 17/JNI, and Python 3.12/CFFI. It
+asserts the same ordered fields, open raw values and bit-mask bits, omitted
+versus effective defaults, batch association, extension contents, safe
+validation kind/index and redaction, and owner/view release behavior in each
+consumer. The fixture is a library-surface contract, not KMIP server
+interoperability evidence.

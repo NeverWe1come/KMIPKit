@@ -101,6 +101,24 @@ def capability_is_available(capability_id: str) -> bool:
     return bool(available[0])
 
 
+def get_api_levels() -> tuple[str, ...]:
+    """Return the local API-level taxonomy without sending a KMIP request.
+
+    The taxonomy query describes KMIPKit's facade surface, is distinct from
+    the KMIP Discover Versions operation, and does not assert that every KMIP
+    operation is mapped or complete.
+    """
+
+    high_level = ffi.new("kmipkit_byte_span_v1_t *")
+    typed_protocol = ffi.new("kmipkit_byte_span_v1_t *")
+    generic_ttlv = ffi.new("kmipkit_byte_span_v1_t *")
+    errors.raise_for_status(
+        lib.kmipkit_api_levels_get_v1(high_level, typed_protocol, generic_ttlv)
+    )
+    spans = (high_level[0], typed_protocol[0], generic_ttlv[0])
+    return tuple(ffi.string(span.data, int(span.length)).decode("utf-8") for span in spans)
+
+
 def _last_error_snapshot() -> _FfiErrorSnapshot:
     """Read the native calling thread's safe error snapshot without clearing it."""
 
@@ -128,4 +146,5 @@ __all__ = [
     "Version",
     "capability_is_available",
     "get_version",
+    "get_api_levels",
 ]

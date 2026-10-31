@@ -229,6 +229,38 @@ fn response_header_accessors_expose_every_represented_field() {
 }
 
 #[test]
+fn request_header_and_batch_views_lend_their_original_ordered_ttlv() {
+    let request = request();
+
+    assert_eq!(
+        request
+            .header()
+            .with_ttlv(|header| header.children().first().map(|child| child.tag().raw())),
+        Some(Some(PROTOCOL_VERSION))
+    );
+    assert_eq!(
+        request
+            .batch_items()
+            .next()
+            .expect("the request contains a batch item")
+            .with_ttlv(|batch| batch.children().first().map(|child| child.tag().raw())),
+        Some(Some(OPERATION))
+    );
+}
+
+#[test]
+fn response_header_view_lends_its_original_ordered_ttlv() {
+    let response = response();
+
+    assert_eq!(
+        response
+            .header()
+            .with_ttlv(|header| header.children().first().map(|child| child.tag().raw())),
+        Some(Some(PROTOCOL_VERSION))
+    );
+}
+
+#[test]
 fn request_batch_and_extension_accessors_preserve_order_and_values() {
     let message = request();
     let mut items = message.batch_items();

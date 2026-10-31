@@ -1,0 +1,232 @@
+{
+  "capability": "KMIPKIT-ELEM-OP-C2S-PKCS-11",
+  "normativeSource": "OASIS KMIP Specification v2.1 §6.1.37, Tables 273–275",
+  "normativeReferences": [
+    {
+      "document": "OASIS Key Management Interoperability Protocol Specification Version 2.1",
+      "url": "https://docs.oasis-open.org/kmip/kmip-spec/v2.1/os/kmip-spec-v2.1-os.html#_Toc57115669",
+      "section": "6.1.37",
+      "tables": [
+        273,
+        274,
+        275
+      ]
+    }
+  ],
+  "authorization": {
+    "ownerSpec": "specs/026-pkcs11/spec.md",
+    "ownerStatus": "Approved for implementation — 2026-10-11",
+    "implementationAuthorization": {
+      "kind": "direct-human-instruction",
+      "date": "2026-10-20",
+      "scope": "Implementation of the approved-for-implementation KMIPKIT-0040 contract; this authorization is not formal specification acceptance."
+    },
+    "formalAcceptance": false,
+    "manifestApiState": "verified"
+  },
+  "requirementIds": [
+    "KMIPKIT-0040-FR-001",
+    "KMIPKIT-0040-FR-002",
+    "KMIPKIT-0040-FR-003",
+    "KMIPKIT-0040-FR-004",
+    "KMIPKIT-0040-FR-005",
+    "KMIPKIT-0040-FR-006",
+    "KMIPKIT-0040-FR-007",
+    "KMIPKIT-0040-FR-008",
+    "KMIPKIT-0043-FR-004",
+    "KMIPKIT-0043-FR-005",
+    "KMIPKIT-0043-FR-007",
+    "KMIPKIT-0043-FR-008",
+    "KMIPKIT-0043-FR-009",
+    "KMIPKIT-0043-FR-010",
+    "KMIPKIT-0043-FR-011",
+    "KMIPKIT-0043-FR-012",
+    "KMIPKIT-0043-FR-013",
+    "KMIPKIT-0043-FR-017",
+    "KMIPKIT-0043-FR-018",
+    "KMIPKIT-0043-FR-021",
+    "KMIPKIT-0043-FR-022"
+  ],
+  "oasisElementIds": [
+    "KMIPKIT-ELEM-OP-C2S-PKCS-11",
+    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-26-PKCS-11-FUNCTION",
+    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-28-PKCS-11-INTERFACE",
+    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE",
+    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-27-PKCS-11-INPUT-PARAMETERS",
+    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-29-PKCS-11-OUTPUT-PARAMETERS",
+    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-30-PKCS-11-RETURN-CODE"
+  ],
+  "mappingSourceFiles": {
+    "rust": [
+      "crates/kmipkit-client/src/execute.rs",
+      "crates/kmipkit-protocol/src/pkcs11.rs"
+    ],
+    "c": [
+      "crates/kmipkit-ffi/src/extension_registry.rs",
+      "crates/kmipkit-ffi/src/extension_registry/client_abi.rs",
+      "bindings/c/tests/client_abi_consumer.c"
+    ],
+    "java": [
+      "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java",
+      "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItemResult.java",
+      "bindings/java/native/kmipkit_jni.cpp",
+      "bindings/java/src/test/java/org/kmipkit/extensions/Pkcs11MappingTest.java"
+    ],
+    "python": [
+      "bindings/python/src/kmipkit/extensions.py",
+      "bindings/python/src/kmipkit/client.py",
+      "bindings/python/tests/test_pkcs11_operation.py"
+    ]
+  },
+  "mappingSourceTokens": {
+    "rust": [
+      "pub fn pkcs11(",
+      "Pkcs11(Pkcs11Request)",
+      "Pkcs11(Pkcs11Response)",
+      "pub struct Pkcs11Request",
+      "pub const fn new(function: Structure)",
+      "pub struct Pkcs11Response",
+      "pub fn with_ttlv<R>",
+      "pub fn with_ttlv_payload<R>"
+    ],
+    "c": [
+      "kmipkit_client_batch_item_pkcs11(",
+      "kmipkit_client_batch_item_response_pkcs11_ttlv(",
+      "kmipkit_client_batch_item_pkcs11"
+    ],
+    "java": [
+      "public static ClientBatchItem pkcs11(",
+      "public Optional<Pkcs11Response> pkcs11Response()",
+      "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemPkcs11",
+      "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponsePkcs11"
+    ],
+    "python": [
+      "def client_batch_item_pkcs11(",
+      "class Pkcs11Response:",
+      "def _pkcs11_response(",
+      "kmipkit_client_batch_item_pkcs11"
+    ]
+  },
+  "publicNativeExports": {
+    "javaJni": [
+      "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemPkcs11",
+      "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponsePkcs11"
+    ]
+  },
+  "consumerTests": {
+    "rust": "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs",
+    "c": "bindings/c/tests/client_abi_consumer.c",
+    "java": "bindings/java/src/test/java/org/kmipkit/extensions/Pkcs11MappingTest.java",
+    "python": "bindings/python/tests/test_pkcs11_operation.py"
+  },
+  "parityEvidence": [
+    "tests/fixtures/api/pkcs11-parity.json",
+    "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs",
+    "crates/kmipkit-ffi/tests/support/pkcs11_abi_tests.rs",
+    "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+    "bindings/c/tests/client_abi_consumer.c",
+    "bindings/java/src/test/java/org/kmipkit/extensions/Pkcs11MappingTest.java",
+    "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+    "bindings/python/tests/test_pkcs11_operation.py"
+  ],
+  "expectedOutput": {
+    "preserveUnknownValuesAndOrder": true,
+    "responseTags": [
+      "0x0042015A",
+      "0x004200D6",
+      "0x0042015C",
+      "0x0042015D",
+      "0x00541234"
+    ],
+    "unknownReturnCode": "0xFFFF1234",
+    "typedResponse": {
+      "interface": null,
+      "function": {
+        "present": true,
+        "tag": "0x0042015A",
+        "childTag": "0x0042015A",
+        "childType": "Integer",
+        "childValue": -12345
+      },
+      "correlationValue": {
+        "present": true,
+        "tag": "0x004200D6",
+        "hex": "706b637331312d726573706f6e73652d636f7272656c6174696f6e"
+      },
+      "outputParameters": {
+        "present": true,
+        "tag": "0x0042015C",
+        "childTag": "0x0042015C",
+        "childType": "ByteString",
+        "childHex": "76656e646f722d6f7574707574"
+      },
+      "returnCode": {
+        "present": true,
+        "tag": "0x0042015D",
+        "childTag": "0x0042015D",
+        "childType": "Enumeration",
+        "childValue": "0xFFFF1234"
+      }
+    },
+    "correlationValuePresenceCases": {
+      "absent": {"present": false},
+      "presentEmpty": {"present": true, "hex": ""}
+    },
+    "vendorExtension": {
+      "tag": "0x00541234",
+      "integer": 7
+    },
+    "preserveOptionalAbsence": true,
+    "redactSensitiveValuesAndBodies": true,
+    "automaticRetry": false,
+    "automaticFollowUp": false
+  },
+  "implementationMappings": {
+    "rust": [
+      "kmipkit::Client::pkcs11",
+      "kmipkit::ClientRequest::Pkcs11",
+      "kmipkit::ClientBatchOutcome::Pkcs11",
+      "kmipkit_protocol::Pkcs11Request",
+      "kmipkit_protocol::Pkcs11Request::new",
+      "kmipkit_protocol::Pkcs11Response",
+      "kmipkit_protocol::Pkcs11Response::with_ttlv",
+      "kmipkit_protocol::Pkcs11Response::with_ttlv_payload",
+      "kmipkit_protocol::Pkcs11Response::with_interface",
+      "kmipkit_protocol::Pkcs11Response::with_function",
+      "kmipkit_protocol::Pkcs11Response::with_correlation_value",
+      "kmipkit_protocol::Pkcs11Response::with_output_parameters",
+      "kmipkit_protocol::Pkcs11Response::with_return_code"
+    ],
+    "c": [
+      "kmipkit_client_batch_item_pkcs11",
+      "kmipkit_client_batch_item_response_pkcs11_ttlv",
+      "kmipkit_client_batch_item_response_pkcs11_interface_ttlv",
+      "kmipkit_client_batch_item_response_pkcs11_function_ttlv",
+      "kmipkit_client_batch_item_response_pkcs11_correlation_value",
+      "kmipkit_client_batch_item_response_pkcs11_output_parameters_ttlv",
+      "kmipkit_client_batch_item_response_pkcs11_return_code_ttlv"
+    ],
+    "java": [
+      "org.kmipkit.extensions.ClientBatchItem.pkcs11",
+      "org.kmipkit.extensions.ClientBatchItemResult.pkcs11Response",
+      "org.kmipkit.extensions.ClientBatchItemResult.Pkcs11Response.interfaceTtlv",
+      "org.kmipkit.extensions.ClientBatchItemResult.Pkcs11Response.functionTtlv",
+      "org.kmipkit.extensions.ClientBatchItemResult.Pkcs11Response.correlationValue",
+      "org.kmipkit.extensions.ClientBatchItemResult.Pkcs11Response.outputParametersTtlv",
+      "org.kmipkit.extensions.ClientBatchItemResult.Pkcs11Response.returnCodeTtlv",
+      "org.kmipkit.extensions.ClientBatchItemResult.Pkcs11Response.responseTtlv",
+      "org.kmipkit.extensions.ClientBatchItemResult.Pkcs11Response.close"
+    ],
+    "python": [
+      "kmipkit.extensions.client_batch_item_pkcs11",
+      "kmipkit.client.BatchItemResult.pkcs11_response",
+      "kmipkit.client.Pkcs11Response.interface_ttlv",
+      "kmipkit.client.Pkcs11Response.function_ttlv",
+      "kmipkit.client.Pkcs11Response.correlation_value",
+      "kmipkit.client.Pkcs11Response.output_parameters_ttlv",
+      "kmipkit.client.Pkcs11Response.return_code_ttlv",
+      "kmipkit.client.Pkcs11Response.response_ttlv",
+      "kmipkit.client.Pkcs11Response.close"
+    ]
+  }
+}

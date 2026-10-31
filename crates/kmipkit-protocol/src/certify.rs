@@ -194,7 +194,7 @@ impl fmt::Debug for CertifyRequest {
 #[derive(Debug)]
 pub struct CertifyResponse {
     result: KmipOperationResult,
-    response_ttlv: OwnedResponseTtlv,
+    response_ttlv: Option<OwnedResponseTtlv>,
     unique_identifier: Option<UniqueIdentifier>,
 }
 
@@ -219,16 +219,15 @@ impl CertifyResponse {
         let result_message = item.with_result_message(|text| ResultMessage::new(text.to_owned()));
         let result = KmipOperationResult::new(status, item.result_reason(), result_message)
             .map_err(CertifyError::InvalidOperationResult)?;
-        let response_ttlv = common::clone_response_item(item, "Certify")
-            .map_err(|_| CertifyError::MalformedResponseItem)?;
-
-        let unique_identifier = if status.raw() == SUCCESS {
-            Some(
-                item.with_response_payload(|payload| successful_identifier(&payload))
-                    .ok_or(CertifyError::MalformedSuccessPayload)??,
-            )
+        let (response_ttlv, unique_identifier) = if status.raw() == SUCCESS {
+            let response_ttlv = common::clone_response_item(item, "Certify")
+                .map_err(|_| CertifyError::MalformedResponseItem)?;
+            let unique_identifier = item
+                .with_response_payload(|payload| successful_identifier(&payload))
+                .ok_or(CertifyError::MalformedSuccessPayload)??;
+            (Some(response_ttlv), Some(unique_identifier))
         } else {
-            None
+            (None, None)
         };
 
         Ok(Self {
@@ -250,9 +249,14 @@ impl CertifyResponse {
         self.unique_identifier.as_ref()
     }
 
-    /// Lends the complete ordered generic response batch item.
-    pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> R {
-        self.response_ttlv.with_ttlv(callback)
+    /// Lends the complete ordered generic response batch item on success.
+    ///
+    /// Error response contents are intentionally unavailable to prevent
+    /// response payloads from escaping through ordinary error handling.
+    pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> Option<R> {
+        self.response_ttlv
+            .as_ref()
+            .map(|response_ttlv| response_ttlv.with_ttlv(callback))
     }
 }
 

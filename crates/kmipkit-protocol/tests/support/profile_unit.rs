@@ -2,11 +2,12 @@ use std::fmt;
 use std::fmt::Write as _;
 
 use super::{
-    CLIENT_REQUIREMENTS, ProfileEvidenceRecord, ProfileReadiness, ProfileReadinessBlocker,
-    ProfileTransport, ProfileValidationError, ProfileValidationErrorCode, ProfileValidationResult,
-    ProfileValidationSelection, RuleConstraint, RuleEvaluator, RuleTestEvidence, RuleTestKind,
-    TYPED_RULE_MAPPINGS, TypedRuleMapping, UsageTotalMutation, bound_object_state,
-    client_add_attribute_random_number_generator_is_well_formed,
+    CLIENT_REQUIREMENTS, PROFILE_CONTEXT_INDEX_COMPARISONS, ProfileEvidenceRecord,
+    ProfileObjectState, ProfileReadiness, ProfileReadinessBlocker, ProfileTransport,
+    ProfileValidationContext, ProfileValidationError, ProfileValidationErrorCode,
+    ProfileValidationResult, ProfileValidationSelection, RuleConstraint, RuleEvaluator,
+    RuleTestEvidence, RuleTestKind, TYPED_RULE_MAPPINGS, TypedRuleMapping, UsageTotalMutation,
+    bound_object_state, client_add_attribute_random_number_generator_is_well_formed,
     client_can_include_optional_locate_maximum_items,
     client_can_include_optional_locate_offset_items,
     client_check_optional_cryptographic_usage_mask_is_integer,
@@ -15529,7 +15530,7 @@ fn readiness_blockers_have_stable_text_and_requirement_ids() {
         ),
         (
             ProfileReadinessBlocker::ProfileUnavailable,
-            "profile is outside the KMIPKit 1.0 client scope",
+            "profile is outside the KMIPKit 1.0 client scope or its evidence is incomplete",
             None,
         ),
     ];
@@ -15612,7 +15613,7 @@ fn readiness_records_classify_duplicates_and_unknown_ids() {
             .contains(&ProfileReadinessBlocker::UnknownRequirementRecord)
     );
     assert!(
-        !readiness
+        readiness
             .blockers()
             .contains(&ProfileReadinessBlocker::RuntimeValidationUnavailable)
     );
@@ -15622,7 +15623,7 @@ fn readiness_records_classify_duplicates_and_unknown_ids() {
             .contains(&ProfileReadinessBlocker::UnknownRequirementRecord)
     );
     assert!(readiness.target_selected());
-    assert!(readiness.runtime_validation_available());
+    assert!(!readiness.runtime_validation_available());
     assert!(
         readiness
             .blockers()
@@ -26488,6 +26489,31 @@ fn profile_maps_countdown_relative_date_use_as_caller_owned_optional_capability(
     });
     assert_eq!(server_timestamp, 1);
     assert_eq!(relative_date, Some(9));
+}
+
+#[test]
+fn profile_state_context_lookup_work_is_bounded_for_large_contexts() {
+    const ENTRY_COUNT: usize = 512;
+    let mut context = ProfileValidationContext::new();
+    for index in 0..ENTRY_COUNT {
+        context = context.with_object_state(index, ProfileObjectState::new(index.to_string()));
+    }
+
+    PROFILE_CONTEXT_INDEX_COMPARISONS.with(|steps| steps.set(0));
+    for index in (0..ENTRY_COUNT).rev() {
+        let identifier = index.to_string();
+        assert!(context.state_for(index, &identifier).is_ok());
+    }
+    let lookup_steps = PROFILE_CONTEXT_INDEX_COMPARISONS.with(std::cell::Cell::get);
+
+    assert!(
+        lookup_steps > 0,
+        "index comparison accounting must be active"
+    );
+    assert!(
+        lookup_steps <= ENTRY_COUNT * 32,
+        "profile context lookup used {lookup_steps} index comparisons for {ENTRY_COUNT} states"
+    );
 }
 
 #[path = "profile_coverage_unit.rs"]

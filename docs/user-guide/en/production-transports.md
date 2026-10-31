@@ -168,6 +168,12 @@ inputs and transport response buffers. This cannot erase caller-created
 copies or copies retained by TLS libraries, the operating system, or foreign
 runtimes.
 
+In Python, `TransportInput.memory` keeps its owned input in a mutable buffer
+that is wiped when the input owner is released. Client construction wipes its
+temporary key buffers after the native transport configuration copies them.
+Reading `TransportInput.source` returns a caller-owned `bytes` copy; `KMIPKit`
+cannot erase that copy or control when Python releases it.
+
 `KMIPKit` transports and manages cryptographic material; it does not perform
 local cryptographic operations. Whether an operation succeeds depends on the
 server's implemented capabilities, configuration, and policy. A server's

@@ -5,9 +5,11 @@
 use std::error::Error;
 use std::fmt::Write as _;
 
+use kmipkit_protocol::ProtocolErrorKind;
 use kmipkit_protocol::extension;
 use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value};
+use serde_json::Value as JsonValue;
 
 const DISCRIMINATOR_TAG: u32 = 0x42_0001;
 const SECRET_TAG: u32 = 0x42_0002;
@@ -102,22 +104,40 @@ fn validated_extension_debug_and_display_redact_discriminator_and_payload_secret
 
 #[test]
 fn schema_error_debug_display_and_source_chain_redact_payload_secrets() {
+    let fixture: JsonValue = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("shared API parity fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("shared fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "errors.schema-redaction.v1")
+        .expect("shared schema-redaction fixture case exists");
+    let marker = case["input"]["diagnosticMarker"]
+        .as_str()
+        .expect("fixture redaction marker is text");
+    let expected = &case["expectedOutput"];
+    assert_eq!(case["errorCategory"], "invalid_schema");
+    assert_eq!(expected["diagnosticOmitsInputMarker"], true);
+    assert_eq!(expected["diagnosticContainsPayload"], false);
+
     let invalid = structure([
         Item::new(
             tag(DISCRIMINATOR_TAG),
             Value::text_string(DISCRIMINATOR_SENTINEL.to_owned()),
         )
         .expect("the discriminator item is valid"),
-        Item::new(
-            tag(SECRET_TAG),
-            Value::text_string(PAYLOAD_SENTINEL.to_owned()),
-        )
-        .expect("the deliberately invalid secret item is valid TTLV"),
+        Item::new(tag(SECRET_TAG), Value::text_string(marker.to_owned()))
+            .expect("the deliberately invalid secret item is valid TTLV"),
     ]);
     let error = extension::validate(&definition(), invalid, &CodecLimits::defaults())
         .expect_err("Text String does not satisfy the Byte String schema rule");
+    assert_eq!(error.kind(), ProtocolErrorKind::InvalidSchema);
     let formatted = diagnostics(&error);
 
+    assert!(!formatted.contains(marker));
     assert!(!formatted.contains(DISCRIMINATOR_SENTINEL));
-    assert!(!formatted.contains(PAYLOAD_SENTINEL));
+    assert!(expected["diagnosticOmitsInputMarker"].as_bool().unwrap());
+    assert!(!expected["diagnosticContainsPayload"].as_bool().unwrap());
 }

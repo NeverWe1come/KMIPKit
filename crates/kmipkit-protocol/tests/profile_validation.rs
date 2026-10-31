@@ -81,37 +81,47 @@ fn baseline_target_selection_requires_category_appropriate_evidence() {
             .all(|requirement| requirement.requirement_id != "KMIPKIT-REQ-PROF-3.1.1-004")
     );
 
-    let selected = ProfileValidationSelection::new([BASELINE])
+    let error = ProfileValidationSelection::new([BASELINE])
         .validate()
-        .expect("all Baseline requirements have typed mappings and category-appropriate tests");
-    assert!(
-        selected
-            .profile_ids()
-            .iter()
-            .any(|profile_id| profile_id == BASELINE)
-    );
-    assert!(
-        selected
-            .requirement_ids()
-            .contains(&"KMIPKIT-REQ-SPEC-4.38-003".to_owned())
+        .expect_err("incomplete Baseline evidence blocks runtime selection");
+    assert_eq!(error.code(), ProfileValidationErrorCode::ProfileUnavailable);
+    assert_eq!(error.profile_id(), Some(BASELINE));
+    assert_eq!(error.requirement_id(), Some("KMIPKIT-REQ-SPEC-14.1-001"));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-14.1-001")
     );
 }
 
 #[test]
-fn baseline_selection_succeeds_when_category_test_evidence_is_complete() {
-    let selected = ProfileValidationSelection::new([BASELINE])
-        .validate()
-        .expect("Baseline is runtime-selectable after its negative behavior tests are mapped");
+fn baseline_selection_fails_while_evidence_lifecycle_is_incomplete() {
     let target = CLIENT_PROFILES
         .iter()
         .find(|profile| profile.profile_id == BASELINE)
         .expect("the generated catalog includes Baseline Client");
     assert_eq!(target.unresolved_scope_obligations, []);
-    assert!(
-        selected
-            .requirement_ids()
-            .contains(&"KMIPKIT-REQ-SPEC-4.59-002".to_owned())
-    );
+    assert_eq!(target.claim_state, "evidence_incomplete");
+    let error = ProfileValidationSelection::new([BASELINE])
+        .validate()
+        .expect_err("the selected target remains unavailable until evidence is complete");
+    assert_eq!(error.code(), ProfileValidationErrorCode::ProfileUnavailable);
+    assert_eq!(error.profile_id(), Some(BASELINE));
+}
+
+#[test]
+fn baseline_selection_is_unavailable_while_catalog_evidence_is_incomplete() {
+    let target = CLIENT_PROFILES
+        .iter()
+        .find(|profile| profile.profile_id == BASELINE)
+        .expect("Baseline Client exists in generated metadata");
+    assert_eq!(target.claim_state, "evidence_incomplete");
+
+    let error = ProfileValidationSelection::new([BASELINE])
+        .validate()
+        .expect_err("runtime selection fails closed while Baseline evidence is incomplete");
+
+    assert_eq!(error.code(), ProfileValidationErrorCode::ProfileUnavailable);
+    assert_eq!(error.profile_id(), Some(BASELINE));
 }
 
 #[test]
@@ -120,7 +130,7 @@ fn profile_readiness_separates_runtime_availability_from_conformance_evidence() 
         .expect("Baseline Client is present in generated profile metadata");
 
     assert!(
-        !readiness
+        readiness
             .blockers()
             .iter()
             .any(|blocker| blocker.as_str() == "runtime profile validation is unavailable")
@@ -130,7 +140,7 @@ fn profile_readiness_separates_runtime_availability_from_conformance_evidence() 
             blocker.as_str() == "profile requirement applicability is unresolved"
         })
     );
-    assert!(readiness.runtime_validation_available());
+    assert!(!readiness.runtime_validation_available());
     assert_eq!(readiness.effective_state(), "evidence_incomplete");
     assert!(!readiness.published_claim());
 }

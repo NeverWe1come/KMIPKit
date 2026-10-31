@@ -336,7 +336,7 @@ fn parse_success_payload(
 
     Ok(ParsedMacVerifyPayload {
         unique_identifier: unique_identifier
-            .ok_or_else(|| common::response_shape_error("MAC Verify"))?,
+            .ok_or_else(|| common::unique_identifier_shape_error("MAC Verify"))?,
         validity_indicator,
         correlation_value,
     })

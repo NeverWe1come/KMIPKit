@@ -11,7 +11,7 @@ use kmipkit_protocol::{
 use kmipkit_transport::{RequestDeliveryState, TransportCauseCategory, TransportError};
 use kmipkit_ttlv::StructureView;
 
-/// An owned generic TTLV response retained when response validation fails.
+/// An owned generic TTLV response retained for KMIPKIT-0021-FR-015 Unique Identifier shape errors.
 ///
 /// The response is shared by cloned errors, zeroizes its payloads when the
 /// final owner is dropped, and is never included in formatted diagnostics.
@@ -119,13 +119,13 @@ pub enum ClientError {
         /// The strongest available request delivery evidence.
         delivery_state: RequestDeliveryState,
     },
-    /// A response validation failure that retains the complete generic response.
+    /// An approved cryptographic response-shape failure that retains the generic response.
     ProtocolResponse {
         /// The sanitized protocol cause.
         error: ProtocolError,
         /// The strongest available request delivery evidence.
         delivery_state: RequestDeliveryState,
-        /// The complete generic response message for explicit inspection.
+        /// The response message for explicit inspection of its malformed required Unique Identifier.
         response_ttlv: ClientErrorResponseTtlv,
     },
     /// A profile-specific validation failure with stable source IDs and delivery evidence.
@@ -167,7 +167,7 @@ impl ClientError {
         }
     }
 
-    /// Wraps a typed response failure while preserving its generic batch item.
+    /// Wraps an approved Unique Identifier response-shape failure while preserving its message.
     #[must_use]
     pub(crate) const fn protocol_response(
         error: ProtocolError,
@@ -206,12 +206,14 @@ impl ClientError {
         }
     }
 
-    /// Returns the complete generic response when response validation failed.
+    /// Returns the generic response retained for an approved malformed required
+    /// Unique Identifier in a successful MAC, MAC Verify, Sign, or Signature
+    /// Verify response (KMIPKIT-0021-FR-015).
     ///
     /// This is `None` for failures that occur before a complete response is
     /// decoded and for validation or transport failures unrelated to response
-    /// processing. Profile validation failures intentionally do not retain the
-    /// raw response body. Any retained response is not included in diagnostics.
+    /// processing. Profile validation failures do not retain the raw response
+    /// body. Any retained response is never included in diagnostics.
     #[must_use]
     pub const fn response_ttlv(&self) -> Option<&ClientErrorResponseTtlv> {
         match self {

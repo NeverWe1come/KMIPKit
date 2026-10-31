@@ -55,6 +55,18 @@ pub const fn runtime_version() -> RuntimeVersion {
     }
 }
 
+/// Returns the local facade levels provided by this library build.
+///
+/// The ordered levels describe the `KMIPKit` API surface: high-level builders,
+/// typed protocol requests and responses, and generic structurally valid TTLV.
+/// This metadata query does not send a request and is distinct from the KMIP
+/// Discover Versions operation. It reports the API taxonomy only; it does not
+/// assert that every KMIP operation is mapped or complete.
+#[must_use]
+pub const fn api_levels() -> &'static [&'static str] {
+    &["high-level", "typed-protocol", "generic-ttlv"]
+}
+
 /// A stable error returned by local runtime metadata queries.
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -95,12 +107,22 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
 
     Ok(matches!(
         capability_id,
-        "ffi_runtime_metadata"
+        "api_level_discovery"
+            | "client_asynchronous_operations"
+            | "client_batch_model"
+            | "client_execution"
+            | "client_profile_validation"
+            | "crypto_response_ttlv"
+            | "ffi_runtime_metadata"
             | "generic_ttlv_model"
+            | "production_transport"
             | "ttlv_wire_codec"
+            | "usage_allocation_guard"
             | "vendor_extension_registry"
             | "discover_versions_request_item"
             | "opaque_register_context"
+            | "server_generated_creation"
+            | "typed_message_model"
     ))
 }
 

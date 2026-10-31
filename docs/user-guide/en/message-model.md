@@ -31,6 +31,11 @@ The public crate rustdoc contains a compiled example that parses a request,
 checks its version and Batch Count, and returns the original tree with
 `into_ttlv()`.
 
+Rust, C, Java, and Python are checked against the same message-model fixture.
+It verifies ordered fields, unknown raw operation/status and bit-mask values,
+effective defaults, extension association, payload-free validation metadata,
+and view lifetimes after the owning message is closed.
+
 ## Defaults and asynchronous results
 
 Optional fields preserve their original presence. Accessors also expose the

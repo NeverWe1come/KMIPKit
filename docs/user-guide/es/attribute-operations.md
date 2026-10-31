@@ -7,7 +7,7 @@ KMIPKit ofrece modelos Rust tipados de petición y respuesta para las siete oper
 | Add Attribute | Unique Identifier opcional; un New Attribute | Unique Identifier |
 | Adjust Attribute | Unique Identifier opcional; Attribute Reference; Adjustment Type; Adjustment Value opcional | Unique Identifier |
 | Delete Attribute | Unique Identifier, Current Attribute y Attribute Reference opcionales | Unique Identifier |
-| Get Attributes | Unique Identifier opcional y Attribute References ordenados; una lista vacía solicita todos los atributos | Unique Identifier e Items de atributos directos ordenados |
+| Get Attributes | Unique Identifier opcional y Attribute References ordenados; una lista vacía solicita todos los atributos | Unique Identifier; Attributes se omite si no existe ninguno de los atributos solicitados y se distingue de una Structure presente pero vacía |
 | Get Attribute List | Unique Identifier opcional | Unique Identifier y Attribute References ordenados |
 | Modify Attribute | Unique Identifier y Current Attribute opcionales; un New Attribute | Unique Identifier |
 | Set Attribute | Unique Identifier opcional; un New Attribute | Unique Identifier |

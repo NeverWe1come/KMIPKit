@@ -1,0 +1,134 @@
+package org.kmipkit.extensions;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.nio.charset.StandardCharsets;
+import org.kmipkit.InvalidInputException;
+import org.kmipkit.ResourceLimitException;
+import org.junit.jupiter.api.Test;
+import org.kmipkit.ttlv.CodecLimits;
+import org.kmipkit.ttlv.RawTag;
+import org.kmipkit.ttlv.Tag;
+import org.kmipkit.ttlv.TtlvItem;
+import org.kmipkit.ttlv.TtlvItemView;
+import org.kmipkit.ttlv.TtlvStructure;
+import org.kmipkit.ttlv.TtlvStructureView;
+import org.kmipkit.ttlv.TtlvValue;
+import org.kmipkit.ttlv.TtlvValueView;
+
+final class GetAttributeListJavaFacadeTest {
+    @Test
+    void buildsGetAttributeListWithAnOmittedIdentifier() {
+        try (ClientBatchItem omitted = ClientBatchItem.getAttributeList();
+                ClientBatchItem selected = ClientBatchItem.getAttributeList(
+                        org.kmipkit.extensions.UniqueIdentifier.textString("object-7"))) {
+            assertNotNull(omitted);
+            assertNotNull(selected);
+        }
+    }
+
+    @Test
+    void successfulResponseOwnsTheResponsePayload() {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure payload = TtlvStructure.create();
+        payload = append(
+                payload,
+                0x0042_0094,
+                TtlvValue.TextString("object-7".getBytes(StandardCharsets.UTF_8), limits),
+                limits);
+        payload = append(
+                payload,
+                0x0042_013b,
+                TtlvValue.Enumeration(0x0042_002f),
+                limits);
+        long handle = payload.nativeHandleOwner().transfer();
+        ClientBatchItemResult.GetAttributeListResponse mapped = ClientBatchItemResult
+                .parseGetAttributeListResponse(new Object[] {
+                    new long[] {1},
+                    UniqueIdentifier.textString("object-7"),
+                    new long[] {1, 2, 2},
+                    new long[] {0x0054_0001L, 0, 0},
+                    new String[] {null, "vendor", "vendor"},
+                    new String[] {null, "Opaque.Name", "Opaque.Name"},
+                    new long[] {handle}
+                }, limits.maxElements(), limits.maxMessageBytes())
+                .orElseThrow();
+
+        assertEquals("object-7", mapped.uniqueIdentifier().text());
+        assertEquals(3, mapped.attributeReferences().size());
+        assertEquals(0x0054_0001L, mapped.attributeReferences().get(0).tagValue().orElseThrow());
+        assertEquals("vendor", mapped.attributeReferences().get(1)
+                .vendorIdentification().orElseThrow());
+        assertEquals("Opaque.Name", mapped.attributeReferences().get(2)
+                .attributeName().orElseThrow());
+        assertEquals(mapped.attributeReferences().get(1), mapped.attributeReferences().get(2));
+        assertThrows(UnsupportedOperationException.class,
+                () -> mapped.attributeReferences().clear());
+
+        try (mapped; TtlvStructureView view = mapped.responsePayloadTtlv().view()) {
+            assertEquals(2, view.itemCount());
+            assertEquals(0x0042_0094, tagAt(view, 0));
+            assertEquals(0x0042_013b, tagAt(view, 1));
+        }
+        assertEquals("Opaque.Name", mapped.attributeReferences().get(2)
+                .attributeName().orElseThrow(), "typed response data is copied from the native owner");
+    }
+
+    @Test
+    void failureHasNoSuccessfulResponseTtlv() {
+        assertTrue(ClientBatchItemResult
+                .parseGetAttributeListResponse(new Object[] {
+                    new long[] {0}, null, new long[0], new long[0],
+                    new String[0], new String[0], new long[] {0}
+                }, CodecLimits.defaults().maxElements(), CodecLimits.defaults().maxMessageBytes())
+                .isEmpty());
+    }
+
+    @Test
+    void malformedSuccessRejectsMissingOwnedTtlv() {
+        org.junit.jupiter.api.Assertions.assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseGetAttributeListResponse(
+                        new Object[] {new long[] {1}, null, new long[0], new long[0],
+                                new String[0], new String[0], new long[] {0}},
+                        CodecLimits.defaults().maxElements(), CodecLimits.defaults().maxMessageBytes()));
+    }
+
+    @Test
+    void responseMappingUsesTheConfiguredCodecElementLimit() {
+        CodecLimits limits = CodecLimits.create(1024, 64, 2);
+        TtlvStructure payload = TtlvStructure.create();
+        long handle = payload.nativeHandleOwner().transfer();
+        Object[] values = {
+            new long[] {1},
+            UniqueIdentifier.textString("object-7"),
+            new long[] {1, 1, 1},
+            new long[] {0x0054_0001L, 0x0054_0002L, 0x0054_0003L},
+            new String[] {null, null, null},
+            new String[] {null, null, null},
+            new long[] {handle}
+        };
+
+        assertThrows(ResourceLimitException.class, () -> {
+            ClientBatchItemResult.parseGetAttributeListResponse(
+                    values, limits.maxElements(), limits.maxMessageBytes())
+                    .ifPresent(ClientBatchItemResult.GetAttributeListResponse::close);
+        });
+    }
+
+    private static TtlvStructure append(
+            TtlvStructure structure, int rawTag, TtlvValue value, CodecLimits limits) {
+        try (Tag tag = RawTag.fromRaw(rawTag).checked();
+                TtlvItem item = TtlvItem.create(tag, value, limits)) {
+            return TtlvStructure.withItem(structure, item, limits);
+        }
+    }
+
+    private static long tagAt(TtlvStructureView view, long index) {
+        try (TtlvItemView item = view.itemAt(index); Tag tag = item.tag()) {
+            return tag.raw();
+        }
+    }
+}

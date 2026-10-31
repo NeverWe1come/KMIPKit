@@ -378,7 +378,7 @@ fn parse_success_payload(
 
     Ok(ParsedSignatureVerifyPayload {
         unique_identifier: unique_identifier
-            .ok_or_else(|| common::response_shape_error("Signature Verify"))?,
+            .ok_or_else(|| common::unique_identifier_shape_error("Signature Verify"))?,
         validity_indicator,
         recovered_data,
         correlation_value,

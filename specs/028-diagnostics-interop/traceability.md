@@ -53,10 +53,10 @@ operations in the catalog.
 
 | Project row ID | Source row and stable element | Executable verification |
 |---|---|---|
-| KMIPKIT-028-T241-FUNCTION | Table 241 Interop Function; KMIPKIT-ELEM-OPERATION-STRUCTURE-7-15-INTEROP-FUNCTION; KMIPKIT-ELEM-TAG-420160 | interop_operation_tests::table_241_required_fields_preserve_order_and_unknown_function; interop_operation_tests::interop_function_standard_vendor_and_future_values_are_open |
-| KMIPKIT-028-T241-IDENTIFIER | Table 241 Interop Identifier; KMIPKIT-ELEM-OPERATION-STRUCTURE-7-16-INTEROP-IDENTIFIER; KMIPKIT-ELEM-TAG-420161 | interop_operation_tests::table_241_required_fields_preserve_order_and_unknown_function |
+| KMIPKIT-028-T241-FUNCTION | Table 241 Interop Function; KMIPKIT-ELEM-OPERATION-STRUCTURE-7-15-INTEROP-FUNCTION; KMIPKIT-ELEM-TAG-420160; KMIPKIT-0042-FR-001/003/005 | `interop_operation_tests::table_241_required_fields_preserve_order_and_unknown_function`; `interop_operation_tests::interop_function_standard_vendor_and_future_values_are_open`; Rust/C/Java/Python constructor tests in `interop_abi_tests.rs`, `InteropJavaFacadeTest`, `test_interop_operation.py`, and compiled C consumer `interop_constructor_is_callable_from_c` |
+| KMIPKIT-028-T241-IDENTIFIER | Table 241 Interop Identifier; KMIPKIT-ELEM-OPERATION-STRUCTURE-7-16-INTEROP-IDENTIFIER; KMIPKIT-ELEM-TAG-420161; KMIPKIT-0042-FR-002/005/006 | `interop_operation_tests::table_241_required_fields_preserve_order_and_unknown_function`; UTF-8 rejection and redaction in Rust/C `interop_abi_tests.rs`, Java `InteropJavaFacadeTest`, and Python `test_interop_operation.py` |
 | KMIPKIT-028-T242-EMPTY | Table 242 empty success; KMIPKIT-ELEM-OP-C2S-INTEROP | interop_operation_tests::table_242_success_requires_empty_payload; interop_execution_tests::interop_sends_required_fields_and_returns_empty_success |
-| KMIPKIT-028-T243-ERROR | Table 243 common result; KMIPKIT-ELEM-OP-C2S-INTEROP | interop_operation_tests::table_243_failure_pending_and_unknown_results_are_preserved; interop_execution_tests::failure_reason_message_and_diagnostics_are_lossless_and_redacted |
+| KMIPKIT-028-T243-ERROR | Table 243 common result; KMIPKIT-ELEM-OP-C2S-INTEROP; KMIPKIT-0042-FR-003/004/007/008 | `interop_operation_tests::table_243_failure_pending_and_unknown_results_are_preserved`; `interop_execution_tests::failure_reason_message_and_diagnostics_are_lossless_and_redacted`; C ABI `ffi_interop_ttlv_getter_copies_success_failure_and_pending_responses` exercises the native FFI getter for Success/Failure/Pending; Java `InteropResponseMappingTest` and Python `test_interop_response_owns_complete_ttlv_and_redacts_repr` verify owned-TTLV conversion and redaction with a native TTLV structure while stubbing the response-accessor tuple; compiled C consumer `interop_response_accessor_clears_invalid_outputs_from_c` verifies the native C symbol clears invalid outputs. The language wrapper tests do not independently execute all three native response statuses. |
 | KMIPKIT-028-T250-MESSAGE | Table 250 Log Message; KMIPKIT-ELEM-OPERATION-STRUCTURE-7-19-LOG-MESSAGE; KMIPKIT-ELEM-TAG-420141 | log_operation_tests::table_250_required_message_is_preserved_and_redacted |
 | KMIPKIT-028-T251-EMPTY | Table 251 empty success; KMIPKIT-ELEM-OP-C2S-LOG | log_operation_tests::table_251_success_requires_empty_payload; log_execution_tests::log_sends_required_fields_and_returns_empty_success |
 | KMIPKIT-028-T252-ERROR | Table 252 per approved DISC-017; KMIPKIT-ELEM-OP-C2S-LOG | log_operation_tests::table_252_failure_pending_and_unknown_results_are_preserved; log_execution_tests::failure_reason_message_and_diagnostics_are_lossless_and_redacted |
@@ -152,3 +152,20 @@ The global common-rule catalog record remains unassigned for all-structure
 ownership; this feature supplies scoped implementation/evidence references
 through its Validate operation record and this trace. No local DER/trust or
 chain-connectivity policy is introduced. See Decision 6 in research.md.
+
+
+## Validate four-language parity (T069)
+
+The six request traces above are implemented by the approved Rust request model and mapped through the common C ABI to Java/JNI and Python/CFFI. They remain client input capabilities: these tests do not claim that a remote server accepts a chain or applies any certificate policy. The exact OASIS source remains immutable.
+
+| Surface | Evidence |
+|---|---|
+| Rust and C ABI | `validate_abi_tests::validate_constructor_preserves_identifier_and_optional_date`; `validate_abi_tests::validate_constructor_borrows_and_copies_payload_extensions`; `validate_abi_tests::validate_constructor_rejects_noncanonical_absent_date_and_clears_output` |
+| Compiled C consumer | `validate_constructor_is_callable_from_c`; `validate_constructor_copies_payload_extensions` in `bindings/c/tests/client_abi_consumer.c` |
+| Java and JNI | `ValidateJavaFacadeTest` covers identifier-only, omitted-date, input-list validation, and borrowed TTLV extension ownership; `ValidateResponseMappingTest` covers typed response mapping |
+| Python and CFFI | `test_validate_builder_accepts_identifier_only_chain_and_optional_date`; `test_validate_builder_rejects_missing_lists_and_out_of_range_date`; `test_validate_builder_copies_unknown_payload_extensions_and_preserves_input`; response mapping and cleanup tests in `test_validate_operation.py` |
+| Manifest and generated API | `test_validate_parity_manifest`; pinned generator `--check`; generated C/JNI/Python API declarations and parity fixtures |
+
+Unknown checked payload extensions preserve their caller order and are copied before the builder returns. C/JNI/Python/Java apply the shared 100,000-input-item ceiling; the Rust FFI checks the aggregate encoded input budget and default item limits before cloning the supplied structures/items. The caller retains ownership of each input. Validity Date omission remains absent for server-side current-time evaluation. Success-only Validity Indicator and response TTLV accessors do not expose operation success values for Failure or Pending.
+
+The T069 input-limit follow-up also rejects overlap between any C input-array span or referenced identifier text byte span and `out_item` before either region is written, and enforces one aggregate TTLV element ceiling across the Validate payload before cloning. Regression coverage: `validate_constructor_rejects_output_overlapping_payload_extension_array`, `validate_constructor_rejects_output_overlapping_identifier_text`, `validate_constructor_enforces_one_aggregate_ttlv_element_limit`, `builderRejectsOversizedExtensionListBeforeCopyingIt`, and `test_validate_builder_preflights_aggregate_identifier_bytes_before_copying`. JNI snapshots each text identifier once while enforcing the cumulative byte ceiling, so later copies cannot observe a replaced `byte[][]` entry.

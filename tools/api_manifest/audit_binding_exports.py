@@ -22,17 +22,35 @@ from pathlib import Path
 from typing import Any
 
 
-def _record(package: str, name: str, kind: str, location: str) -> dict[str, str]:
+_PYTHON_PUBLIC_DUNDER_METHODS = {
+    "__init__", "__repr__", "__eq__", "__hash__", "__setattr__", "__delattr__",
+    "__lt__", "__le__", "__gt__", "__ge__", "__enter__", "__exit__",
+}
+_PYTHON_PUBLIC_DUNDER_FIELDS = {
+    "__hash__", "__match_args__", "__slots__", "__dataclass_fields__",
+    "__dataclass_params__",
+}
+
+
+def _record(package: str, name: str, kind: str, location: str) -> dict[str, Any]:
     return {"packageId": package, "exportName": name, "kind": kind, "location": location}
 
 
-def _report(records: list[dict[str, str]], issues: list[dict[str, str]]) -> dict[str, Any]:
-    unique: dict[tuple[str, str], dict[str, str]] = {}
+def _report(records: list[dict[str, Any]], issues: list[dict[str, str]]) -> dict[str, Any]:
+    unique: dict[tuple[str, str], dict[str, Any]] = {}
     for record in records:
         key = record["packageId"], record["exportName"]
         prior = unique.get(key)
         if prior is not None and prior["location"] != record["location"]:
-            issues.append({"packageId": key[0], "exportName": key[1], "reason": "multiple-declarations-share-export-path"})
+            prior_signatures = set(prior.get("signatures", []))
+            record_signatures = set(record.get("signatures", []))
+            if (prior["kind"] == record["kind"] == "java-member"
+                    and prior_signatures and record_signatures
+                    and prior_signatures.isdisjoint(record_signatures)):
+                prior["signatures"] = sorted(prior_signatures | record_signatures)
+            else:
+                issues.append({"packageId": key[0], "exportName": key[1],
+                               "reason": "multiple-declarations-share-export-path"})
         unique.setdefault(key, record)
     ordered = sorted(unique.values(), key=lambda r: (r["packageId"], r["exportName"], r["kind"]))
     unique_issues = {(i["packageId"], i["exportName"], i["reason"]): i for i in issues}
@@ -68,7 +86,7 @@ def _complete_include_guard(lines: list[str]) -> str | None:
 
 def inventory_c_header(source: str, package: str = "c-kmipkit") -> dict[str, Any]:
     """Read exported declarations from the installed public C header."""
-    records: list[dict[str, str]] = []
+    records: list[dict[str, Any]] = []
     issues: list[dict[str, str]] = []
     cleaned = re.sub(r"/\*.*?\*/|//[^\n]*", " ", source, flags=re.S)
     lines = cleaned.splitlines()
@@ -79,14 +97,15 @@ def inventory_c_header(source: str, package: str = "c-kmipkit") -> dict[str, Any
             name = macro.group(1)
             if name == include_guard:
                 continue
-            records.append(_record(package, name, "constant" if name.startswith("KMIPKIT_ERROR_") else "macro", str(line_number)))
+            is_error_constant = name.startswith((
+                "KMIPKIT_ERROR_",
+                "KMIPKIT_TTLV_DECODE_ERROR_KIND_",
+            ))
+            records.append(_record(package, name, "constant" if is_error_constant else "macro", str(line_number)))
     parsed_aggregate_spans: set[tuple[int, int]] = set()
     aggregate_pattern = re.compile(r"\btypedef\s+(struct|union)(?:\s+[A-Za-z_]\w*)?\s*\{([^{}]*)\}\s*([A-Za-z_]\w*)\s*;", re.S)
-    for match in aggregate_pattern.finditer(cleaned):
-        parsed_aggregate_spans.add((match.start(), match.end()))
-        body, name = match.group(2), match.group(3)
-        line_number = cleaned.count("\n", 0, match.start()) + 1
-        records.append(_record(package, name, "type", str(line_number)))
+
+    def record_aggregate_fields(body: str, name: str, line_number: int) -> None:
         for field in body.split(";"):
             field = field.strip()
             if not field:
@@ -124,6 +143,23 @@ def inventory_c_header(source: str, package: str = "c-kmipkit") -> dict[str, Any
                                for field_name in field_names)
             else:
                 issues.append({"packageId": package, "exportName": name, "reason": "unsupported-c-field"})
+
+    for match in aggregate_pattern.finditer(cleaned):
+        parsed_aggregate_spans.add((match.start(), match.end()))
+        body, name = match.group(2), match.group(3)
+        line_number = cleaned.count("\n", 0, match.start()) + 1
+        records.append(_record(package, name, "type", str(line_number)))
+        record_aggregate_fields(body, name, line_number)
+
+    parsed_tagged_aggregate_spans: set[tuple[int, int]] = set()
+    tagged_aggregate_pattern = re.compile(r"\b(?:struct|union)\s+([A-Za-z_]\w*)\s*\{([^{}]*)\}\s*;", re.S)
+    for match in tagged_aggregate_pattern.finditer(cleaned):
+        parsed_tagged_aggregate_spans.add((match.start(), match.end()))
+        name, body = match.group(1), match.group(2)
+        line_number = cleaned.count("\n", 0, match.start()) + 1
+        if not any(row["exportName"] == name and row["kind"] == "type" for row in records):
+            records.append(_record(package, name, "type", str(line_number)))
+        record_aggregate_fields(body, name, line_number)
     for match in re.finditer(r"\btypedef\s+(?:struct|union)\b[^;]*\{", cleaned, re.S):
         if not any(start <= match.start() < end for start, end in parsed_aggregate_spans):
             issues.append({"packageId": package, "exportName": str(cleaned.count("\n", 0, match.start()) + 1),
@@ -141,7 +177,7 @@ def inventory_c_header(source: str, package: str = "c-kmipkit") -> dict[str, Any
                 records.append(_record(package, enumerator_name, "constant", str(line_number)))
             elif enumerator_name:
                 issues.append({"packageId": package, "exportName": name, "reason": "unsupported-c-enumerator"})
-    parsed_type_spans = parsed_aggregate_spans | parsed_enum_spans
+    parsed_type_spans = parsed_aggregate_spans | parsed_tagged_aggregate_spans | parsed_enum_spans
     for match in re.finditer(r"\b(?:struct|union|enum)\b[^;{]*\{", cleaned, re.S):
         if not any(start <= match.start() < end for start, end in parsed_type_spans):
             issues.append({"packageId": package, "exportName": str(cleaned.count("\n", 0, match.start()) + 1),
@@ -313,7 +349,7 @@ def inventory_javap_outputs(outputs: dict[str, str], package: str = "java-kmipki
             else:
                 member = signature.split()[-1]
             record = _record(package, f"{owner}.{member}", "java-member", f"{class_file}:{line_number}")
-            record["signature"] = signature
+            record["signatures"] = [signature]
             records.append(record)
     return _report(records, issues)
 
@@ -371,16 +407,185 @@ def _literal_all(tree: ast.Module, visible_names: set[str]) -> tuple[list[str] |
 def _python_class_members(node: ast.ClassDef) -> list[tuple[str, str, int]]:
     """Return the directly declared public members of one Python class."""
     members: list[tuple[str, str, int]] = []
+    observed_fields = {
+        child.target.id
+        for child in node.body
+        if isinstance(child, ast.AnnAssign) and isinstance(child.target, ast.Name)
+    }
     for child in node.body:
         if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            if not child.name.startswith("_") or child.name in {"__enter__", "__exit__"}:
+            if not child.name.startswith("_") or child.name in _PYTHON_PUBLIC_DUNDER_METHODS:
                 members.append((child.name, "python-export", child.lineno))
-        elif isinstance(child, ast.AnnAssign) and isinstance(child.target, ast.Name) and not child.target.id.startswith("_"):
-            members.append((child.target.id, "field", child.lineno))
+            if child.name == "__init__":
+                for statement in ast.walk(child):
+                    if isinstance(statement, ast.Assign):
+                        targets = statement.targets
+                    elif isinstance(statement, ast.AnnAssign):
+                        targets = [statement.target]
+                    else:
+                        continue
+                    for target in targets:
+                        if (isinstance(target, ast.Attribute)
+                                and isinstance(target.value, ast.Name)
+                                and target.value.id == "self"
+                                and not target.attr.startswith("_")
+                                and target.attr not in observed_fields):
+                            members.append((target.attr, "field", statement.lineno))
+                            observed_fields.add(target.attr)
+        elif isinstance(child, ast.AnnAssign) and isinstance(child.target, ast.Name):
+            if not child.target.id.startswith("_") or child.target.id in _PYTHON_PUBLIC_DUNDER_FIELDS:
+                members.append((child.target.id, "field", child.lineno))
         elif isinstance(child, ast.Assign):
-            members.extend((target.id, "python-export", child.lineno) for target in child.targets
-                           if isinstance(target, ast.Name) and not target.id.startswith("_"))
+            members.extend((target.id, "field" if target.id in _PYTHON_PUBLIC_DUNDER_FIELDS else "python-export", child.lineno)
+                           for target in child.targets if isinstance(target, ast.Name)
+                           and (not target.id.startswith("_") or target.id in _PYTHON_PUBLIC_DUNDER_FIELDS))
     return members
+
+
+def _python_imported_path(
+    expression: ast.expr,
+    module: str,
+    imported: dict[tuple[str, str], tuple[str, str]],
+) -> str | None:
+    """Resolve a dotted expression when its root is an imported package name."""
+    parts: list[str] = []
+    current = expression
+    while isinstance(current, ast.Attribute):
+        parts.append(current.attr)
+        current = current.value
+    if not isinstance(current, ast.Name):
+        return None
+    parts.append(current.id)
+    parts.reverse()
+    imported_target = imported.get((module, parts[0]))
+    if imported_target is None:
+        return None
+    source_module, source_name = imported_target
+    return ".".join(part for part in (source_module, source_name, *parts[1:]) if part)
+
+
+def _python_dataclass_members(
+    node: ast.ClassDef,
+    module: str,
+    imported: dict[tuple[str, str], tuple[str, str]],
+) -> tuple[list[tuple[str, str, int]], str | None, str | None]:
+    """Return source-verifiable public declarations created by stdlib dataclass."""
+    decorator: ast.Call | ast.expr | None = None
+    for candidate in node.decorator_list:
+        target = candidate.func if isinstance(candidate, ast.Call) else candidate
+        if _python_imported_path(target, module, imported) == "dataclasses.dataclass":
+            decorator = candidate
+            break
+    if decorator is None:
+        return [], None, None
+
+    options = {"init": True, "repr": True, "eq": True, "order": False,
+               "frozen": False, "unsafe_hash": False, "match_args": True,
+               "kw_only": False, "slots": False, "weakref_slot": False}
+    if isinstance(decorator, ast.Call):
+        for keyword in decorator.keywords:
+            if keyword.arg not in options:
+                continue
+            if not isinstance(keyword.value, ast.Constant) or not isinstance(keyword.value.value, bool):
+                return [], "dynamic-dataclass-options", None
+            options[keyword.arg] = keyword.value.value
+
+    declared: set[str] = set()
+    for child in node.body:
+        if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            declared.add(child.name)
+        elif isinstance(child, ast.AnnAssign) and isinstance(child.target, ast.Name):
+            declared.add(child.target.id)
+        elif isinstance(child, ast.Assign):
+            declared.update(target.id for target in child.targets if isinstance(target, ast.Name))
+
+    fields: list[tuple[str, str, bool, str | None, bool]] = []
+    keyword_only_default = options["kw_only"]
+    for child in node.body:
+        if not isinstance(child, ast.AnnAssign) or not isinstance(child.target, ast.Name):
+            continue
+        field_name = child.target.id
+        annotation_path = _python_imported_path(child.annotation, module, imported)
+        if annotation_path == "dataclasses.KW_ONLY":
+            keyword_only_default = True
+            continue
+        if annotation_path in {"typing.ClassVar", "typing_extensions.ClassVar"}:
+            continue
+        init = True
+        kw_only = keyword_only_default
+        default_text: str | None = None
+        has_default = child.value is not None
+        if isinstance(child.value, ast.Call) and _python_imported_path(child.value.func, module, imported) == "dataclasses.field":
+            has_default = False
+            for keyword in child.value.keywords:
+                if keyword.arg in {"init", "kw_only"}:
+                    if not isinstance(keyword.value, ast.Constant) or not isinstance(keyword.value.value, bool):
+                        return [], "dynamic-dataclass-options", None
+                    if keyword.arg == "init":
+                        init = keyword.value.value
+                    else:
+                        kw_only = keyword.value.value
+                elif keyword.arg == "default":
+                    has_default = True
+                    default_text = ast.unparse(keyword.value)
+                elif keyword.arg == "default_factory":
+                    has_default = True
+                    default_text = "<factory>"
+        elif child.value is not None:
+            default_text = ast.unparse(child.value)
+        fields.append((field_name, ast.unparse(child.annotation), init, default_text if has_default else None,
+                       kw_only))
+
+    generated: list[tuple[str, str, int]] = []
+
+    def add_method(name: str) -> None:
+        if name not in declared:
+            generated.append((name, "python-export", node.lineno))
+
+    def add_field(name: str) -> None:
+        if name not in declared:
+            generated.append((name, "field", node.lineno))
+
+    signature: str | None = None
+    if options["init"]:
+        add_method("__init__")
+        if "__init__" not in declared:
+            parameters: list[str] = []
+            keyword_only: list[str] = []
+            for field_name, annotation, init, default, kw_only in fields:
+                if not init:
+                    continue
+                parameter = f"{field_name}: {annotation}"
+                if default is not None:
+                    parameter += f" = {default}"
+                (keyword_only if kw_only else parameters).append(parameter)
+            if keyword_only:
+                parameters.extend(("*", *keyword_only))
+            signature = f"({', '.join(parameters)}) -> None"
+    if options["repr"]:
+        add_method("__repr__")
+    if options["eq"]:
+        add_method("__eq__")
+    if options["order"]:
+        for name in ("__lt__", "__le__", "__gt__", "__ge__"):
+            add_method(name)
+    if options["frozen"]:
+        add_method("__setattr__")
+        add_method("__delattr__")
+    if options["unsafe_hash"] or (options["eq"] and options["frozen"]):
+        add_method("__hash__")
+    elif options["eq"] and not options["frozen"] and "__hash__" not in declared:
+        add_field("__hash__")
+
+    if options["match_args"] and "__match_args__" not in declared:
+        add_field("__match_args__")
+    if options["slots"]:
+        add_field("__slots__")
+    add_field("__dataclass_fields__")
+    add_field("__dataclass_params__")
+    if options["slots"] and options["weakref_slot"]:
+        add_field("__weakref__")
+    return generated, None, signature
 
 
 def inventory_python_sources(sources: dict[str, str], package: str = "python-kmipkit") -> dict[str, Any]:
@@ -415,12 +620,32 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
     definitions: dict[tuple[str, str], str] = {}
     imported: dict[tuple[str, str], tuple[str, str]] = {}
     explicit_exports: dict[str, list[str] | None] = {}
+    generated_signatures: dict[str, str] = {}
     classes: dict[str, tuple[str, str, list[ast.expr], list[tuple[str, str, int]]]] = {}
     function_groups: dict[tuple[str, str], list[ast.FunctionDef | ast.AsyncFunctionDef]] = {}
     for module, tree in sorted(parsed.items()):
         for node in tree.body:
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 function_groups.setdefault((module, node.name), []).append(node)
+            elif isinstance(node, (ast.ImportFrom, ast.Import)):
+                if isinstance(node, ast.ImportFrom) and node.module == "__future__":
+                    continue
+                for alias in node.names:
+                    visible = alias.asname or alias.name
+                    if isinstance(node, ast.ImportFrom):
+                        if node.level == 0:
+                            imported_module = node.module or ""
+                        else:
+                            package_parts = module.split(".") if module in package_modules else module.rsplit(".", 1)[0].split(".")
+                            parent = package_parts[:len(package_parts) - node.level + 1]
+                            imported_module = ".".join(parent + ([node.module] if node.module else []))
+                        child_module = f"{imported_module}.{alias.name}"
+                        if node.module is None and child_module in parsed:
+                            imported[(module, visible)] = (child_module, "")
+                        else:
+                            imported[(module, visible)] = (imported_module, alias.name)
+                    else:
+                        imported[(module, visible)] = (alias.name, "")
 
     def is_overload(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
         return any((decorator.id if isinstance(decorator, ast.Name)
@@ -443,6 +668,15 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
         for node in tree.body:
             if isinstance(node, ast.ClassDef):
                 members = _python_class_members(node)
+                generated_members, dataclass_issue, constructor_signature = _python_dataclass_members(
+                    node, module, imported
+                )
+                members.extend(generated_members)
+                if dataclass_issue:
+                    issues.append({"packageId": package, "exportName": f"{module}.{node.name}",
+                                   "reason": dataclass_issue})
+                if constructor_signature is not None:
+                    generated_signatures[f"{module}.{node.name}.__init__"] = constructor_signature
                 classes[f"{module}.{node.name}"] = (module, node.name, list(node.bases), members)
                 # Private helper modules are not emitted, but their class
                 # definitions must remain available for import and inheritance
@@ -450,8 +684,12 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
                 definitions[(module, node.name)] = "type"
                 if module in public_modules and not node.name.startswith("_"):
                     records.append(_record(package, f"{module}.{node.name}", "type", f"{module}:{node.lineno}"))
-                    records.extend(_record(package, f"{module}.{node.name}.{member}", kind, f"{module}:{line}")
-                                   for member, kind, line in members)
+                    for member, kind, line in members:
+                        record = _record(package, f"{module}.{node.name}.{member}", kind, f"{module}:{line}")
+                        signature = generated_signatures.get(f"{module}.{node.name}.{member}")
+                        if signature is not None:
+                            record["signature"] = signature
+                        records.append(record)
             elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and not node.name.startswith("_"):
                 kind = "python-export" if exports is not None else "function"
                 definitions[(module, node.name)] = kind
@@ -477,9 +715,12 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
                     if not visible.startswith("_"):
                         definitions[(module, visible)] = "import"
                     if isinstance(node, ast.ImportFrom):
-                        package_parts = module.split(".") if module in package_modules else module.rsplit(".", 1)[0].split(".")
-                        parent = package_parts[:len(package_parts) - node.level + 1]
-                        imported_module = ".".join(parent + ([node.module] if node.module else []))
+                        if node.level == 0:
+                            imported_module = node.module or ""
+                        else:
+                            package_parts = module.split(".") if module in package_modules else module.rsplit(".", 1)[0].split(".")
+                            parent = package_parts[:len(package_parts) - node.level + 1]
+                            imported_module = ".".join(parent + ([node.module] if node.module else []))
                         child_module = f"{imported_module}.{alias.name}"
                         if node.module is None and child_module in parsed:
                             imported[(module, visible)] = (child_module, "")
@@ -545,8 +786,14 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
                 continue
             _, _, base_bases, base_members = base_info
             for member, kind, line in base_members:
-                if member not in declared and (not member.startswith("_") or member in {"__enter__", "__exit__"}):
-                    records.append(_record(package, f"{qualified}.{member}", kind, f"inherited:{base_path}:{line}"))
+                if member not in declared and (not member.startswith("_")
+                                               or member in {"__init__", "__enter__", "__exit__"}):
+                    record = _record(package, f"{qualified}.{member}", kind, f"inherited:{base_path}:{line}")
+                    inherited_signature = generated_signatures.get(f"{base_path}.{member}")
+                    if inherited_signature is not None:
+                        generated_signatures[f"{qualified}.{member}"] = inherited_signature
+                        record["signature"] = inherited_signature
+                    records.append(record)
                     declared.add(member)
             pending.extend(base_bases)
 
@@ -557,7 +804,7 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
             if (module, name) not in definitions:
                 issues.append({"packageId": package, "exportName": f"{module}.{name}", "reason": "unresolved-python-export"})
     for (module, name), (source_module, source_name) in sorted(imported.items()):
-        if module not in public_modules:
+        if module not in public_modules or name.startswith("_"):
             continue
         if explicit_exports.get(module) is not None and name not in (explicit_exports.get(module) or []):
             continue
@@ -577,11 +824,18 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
 def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> dict[str, Any]:
     package_rows = [row for row in manifest.get("publicDeclarations", []) if row.get("packageId") == package]
     if package == "c-kmipkit":
-        # The C header intentionally omits blocked non-symbol declarations.
-        # Blocked function symbols remain audited from the native binary ABI.
+        stable_error_codes = {
+            error.get("cCode")
+            for error in manifest.get("errorCategories", [])
+            if error.get("stableCHeaderCode") is True
+        }
+        # The C header omits blocked declarations except stable ABI status
+        # constants, which remain visible while their parity mapping is pending.
         package_rows = [
             row for row in package_rows
-            if row.get("declarationState") != "blocked" or row.get("kind") == "c-symbol"
+            if row.get("declarationState") != "blocked"
+            or row.get("kind") == "c-symbol"
+            or row.get("exportName") in stable_error_codes
         ]
     declared = {(row["packageId"], row["exportName"]): row for row in package_rows}
     duplicate_names = sorted(name for name, count in Counter(row["exportName"] for row in package_rows).items() if count > 1)
@@ -602,8 +856,28 @@ def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> d
     mismatches = sorted(key for key in set(observed) & set(declared)
                         if canonical_kind(observed[key]["kind"]) != canonical_kind(declared[key]["kind"]))
     path_matches = set(observed) & set(declared)
-    exact_matches = len(path_matches) - len(mismatches)
+    signature_issues: list[dict[str, str]] = []
+    if package == "java-kmipkit":
+        for key in sorted(path_matches):
+            observed_signatures = observed[key].get("signatures")
+            declared_signatures = declared[key].get("javaSignatures")
+            if not observed_signatures:
+                continue
+            if len(observed_signatures) > 1 and declared_signatures is None:
+                signature_issues.append({
+                    "packageId": package,
+                    "exportName": key[1],
+                    "reason": "java-overload-signatures-not-declared",
+                })
+            elif declared_signatures is not None and sorted(observed_signatures) != sorted(declared_signatures):
+                signature_issues.append({
+                    "packageId": package,
+                    "exportName": key[1],
+                    "reason": "java-signature-mismatch",
+                })
+    exact_matches = len(path_matches) - len(mismatches) - len(signature_issues)
     issues = list(report["issues"])
+    issues.extend(signature_issues)
     issues.extend({"packageId": package, "exportName": name, "reason": "duplicate-manifest-export-name"}
                   for name in duplicate_names)
     issues.extend({"packageId": key[0], "exportName": key[1],
@@ -613,8 +887,9 @@ def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> d
                    "reason": "manifest-export-also-excluded"}
                   for key in declaration_exclusion_overlaps)
     invalid_identities = bool(duplicate_names or duplicate_exclusions or declaration_exclusion_overlaps)
-    return {"packageId": package, "complete": report["complete"] and not invalid_identities,
-            "matchesManifest": not missing and not stale and not mismatches and not invalid_identities and report["complete"],
+    return {"packageId": package, "complete": report["complete"] and not invalid_identities and not signature_issues,
+            "matchesManifest": not missing and not stale and not mismatches and not invalid_identities
+            and not signature_issues and report["complete"],
             "counts": {"observed": len(observed), "manifest": len(package_rows), "matched": exact_matches,
                        "pathMatches": len(path_matches), "exactMatches": exact_matches,
                        "missingFromManifest": len(missing), "notObserved": len(stale), "kindMismatches": len(mismatches)},

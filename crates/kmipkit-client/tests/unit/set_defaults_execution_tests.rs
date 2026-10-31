@@ -249,12 +249,13 @@ fn table_329_success_returns_typed_result_with_empty_payload() {
         panic!("Set Defaults returns a typed outcome");
     };
     assert_eq!(response.result().status().raw(), 0);
-    response.with_ttlv(|item| {
+    assert!(response.with_ttlv(|item| {
         assert!(item.children().iter().any(|field| {
             field.tag().raw() == RESPONSE_PAYLOAD
                 && field.with_value(|value| matches!(value, ValueView::Structure(payload) if payload.children().is_empty()))
         }));
-    });
+    })
+    .is_some());
 }
 
 #[test]

@@ -12,6 +12,7 @@ use kmipkit_test_support::{ExchangeScript, ScriptedTransport};
 use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
 use kmipkit_ttlv::codec::{CodecLimits, decode_with_limits};
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, StructureView, Tag, Value, ValueView};
+use serde_json::Value as JsonValue;
 
 use crate::ClientErrorCategory;
 use crate::asynchronous_execution_test_support::{
@@ -56,6 +57,8 @@ const RESPONSE_SENTINEL: &str = "KMIP_CREATE_KEY_PAIR_RESPONSE_SENTINEL_8432";
 const PENDING_CORRELATION: &[u8] = b"CREATE_KEY_PAIR_PENDING_CORRELATION_EXACT";
 const EXTENSION_VENDOR: &str = "CreateKeyPairFixtureVendor";
 const EXTENSION_DISCRIMINATOR: &[u8] = b"create_key_pair-fixture-v1";
+const SHARED_FIXTURE: &str =
+    include_str!("../../../../tests/fixtures/api/shared-capability-parity.json");
 const DISCRIMINATOR_TAG: u32 = 0x0054_0173;
 
 fn tag(raw: u32) -> Tag {
@@ -67,6 +70,121 @@ fn tag(raw: u32) -> Tag {
 
 fn item(raw: u32, value: Value) -> Item {
     Item::new(tag(raw), value).expect("fixture item uses a checked tag")
+}
+
+fn shared_fixture_case(id: &str) -> JsonValue {
+    let fixture: JsonValue =
+        serde_json::from_str(SHARED_FIXTURE).expect("shared API parity fixture is valid JSON");
+    fixture["cases"]
+        .as_array()
+        .expect("shared fixture has cases")
+        .iter()
+        .find(|case| case["id"] == id)
+        .cloned()
+        .expect("Create Key Pair fixture case exists")
+}
+
+fn fixture_tag_list(value: &JsonValue) -> Vec<u32> {
+    value
+        .as_array()
+        .expect("fixture attribute tags are an array")
+        .iter()
+        .map(|tag| {
+            u32::from_str_radix(
+                tag.as_str()
+                    .expect("fixture attribute tag is text")
+                    .strip_prefix("0x")
+                    .expect("fixture attribute tag has a hex prefix"),
+                16,
+            )
+            .expect("fixture attribute tag is hexadecimal")
+        })
+        .collect()
+}
+
+fn fixture_attribute_set(tags: &[u32]) -> AttributeSet {
+    AttributeSet::try_new(
+        tags.iter()
+            .map(|raw_tag| item(*raw_tag, Value::enumeration(0xdead_beef))),
+    )
+    .expect("fixture attribute values form a valid ordered set")
+}
+
+fn request_has_key_pair_fixture_groups(request: &[u8], case: &JsonValue) -> bool {
+    const BATCH_ITEM: u32 = 0x0042_000f;
+    const OPERATION: u32 = 0x0042_005c;
+    const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+    const CREATE_KEY_PAIR: u32 = 2;
+
+    let Ok(root) = decode_with_limits(request, &CodecLimits::defaults()) else {
+        return false;
+    };
+    root.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return false;
+        };
+        message.children().iter().any(|batch_item| {
+            if batch_item.tag().raw() != BATCH_ITEM {
+                return false;
+            }
+            batch_item.with_value(|value| {
+                let ValueView::Structure(batch_item) = value else {
+                    return false;
+                };
+                let operation = batch_item.children().iter().find(|field| {
+                    field.tag().raw() == OPERATION
+                        && field.with_value(|value| {
+                            matches!(value, kmipkit_ttlv::ValueView::Enumeration(raw) if *raw == CREATE_KEY_PAIR)
+                        })
+                });
+                let payload = batch_item
+                    .children()
+                    .iter()
+                    .find(|field| field.tag().raw() == REQUEST_PAYLOAD);
+                operation.is_some()
+                    && payload.is_some_and(|payload| {
+                        payload.with_value(|value| {
+                            let ValueView::Structure(payload) = value else {
+                                return false;
+                            };
+                            let actual = payload
+                                .children()
+                                .iter()
+                                .map(|group| {
+                                    let child_tags = group.with_value(|value| match value {
+                                        ValueView::Structure(attributes) => attributes
+                                            .children()
+                                            .iter()
+                                            .map(|attribute| attribute.tag().raw())
+                                            .collect::<Vec<_>>(),
+                                        _ => Vec::new(),
+                                    });
+                                    (group.tag().raw(), child_tags)
+                                })
+                                .collect::<Vec<_>>();
+                            let input = &case["input"];
+                            let expected = vec![
+                                (
+                                    0x0042_0126,
+                                    fixture_tag_list(&input["commonAttributes"]["attributeTagsInOrder"]),
+                                ),
+                                (
+                                    0x0042_0127,
+                                    fixture_tag_list(&input["privateKeyAttributes"]["attributeTagsInOrder"]),
+                                ),
+                                (
+                                    0x0042_0128,
+                                    fixture_tag_list(&input["publicKeyAttributes"]["attributeTagsInOrder"]),
+                                ),
+                                (0x0042_0163, Vec::new()),
+                                (0x0042_0165, Vec::new()),
+                            ];
+                            actual == expected
+                        })
+                    })
+            })
+        })
+    })
 }
 
 fn response_batch_item(
@@ -308,22 +426,21 @@ fn create_key_pair_batch_is_one_exchange_and_associates_reordered_results_by_exa
 }
 
 #[test]
-fn create_key_pair_convenience_method_uses_one_exchange_and_returns_typed_result() {
-    let response = response_bytes([response_batch_item(
-        None,
-        SUCCESS,
-        None,
-        None,
-        None,
-        Some(success_payload("private-convenience", "public-convenience")),
-    )]);
-    let (mut client, fake) = client_for(ExchangeScript::Success {
-        response,
-        request_write_chunks: vec![4, 5],
-    });
+fn create_key_pair_maps_shared_fixture_over_one_exchange() {
+    let case = shared_fixture_case("creation.key-pair.request-response.v1");
+    let expected = &case["expectedOutput"];
+    let request = key_pair_request_from_fixture(&case);
+    let response = key_pair_success_response_from_fixture(expected);
+    let (mut client, fake, request_capture) = client_for_with_request_observer(
+        ExchangeScript::Success {
+            response,
+            request_write_chunks: vec![4, 5],
+        },
+        ZeroizationObserver::new(None),
+    );
 
     let response = client
-        .create_key_pair(empty_request(), &CodecLimits::defaults())
+        .create_key_pair(request, &CodecLimits::defaults())
         .expect("Client::create_key_pair dispatches through the shared writer");
 
     let ClientBatchOutcome::CreateKeyPairCompleted(typed) = response.outcome() else {
@@ -353,20 +470,114 @@ fn create_key_pair_convenience_method_uses_one_exchange_and_returns_typed_result
     assert!(outcome.create_key_pair_response().is_some());
     assert!(outcome.create_split_key_response().is_none());
     assert!(format!("{outcome:?}").starts_with("CreateKeyPairCompleted("));
-    assert_eq!(typed.result().status().raw(), SUCCESS);
-    assert_eq!(
-        typed.private_key_unique_identifier(),
-        Some(&kmipkit_protocol::UniqueIdentifier::TextString(
-            "private-convenience".to_owned()
-        ))
-    );
-    assert_eq!(
-        typed.public_key_unique_identifier(),
-        Some(&kmipkit_protocol::UniqueIdentifier::TextString(
-            "public-convenience".to_owned()
-        ))
-    );
+    assert_key_pair_response_matches_fixture(typed, expected);
+    let request = request_capture.borrow();
+    let request = request
+        .as_ref()
+        .expect("the fake transport observed a request");
+    assert!(request_has_key_pair_fixture_groups(request, &case));
     assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+fn key_pair_request_from_fixture(case: &JsonValue) -> CreateKeyPairRequest {
+    let input = &case["input"];
+    let expected = &case["expectedOutput"];
+    let common_tags = fixture_tag_list(&input["commonAttributes"]["attributeTagsInOrder"]);
+    let private_tags = fixture_tag_list(&input["privateKeyAttributes"]["attributeTagsInOrder"]);
+    let public_tags = fixture_tag_list(&input["publicKeyAttributes"]["attributeTagsInOrder"]);
+    assert_eq!(expected["groupsRemainDistinct"], true);
+    assert_eq!(input["effectiveTable191ValuesEqual"], true);
+    assert_eq!(input["protectionStorageMasks"]["commonPresent"], true);
+    assert_eq!(input["protectionStorageMasks"]["privatePresent"], false);
+    assert_eq!(input["protectionStorageMasks"]["publicPresent"], true);
+    CreateKeyPairRequest::new()
+        .with_common_attributes(fixture_attribute_set(&common_tags))
+        .with_private_key_attributes(fixture_attribute_set(&private_tags))
+        .with_public_key_attributes(fixture_attribute_set(&public_tags))
+        .with_common_protection_storage_masks(Structure::new())
+        .with_public_protection_storage_masks(Structure::new())
+}
+
+fn key_pair_success_response_from_fixture(expected: &JsonValue) -> Vec<u8> {
+    assert_eq!(expected["resultMessage"], serde_json::Value::Null);
+    assert_eq!(expected["resultStatus"].as_u64(), Some(u64::from(SUCCESS)));
+    let private_identifier = &expected["privateUniqueIdentifier"];
+    let private_value = match private_identifier["wireType"].as_str() {
+        Some("Enumeration") => Value::enumeration(
+            u32::try_from(
+                private_identifier["enumeration"]
+                    .as_u64()
+                    .expect("fixture private identifier is unsigned"),
+            )
+            .expect("fixture private identifier fits u32"),
+        ),
+        other => panic!("unsupported fixture private identifier wire type {other:?}"),
+    };
+    let public_identifier = &expected["publicUniqueIdentifier"];
+    let public_value = match public_identifier["wireType"].as_str() {
+        Some("TextString") => Value::text_string(
+            public_identifier["text"]
+                .as_str()
+                .expect("fixture public identifier is text")
+                .to_owned(),
+        ),
+        other => panic!("unsupported fixture public identifier wire type {other:?}"),
+    };
+    let success_payload = test_structure([
+        test_item(PRIVATE_KEY_UNIQUE_IDENTIFIER, private_value),
+        test_item(PUBLIC_KEY_UNIQUE_IDENTIFIER, public_value),
+    ]);
+    response_bytes([response_batch_item(
+        None,
+        u32::try_from(
+            expected["resultStatus"]
+                .as_u64()
+                .expect("fixture status is unsigned"),
+        )
+        .expect("fixture status fits u32"),
+        None,
+        None,
+        None,
+        Some(success_payload),
+    )])
+}
+
+fn assert_key_pair_response_matches_fixture(
+    response: &kmipkit_protocol::CreateKeyPairResponse,
+    expected: &JsonValue,
+) {
+    assert_eq!(
+        response.result().status().raw(),
+        u32::try_from(
+            expected["resultStatus"]
+                .as_u64()
+                .expect("fixture status is unsigned")
+        )
+        .expect("fixture status fits u32")
+    );
+    assert!(response.result().message().is_none());
+    let private_identifier = &expected["privateUniqueIdentifier"];
+    assert_eq!(
+        response.private_key_unique_identifier(),
+        Some(&kmipkit_protocol::UniqueIdentifier::Enumeration(
+            u32::try_from(
+                private_identifier["enumeration"]
+                    .as_u64()
+                    .expect("fixture private identifier is unsigned")
+            )
+            .expect("fixture private identifier fits u32")
+        ))
+    );
+    let public_identifier = &expected["publicUniqueIdentifier"];
+    assert_eq!(
+        response.public_key_unique_identifier(),
+        Some(&kmipkit_protocol::UniqueIdentifier::TextString(
+            public_identifier["text"]
+                .as_str()
+                .expect("fixture public identifier is text")
+                .to_owned()
+        ))
+    );
 }
 
 #[test]

@@ -30,7 +30,19 @@ fn capability_query_matches_manifest_ready_capabilities() {
         Ok(true)
     );
     assert_eq!(
+        kmipkit::capability_is_available("usage_allocation_guard"),
+        Ok(true)
+    );
+    assert_eq!(
         kmipkit::capability_is_available("opaque_register_context"),
+        Ok(true)
+    );
+    assert_eq!(
+        kmipkit::capability_is_available("server_generated_creation"),
+        Ok(true)
+    );
+    assert_eq!(
+        kmipkit::capability_is_available("typed_message_model"),
         Ok(true)
     );
     assert_eq!(

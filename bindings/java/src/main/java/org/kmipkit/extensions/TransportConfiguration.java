@@ -36,6 +36,76 @@ public final class TransportConfiguration implements AutoCloseable {
         }
     }
 
+    /** One certificate, key, trust certificate, or revocation list input.
+     *
+     * <p>Memory inputs own a defensive copy. Close them after configuring a builder to zeroize that
+     * copy. Client identity configuration consumes and closes its private-key input immediately.
+     * Java runtime copies outside KMIPKit's control cannot be zeroized by this type.
+     */
+    public static final class TransportInput implements AutoCloseable {
+        private final int source;
+        private final Encoding encoding;
+        private final byte[] data;
+        private boolean closed;
+
+        private TransportInput(int source, Encoding encoding, byte[] data) {
+            this.source = source;
+            this.encoding = encoding;
+            this.data = data;
+        }
+
+        /** Copies one in-memory credential or certificate value. */
+        public static TransportInput memory(byte[] value, Encoding encoding) {
+            if (value == null || value.length == 0 || encoding == null) {
+                throw new InvalidInputException("transport material is incomplete");
+            }
+            if (value.length > MAX_INPUT_BYTES) {
+                throw new ResourceLimitException("transport material exceeds the local input limit");
+            }
+            return new TransportInput(SOURCE_MEMORY, encoding, value.clone());
+        }
+
+        /** Copies a file path used by the native transport to load one input. */
+        public static TransportInput file(Path path, Encoding encoding) {
+            String text = filePathText(path, encoding);
+            return new TransportInput(SOURCE_FILE, encoding, text.getBytes(StandardCharsets.UTF_8));
+        }
+
+        /** Returns the caller-selected encoding without exposing the material bytes or path. */
+        public Encoding encoding() {
+            return encoding;
+        }
+
+        /** Zeroizes this object's copied bytes and prevents later use. */
+        @Override
+        public synchronized void close() {
+            Arrays.fill(data, (byte) 0);
+            closed = true;
+        }
+
+        private synchronized Input snapshot(boolean secret) {
+            ensureOpen();
+            return new Input(source, encoding, data.clone(), secret);
+        }
+
+        private synchronized long byteLength() {
+            ensureOpen();
+            return data.length;
+        }
+
+        private synchronized void ensureOpen() {
+            if (closed) {
+                throw new InvalidInputException("transport input is already closed");
+            }
+        }
+
+        @Override
+        public String toString() {
+            return "TransportInput[source=" + source + ", encoding=" + encoding
+                    + ", data=[REDACTED], closed=" + closed + "]";
+        }
+    }
+
     /** A timeout may inherit the transport default, be bounded, or be unbounded. */
     public record Timeout(int kind, long seconds, int nanoseconds) {
         public Timeout {
@@ -85,7 +155,7 @@ public final class TransportConfiguration implements AutoCloseable {
     }
 
     /** Builder for the accepted KMIPKIT-0013 endpoint, trust, identity, and timeout inputs. */
-    public static final class Builder {
+    public static final class Builder implements AutoCloseable {
         private int endpointKind;
         private String endpoint;
         private int endpointPort;
@@ -104,6 +174,19 @@ public final class TransportConfiguration implements AutoCloseable {
         private boolean built;
 
         private Builder() {}
+
+        /** Zeroizes the copied private key and consumes this builder.
+         *
+         * <p>Close a builder that is discarded before {@link #build()}. Building also consumes the
+         * builder and clears its private-key copy, including when validation or native creation fails.
+         */
+        @Override
+        public void close() {
+            if (!built) {
+                built = true;
+                wipeSecretInputReferences();
+            }
+        }
 
         /** Selects a raw TTLV-over-TLS endpoint. */
         public Builder rawTls(String host, int port) {
@@ -155,6 +238,25 @@ public final class TransportConfiguration implements AutoCloseable {
             return this;
         }
 
+        /** Supplies each certificate and the private key with independent source and encoding selections. */
+        public Builder clientIdentity(List<TransportInput> certificateChain, TransportInput privateKeyInput) {
+            ensureMutable();
+            List<TransportInput> checkedCertificates = checkedTransportInputs(certificateChain);
+            if (privateKeyInput == null) {
+                throw new InvalidInputException("client identity is incomplete");
+            }
+            long replacementBytes = Math.addExact(transportInputBytes(checkedCertificates),
+                    privateKeyInput.byteLength());
+            ensureAggregateLimit(replacementBytes, clientIdentityBytes());
+
+            List<Input> replacementCertificates = snapshotTransportInputs(checkedCertificates, false);
+            Input replacementKey = privateKeyInput.snapshot(true);
+            replacePrivateKey(replacementKey);
+            clientCertificates = replacementCertificates;
+            privateKeyInput.close();
+            return this;
+        }
+
         /** Uses platform trust roots. */
         public Builder trustPlatform() {
             ensureMutable();
@@ -184,6 +286,17 @@ public final class TransportConfiguration implements AutoCloseable {
             return this;
         }
 
+        /** Supplies trust certificates with independent source and encoding selections. */
+        public Builder trustCertificates(List<TransportInput> certificates) {
+            ensureMutable();
+            List<TransportInput> checkedCertificates = checkedTransportInputs(certificates);
+            ensureAggregateLimit(transportInputBytes(checkedCertificates), inputBytes(trustCertificates));
+            List<Input> replacement = snapshotTransportInputs(checkedCertificates, false);
+            trustKind = TRUST_CERTIFICATES;
+            trustCertificates = replacement;
+            return this;
+        }
+
         /** Supplies in-memory PEM revocation lists. */
         public Builder revocationListsPem(byte[][] lists) {
             return revocationLists(lists, Encoding.PEM);
@@ -194,7 +307,21 @@ public final class TransportConfiguration implements AutoCloseable {
             return revocationLists(lists, Encoding.DER);
         }
 
-        /** Sets the TLS server name for raw TLS when it differs from the endpoint host. */
+        /** Supplies in-memory revocation lists with independent encoding selections. */
+        public Builder revocationLists(List<TransportInput> lists) {
+            ensureMutable();
+            List<TransportInput> checkedLists = checkedTransportInputs(lists);
+            for (TransportInput input : checkedLists) {
+                if (input.source != SOURCE_MEMORY) {
+                    throw new InvalidInputException("revocation-list files are not supported");
+                }
+            }
+            ensureAggregateLimit(transportInputBytes(checkedLists), inputBytes(revocationLists));
+            revocationLists = snapshotTransportInputs(checkedLists, false);
+            return this;
+        }
+
+        /** Sets the TLS verification name for an IP endpoint; the HTTPS authority is unchanged. */
         public Builder tlsServerName(String value) {
             ensureMutable();
             tlsServerName = requireText(value, "TLS server name");
@@ -250,9 +377,6 @@ public final class TransportConfiguration implements AutoCloseable {
                         tlsServerName, targetUri, timeoutValues(), maxRequestBytes);
                 return new TransportConfiguration(nativeHandle);
             } finally {
-                if (privateKey != null && privateKey.secret) {
-                    Arrays.fill(privateKey.data, (byte) 0);
-                }
                 wipeSecretInputReferences();
             }
         }
@@ -325,9 +449,7 @@ public final class TransportConfiguration implements AutoCloseable {
             if (endpointKind == RAW_TLS && targetUri != null) {
                 throw new InvalidInputException("HTTP target URI requires HTTPS");
             }
-            if (endpointKind == HTTPS && tlsServerName != null) {
-                throw new InvalidInputException("TLS server name override requires raw TLS");
-            }
+
             validateText(endpoint, "transport endpoint");
             validateText(tlsServerName, "TLS server name");
             validateText(targetUri, "HTTP target URI");
@@ -377,6 +499,43 @@ public final class TransportConfiguration implements AutoCloseable {
             result.add(new Input(SOURCE_MEMORY, encoding, value.clone(), secret));
         }
         return List.copyOf(result);
+    }
+
+    private static List<TransportInput> checkedTransportInputs(List<TransportInput> values) {
+        if (values == null || values.isEmpty()) {
+            throw new InvalidInputException("transport material is incomplete");
+        }
+        if (values.size() > MAX_MATERIAL_ITEMS) {
+            throw new ResourceLimitException("transport material count exceeds the local limit");
+        }
+        List<TransportInput> result = new ArrayList<>(values.size());
+        for (TransportInput value : values) {
+            if (value == null) {
+                throw new InvalidInputException("transport material is incomplete");
+            }
+            value.byteLength();
+            result.add(value);
+        }
+        return List.copyOf(result);
+    }
+
+    private static List<Input> snapshotTransportInputs(List<TransportInput> values, boolean secret) {
+        List<Input> result = new ArrayList<>(values.size());
+        for (TransportInput value : values) {
+            result.add(value.snapshot(secret));
+        }
+        return List.copyOf(result);
+    }
+
+    private static long transportInputBytes(List<TransportInput> values) {
+        long total = 0;
+        for (TransportInput value : values) {
+            total = Math.addExact(total, value.byteLength());
+        }
+        if (total > MAX_INPUT_BYTES) {
+            throw new ResourceLimitException("transport material exceeds the local input limit");
+        }
+        return total;
     }
 
     private static long memoryInputBytes(byte[][] values, Encoding encoding) {

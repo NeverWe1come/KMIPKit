@@ -335,6 +335,29 @@ Estas reglas se trazan a OASIS KMIP 2.1 §2.3/Tabla 4, §6.1.43/Tablas 291 y 293
 y §11.34/Tabla 468 (`KMIPKIT-REQ-SPEC-2.3-002` y
 `KMIPKIT-REQ-SPEC-2.3-003`).
 
+### Mapeo de la respuesta Register
+
+Tras Success, la respuesta tipada expone el Unique Identifier devuelto como
+obligatorio y el TTLV completo de respuesta en su orden original. Rust ofrece
+`RegisterResponse::unique_identifier` y `with_ttlv`; C usa
+`kmipkit_client_batch_item_response_register` y
+`kmipkit_client_batch_item_response_register_ttlv`; Java usa
+`ClientBatchItemResult.registerResponse()` y sus accesores `uniqueIdentifier()`
+y `responseTtlv()`; Python usa `BatchItemResult.register_response` con
+`unique_identifier` y `response_ttlv`. El TTLV de C es una copia propiedad del
+llamador. Las respuestas Java y Python poseen su copia TTLV y deben cerrarse;
+cerrar el resultado del lote no invalida esa copia independiente.
+En ambos getters de C, las regiones de salida deben ser escribibles y no deben
+solaparse; si se solapan, se devuelve `InvalidInput` antes de escribirlas.
+
+Failure y Pending conservan el estado compartido del resultado, el motivo o
+mensaje cuando existe y los metadatos de correlación de Pending. No exponen el
+Unique Identifier de éxito ni el TTLV de respuesta Register. El estado de
+entrega describe un intercambio fallido del cliente, no un resultado de
+elemento completado. Los errores nunca incluyen TTLV raw de respuesta. El
+llamador decide si solicita comportamiento asíncrono; KMIPKit no reintenta, no
+envía Poll ni realiza automáticamente una petición de seguimiento.
+
 ## Revoke
 
 Revoke envía un motivo explícito. El mensaje opcional se reserva para el

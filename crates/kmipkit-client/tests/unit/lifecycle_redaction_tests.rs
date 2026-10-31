@@ -5,6 +5,7 @@
 //! official OASIS Test Cases.
 
 use std::error::Error;
+use std::process::Command;
 
 use kmipkit_protocol::{
     ActivateRequest, ArchiveRequest, DestroyRequest, RecoverRequest, UniqueIdentifier,
@@ -119,6 +120,40 @@ fn lifecycle_errors_and_debug_never_include_result_text_or_raw_response_body() {
         !diagnostics.contains(std::str::from_utf8(RAW_BODY_SENTINEL).expect("ASCII sentinel")),
         "public error formatting and sources must not include raw response bytes"
     );
+}
+
+#[test]
+fn lifecycle_request_debug_assertion_failure_does_not_print_request_details() {
+    const CHILD_MODE: &str = "KMIPKIT_REQUEST_DEBUG_ASSERTION_CHILD";
+    const TEST_NAME: &str = "lifecycle_redaction_tests::lifecycle_request_debug_assertion_failure_does_not_print_request_details";
+
+    if std::env::var_os(CHILD_MODE).is_some() {
+        let request = lifecycle_request_for_debug_assertion();
+        crate::execute_test_support::assert_lifecycle_request_debug(
+            &request,
+            "ExpectedDifferentRequest",
+        );
+        return;
+    }
+
+    let request = lifecycle_request_for_debug_assertion();
+    let request_debug = format!("{request:?}");
+    let output = Command::new(std::env::current_exe().expect("test executable is available"))
+        .args(["--exact", TEST_NAME, "--nocapture"])
+        .env(CHILD_MODE, "1")
+        .output()
+        .expect("child test process starts");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(!output.status.success(), "child assertion should fail");
+    assert!(
+        !stderr.contains(&request_debug),
+        "request Debug details must not appear in assertion diagnostics"
+    );
+}
+
+fn lifecycle_request_for_debug_assertion() -> ClientRequest {
+    ClientRequest::Activate(ActivateRequest::new(None))
 }
 
 fn operation_for(request: &ClientRequest) -> u32 {
