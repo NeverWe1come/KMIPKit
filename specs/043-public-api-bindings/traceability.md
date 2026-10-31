@@ -204,3 +204,7 @@ The 38 reconciled Rust `ClientOperation` variants map to their exact `client_1_0
 ## T091 — Safe client error taxonomy mappings
 
 The T091 inventory maps the safe `ClientCauseCategory` values and selected `ClientError` variants, fields, and delivery metadata from both Rust facades to the existing C last-error accessor, Java exception classes/codes, and Python error classes/codes. The declarations use the canonical approved `kmipkit_client::ClientError::category` mapping and trace KMIPKIT-0003-FR-001/004/005/006, KMIPKIT-0007-FR-001/006/008/013, and KMIPKIT-0043-FR-003/005/007/008/009/010/012/013/021. The test keeps protocol error details, server-result payloads, profile-specific error details and constructors blocked where no reviewed equivalent exists; it does not broaden response-TTLV access or diagnostic output. See the T091 error-taxonomy Red/Green/Refactor evidence in `implementation-evidence.md`. This mapping records the existing API and does not claim KMIP conformance, profile support, interoperability, or release readiness.
+
+### T091 generic FFI error status distinction
+
+`KMIPKIT_ERROR_INTERNAL` is ABI status 7 and must not be mapped to `ClientCauseCategory::Other` (client cause code 10). The C constant remains in the generated header through `stableCHeaderCode` to preserve the existing stable ABI; its Rust/Java/Python parity mapping stays an explicit KMIPKIT-0043 blocker until a genuine Rust binding-error equivalent or approved exclusion exists. Other unreleased blocked status codes remain absent from the generated header.

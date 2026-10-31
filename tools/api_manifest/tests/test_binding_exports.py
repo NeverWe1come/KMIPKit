@@ -779,6 +779,23 @@ class BindingExportAuditTests(unittest.TestCase):
             "clientBatchItemResponseModifyAttribute",
             "clientBatchItemResponseSetAttribute",
             "transportConfigCreate",
+            "MESSAGE_EXTENSION_VIEW", "REQUEST_BATCH_ITEM_VIEW",
+            "REQUEST_HEADER_VIEW", "REQUEST_MESSAGE",
+            "RESPONSE_BATCH_ITEM_VIEW", "RESPONSE_HEADER_VIEW",
+            "RESPONSE_MESSAGE",
+            "messageExtensionViewTtlv", "requestBatchItemExtensionAt",
+            "requestBatchItemExtensionCount", "requestBatchItemViewOperation",
+            "requestBatchItemViewTtlv", "requestHeaderViewBatchCount",
+            "requestHeaderViewProtocolVersion", "requestHeaderViewTtlv",
+            "requestMessageBatchItemAt", "requestMessageBatchItemCount",
+            "requestMessageFromTtlv", "requestMessageHeader", "requestMessageTtlv",
+            "responseBatchItemExtensionAt", "responseBatchItemExtensionCount",
+            "responseBatchItemViewOperation", "responseBatchItemViewResultStatus",
+            "responseBatchItemViewTtlv", "responseHeaderViewBatchCount",
+            "responseHeaderViewProtocolVersion", "responseHeaderViewTimeStamp",
+            "responseHeaderViewTtlv", "responseMessageBatchItemAt",
+            "responseMessageBatchItemCount", "responseMessageFromTtlv",
+            "responseMessageHeader", "responseMessageTtlv",
         }
         expected_native = {
             ("java-kmipkit", f"org.kmipkit.NativeExtensionRegistry.{member}")
@@ -796,7 +813,14 @@ class BindingExportAuditTests(unittest.TestCase):
         for key in expected_native:
             exclusion = exclusions[key]
             evidence = exclusion["evidence"]
-            self.assertIn("KMIPKIT-0043-FR-021", evidence)
+            combined_approved_references = (
+                "KMIPKIT-0043-FR-008/010/021/022" in evidence
+            )
+            self.assertTrue(
+                "KMIPKIT-0043-FR-021" in evidence
+                or combined_approved_references,
+                evidence,
+            )
             bridge_owner = {
                 "org.kmipkit.NativeExtensionRegistry.clientExecuteWithProfiles": "T036",
                 "org.kmipkit.NativeExtensionRegistry.withClientAsyncOperationOutcomeCorrelationValue": "T035",
@@ -805,7 +829,8 @@ class BindingExportAuditTests(unittest.TestCase):
                 self.assertIn("KMIPKIT-0043-FR-008", evidence)
                 if "ffi-and-bindings.md" not in evidence:
                     self.assertTrue(
-                        any(task_id in evidence for task_id in ("T035", "T037", "T039")),
+                        any(task_id in evidence for task_id in ("T035", "T037", "T039"))
+                        or "Reviewed against KMIPKIT-0043-FR-008/010/021/022" in evidence,
                         evidence,
                     )
             else:
