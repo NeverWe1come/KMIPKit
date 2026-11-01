@@ -79,6 +79,81 @@ fn compiled_c_consumer_builds_add_attribute_and_preserves_the_borrowed_item() {
 }
 
 #[test]
+fn standalone_add_attribute_request_serializes_and_builds_a_batch_item() {
+    let identifier = b"object-7";
+    let identifier_record = kmipkit_unique_identifier_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_unique_identifier_v1_t>())
+            .expect("identifier record size fits the ABI"),
+        abi_version: 1,
+        kind: crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+        reserved: 0,
+        text_data: identifier.as_ptr(),
+        text_length: u64::try_from(identifier.len()).expect("fixture length fits the ABI"),
+        enumeration_value: 0,
+        integer_value: 0,
+    };
+    let input_item = make_handle(Kind::Item, HandleValue::Item(add_attribute_name_item()));
+    let mut request = ptr::null_mut();
+
+    assert_eq!(
+        client_abi::kmipkit_add_attribute_request_create(
+            &raw const identifier_record,
+            input_item,
+            &raw mut request,
+        ),
+        SUCCESS,
+        "the typed request exists independently of a batch item"
+    );
+    assert!(!request.is_null());
+
+    let mut payload_handle = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_add_attribute_request_to_ttlv_payload(
+            request,
+            &raw mut payload_handle,
+        ),
+        SUCCESS
+    );
+    let payload = reference_handle(payload_handle, Kind::Structure)
+        .expect("the standalone request returns a caller-owned payload structure");
+    let HandleValue::Structure(payload) = &payload.value else {
+        panic!("the standalone request payload is a generic TTLV Structure");
+    };
+    let fields = payload.view().children();
+    assert_eq!(fields.len(), 2);
+    assert_eq!(fields[0].tag().raw(), 0x0042_0094);
+    assert!(fields[0].with_value(|value| matches!(
+        value,
+        ValueView::TextString(text) if text.as_bytes() == identifier
+    )));
+    assert_eq!(fields[1].tag().raw(), 0x0042_013d);
+
+    let mut batch_item_handle = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_add_attribute_from_request(
+            request,
+            &raw mut batch_item_handle,
+        ),
+        SUCCESS,
+        "the typed model can be used by the existing batch execution facade"
+    );
+    let batch_item = reference_handle(batch_item_handle, Kind::BatchItem)
+        .expect("the request-to-batch factory returns an owned batch item");
+    let HandleValue::BatchItem(batch_item) = &batch_item.value else {
+        panic!("the returned handle contains a batch item");
+    };
+    let ClientRequest::AddAttribute(batch_request) = batch_item.request() else {
+        panic!("the typed batch item remains Add Attribute");
+    };
+    assert_eq!(batch_request.unique_identifier(), Some("object-7"));
+
+    kmipkit_client_batch_item_release(batch_item_handle);
+    kmipkit_ttlv_structure_release(payload_handle);
+    kmipkit_add_attribute_request_release(request);
+    kmipkit_ttlv_item_release(input_item);
+}
+
+#[test]
 fn add_attribute_response_copies_success_identifier_and_hides_failure_payload() {
     let request = || {
         ClientRequest::AddAttribute(AddAttributeRequest::new(
