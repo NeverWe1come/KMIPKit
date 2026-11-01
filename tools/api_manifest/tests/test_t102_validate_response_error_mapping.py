@@ -15,7 +15,10 @@ OWNER_SPEC = "specs/028-diagnostics-interop/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 REQUIREMENTS = {
     *(f"KMIPKIT-0042-FR-{index:03}" for index in range(1, 9)),
-    *(f"KMIPKIT-0043-FR-{index:03}" for index in (4, 5, 7, 8, 9, 10, 11, 12, 13, 17, 18, 21, 22)),
+    *(
+        f"KMIPKIT-0043-FR-{index:03}"
+        for index in (4, 5, 7, 8, 9, 10, 11, 12, 13, 17, 18, 21, 22)
+    ),
     "KMIPKIT-REQ-SPEC-6.1.57-001",
     "KMIPKIT-REQ-SPEC-6.1.57-002-001",
     "KMIPKIT-REQ-SPEC-6.1.57-002-002",
@@ -93,13 +96,15 @@ class ValidateResponseErrorMappingTests(unittest.TestCase):
 
         exports = ERROR_EXPORTS | {PARSER_EXPORT}
         mapped_exports = {
-            declaration["exportName"]
+            self.declarations[declaration_id]["exportName"]
             for declaration_id in self.operation["declarations"]["rust"]
-            if (declaration := self.declarations[declaration_id])
         }
         self.assertTrue(exports <= mapped_exports)
         for declaration in self.manifest["publicDeclarations"]:
-            if declaration["packageId"] == "rust-kmipkit-protocol" and declaration["exportName"] in exports:
+            if (
+                declaration["packageId"] == "rust-kmipkit-protocol"
+                and declaration["exportName"] in exports
+            ):
                 self.assertEqual("verified", declaration["declarationState"])
                 self.assertNotIn("candidateSpecId", declaration)
                 self.assertNotIn("blockedReason", declaration)
@@ -107,7 +112,11 @@ class ValidateResponseErrorMappingTests(unittest.TestCase):
                     PARITY_EVIDENCE <= set(declaration["parityEvidenceIds"]),
                     declaration["exportName"],
                 )
-                expected = PARSER_MAPPINGS if declaration["exportName"] == PARSER_EXPORT else ERROR_MAPPINGS
+                expected = (
+                    PARSER_MAPPINGS
+                    if declaration["exportName"] == PARSER_EXPORT
+                    else ERROR_MAPPINGS
+                )
                 actual = {
                     language: declaration["languageMappings"][language]["name"]
                     for language in ("c", "java", "python")

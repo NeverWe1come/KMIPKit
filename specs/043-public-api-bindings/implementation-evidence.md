@@ -8215,3 +8215,25 @@ Verification:
 - Independent QA found no behavior blocker; its documentation-scope, normative-citation, and negative-C-constructor observations are addressed above. Independent security review reported no actionable finding (scan `5027f201-f513-4168-9d86-b8dc3a98170e`; report under the local Codex Security scan state).
 
 The current manifest has zero KMIPKIT-0043 candidate rows for this sequence slice and 4,369 other blocked KMIPKIT-0043 candidates. T102 therefore remains unchecked. This checkpoint does not claim the PR, branch, full T102, coverage thresholds, or KMIP conformance complete.
+
+### T102 Validate response parser and error mapping checkpoint (2026-11-01)
+
+This checkpoint maps nine exact Rust declarations under the approved KMIPKIT-0042 Validate contract: `ValidateError`, its six variants and nested `ResultValidationError` field, and `ValidateResponse::try_from_response_item`. The parser maps to the existing C `kmipkit_client_batch_item_response_validate`, Java `ClientBatchItemResult.validateResponse`, and Python `BatchItemResult.validate_response` facades. Its payload-free error taxonomy maps to the stable protocol error category: C `KMIPKIT_ERROR_PROTOCOL`, Java `ProtocolException`, and Python `ClientExecutionError`. OASIS KMIP Specification v2.1 §6.1.57 Tables 341–342 ground the response shape and result semantics; the local Rust error distinctions are implementation diagnostics, not new KMIP requirements.
+
+The Rust parser's malformed-response cases remain payload-free and normalize at the client boundary to Protocol/InvalidValue with delivery evidence. C/Java/Python already use the corresponding stable protocol error surfaces. The Rust parser-negative tests exercise malformed Validate responses; the binding error-contract tests verify the shared category, and the Validate facade tests verify typed response accessors. Those binding suites do not independently inject each malformed Validate response variant. No language-specific parser behavior or raw response TTLV is added by this manifest mapping.
+
+| Phase | Commit | Evidence |
+|---|---|---|
+| Red — require the Validate parser and error taxonomy mapping | `7501e09ad` | `test_t102_validate_response_error_mapping` failed because the nine declarations were still blocked and absent from the operation mapping. |
+| Green — map the Rust declarations to existing four-language surfaces | `cb7cd56bb` | Updated the source manifest and regenerated all 12 pinned outputs; no generated output was edited by hand. |
+| Refactor/evidence — document the source boundary and verification | This commit | Clarifies that §6.1.57 governs response behavior while the Rust error variants are local diagnostics; T102 stays open. |
+
+Verification:
+
+- `py -B -m unittest tools.api_manifest.tests.test_t102_validate_response_error_mapping tools.api_manifest.tests.test_validate_parity_manifest -v` — 3 passed.
+- `py -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
+- `cargo test -p kmipkit-protocol validate_operation_tests` — 17 passed, including payload-free parser errors and Tables 341–342 cases.
+- `cargo test -p kmipkit-client validate_execution_tests` — 12 passed, including malformed Validate response rejection after one exchange. Windows emitted non-fatal AWS-LC compiler/NASM probe warnings.
+- `git diff --check` — passed.
+
+The manifest now has zero KMIPKIT-0043 candidates for the nine declarations in this slice and 4,360 other blocked candidates. T102 remains unchecked; this checkpoint does not claim the PR, branch, coverage thresholds, or KMIP conformance complete.
