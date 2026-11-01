@@ -4847,6 +4847,30 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         operation_name_overrides = {
             "QueryAsyncRequests": "queryasynchronousrequests",
         }
+        attribute_operation_requirements = {
+            "AddAttribute": "KMIPKIT-0016-FR-003",
+            "AdjustAttribute": "KMIPKIT-0016-FR-004",
+            "DeleteAttribute": "KMIPKIT-0016-FR-005",
+            "GetAttributes": "KMIPKIT-0016-FR-006",
+            "GetAttributeList": "KMIPKIT-0016-FR-007",
+            "ModifyAttribute": "KMIPKIT-0016-FR-008",
+            "SetAttribute": "KMIPKIT-0016-FR-009",
+        }
+        attribute_mutation_variants = {
+            "AddAttribute",
+            "AdjustAttribute",
+            "DeleteAttribute",
+            "ModifyAttribute",
+            "SetAttribute",
+        }
+        attribute_shared_requirements = {
+            "KMIPKIT-0043-FR-004",
+            "KMIPKIT-0043-FR-005",
+            "KMIPKIT-0043-FR-010",
+            "KMIPKIT-0043-FR-017",
+            "KMIPKIT-0043-FR-021",
+            "KMIPKIT-0043-FR-022",
+        }
         mappings = {
             "c": {
                 "packageId": "c-kmipkit",
@@ -4913,9 +4937,34 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     self.assertNotIn("candidateSpecId", declaration)
                     self.assertNotIn("blockedReason", declaration)
                     self.assertEqual(operation["operationId"], declaration["capabilityId"])
-                    self.assertEqual(expected_requirement_ids, declaration["requirementIds"])
+                    if operation["ownerDependency"]["specId"] == "KMIPKIT-0016":
+                        expected_owner_requirements = {
+                            "KMIPKIT-0016-FR-001",
+                            "KMIPKIT-0016-FR-002",
+                            attribute_operation_requirements[variant],
+                            "KMIPKIT-0016-FR-010",
+                            "KMIPKIT-0016-FR-011",
+                            "KMIPKIT-0016-FR-012",
+                            "KMIPKIT-0016-FR-013",
+                        }
+                        if variant in attribute_mutation_variants:
+                            expected_owner_requirements.add("KMIPKIT-0016-FR-015")
+                        declaration_requirements = set(declaration["requirementIds"])
+                        self.assertTrue(expected_owner_requirements <= declaration_requirements)
+                        self.assertTrue(attribute_shared_requirements <= declaration_requirements)
+                    else:
+                        self.assertEqual(expected_requirement_ids, declaration["requirementIds"])
                     if expected_approval is not None:
-                        self.assertEqual(expected_approval, declaration["approvalSource"])
+                        actual_approval = declaration["approvalSource"]
+                        self.assertEqual(expected_approval["status"], actual_approval["status"])
+                        if operation["ownerDependency"]["specId"] == "KMIPKIT-0016":
+                            self.assertEqual(
+                                Path(expected_approval["path"]).parent,
+                                Path(actual_approval["path"]).parent,
+                            )
+                        else:
+                            self.assertEqual(expected_approval, actual_approval)
+                        self.assertTrue(actual_approval["evidence"].strip())
                     self.assertEqual(expected_mappings, declaration["languageMappings"])
                     self.assertTrue(
                         set(parity_evidence_ids)
@@ -5844,8 +5893,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for exclusion in self.checked_in_manifest["approvedExclusions"]
             if exclusion["packageId"] in rust_packages
         ]
-        self.assertEqual(len(declarations), 8114)
-        self.assertEqual(len(exclusions), 2348)
+        self.assertEqual(len(declarations), 7198)
+        self.assertEqual(len(exclusions), 3264)
         report = json.loads(RUST_EXPORT_REPORT_PATH.read_text(encoding="utf-8"))
         observed_keys = {
             (row["packageId"], _canonical_export_name(row["exportName"]), row["kind"])
@@ -6139,12 +6188,28 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             item for item in rust_exclusions
             if item["approvalSource"]["path"] == "specs/012-vendor-extension-registry/spec.md"
         ]
+        t096_exclusions = [
+            item for item in rust_exclusions
+            if item["approvalSource"]["path"] == "specs/014-server-generated-creation/spec.md"
+        ]
+        t097_exclusions = [
+            item for item in rust_exclusions
+            if item["approvalSource"]["path"] == "specs/016-attribute-operations/spec.md"
+        ]
         self.assertEqual(len(t087_exclusions), 217)
         self.assertEqual(len(t091_exclusions), 112)
         self.assertEqual(len(t094_exclusions), 230)
+        self.assertEqual(len(t096_exclusions), 265)
+        self.assertEqual(len(t097_exclusions), 651)
         self.assertEqual(
             len(rust_exclusions),
-            202 + len(t087_exclusions) + 222 + len(t091_exclusions) + len(t094_exclusions),
+            202
+            + len(t087_exclusions)
+            + 222
+            + len(t091_exclusions)
+            + len(t094_exclusions)
+            + len(t096_exclusions)
+            + len(t097_exclusions),
         )
         self.assertTrue(
             any(
@@ -6166,6 +6231,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "specs/007-client-execution/spec.md",
                 "specs/009-asynchronous-operations/spec.md",
                 "specs/012-vendor-extension-registry/spec.md",
+                "specs/014-server-generated-creation/spec.md",
+                "specs/016-attribute-operations/spec.md",
                 "specs/043-public-api-bindings/spec.md",
                 "specs/008-credentials-attestation/spec.md",
             },

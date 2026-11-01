@@ -113,13 +113,22 @@ def _expected_owner_requirements(export_name: str) -> set[str]:
             "KMIPKIT-0016-FR-013",
         }
     if "CurrentAttribute" in export_name or "NewAttribute" in export_name:
-        return {"KMIPKIT-0016-FR-001", "KMIPKIT-0016-FR-002", "KMIPKIT-0016-FR-011"}
+        return {
+            "KMIPKIT-0016-FR-001",
+            "KMIPKIT-0016-FR-002",
+            "KMIPKIT-0016-FR-011",
+            "KMIPKIT-0016-FR-005" if "CurrentAttribute" in export_name else "KMIPKIT-0016-FR-003",
+        }
     if "AdjustmentType" in export_name:
         return {
             "KMIPKIT-0016-FR-001",
             "KMIPKIT-0016-FR-002",
             "KMIPKIT-0016-FR-004",
+            "KMIPKIT-0016-FR-010",
             "KMIPKIT-0016-FR-011",
+            "KMIPKIT-0016-FR-012",
+            "KMIPKIT-0016-FR-013",
+            "KMIPKIT-0016-FR-015",
         }
     for operation, request_type in {
         "add_attribute": "AddAttribute",
@@ -148,18 +157,20 @@ class T097AttributeParityManifestTests(unittest.TestCase):
         cls.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
 
     def test_base_candidate_inventory_is_pinned(self) -> None:
-        candidates = [
+        mapped = [
             row
             for row in self.manifest["publicDeclarations"]
-            if row.get("candidateSpecId") == OWNER_SPEC
+            if row.get("approvalSource", {}).get("path") == OWNER_SPEC_PATH
         ]
+        excluded = [
+            row
+            for row in self.manifest["approvedExclusions"]
+            if row.get("approvalSource", {}).get("path") == OWNER_SPEC_PATH
+        ]
+        candidates = mapped + excluded
         self.assertEqual(BASE_CANDIDATE_COUNT, len(candidates))
         self.assertEqual(BASE_CANDIDATE_SHA256, _identity_hash(candidates))
-        traits = [
-            row
-            for row in candidates
-            if row["exportName"].startswith("<") and " as " in row["exportName"]
-        ]
+        traits = [row for row in excluded if row["exportName"].startswith("<")]
         self.assertEqual(BASE_TRAIT_COUNT, len(traits))
         self.assertEqual(BASE_TRAIT_SHA256, _identity_hash(traits))
 
