@@ -113,6 +113,10 @@ class T102HashedPasswordTimestampSequenceTests(unittest.TestCase):
         cases = {case["id"]: case for case in fixture["cases"]}
         case = cases["credentials.hashed-password-timestamp-sequence.v1"]
         self.assertEqual(CAPABILITY, case["capability"])
+        self.assertEqual(
+            "OASIS KMIP v2.1 §9.11, Table 415; KMIPKIT-0008 OD-003",
+            case["normativeSource"],
+        )
         self.assertEqual("invalid_input", case["errorCategory"])
         self.assertEqual(0, case["expectedOutput"]["clockReads"])
         self.assertEqual(0, case["expectedOutput"]["hashCalculations"])
