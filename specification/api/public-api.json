@@ -241936,250 +241936,6 @@
       }
     },
     {
-      "declarationId": "rust-observed-23a7bb5c831f36ca6984",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportResponse as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-f58c0b9dff94ca135c95",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportResponse as core::borrow::Borrow<kmipkit_transport::response::TransportResponse>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-a8def691739b1311f974",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportResponse as core::borrow::BorrowMut<kmipkit_transport::response::TransportResponse>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-dfc57109da03de1d1d2f",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportResponse as core::convert::From<kmipkit_transport::response::TransportResponse>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-ba000e0f01bafd6c1b93",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportResponse as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::response::TransportResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-ca7f1c9c808aae1a1704",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportResponse as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::response::TransportResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-6cd7f41e49ef1f018f51",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportResponse as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::response::TransportResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-40b05f55703cb2ad69b7",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportResponse as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::response::TransportResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-624d0972d851c5a98754",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportResponse as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::response::TransportResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-b68b369b6eb26de81440",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportResponse as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-3f56cced18ae71c6c5e2",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportResponse as core::ops::drop::Drop>::drop",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
       "declarationId": "rust-observed-d1be40b0c1d469c5735c",
       "packageId": "rust-kmipkit-transport",
       "kind": "field",
@@ -427258,6 +427014,138 @@
       },
       "evidence": "Exact compiler-observed export path: <kmipkit_transport::TrustSource as core::fmt::Debug>::fmt. KMIPKIT-0013 and KMIPKIT-0043-FR-021 inventory public product behavior on its owning transport/configuration declaration; this standard-trait path adds no separate C, Java, or Python capability.",
       "candidateSpecId": "KMIPKIT-0013"
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportResponse as core::any::Any>::type_id",
+      "reason": "These exact Rust standard-trait implementations are language-level behavior of the ADR-0014 Rust-only TransportResponse type, not a separate KMIPKit product capability. The declared wrapper's redacted Debug and initialized-range zeroization behavior remain part of the public type contract and are covered by its focused tests.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "ADR-0014 Decision 1/6 makes TransportResponse a public Rust-only response wrapper with borrowed byte access, redacted Debug, and initialized byte range zeroization on drop. KMIPKIT-0043-FR-020 and KMIPKIT-0043-FR-021 requires all exports to be inventoried and permits only exact reviewed exclusions under an accepted ADR. This record excludes only this one standard-trait path; TransportResponse, new, as_bytes, Transport::exchange, and the redaction and cleanup contract remain declared and tested."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportResponse as core::borrow::Borrow<kmipkit_transport::response::TransportResponse>>::borrow",
+      "reason": "These exact Rust standard-trait implementations are language-level behavior of the ADR-0014 Rust-only TransportResponse type, not a separate KMIPKit product capability. The declared wrapper's redacted Debug and initialized-range zeroization behavior remain part of the public type contract and are covered by its focused tests.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "ADR-0014 Decision 1/6 makes TransportResponse a public Rust-only response wrapper with borrowed byte access, redacted Debug, and initialized byte range zeroization on drop. KMIPKIT-0043-FR-020 and KMIPKIT-0043-FR-021 requires all exports to be inventoried and permits only exact reviewed exclusions under an accepted ADR. This record excludes only this one standard-trait path; TransportResponse, new, as_bytes, Transport::exchange, and the redaction and cleanup contract remain declared and tested."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportResponse as core::borrow::BorrowMut<kmipkit_transport::response::TransportResponse>>::borrow_mut",
+      "reason": "These exact Rust standard-trait implementations are language-level behavior of the ADR-0014 Rust-only TransportResponse type, not a separate KMIPKit product capability. The declared wrapper's redacted Debug and initialized-range zeroization behavior remain part of the public type contract and are covered by its focused tests.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "ADR-0014 Decision 1/6 makes TransportResponse a public Rust-only response wrapper with borrowed byte access, redacted Debug, and initialized byte range zeroization on drop. KMIPKIT-0043-FR-020 and KMIPKIT-0043-FR-021 requires all exports to be inventoried and permits only exact reviewed exclusions under an accepted ADR. This record excludes only this one standard-trait path; TransportResponse, new, as_bytes, Transport::exchange, and the redaction and cleanup contract remain declared and tested."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportResponse as core::convert::From<kmipkit_transport::response::TransportResponse>>::from",
+      "reason": "These exact Rust standard-trait implementations are language-level behavior of the ADR-0014 Rust-only TransportResponse type, not a separate KMIPKit product capability. The declared wrapper's redacted Debug and initialized-range zeroization behavior remain part of the public type contract and are covered by its focused tests.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "ADR-0014 Decision 1/6 makes TransportResponse a public Rust-only response wrapper with borrowed byte access, redacted Debug, and initialized byte range zeroization on drop. KMIPKIT-0043-FR-020 and KMIPKIT-0043-FR-021 requires all exports to be inventoried and permits only exact reviewed exclusions under an accepted ADR. This record excludes only this one standard-trait path; TransportResponse, new, as_bytes, Transport::exchange, and the redaction and cleanup contract remain declared and tested."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportResponse as core::convert::Into<U>>::into",
+      "reason": "These exact Rust standard-trait implementations are language-level behavior of the ADR-0014 Rust-only TransportResponse type, not a separate KMIPKit product capability. The declared wrapper's redacted Debug and initialized-range zeroization behavior remain part of the public type contract and are covered by its focused tests.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "ADR-0014 Decision 1/6 makes TransportResponse a public Rust-only response wrapper with borrowed byte access, redacted Debug, and initialized byte range zeroization on drop. KMIPKIT-0043-FR-020 and KMIPKIT-0043-FR-021 requires all exports to be inventoried and permits only exact reviewed exclusions under an accepted ADR. This record excludes only this one standard-trait path; TransportResponse, new, as_bytes, Transport::exchange, and the redaction and cleanup contract remain declared and tested."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportResponse as core::convert::TryFrom<U>>::Error",
+      "reason": "These exact Rust standard-trait implementations are language-level behavior of the ADR-0014 Rust-only TransportResponse type, not a separate KMIPKit product capability. The declared wrapper's redacted Debug and initialized-range zeroization behavior remain part of the public type contract and are covered by its focused tests.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "ADR-0014 Decision 1/6 makes TransportResponse a public Rust-only response wrapper with borrowed byte access, redacted Debug, and initialized byte range zeroization on drop. KMIPKIT-0043-FR-020 and KMIPKIT-0043-FR-021 requires all exports to be inventoried and permits only exact reviewed exclusions under an accepted ADR. This record excludes only this one standard-trait path; TransportResponse, new, as_bytes, Transport::exchange, and the redaction and cleanup contract remain declared and tested."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportResponse as core::convert::TryFrom<U>>::try_from",
+      "reason": "These exact Rust standard-trait implementations are language-level behavior of the ADR-0014 Rust-only TransportResponse type, not a separate KMIPKit product capability. The declared wrapper's redacted Debug and initialized-range zeroization behavior remain part of the public type contract and are covered by its focused tests.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "ADR-0014 Decision 1/6 makes TransportResponse a public Rust-only response wrapper with borrowed byte access, redacted Debug, and initialized byte range zeroization on drop. KMIPKIT-0043-FR-020 and KMIPKIT-0043-FR-021 requires all exports to be inventoried and permits only exact reviewed exclusions under an accepted ADR. This record excludes only this one standard-trait path; TransportResponse, new, as_bytes, Transport::exchange, and the redaction and cleanup contract remain declared and tested."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportResponse as core::convert::TryInto<U>>::Error",
+      "reason": "These exact Rust standard-trait implementations are language-level behavior of the ADR-0014 Rust-only TransportResponse type, not a separate KMIPKit product capability. The declared wrapper's redacted Debug and initialized-range zeroization behavior remain part of the public type contract and are covered by its focused tests.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "ADR-0014 Decision 1/6 makes TransportResponse a public Rust-only response wrapper with borrowed byte access, redacted Debug, and initialized byte range zeroization on drop. KMIPKIT-0043-FR-020 and KMIPKIT-0043-FR-021 requires all exports to be inventoried and permits only exact reviewed exclusions under an accepted ADR. This record excludes only this one standard-trait path; TransportResponse, new, as_bytes, Transport::exchange, and the redaction and cleanup contract remain declared and tested."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportResponse as core::convert::TryInto<U>>::try_into",
+      "reason": "These exact Rust standard-trait implementations are language-level behavior of the ADR-0014 Rust-only TransportResponse type, not a separate KMIPKit product capability. The declared wrapper's redacted Debug and initialized-range zeroization behavior remain part of the public type contract and are covered by its focused tests.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "ADR-0014 Decision 1/6 makes TransportResponse a public Rust-only response wrapper with borrowed byte access, redacted Debug, and initialized byte range zeroization on drop. KMIPKIT-0043-FR-020 and KMIPKIT-0043-FR-021 requires all exports to be inventoried and permits only exact reviewed exclusions under an accepted ADR. This record excludes only this one standard-trait path; TransportResponse, new, as_bytes, Transport::exchange, and the redaction and cleanup contract remain declared and tested."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportResponse as core::fmt::Debug>::fmt",
+      "reason": "These exact Rust standard-trait implementations are language-level behavior of the ADR-0014 Rust-only TransportResponse type, not a separate KMIPKit product capability. The declared wrapper's redacted Debug and initialized-range zeroization behavior remain part of the public type contract and are covered by its focused tests.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "ADR-0014 Decision 1/6 makes TransportResponse a public Rust-only response wrapper with borrowed byte access, redacted Debug, and initialized byte range zeroization on drop. KMIPKIT-0043-FR-020 and KMIPKIT-0043-FR-021 requires all exports to be inventoried and permits only exact reviewed exclusions under an accepted ADR. This record excludes only this one standard-trait path; TransportResponse, new, as_bytes, Transport::exchange, and the redaction and cleanup contract remain declared and tested."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportResponse as core::ops::drop::Drop>::drop",
+      "reason": "These exact Rust standard-trait implementations are language-level behavior of the ADR-0014 Rust-only TransportResponse type, not a separate KMIPKit product capability. The declared wrapper's redacted Debug and initialized-range zeroization behavior remain part of the public type contract and are covered by its focused tests.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "ADR-0014 Decision 1/6 makes TransportResponse a public Rust-only response wrapper with borrowed byte access, redacted Debug, and initialized byte range zeroization on drop. KMIPKIT-0043-FR-020 and KMIPKIT-0043-FR-021 requires all exports to be inventoried and permits only exact reviewed exclusions under an accepted ADR. This record excludes only this one standard-trait path; TransportResponse, new, as_bytes, Transport::exchange, and the redaction and cleanup contract remain declared and tested."
     },
     {
       "packageId": "rust-kmipkit-protocol",

@@ -43451,6 +43451,138 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "ADR-0014 Decision 1/6 makes TransportResponse a public Rust-only response wrapper with borrowed byte access, redacted Debug, and initialized byte range zeroization on drop. KMIPKIT-0043-FR-020 and KMIPKIT-0043-FR-021 requires all exports to be inventoried and permits only exact reviewed exclusions under an accepted ADR. This record excludes only this one standard-trait path; TransportResponse, new, as_bytes, Transport::exchange, and the redaction and cleanup contract remain declared and tested.",
+      "exportName": "<kmipkit_transport::TransportResponse as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "These exact Rust standard-trait implementations are language-level behavior of the ADR-0014 Rust-only TransportResponse type, not a separate KMIPKit product capability. The declared wrapper's redacted Debug and initialized-range zeroization behavior remain part of the public type contract and are covered by its focused tests."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "ADR-0014 Decision 1/6 makes TransportResponse a public Rust-only response wrapper with borrowed byte access, redacted Debug, and initialized byte range zeroization on drop. KMIPKIT-0043-FR-020 and KMIPKIT-0043-FR-021 requires all exports to be inventoried and permits only exact reviewed exclusions under an accepted ADR. This record excludes only this one standard-trait path; TransportResponse, new, as_bytes, Transport::exchange, and the redaction and cleanup contract remain declared and tested.",
+      "exportName": "<kmipkit_transport::TransportResponse as core::borrow::Borrow<kmipkit_transport::response::TransportResponse>>::borrow",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "These exact Rust standard-trait implementations are language-level behavior of the ADR-0014 Rust-only TransportResponse type, not a separate KMIPKit product capability. The declared wrapper's redacted Debug and initialized-range zeroization behavior remain part of the public type contract and are covered by its focused tests."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "ADR-0014 Decision 1/6 makes TransportResponse a public Rust-only response wrapper with borrowed byte access, redacted Debug, and initialized byte range zeroization on drop. KMIPKIT-0043-FR-020 and KMIPKIT-0043-FR-021 requires all exports to be inventoried and permits only exact reviewed exclusions under an accepted ADR. This record excludes only this one standard-trait path; TransportResponse, new, as_bytes, Transport::exchange, and the redaction and cleanup contract remain declared and tested.",
+      "exportName": "<kmipkit_transport::TransportResponse as core::borrow::BorrowMut<kmipkit_transport::response::TransportResponse>>::borrow_mut",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "These exact Rust standard-trait implementations are language-level behavior of the ADR-0014 Rust-only TransportResponse type, not a separate KMIPKit product capability. The declared wrapper's redacted Debug and initialized-range zeroization behavior remain part of the public type contract and are covered by its focused tests."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "ADR-0014 Decision 1/6 makes TransportResponse a public Rust-only response wrapper with borrowed byte access, redacted Debug, and initialized byte range zeroization on drop. KMIPKIT-0043-FR-020 and KMIPKIT-0043-FR-021 requires all exports to be inventoried and permits only exact reviewed exclusions under an accepted ADR. This record excludes only this one standard-trait path; TransportResponse, new, as_bytes, Transport::exchange, and the redaction and cleanup contract remain declared and tested.",
+      "exportName": "<kmipkit_transport::TransportResponse as core::convert::From<kmipkit_transport::response::TransportResponse>>::from",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "These exact Rust standard-trait implementations are language-level behavior of the ADR-0014 Rust-only TransportResponse type, not a separate KMIPKit product capability. The declared wrapper's redacted Debug and initialized-range zeroization behavior remain part of the public type contract and are covered by its focused tests."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "ADR-0014 Decision 1/6 makes TransportResponse a public Rust-only response wrapper with borrowed byte access, redacted Debug, and initialized byte range zeroization on drop. KMIPKIT-0043-FR-020 and KMIPKIT-0043-FR-021 requires all exports to be inventoried and permits only exact reviewed exclusions under an accepted ADR. This record excludes only this one standard-trait path; TransportResponse, new, as_bytes, Transport::exchange, and the redaction and cleanup contract remain declared and tested.",
+      "exportName": "<kmipkit_transport::TransportResponse as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "These exact Rust standard-trait implementations are language-level behavior of the ADR-0014 Rust-only TransportResponse type, not a separate KMIPKit product capability. The declared wrapper's redacted Debug and initialized-range zeroization behavior remain part of the public type contract and are covered by its focused tests."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "ADR-0014 Decision 1/6 makes TransportResponse a public Rust-only response wrapper with borrowed byte access, redacted Debug, and initialized byte range zeroization on drop. KMIPKIT-0043-FR-020 and KMIPKIT-0043-FR-021 requires all exports to be inventoried and permits only exact reviewed exclusions under an accepted ADR. This record excludes only this one standard-trait path; TransportResponse, new, as_bytes, Transport::exchange, and the redaction and cleanup contract remain declared and tested.",
+      "exportName": "<kmipkit_transport::TransportResponse as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "These exact Rust standard-trait implementations are language-level behavior of the ADR-0014 Rust-only TransportResponse type, not a separate KMIPKit product capability. The declared wrapper's redacted Debug and initialized-range zeroization behavior remain part of the public type contract and are covered by its focused tests."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "ADR-0014 Decision 1/6 makes TransportResponse a public Rust-only response wrapper with borrowed byte access, redacted Debug, and initialized byte range zeroization on drop. KMIPKIT-0043-FR-020 and KMIPKIT-0043-FR-021 requires all exports to be inventoried and permits only exact reviewed exclusions under an accepted ADR. This record excludes only this one standard-trait path; TransportResponse, new, as_bytes, Transport::exchange, and the redaction and cleanup contract remain declared and tested.",
+      "exportName": "<kmipkit_transport::TransportResponse as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "These exact Rust standard-trait implementations are language-level behavior of the ADR-0014 Rust-only TransportResponse type, not a separate KMIPKit product capability. The declared wrapper's redacted Debug and initialized-range zeroization behavior remain part of the public type contract and are covered by its focused tests."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "ADR-0014 Decision 1/6 makes TransportResponse a public Rust-only response wrapper with borrowed byte access, redacted Debug, and initialized byte range zeroization on drop. KMIPKIT-0043-FR-020 and KMIPKIT-0043-FR-021 requires all exports to be inventoried and permits only exact reviewed exclusions under an accepted ADR. This record excludes only this one standard-trait path; TransportResponse, new, as_bytes, Transport::exchange, and the redaction and cleanup contract remain declared and tested.",
+      "exportName": "<kmipkit_transport::TransportResponse as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "These exact Rust standard-trait implementations are language-level behavior of the ADR-0014 Rust-only TransportResponse type, not a separate KMIPKit product capability. The declared wrapper's redacted Debug and initialized-range zeroization behavior remain part of the public type contract and are covered by its focused tests."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "ADR-0014 Decision 1/6 makes TransportResponse a public Rust-only response wrapper with borrowed byte access, redacted Debug, and initialized byte range zeroization on drop. KMIPKIT-0043-FR-020 and KMIPKIT-0043-FR-021 requires all exports to be inventoried and permits only exact reviewed exclusions under an accepted ADR. This record excludes only this one standard-trait path; TransportResponse, new, as_bytes, Transport::exchange, and the redaction and cleanup contract remain declared and tested.",
+      "exportName": "<kmipkit_transport::TransportResponse as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "These exact Rust standard-trait implementations are language-level behavior of the ADR-0014 Rust-only TransportResponse type, not a separate KMIPKit product capability. The declared wrapper's redacted Debug and initialized-range zeroization behavior remain part of the public type contract and are covered by its focused tests."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "ADR-0014 Decision 1/6 makes TransportResponse a public Rust-only response wrapper with borrowed byte access, redacted Debug, and initialized byte range zeroization on drop. KMIPKIT-0043-FR-020 and KMIPKIT-0043-FR-021 requires all exports to be inventoried and permits only exact reviewed exclusions under an accepted ADR. This record excludes only this one standard-trait path; TransportResponse, new, as_bytes, Transport::exchange, and the redaction and cleanup contract remain declared and tested.",
+      "exportName": "<kmipkit_transport::TransportResponse as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "These exact Rust standard-trait implementations are language-level behavior of the ADR-0014 Rust-only TransportResponse type, not a separate KMIPKit product capability. The declared wrapper's redacted Debug and initialized-range zeroization behavior remain part of the public type contract and are covered by its focused tests."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "ADR-0014 Decision 1/6 makes TransportResponse a public Rust-only response wrapper with borrowed byte access, redacted Debug, and initialized byte range zeroization on drop. KMIPKIT-0043-FR-020 and KMIPKIT-0043-FR-021 requires all exports to be inventoried and permits only exact reviewed exclusions under an accepted ADR. This record excludes only this one standard-trait path; TransportResponse, new, as_bytes, Transport::exchange, and the redaction and cleanup contract remain declared and tested.",
+      "exportName": "<kmipkit_transport::TransportResponse as core::ops::drop::Drop>::drop",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "These exact Rust standard-trait implementations are language-level behavior of the ADR-0014 Rust-only TransportResponse type, not a separate KMIPKit product capability. The declared wrapper's redacted Debug and initialized-range zeroization behavior remain part of the public type contract and are covered by its focused tests."
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Accepted for implementation.",
         "kind": "feature-specification",
         "path": "specs/014-server-generated-creation/spec.md",
