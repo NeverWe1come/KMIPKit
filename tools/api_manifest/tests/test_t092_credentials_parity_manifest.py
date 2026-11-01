@@ -132,15 +132,33 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
         records = [
             row
             for row in manifest["publicDeclarations"]
-            if row.get("exportName") in VALIDATION_ERROR_EXPORTS
+            if row.get("capabilityId") == "credential_validation_error_parity"
         ]
-        self.assertEqual(VALIDATION_ERROR_EXPORTS, {row["exportName"] for row in records})
+        rust_exports = {
+            row["exportName"]
+            for row in records
+            if row.get("packageId") == "rust-kmipkit-protocol"
+        }
+        self.assertEqual(VALIDATION_ERROR_EXPORTS, rust_exports)
+        self.assertEqual(
+            {"c-kmipkit", "java-kmipkit", "python-kmipkit", "rust-kmipkit-protocol"},
+            {row["packageId"] for row in records},
+        )
         for record in records:
             with self.subTest(export=record["exportName"]):
                 self.assertTrue(
                     owner_requirements <= set(record.get("requirementIds", [])),
                     "shared validation errors must trace Authentication, Credential, "
                     "Device, Attestation, and redaction requirements",
+                )
+
+        for type_id in ("CredentialValidationErrorKind", "CredentialValidationErrorV1"):
+            with self.subTest(type_id=type_id):
+                type_record = next(
+                    row for row in manifest["types"] if row.get("id") == type_id
+                )
+                self.assertTrue(
+                    owner_requirements <= set(type_record.get("requirementIds", []))
                 )
 
         capability = next(
