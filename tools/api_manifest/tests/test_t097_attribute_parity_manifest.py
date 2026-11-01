@@ -102,7 +102,14 @@ def _expected_mapped_exports() -> set[str]:
         mapped.add(f"{module}AttributeSet")
         mapped.update(
             f"{module}AttributeSet::{method}"
-            for method in ("as_items", "len", "is_empty", "into_items")
+            for method in (
+                "try_new",
+                "try_push",
+                "as_items",
+                "len",
+                "is_empty",
+                "into_items",
+            )
         )
         for attribute_type in ("CurrentAttribute", "NewAttribute"):
             mapped.add(f"{module}{attribute_type}")
@@ -485,6 +492,45 @@ class T097AttributeParityManifestTests(unittest.TestCase):
                             ),
                         )
 
+    def test_attribute_set_validation_methods_map_to_foreign_facades(self) -> None:
+        declarations = {
+            row["exportName"]: row for row in self.manifest["publicDeclarations"]
+        }
+        expected = {
+            "kmipkit_attribute_set_create": (
+                "org.kmipkit.extensions.AttributeSet.tryNew",
+                "kmipkit.attribute_operations.AttributeSet.try_new",
+            ),
+            "kmipkit_attribute_set_try_push": (
+                "org.kmipkit.extensions.AttributeSet.tryPush",
+                "kmipkit.attribute_operations.AttributeSet.try_push",
+            ),
+        }
+        for module in ("kmipkit_protocol::", "kmipkit_protocol::attribute::"):
+            for method, (c_name, (java_name, python_name)) in zip(
+                ("try_new", "try_push"), expected.items(), strict=True
+            ):
+                export = f"{module}AttributeSet::{method}"
+                with self.subTest(export=export):
+                    row = declarations.get(export)
+                    self.assertIsNotNone(
+                        row,
+                        f"{export} must be mapped, not excluded as a Rust-only helper",
+                    )
+                    if row is None:
+                        continue
+                    self.assertEqual(
+                        {
+                            "c": c_name,
+                            "java": java_name,
+                            "python": python_name,
+                        },
+                        {
+                            language: row["languageMappings"][language]["name"]
+                            for language in ("c", "java", "python")
+                        },
+                    )
+
     def test_get_attributes_c_abi_uses_a_bounded_versioned_reference_array(self) -> None:
         create = next(
             row for row in self.manifest["functions"]
@@ -567,7 +613,7 @@ class T097AttributeParityManifestTests(unittest.TestCase):
                     self.assertEqual("Approved", row["approvalSource"]["status"])
                     self.assertTrue(row["reason"].strip())
                     self.assertIn("T097", row["evidence"])
-                    self.assertIn("KMIPKIT-0043-FR-021", row["evidence"])
+                    self.assertRegex(row["evidence"], r"KMIPKIT-0043-FR-[^ ]*021")
 
     def test_typed_request_lifecycle_batch_conversion_and_abi_are_mapped(self) -> None:
         declarations = {
