@@ -575,6 +575,67 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             header.splitlines(),
         )
 
+    def test_c_function_pointer_parameter_places_name_inside_declarator(self) -> None:
+        declaration = {
+            "c": {
+                "symbol": "kmipkit_test_secret_callback",
+                "returnType": "int32_t",
+                "parameters": [
+                    {
+                        "name": "callback",
+                        "kind": "callback",
+                        "type": "void (*)(const uint8_t *, uint64_t, void *)",
+                        "ownership": "borrowed",
+                        "lifetime": "synchronous-call",
+                    },
+                    {
+                        "name": "context",
+                        "kind": "callback-context",
+                        "type": "void *",
+                        "ownership": "borrowed",
+                        "lifetime": "synchronous-call",
+                    },
+                ],
+            }
+        }
+
+        generated = generate._c_declaration(declaration)
+
+        self.assertEqual(
+            "int32_t kmipkit_test_secret_callback("
+            "void (*callback)(const uint8_t *, uint64_t, void *), "
+            "void * context);",
+            generated,
+        )
+
+    def test_v2_schema_accepts_synchronous_borrowed_c_callback_parameters(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        function = next(
+            row for row in manifest["functions"] if row["id"] == "nonce_ttlv_view"
+        )
+        function["c"]["parameters"].extend(
+            [
+                {
+                    "name": "callback",
+                    "kind": "callback",
+                    "type": "void (*)(const uint8_t *, uint64_t, void *)",
+                    "ownership": "borrowed",
+                    "lifetime": "synchronous-call",
+                },
+                {
+                    "name": "context",
+                    "kind": "callback-context",
+                    "type": "void *",
+                    "ownership": "borrowed",
+                    "lifetime": "synchronous-call",
+                },
+            ]
+        )
+
+        generate._validate_schema(
+            manifest, json.loads(SCHEMA.read_text(encoding="utf-8"))
+        )
+
     def test_blocked_c_symbol_signature_is_not_emitted(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         declaration = copy.deepcopy(
