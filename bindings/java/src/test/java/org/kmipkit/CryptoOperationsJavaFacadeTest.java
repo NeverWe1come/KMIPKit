@@ -379,10 +379,10 @@ final class CryptoOperationsJavaFacadeTest {
                 }
             }
         }
-        publicMethod(response.getClass(), "close").invoke(response);
-        publicMethod(response.getClass(), "close").invoke(response);
+        responseTtlv.close();
+        responseTtlv.close();
         assertThrows(InvalidInputException.class, responseTtlv::view,
-                "closing the typed response must release its independent TTLV copy exactly once");
+                "closing the returned TTLV structure must release its independent copy exactly once");
     }
 
     private static List<Integer> structureTags(TtlvStructureView structure) {

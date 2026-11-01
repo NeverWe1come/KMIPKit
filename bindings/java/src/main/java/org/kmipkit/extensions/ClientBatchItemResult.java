@@ -1578,38 +1578,52 @@ public final class ClientBatchItemResult implements AutoCloseable {
         @Override public String toString() { return "DecryptResponse[fields=redacted]"; }
     }
 
-    /** Successful Hash response fields, copied from the native result. */
+    /** Successful Hash response fields and its complete ordered TTLV copy. */
     public static final class HashResponse {
         private final @Nullable byte[] data;
         private final @Nullable byte[] correlationValue;
+        private final TtlvStructure responseTtlv;
 
-        private HashResponse(@Nullable byte[] data, @Nullable byte[] correlationValue) {
+        private HashResponse(@Nullable byte[] data, @Nullable byte[] correlationValue,
+                TtlvStructure responseTtlv) {
             this.data = copyBytes(data);
             this.correlationValue = copyBytes(correlationValue);
+            this.responseTtlv = responseTtlv;
         }
 
         public Optional<byte[]> data() { return copiedBytes(data); }
         public Optional<byte[]> correlationValue() { return copiedBytes(correlationValue); }
+        /** Returns the caller-owned structure for the complete ordered successful response.
+         * Close the returned structure when finished; unknown fields and their order are preserved.
+         */
+        public TtlvStructure responseTtlv() { return responseTtlv; }
 
         @Override public String toString() { return "HashResponse[fields=redacted]"; }
     }
 
-    /** Successful MAC response fields, copied from the native result. */
+    /** Successful MAC response fields and its complete ordered TTLV copy. */
     public static final class MacResponse {
         private final UniqueIdentifier uniqueIdentifier;
         private final @Nullable byte[] macData;
         private final @Nullable byte[] correlationValue;
+        private final TtlvStructure responseTtlv;
 
         private MacResponse(UniqueIdentifier uniqueIdentifier,
-                @Nullable byte[] macData, @Nullable byte[] correlationValue) {
+                @Nullable byte[] macData, @Nullable byte[] correlationValue,
+                TtlvStructure responseTtlv) {
             this.uniqueIdentifier = uniqueIdentifier;
             this.macData = copyBytes(macData);
             this.correlationValue = copyBytes(correlationValue);
+            this.responseTtlv = responseTtlv;
         }
 
         public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
         public Optional<byte[]> macData() { return copiedBytes(macData); }
         public Optional<byte[]> correlationValue() { return copiedBytes(correlationValue); }
+        /** Returns the caller-owned structure for the complete ordered successful response.
+         * Close the returned structure when finished; unknown fields and their order are preserved.
+         */
+        public TtlvStructure responseTtlv() { return responseTtlv; }
 
         @Override public String toString() { return "MacResponse[fields=redacted]"; }
     }
@@ -1619,17 +1633,24 @@ public final class ClientBatchItemResult implements AutoCloseable {
         private final UniqueIdentifier uniqueIdentifier;
         private final OptionalLong validityIndicatorRaw;
         private final @Nullable byte[] correlationValue;
+        private final TtlvStructure responseTtlv;
 
         private MacVerifyResponse(UniqueIdentifier uniqueIdentifier,
-                OptionalLong validityIndicatorRaw, @Nullable byte[] correlationValue) {
+                OptionalLong validityIndicatorRaw, @Nullable byte[] correlationValue,
+                TtlvStructure responseTtlv) {
             this.uniqueIdentifier = uniqueIdentifier;
             this.validityIndicatorRaw = validityIndicatorRaw;
             this.correlationValue = copyBytes(correlationValue);
+            this.responseTtlv = responseTtlv;
         }
 
         public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
         public OptionalLong validityIndicatorRaw() { return validityIndicatorRaw; }
         public Optional<byte[]> correlationValue() { return copiedBytes(correlationValue); }
+        /** Returns the caller-owned structure for the complete ordered successful response.
+         * Close the returned structure when finished; unknown fields and their order are preserved.
+         */
+        public TtlvStructure responseTtlv() { return responseTtlv; }
 
         @Override public String toString() { return "MacVerifyResponse[fields=redacted]"; }
     }
@@ -1639,17 +1660,24 @@ public final class ClientBatchItemResult implements AutoCloseable {
         private final UniqueIdentifier uniqueIdentifier;
         private final @Nullable byte[] signatureData;
         private final @Nullable byte[] correlationValue;
+        private final TtlvStructure responseTtlv;
 
         private SignResponse(UniqueIdentifier uniqueIdentifier,
-                @Nullable byte[] signatureData, @Nullable byte[] correlationValue) {
+                @Nullable byte[] signatureData, @Nullable byte[] correlationValue,
+                TtlvStructure responseTtlv) {
             this.uniqueIdentifier = uniqueIdentifier;
             this.signatureData = copyBytes(signatureData);
             this.correlationValue = copyBytes(correlationValue);
+            this.responseTtlv = responseTtlv;
         }
 
         public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
         public Optional<byte[]> signatureData() { return copiedBytes(signatureData); }
         public Optional<byte[]> correlationValue() { return copiedBytes(correlationValue); }
+        /** Returns the caller-owned structure for the complete ordered successful response.
+         * Close the returned structure when finished; unknown fields and their order are preserved.
+         */
+        public TtlvStructure responseTtlv() { return responseTtlv; }
 
         @Override public String toString() { return "SignResponse[fields=redacted]"; }
     }
@@ -1660,20 +1688,26 @@ public final class ClientBatchItemResult implements AutoCloseable {
         private final OptionalLong validityIndicatorRaw;
         private final @Nullable byte[] recoveredData;
         private final @Nullable byte[] correlationValue;
+        private final TtlvStructure responseTtlv;
 
         private SignatureVerifyResponse(UniqueIdentifier uniqueIdentifier,
                 OptionalLong validityIndicatorRaw, @Nullable byte[] recoveredData,
-                @Nullable byte[] correlationValue) {
+                @Nullable byte[] correlationValue, TtlvStructure responseTtlv) {
             this.uniqueIdentifier = uniqueIdentifier;
             this.validityIndicatorRaw = validityIndicatorRaw;
             this.recoveredData = copyBytes(recoveredData);
             this.correlationValue = copyBytes(correlationValue);
+            this.responseTtlv = responseTtlv;
         }
 
         public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
         public OptionalLong validityIndicatorRaw() { return validityIndicatorRaw; }
         public Optional<byte[]> recoveredData() { return copiedBytes(recoveredData); }
         public Optional<byte[]> correlationValue() { return copiedBytes(correlationValue); }
+        /** Returns the caller-owned structure for the complete ordered successful response.
+         * Close the returned structure when finished; unknown fields and their order are preserved.
+         */
+        public TtlvStructure responseTtlv() { return responseTtlv; }
 
         @Override public String toString() { return "SignatureVerifyResponse[fields=redacted]"; }
     }
@@ -1705,62 +1739,111 @@ public final class ClientBatchItemResult implements AutoCloseable {
 
     static Optional<HashResponse> parseHashResponse(Object[] values) {
         Object[] tuple = requireTuple(values, 3, "native Hash response is invalid");
-        long[] fields = requireLongArray(tuple[0], 3, "native Hash response is invalid");
-        if (!responsePresent(fields)) {
-            requireNoResponseFields(fields, tuple);
-            return Optional.empty();
+        long[] fields = requireLongArray(tuple[0], 4, "native Hash response is invalid");
+        try {
+            if (!responsePresent(fields)) {
+                requireNoResponseFields(fields, tuple);
+                return Optional.empty();
+            }
+            byte[] data = responseBytes(fields[1], tuple[1]);
+            byte[] correlation = responseBytes(fields[2], tuple[2]);
+            return Optional.of(new HashResponse(data, correlation, takeResponseTtlv(fields)));
+        } finally {
+            releaseUnclaimedResponseTtlv(fields);
         }
-        return Optional.of(new HashResponse(
-                responseBytes(fields[1], tuple[1]), responseBytes(fields[2], tuple[2])));
     }
 
     static Optional<MacResponse> parseMacResponse(Object[] values) {
         Object[] tuple = requireTuple(values, 4, "native MAC response is invalid");
-        long[] fields = requireLongArray(tuple[0], 7, "native MAC response is invalid");
-        if (!responsePresent(fields)) {
-            requireNoResponseFields(fields, tuple);
-            return Optional.empty();
+        long[] fields = requireLongArray(tuple[0], 8, "native MAC response is invalid");
+        try {
+            if (!responsePresent(fields)) {
+                requireNoResponseFields(fields, tuple);
+                return Optional.empty();
+            }
+            UniqueIdentifier identifier = requiredResponseIdentifier(fields, 1, tuple[1]);
+            byte[] macData = responseBytes(fields[5], tuple[2]);
+            byte[] correlation = responseBytes(fields[6], tuple[3]);
+            return Optional.of(new MacResponse(
+                    identifier, macData, correlation, takeResponseTtlv(fields)));
+        } finally {
+            releaseUnclaimedResponseTtlv(fields);
         }
-        return Optional.of(new MacResponse(
-                requiredResponseIdentifier(fields, 1, tuple[1]),
-                responseBytes(fields[5], tuple[2]), responseBytes(fields[6], tuple[3])));
     }
 
     static Optional<MacVerifyResponse> parseMacVerifyResponse(Object[] values) {
         Object[] tuple = requireTuple(values, 3, "native MAC Verify response is invalid");
-        long[] fields = requireLongArray(tuple[0], 8, "native MAC Verify response is invalid");
-        if (!responsePresent(fields)) {
-            requireNoResponseFields(fields, tuple);
-            return Optional.empty();
+        long[] fields = requireLongArray(tuple[0], 9, "native MAC Verify response is invalid");
+        try {
+            if (!responsePresent(fields)) {
+                requireNoResponseFields(fields, tuple);
+                return Optional.empty();
+            }
+            UniqueIdentifier identifier = requiredResponseIdentifier(fields, 1, tuple[1]);
+            OptionalLong validity = optionalUnsigned(fields[5], fields[6]);
+            byte[] correlation = responseBytes(fields[7], tuple[2]);
+            return Optional.of(new MacVerifyResponse(
+                    identifier, validity, correlation, takeResponseTtlv(fields)));
+        } finally {
+            releaseUnclaimedResponseTtlv(fields);
         }
-        return Optional.of(new MacVerifyResponse(
-                requiredResponseIdentifier(fields, 1, tuple[1]),
-                optionalUnsigned(fields[5], fields[6]), responseBytes(fields[7], tuple[2])));
     }
 
     static Optional<SignResponse> parseSignResponse(Object[] values) {
         Object[] tuple = requireTuple(values, 4, "native Sign response is invalid");
-        long[] fields = requireLongArray(tuple[0], 7, "native Sign response is invalid");
-        if (!responsePresent(fields)) {
-            requireNoResponseFields(fields, tuple);
-            return Optional.empty();
+        long[] fields = requireLongArray(tuple[0], 8, "native Sign response is invalid");
+        try {
+            if (!responsePresent(fields)) {
+                requireNoResponseFields(fields, tuple);
+                return Optional.empty();
+            }
+            UniqueIdentifier identifier = requiredResponseIdentifier(fields, 1, tuple[1]);
+            byte[] signature = responseBytes(fields[5], tuple[2]);
+            byte[] correlation = responseBytes(fields[6], tuple[3]);
+            return Optional.of(new SignResponse(
+                    identifier, signature, correlation, takeResponseTtlv(fields)));
+        } finally {
+            releaseUnclaimedResponseTtlv(fields);
         }
-        return Optional.of(new SignResponse(
-                requiredResponseIdentifier(fields, 1, tuple[1]),
-                responseBytes(fields[5], tuple[2]), responseBytes(fields[6], tuple[3])));
     }
 
     static Optional<SignatureVerifyResponse> parseSignatureVerifyResponse(Object[] values) {
         Object[] tuple = requireTuple(values, 4, "native Signature Verify response is invalid");
-        long[] fields = requireLongArray(tuple[0], 9, "native Signature Verify response is invalid");
-        if (!responsePresent(fields)) {
-            requireNoResponseFields(fields, tuple);
-            return Optional.empty();
+        long[] fields = requireLongArray(tuple[0], 10, "native Signature Verify response is invalid");
+        try {
+            if (!responsePresent(fields)) {
+                requireNoResponseFields(fields, tuple);
+                return Optional.empty();
+            }
+            UniqueIdentifier identifier = requiredResponseIdentifier(fields, 1, tuple[1]);
+            OptionalLong validity = optionalUnsigned(fields[5], fields[6]);
+            byte[] recovered = responseBytes(fields[7], tuple[2]);
+            byte[] correlation = responseBytes(fields[8], tuple[3]);
+            return Optional.of(new SignatureVerifyResponse(
+                    identifier, validity, recovered, correlation, takeResponseTtlv(fields)));
+        } finally {
+            releaseUnclaimedResponseTtlv(fields);
         }
-        return Optional.of(new SignatureVerifyResponse(
-                requiredResponseIdentifier(fields, 1, tuple[1]),
-                optionalUnsigned(fields[5], fields[6]),
-                responseBytes(fields[7], tuple[2]), responseBytes(fields[8], tuple[3])));
+    }
+
+    private static TtlvStructure takeResponseTtlv(long[] fields) {
+        int index = fields.length - 1;
+        long handle = fields[index];
+        if (handle == 0) {
+            throw new InvalidInputException("native successful response omitted its TTLV structure");
+        }
+        TtlvStructure structure = TtlvStructure.fromNative(handle, null);
+        fields[index] = 0;
+        return structure;
+    }
+
+    private static void releaseUnclaimedResponseTtlv(long[] fields) {
+        int index = fields.length - 1;
+        long handle = fields[index];
+        if (handle != 0) {
+            fields[index] = 0;
+            NativeExtensionRegistry.release(NativeExtensionRegistry.TTLV_STRUCTURE, handle);
+        }
     }
 
     private static boolean responsePresent(long[] fields) {

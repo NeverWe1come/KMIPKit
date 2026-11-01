@@ -66,7 +66,7 @@ changes to this table.
 | `client_batch_model` | declared | The four-language client batch model exposes typed ordered requests and results; full operation coverage remains incomplete. |
 | `client_execution` | declared | Discover Versions request and response mappings are present in Rust, C, Java, and Python; complete 1.0 operation conformance remains pending. |
 | `client_asynchronous_operations` | declared | Cancel, Poll, Process, and Query Asynchronous Requests use explicit one-exchange calls across four languages; exact correlation bytes and the generic Query TTLV response are preserved, with no automatic polling. |
-| `crypto_response_ttlv` | declared | Generic response access is limited to approved Unique Identifier shape errors in successful MAC, MAC Verify, Sign, and Signature Verify responses. |
+| `crypto_response_ttlv` | declared | The separate FR-015 error-response access remains limited to its four approved accessors; typed success-response TTLV is recorded on the five operation rows. |
 | `production_transport` | declared | Rust and the three adapters expose the approved TLS 1.3 client transport configuration; interoperability evidence remains pending. |
 | `api_level_discovery` | declared | Rust, C, Java, and Python expose the local API-level taxonomy without network access. |
 | `opaque_register_context` | declared | Explicit Opaque Object context and Register request-shape validation are mapped across four languages; this separate capability remains declared. The Register operation row is verified. |
@@ -184,6 +184,15 @@ retains the complete ordered response TTLV in all four languages. C returns an
 owned TTLV structure; Java exposes `ObtainLeaseResponse.responseTtlv()` and
 Python exposes `ObtainLeaseResponse.response_ttlv`. Callers close the owned
 result when done. KMIPKit does not track lease expiration or start a timer.
+
+Successful Hash, MAC, MAC Verify, Sign, and Signature Verify results also expose
+their complete ordered generic response TTLV. Rust lends a `StructureView`; C
+returns a caller-owned `kmipkit_ttlv_structure_t` that must be released with
+`kmipkit_ttlv_structure_release`; Java `responseTtlv()` and Python
+`response_ttlv` return the owned `TtlvStructure` or `ttlv.Structure`, which the
+caller closes when finished. These copies preserve unknown fields and their
+order. A non-success result or a different operation has no success-response
+TTLV accessor. This does not broaden the separate FR-015 error-response access.
 
 Encrypt and Decrypt are also mapped in all four languages. Java callers create
 items with `ClientBatchItem.encrypt(...)` and `ClientBatchItem.decrypt(...)`;

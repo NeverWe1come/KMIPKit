@@ -373,7 +373,9 @@ class T101HashMacSignatureDeclarationMappingTests(unittest.TestCase):
                     self.fail(f"missing T101 function record: {function_id}")
                 function = functions[function_id]
                 self.assertEqual(SUCCESS_TTLV_REQUIREMENTS, set(function["requirementIds"]))
-                self.assertEqual(symbol, function["rust"]["name"])
+                self.assertEqual(f"kmipkit_protocol::{response_type}", function["rust"]["module"])
+                self.assertEqual("with_ttlv", function["rust"]["name"])
+                self.assertEqual("protocol", function["rust"]["owner"])
                 self.assertEqual(
                     [
                         {"name": "item", "kind": "handle", "type": "kmipkit_client_batch_item_response_t *", "ownership": "borrowed"},
@@ -382,9 +384,9 @@ class T101HashMacSignatureDeclarationMappingTests(unittest.TestCase):
                     ],
                     function["c"]["parameters"],
                 )
+                self.assertEqual("org.kmipkit.extensions", function["java"]["package"])
                 self.assertEqual(
-                    f"org.kmipkit.extensions.ClientBatchItemResult.{response_type}",
-                    function["java"]["class"],
+                    f"ClientBatchItemResult.{response_type}", function["java"]["class"]
                 )
                 self.assertEqual("responseTtlv", function["java"]["method"])
                 self.assertEqual(
@@ -393,6 +395,7 @@ class T101HashMacSignatureDeclarationMappingTests(unittest.TestCase):
                 )
                 self.assertEqual(symbol, function["python"]["cffiSymbol"])
                 self.assertIn(symbol, header)
+                self.assertIn("kmipkit_ttlv_structure_t ** out_response_ttlv", header)
                 self.assertIn(symbol, cffi)
                 docs = " ".join(function["c"]["documentation"])
                 self.assertIn("successful", docs)

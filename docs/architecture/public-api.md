@@ -117,6 +117,17 @@ a generic response handle for Failure or Pending, and this does not expand the
 separate T081 error-only response-retention capability. The mapping follows
 the approved contract in [policy controls](../../specs/025-policy-controls/spec.md).
 
+Hash, MAC, MAC Verify, Sign, and Signature Verify expose the full ordered
+generic TTLV response only through the matching typed success result. The Rust
+response types lend a `StructureView`; C returns an independently owned
+`kmipkit_ttlv_structure_t`; Java and Python return their owned
+`TtlvStructure`/`ttlv.Structure` from `responseTtlv()`/`response_ttlv`. Callers
+release the C handle with `kmipkit_ttlv_structure_release` and close the Java or
+Python structure when finished. Unknown fields and their order are preserved.
+Failure, Pending, and other-operation results do not expose this success
+accessor. The separate FR-015 error-response access remains limited to its
+approved four identities.
+
 KMIPKIT-0013 constructs the typed client from validated transport
 configuration without arbitrary transport injection. The public low-level
 `kmipkit-transport` exchange contract remains a separate direct caller-byte

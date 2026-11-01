@@ -832,6 +832,31 @@ int32_t kmipkit_client_batch_item_certify(const kmipkit_unique_identifier_v1_t *
  */
 /* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.45-001, KMIPKIT-REQ-SPEC-6.1.45-002-001, KMIPKIT-REQ-SPEC-6.1.45-002-002, KMIPKIT-REQ-SPEC-6.1.45-004, KMIPKIT-REQ-SPEC-6.1.45-006-001, KMIPKIT-REQ-SPEC-6.1.45-006-002, KMIPKIT-REQ-SPEC-6.1.45-008 */
 int32_t kmipkit_client_batch_item_recertify(const kmipkit_unique_identifier_v1_t * unique_identifier, const kmipkit_unique_identifier_v1_t * certificate_request_unique_identifier, uint8_t has_certificate_request_type, uint32_t certificate_request_type, const kmipkit_byte_span_v1_t * certificate_request_value, uint8_t has_offset, uint32_t offset, kmipkit_ttlv_structure_t * attributes, kmipkit_ttlv_structure_t * protection_storage_masks, kmipkit_client_batch_item_t ** out_item);
+/* Returns a caller-owned copy of the complete ordered generic TTLV response only for a successful Hash result. Unknown fields and their order are preserved.
+ * For non-success results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0021-FR-009, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_hash_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Returns a caller-owned copy of the complete ordered generic TTLV response only for a successful Mac result. Unknown fields and their order are preserved.
+ * For non-success results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0021-FR-009, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_mac_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Returns a caller-owned copy of the complete ordered generic TTLV response only for a successful MacVerify result. Unknown fields and their order are preserved.
+ * For non-success results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0021-FR-009, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_mac_verify_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Returns a caller-owned copy of the complete ordered generic TTLV response only for a successful Sign result. Unknown fields and their order are preserved.
+ * For non-success results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0021-FR-009, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_sign_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Returns a caller-owned copy of the complete ordered generic TTLV response only for a successful SignatureVerify result. Unknown fields and their order are preserved.
+ * For non-success results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0021-FR-009, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_signature_verify_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
 /* Returns the generated certificate identifier only for a successful Certify result. Text identifier bytes are borrowed from the response-item handle and remain valid until that handle is released.
  */
 /* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.6-001, KMIPKIT-REQ-SPEC-6.1.6-002-001, KMIPKIT-REQ-SPEC-6.1.6-002-002, KMIPKIT-REQ-SPEC-6.1.6-002-003, KMIPKIT-REQ-SPEC-6.1.6-003, KMIPKIT-REQ-SPEC-6.1.6-007 */

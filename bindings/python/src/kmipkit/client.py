@@ -1665,11 +1665,14 @@ class DecryptResponse:
 
 @dataclass(frozen=True, slots=True)
 class HashResponse:
-    """Typed Hash response fields copied from the matching successful batch item."""
+    """Typed Hash fields and its caller-owned complete TTLV structure.
+
+    Close ``response_ttlv`` when finished; it preserves child order and unknown fields.
+    """
 
     data: bytes | None = field(repr=False)
     correlation_value: bytes | None = field(repr=False)
-
+    response_ttlv: ttlv.Structure = field(repr=False)
 
 @dataclass(frozen=True, slots=True)
 class CertifyResponse:
@@ -2246,40 +2249,52 @@ class ExportResponse:
 
 @dataclass(frozen=True, slots=True)
 class MacResponse:
-    """Typed MAC response fields; byte payloads are omitted from repr output."""
+    """Typed MAC fields and its caller-owned complete TTLV structure.
+
+    Close ``response_ttlv`` when finished; it preserves child order and unknown fields.
+    """
 
     unique_identifier: extensions.UniqueIdentifier | None = field(repr=False)
     mac_data: bytes | None = field(repr=False)
     correlation_value: bytes | None = field(repr=False)
-
+    response_ttlv: ttlv.Structure = field(repr=False)
 
 @dataclass(frozen=True, slots=True)
 class MacVerifyResponse:
-    """Typed MAC Verify result with a forward-compatible raw Validity Indicator."""
+    """MAC Verify fields, a raw indicator, and its caller-owned complete TTLV.
+
+    Close ``response_ttlv`` when finished; it preserves child order and unknown fields.
+    """
 
     unique_identifier: extensions.UniqueIdentifier | None = field(repr=False)
     validity_indicator_raw: int | None
     correlation_value: bytes | None = field(repr=False)
-
+    response_ttlv: ttlv.Structure = field(repr=False)
 
 @dataclass(frozen=True, slots=True)
 class SignResponse:
-    """Typed Sign response fields; signature bytes are omitted from repr output."""
+    """Typed Sign fields and its caller-owned complete TTLV structure.
+
+    Close ``response_ttlv`` when finished; it preserves child order and unknown fields.
+    """
 
     unique_identifier: extensions.UniqueIdentifier | None = field(repr=False)
     signature_data: bytes | None = field(repr=False)
     correlation_value: bytes | None = field(repr=False)
-
+    response_ttlv: ttlv.Structure = field(repr=False)
 
 @dataclass(frozen=True, slots=True)
 class SignatureVerifyResponse:
-    """Typed Signature Verify result preserving unknown raw Validity Indicator values."""
+    """Signature Verify fields, a raw indicator, and its caller-owned complete TTLV.
+
+    Close ``response_ttlv`` when finished; it preserves child order and unknown fields.
+    """
 
     unique_identifier: extensions.UniqueIdentifier | None = field(repr=False)
     validity_indicator_raw: int | None
     recovered_data: bytes | None = field(repr=False)
     correlation_value: bytes | None = field(repr=False)
-
+    response_ttlv: ttlv.Structure = field(repr=False)
 
 @dataclass(slots=True, init=False, repr=False)
 class RngRetrieveResponse:
@@ -3735,10 +3750,12 @@ def _hash_response(item: _ClientBatchItemResponse) -> HashResponse | None:
         return None
     if present[0] != 1:
         errors.raise_for_status(4)
-    return HashResponse(
-        _optional_output_span(data_present, data),
-        _optional_output_span(correlation_present, correlation),
+    data_value = _optional_output_span(data_present, data)
+    correlation_value = _optional_output_span(correlation_present, correlation)
+    response_ttlv = _successful_response_ttlv(
+        item, lib.kmipkit_client_batch_item_response_hash_ttlv
     )
+    return HashResponse(data_value, correlation_value, response_ttlv)
 
 
 def _encrypt_response(item: _ClientBatchItemResponse) -> EncryptResponse | None:
@@ -5406,10 +5423,14 @@ def _mac_response(item: _ClientBatchItemResponse) -> MacResponse | None:
         return None
     if present[0] != 1:
         errors.raise_for_status(4)
+    unique_identifier = _optional_output_identifier(identifier)
+    mac_value = _optional_output_span(mac_present, mac_data)
+    correlation_value = _optional_output_span(correlation_present, correlation)
+    response_ttlv = _successful_response_ttlv(
+        item, lib.kmipkit_client_batch_item_response_mac_ttlv
+    )
     return MacResponse(
-        _optional_output_identifier(identifier),
-        _optional_output_span(mac_present, mac_data),
-        _optional_output_span(correlation_present, correlation),
+        unique_identifier, mac_value, correlation_value, response_ttlv
     )
 
 
@@ -5433,10 +5454,16 @@ def _mac_verify_response(item: _ClientBatchItemResponse) -> MacVerifyResponse | 
         return None
     if present[0] != 1 or validity_present[0] not in (0, 1):
         errors.raise_for_status(4)
+    unique_identifier = _optional_output_identifier(identifier)
+    correlation_value = _optional_output_span(correlation_present, correlation)
+    response_ttlv = _successful_response_ttlv(
+        item, lib.kmipkit_client_batch_item_response_mac_verify_ttlv
+    )
     return MacVerifyResponse(
-        _optional_output_identifier(identifier),
+        unique_identifier,
         int(validity[0]) if validity_present[0] == 1 else None,
-        _optional_output_span(correlation_present, correlation),
+        correlation_value,
+        response_ttlv,
     )
 
 
@@ -5461,10 +5488,14 @@ def _sign_response(item: _ClientBatchItemResponse) -> SignResponse | None:
         return None
     if present[0] != 1:
         errors.raise_for_status(4)
+    unique_identifier = _optional_output_identifier(identifier)
+    signature_value = _optional_output_span(signature_present, signature_data)
+    correlation_value = _optional_output_span(correlation_present, correlation)
+    response_ttlv = _successful_response_ttlv(
+        item, lib.kmipkit_client_batch_item_response_sign_ttlv
+    )
     return SignResponse(
-        _optional_output_identifier(identifier),
-        _optional_output_span(signature_present, signature_data),
-        _optional_output_span(correlation_present, correlation),
+        unique_identifier, signature_value, correlation_value, response_ttlv
     )
 
 
@@ -5571,11 +5602,18 @@ def _signature_verify_response(
         return None
     if present[0] != 1 or validity_present[0] not in (0, 1):
         errors.raise_for_status(4)
+    unique_identifier = _optional_output_identifier(identifier)
+    recovered_value = _optional_output_span(recovered_present, recovered_data)
+    correlation_value = _optional_output_span(correlation_present, correlation)
+    response_ttlv = _successful_response_ttlv(
+        item, lib.kmipkit_client_batch_item_response_signature_verify_ttlv
+    )
     return SignatureVerifyResponse(
-        _optional_output_identifier(identifier),
+        unique_identifier,
         int(validity[0]) if validity_present[0] == 1 else None,
-        _optional_output_span(recovered_present, recovered_data),
-        _optional_output_span(correlation_present, correlation),
+        recovered_value,
+        correlation_value,
+        response_ttlv,
     )
 
 

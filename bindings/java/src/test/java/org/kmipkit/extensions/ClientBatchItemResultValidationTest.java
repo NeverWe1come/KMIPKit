@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 import org.kmipkit.InvalidInputException;
+import org.kmipkit.ttlv.TtlvStructure;
 
 final class ClientBatchItemResultValidationTest {
     @Test
@@ -18,35 +19,45 @@ final class ClientBatchItemResultValidationTest {
 
     @Test
     void parsesAbsentMacVerifyValidityIndicator() {
-        long[] fields = {1, 1, 1, 0, 0, 0, 0, 0};
+        long[] fields = {1, 1, 1, 0, 0, 0, 0, 0, responseTtlvHandle()};
         byte[] identifier = "key-id".getBytes(StandardCharsets.UTF_8);
         Object[] nativeResult = {fields, identifier, null};
 
         ClientBatchItemResult.MacVerifyResponse response =
                 ClientBatchItemResult.parseMacVerifyResponse(nativeResult).orElseThrow();
-
-        assertTrue(response.validityIndicatorRaw().isEmpty());
+        try (TtlvStructure structure = response.responseTtlv()) {
+            assertTrue(response.validityIndicatorRaw().isEmpty());
+            structure.close();
+            structure.close();
+        }
     }
 
     @Test
     void parsesAbsentSignatureVerifyValidityIndicator() {
-        long[] fields = {1, 1, 1, 0, 0, 0, 0, 0, 0};
+        long[] fields = {1, 1, 1, 0, 0, 0, 0, 0, 0, responseTtlvHandle()};
         byte[] identifier = "key-id".getBytes(StandardCharsets.UTF_8);
         Object[] nativeResult = {fields, identifier, null, null};
 
         ClientBatchItemResult.SignatureVerifyResponse response =
                 ClientBatchItemResult.parseSignatureVerifyResponse(nativeResult).orElseThrow();
-
-        assertTrue(response.validityIndicatorRaw().isEmpty());
+        try (TtlvStructure structure = response.responseTtlv()) {
+            assertTrue(response.validityIndicatorRaw().isEmpty());
+        }
     }
 
     @Test
     void rejectsAbsentOptionalUnsignedValueWhenNativeValueIsNonzero() {
-        long[] fields = {1, 1, 1, 0, 0, 0, 7, 0};
+        long[] fields = {1, 1, 1, 0, 0, 0, 7, 0, responseTtlvHandle()};
         byte[] identifier = "key-id".getBytes(StandardCharsets.UTF_8);
         Object[] nativeResult = {fields, identifier, null};
 
         assertThrows(InvalidInputException.class,
                 () -> ClientBatchItemResult.parseMacVerifyResponse(nativeResult));
+    }
+
+    private static long responseTtlvHandle() {
+        try (TtlvStructure structure = TtlvStructure.create()) {
+            return structure.nativeHandleOwner().transfer();
+        }
     }
 }

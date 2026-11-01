@@ -13,7 +13,7 @@ from typing import Any
 
 import pytest
 
-from kmipkit import client, errors, extensions, ttlv
+from kmipkit import _handles, client, errors, extensions, ttlv
 from _test_support import no_response_extension_test_symbols
 
 
@@ -45,7 +45,21 @@ def test_crypto_response_parsers_accept_omitted_optional_outputs(
         outputs[0][0] = 1
         return 0
 
-    monkeypatch.setattr(client, "lib", SimpleNamespace(**{symbol: get_response}))
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            **{
+                symbol: get_response,
+                f"kmipkit_client_batch_item_response_{operation}_ttlv": lambda *_args: 0,
+            }
+        ),
+    )
+    monkeypatch.setattr(
+        client,
+        "_successful_response_ttlv",
+        lambda *_arguments: SimpleNamespace(close=lambda: None),
+    )
     response = parser(SimpleNamespace(_pointer=lambda: object()))
 
     assert response is not None
@@ -75,7 +89,7 @@ def test_crypto_response_parsers_accept_omitted_optional_outputs(
 def test_successful_crypto_response_owns_ordered_generic_ttlv_copy(
     monkeypatch: pytest.MonkeyPatch, operation: str
 ) -> None:
-    pointer = extensions.ffi.cast("kmipkit_ttlv_structure_t *", 24)
+    pointer = client.ffi.cast("kmipkit_ttlv_structure_t *", 24)
     response_ttlv = ttlv._wrap_owned_handle(ttlv.Structure, pointer)
     response_ttlv.test_items = (
         (0x42005C, ttlv.ItemType.Enumeration, 0x27),
@@ -109,7 +123,7 @@ def test_successful_crypto_response_owns_ordered_generic_ttlv_copy(
         ),
     )
     monkeypatch.setattr(
-        client.ttlv,
+        _handles,
         "lib",
         SimpleNamespace(kmipkit_ttlv_structure_release=lambda handle: released.append(handle)),
     )
@@ -131,8 +145,8 @@ def test_successful_crypto_response_owns_ordered_generic_ttlv_copy(
     assert response_ttlv.test_payload_items[-1][1] is ttlv.ItemType.Enumeration
     assert response_ttlv.test_payload_items[-1][2] == 0xFEDC_BA98
     assert "fedc" not in repr(response).lower()
-    response.close()
-    response.close()
+    response.response_ttlv.close()
+    response.response_ttlv.close()
     assert response_ttlv.closed
     assert released == [pointer]
 
@@ -604,13 +618,16 @@ def _operation_getter_symbols(
         _set_output_span(correlation_present, correlation_span, b"signature-verify-correlation", owners)
         return 0
 
-    return {
+    symbols = {
         "kmipkit_client_batch_item_response_hash": hash_response,
         "kmipkit_client_batch_item_response_mac": mac_response,
         "kmipkit_client_batch_item_response_mac_verify": mac_verify_response,
         "kmipkit_client_batch_item_response_sign": sign_response,
         "kmipkit_client_batch_item_response_signature_verify": signature_verify_response,
     }
+    for operation in _OPERATIONS:
+        symbols[f"kmipkit_client_batch_item_response_{operation}_ttlv"] = lambda *_args: 0
+    return symbols
 
 
 def test_python_facade_declares_all_typed_operation_response_slots() -> None:
@@ -1002,6 +1019,11 @@ def test_successful_batch_item_maps_only_its_typed_operation_response(
     )
     fake.update(_operation_getter_symbols(owners, getter_calls))
     monkeypatch.setattr(client, "lib", SimpleNamespace(**fake))
+    monkeypatch.setattr(
+        client,
+        "_successful_response_ttlv",
+        lambda *_arguments: SimpleNamespace(close=lambda: None),
+    )
 
     response = client._batch_result(response_pointer)
     item = response.items[0]
@@ -1093,6 +1115,11 @@ def test_successful_mac_batch_item_maps_an_absent_optional_identifier(
 
     fake["kmipkit_client_batch_item_response_mac"] = mac_response_without_identifier
     monkeypatch.setattr(client, "lib", SimpleNamespace(**fake))
+    monkeypatch.setattr(
+        client,
+        "_successful_response_ttlv",
+        lambda *_arguments: SimpleNamespace(close=lambda: None),
+    )
 
     response = client._batch_result(response_pointer)
     item = response.items[0]

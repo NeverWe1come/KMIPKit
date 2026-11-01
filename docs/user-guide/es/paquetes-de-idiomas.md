@@ -70,7 +70,7 @@ tabla.
 | `client_batch_model` | declared | El modelo de lotes tipados y ordenados está mapeado en cuatro lenguajes; aún no cubre todas las operaciones. |
 | `client_execution` | declared | Los mapeos de solicitud y respuesta de Discover Versions están presentes en Rust, C, Java y Python; falta completar la conformidad de operaciones 1.0. |
 | `client_asynchronous_operations` | declared | Cancel, Poll, Process y Query Asynchronous Requests usan llamadas explícitas de un intercambio en cuatro lenguajes; conservan los bytes exactos de correlación y la respuesta TTLV genérica de Query, sin sondeo automático. |
-| `crypto_response_ttlv` | declared | El acceso TTLV genérico se limita a errores aprobados de forma del identificador único en respuestas correctas de MAC, MAC Verify, Sign y Signature Verify. |
+| `crypto_response_ttlv` | declared | El acceso separado a TTLV de errores de FR-015 sigue limitado a sus cuatro accesores aprobados; el TTLV de respuestas correctas tipadas se registra en las cinco filas de operaciones. |
 | `production_transport` | declared | Rust y los tres adaptadores exponen la configuración aprobada de transporte cliente TLS 1.3; falta evidencia de interoperabilidad. |
 | `api_level_discovery` | declared | Rust, C, Java y Python exponen la taxonomía local de niveles de API sin acceso a la red. |
 | `opaque_register_context` | declared | El contexto explícito de Opaque Object y la validación de la forma de solicitud Register están mapeados en cuatro lenguajes; esta capacidad distinta sigue en estado `declared`. La fila de la operación Register está `verified`. |
@@ -197,6 +197,16 @@ completo y ordenado en los cuatro lenguajes. C devuelve una estructura TTLV
 propia; Java expone `ObtainLeaseResponse.responseTtlv()` y Python,
 `ObtainLeaseResponse.response_ttlv`; el llamador cierra el resultado cuando
 termina. KMIPKit no controla la expiración del lease ni inicia temporizadores.
+
+Las respuestas correctas de Hash, MAC, MAC Verify, Sign y Signature Verify
+también exponen su TTLV genérico completo y ordenado. Rust presta una
+`StructureView`; C devuelve un `kmipkit_ttlv_structure_t` propiedad del
+llamador que debe liberarse con `kmipkit_ttlv_structure_release`; Java
+`responseTtlv()` y Python `response_ttlv` devuelven la estructura propia
+`TtlvStructure` o `ttlv.Structure`, que el llamador cierra al terminar. Estas
+copias conservan los campos desconocidos y su orden. Un resultado no correcto
+u otra operación no ofrece un accessor de TTLV de respuesta correcta. Esto no
+amplía el acceso separado de errores de FR-015.
 
 Encrypt y Decrypt también están mapeados en los cuatro lenguajes. En Java se
 crean elementos con `ClientBatchItem.encrypt(...)` y

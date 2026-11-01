@@ -7028,6 +7028,201 @@ pub extern "C" fn kmipkit_client_batch_item_response_signature_verify(
     })
 }
 
+/// Copies the complete ordered TTLV batch item from a successful Hash response.
+///
+/// Failed, pending, and other-operation results leave both outputs empty.
+/// The caller owns the copied structure and must release it with
+/// `kmipkit_ttlv_structure_release`.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_hash_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_response_ttlv.is_null()
+            || ffi_output_ranges_overlap(out_present, out_response_ttlv)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present = scalar_out!(out_present);
+        let response_ttlv = out_slot!(out_response_ttlv);
+        *present = 0;
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
+        let outcome = item.outcome();
+        if outcome.result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(response) = outcome.hash_response() {
+            let structure = try_ffi!(response.with_ttlv(|view| super::clone_structure_view(&view)));
+            *response_ttlv = try_ffi!(try_make_handle(
+                Kind::Structure,
+                HandleValue::Structure(structure),
+            ));
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
+/// Copies the complete ordered TTLV batch item from a successful MAC response.
+///
+/// Failed, pending, and other-operation results leave both outputs empty.
+/// The caller owns the copied structure and must release it with
+/// `kmipkit_ttlv_structure_release`.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_mac_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_response_ttlv.is_null()
+            || ffi_output_ranges_overlap(out_present, out_response_ttlv)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present = scalar_out!(out_present);
+        let response_ttlv = out_slot!(out_response_ttlv);
+        *present = 0;
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
+        let outcome = item.outcome();
+        if outcome.result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(response) = outcome.mac_response() {
+            let structure = try_ffi!(response.with_ttlv(|view| super::clone_structure_view(&view)));
+            *response_ttlv = try_ffi!(try_make_handle(
+                Kind::Structure,
+                HandleValue::Structure(structure),
+            ));
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
+/// Copies the complete ordered TTLV batch item from a successful MAC Verify response.
+///
+/// Failed, pending, and other-operation results leave both outputs empty.
+/// The caller owns the copied structure and must release it with
+/// `kmipkit_ttlv_structure_release`.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_mac_verify_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_response_ttlv.is_null()
+            || ffi_output_ranges_overlap(out_present, out_response_ttlv)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present = scalar_out!(out_present);
+        let response_ttlv = out_slot!(out_response_ttlv);
+        *present = 0;
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
+        let outcome = item.outcome();
+        if outcome.result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(response) = outcome.mac_verify_response() {
+            let structure = try_ffi!(response.with_ttlv(|view| super::clone_structure_view(&view)));
+            *response_ttlv = try_ffi!(try_make_handle(
+                Kind::Structure,
+                HandleValue::Structure(structure),
+            ));
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
+/// Copies the complete ordered TTLV batch item from a successful Sign response.
+///
+/// Failed, pending, and other-operation results leave both outputs empty.
+/// The caller owns the copied structure and must release it with
+/// `kmipkit_ttlv_structure_release`.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_sign_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_response_ttlv.is_null()
+            || ffi_output_ranges_overlap(out_present, out_response_ttlv)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present = scalar_out!(out_present);
+        let response_ttlv = out_slot!(out_response_ttlv);
+        *present = 0;
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
+        let outcome = item.outcome();
+        if outcome.result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(response) = outcome.sign_response() {
+            let structure = try_ffi!(response.with_ttlv(|view| super::clone_structure_view(&view)));
+            *response_ttlv = try_ffi!(try_make_handle(
+                Kind::Structure,
+                HandleValue::Structure(structure),
+            ));
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
+/// Copies the complete ordered TTLV batch item from a successful Signature Verify response.
+///
+/// Failed, pending, and other-operation results leave both outputs empty.
+/// The caller owns the copied structure and must release it with
+/// `kmipkit_ttlv_structure_release`.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_signature_verify_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_response_ttlv.is_null()
+            || ffi_output_ranges_overlap(out_present, out_response_ttlv)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present = scalar_out!(out_present);
+        let response_ttlv = out_slot!(out_response_ttlv);
+        *present = 0;
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
+        let outcome = item.outcome();
+        if outcome.result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(response) = outcome.signature_verify_response() {
+            let structure = try_ffi!(response.with_ttlv(|view| super::clone_structure_view(&view)));
+            *response_ttlv = try_ffi!(try_make_handle(
+                Kind::Structure,
+                HandleValue::Structure(structure),
+            ));
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
 /// Copies the typed supported-version list from a successful Discover Versions result.
 ///
 /// Call with `out_versions == NULL` and `capacity == 0` to query presence and

@@ -752,6 +752,26 @@ ffi.cdef(
         kmipkit_byte_span_v1_t *out_recovered_data,
         uint8_t *out_correlation_present,
         kmipkit_byte_span_v1_t *out_correlation_value);
+    int32_t kmipkit_client_batch_item_response_hash_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_response_ttlv);
+    int32_t kmipkit_client_batch_item_response_mac_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_response_ttlv);
+    int32_t kmipkit_client_batch_item_response_mac_verify_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_response_ttlv);
+    int32_t kmipkit_client_batch_item_response_sign_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_response_ttlv);
+    int32_t kmipkit_client_batch_item_response_signature_verify_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_response_ttlv);
     int32_t kmipkit_client_batch_item_create(
         uint32_t object_type,
         kmipkit_ttlv_structure_t *attributes,
