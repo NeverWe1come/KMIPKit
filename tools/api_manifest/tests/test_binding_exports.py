@@ -373,6 +373,27 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertNotIn("org.kmipkit.extensions.AttributeRequest", names)
         self.assertNotIn("org.kmipkit.extensions.AttributeRequest.uniqueIdentifier", names)
 
+    def test_javap_inventory_keeps_public_base_members_at_the_declaring_type(self):
+        outputs = {
+            "org/kmipkit/ClientOperationException.class": """
+                public class org.kmipkit.ClientOperationException extends java.lang.RuntimeException {
+                  public int statusCode();
+                }
+            """,
+            "org/kmipkit/ProtocolException.class": """
+                public final class org.kmipkit.ProtocolException extends org.kmipkit.ClientOperationException {
+                  public org.kmipkit.ProtocolException();
+                }
+            """,
+        }
+
+        result = AUDIT.inventory_javap_outputs(outputs)
+        names = {row["exportName"] for row in result["declarations"]}
+
+        self.assertTrue(result["complete"])
+        self.assertIn("org.kmipkit.ClientOperationException.statusCode", names)
+        self.assertNotIn("org.kmipkit.ProtocolException.statusCode", names)
+
     def test_python_inventory_resolves_explicit_all_and_class_fields(self):
         sources = {
             "kmipkit/__init__.py": "from .core import Client\n__all__ = ['Client']\n",
@@ -870,6 +891,15 @@ class BindingExportAuditTests(unittest.TestCase):
             "usernameAndPasswordCredentialIntoTtlv",
             "usernameAndPasswordCredentialTtlvView",
             "withCancelRequestCorrelationValue", "withPollRequestCorrelationValue",
+            "ADD_ATTRIBUTE_REQUEST", "ADJUST_ATTRIBUTE_REQUEST",
+            "ATTRIBUTE_FIELD_CURRENT", "ATTRIBUTE_FIELD_NEW",
+            "ATTRIBUTE_OPERATION_ADD", "ATTRIBUTE_OPERATION_ADJUST",
+            "ATTRIBUTE_OPERATION_DELETE", "ATTRIBUTE_OPERATION_MODIFY",
+            "ATTRIBUTE_OPERATION_SET", "DELETE_ATTRIBUTE_REQUEST",
+            "MODIFY_ATTRIBUTE_REQUEST", "SET_ATTRIBUTE_REQUEST",
+            "attributeRequestCreate", "attributeRequestToTtlvPayload",
+            "attributeRequestTtlvItem", "attributeRequestTtlvValue",
+            "clientBatchItemFromAttributeRequest",
         }
         expected_native = {
             ("java-kmipkit", f"org.kmipkit.NativeExtensionRegistry.{member}")
