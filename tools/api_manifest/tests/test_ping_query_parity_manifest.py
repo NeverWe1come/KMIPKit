@@ -117,8 +117,11 @@ class PingQueryParityManifestTests(unittest.TestCase):
                     self.assertEqual(expected[endpoint], actual_mappings)
                     for language in LANGUAGES:
                         declaration_ids = operation["declarations"][language]
-                        self.assertEqual(2, len(declaration_ids), language)
-                        declaration = self.declarations[declaration_ids[0 if endpoint == "request" else 1]]
+                        declaration_id = (
+                            f"T041:{expected['name'].lower()}:{endpoint}:{language}"
+                        )
+                        self.assertIn(declaration_id, declaration_ids, language)
+                        declaration = self.declarations[declaration_id]
                         self.assertEqual(operation_id, declaration["capabilityId"])
                         self.assertEqual("verified", declaration["declarationState"])
                         self.assertEqual("four-language", declaration["parityScope"])

@@ -188,7 +188,7 @@ class T100QueryPingDeclarationMappingTests(unittest.TestCase):
             if row.get("approvalSource", {}).get("path") == OWNER_SPEC
             and "T100" in row.get("evidence", "")
         }
-        self.assertTrue(expected <= excluded.keys())
+        self.assertTrue(expected.keys() <= excluded.keys())
         for identity, direct_method in expected.items():
             row = excluded[identity]
             self.assertIn(direct_method, row["reason"])
