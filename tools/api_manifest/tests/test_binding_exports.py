@@ -12,6 +12,10 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from tools.api_manifest.tests.test_t102_java_ttlv_bridge_exclusions import (
+    EXPECTED_VENDOR_EXTENSION_BRIDGE_MEMBERS,
+)
+
 
 MODULE_PATH = Path(__file__).resolve().parents[1] / "audit_binding_exports.py"
 SPEC = importlib.util.spec_from_file_location("audit_binding_exports", MODULE_PATH)
@@ -960,6 +964,7 @@ class BindingExportAuditTests(unittest.TestCase):
                 "ttlvPathWithChildTag",
             }
         )
+        native_members.update(EXPECTED_VENDOR_EXTENSION_BRIDGE_MEMBERS)
         expected_native = {
             ("java-kmipkit", f"org.kmipkit.NativeExtensionRegistry.{member}")
             for member in native_members

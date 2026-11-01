@@ -66030,220 +66030,10 @@
       "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
     },
     {
-      "declarationId": "java-observed-32b9363ba7f2b6e0017a",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.CHILD_RULE",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-6869f1b0fdf3d44d9ced",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.COMPATIBILITY",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-dc7475f69132b77ad317",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.CONFIGURATION",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-81ee8344986ab812e565",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.DEFINITION",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-8cad153e4dc1de1e8380",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.DISCRIMINATOR",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-e95bd3b4131764f31b5b",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.IDENTITY",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-b215700ce9cab371bf54",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.INFORMATION",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-4031bdcfc2ea960d84f1",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ORDER_CONSTRAINT",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
       "declarationId": "java-observed-9db2a5cad3ed3ad9272c",
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.NativeExtensionRegistry.PATH",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-be757267752109565fdc",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.RECOGNITION",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-6222c839e458d9d89e02",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.REGISTERED_VALUE",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-7034a203a5896c4842bf",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.REGISTRY",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-ea23f74f33899f4d033f",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.REQUEST_EXTENSION",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-d1883e06bb47058702a9",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.SCHEMA",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-8e7eb779b907b2c2acb1",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_PATH",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-34db0c0cd18a326f7e03",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.VALIDATED_VALUE",
       "capabilityId": "public_binding_surface",
       "requirementIds": [
         "KMIPKIT-0043-FR-021"
@@ -66282,108 +66072,10 @@
       "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
     },
     {
-      "declarationId": "java-observed-cb89aa22689cd2b616c6",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemExtensionCriticalityIndicatorAt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-9db80e8b938bb007791c",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemExtensionIdentityAt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-c3c24b6771ffafd69fdf",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemWithExtension",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-5a677322865b599c1772",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.clientConfigurationCreate",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-2bab29c8778abc1fad55",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.clientConfigurationExtensionRegistry",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-fc4411f7b9c07b0e6590",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExtensionRegistryCreate",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
       "declarationId": "java-observed-81ad752e651e2711b46b",
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientExtensionRegistryDefinitionAt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-84a0b914cd02e099bb39",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExtensionRegistryDefinitionCount",
       "capabilityId": "public_binding_surface",
       "requirementIds": [
         "KMIPKIT-0043-FR-021"
@@ -66408,80 +66100,10 @@
       "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
     },
     {
-      "declarationId": "java-observed-48d921b60a2a64dbe80a",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExtensionRegistryInspect",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-3b256665ce9aa45238b9",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExtensionRegistryValidate",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-e4445b62d252990ca17d",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.clientRequestMessageExtensionCreate",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
       "declarationId": "java-observed-4d58f00c1a6cdd98efb7",
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.NativeExtensionRegistry.codecLimitsCreate",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-e52b16728da6cfce9b7d",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.compatibilityCreate",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-d9764da036d2f6eb2da0",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.discriminatorCreate",
       "capabilityId": "public_binding_surface",
       "requirementIds": [
         "KMIPKIT-0043-FR-021"
@@ -66506,290 +66128,10 @@
       "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
     },
     {
-      "declarationId": "java-observed-be25de3b143aab458efe",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionChildRuleOptional",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-51f96ed987c7f5152307",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionChildRuleRepeated",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-7ce4b239ac13c14826bb",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionChildRuleRequired",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-67af2431a561834a09e0",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionDefinitionCreate",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
       "declarationId": "java-observed-85f17c4b764175829029",
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.NativeExtensionRegistry.extensionDefinitionInformation",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-2ae65376331e0a805b51",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionDefinitionValidate",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-ec19731fdcd4cf8d6cf5",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionDefinitionWithInformation",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-014fc53592ae7212cda6",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionIdentityCreate",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-cd9882ee809eb2ba0ac5",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionIdentityName",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-828f71c9e3da07f645d1",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionIdentityVendorIdentifier",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-3e70be875733cf8d80dc",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionIdentityVersion",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-5e51078caf9d8ae2fe09",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionInformationCreate",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-d21c5129ae759f34a47e",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionInformationToTtlv",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-41494b6e5efee011ad83",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionInformationWithAttribute",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-f3e1dafc1e500e9e9cdd",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionInformationWithDescription",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-3701e485108eb7d6c6eb",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionInformationWithEnumeration",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-b6a0fd828c991255ffc5",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionInformationWithParentStructureTag",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-15210b921ee8c0b43c87",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionInformationWithTag",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-d1d6dcf01ab20445853a",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionInformationWithType",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-eed635d2ede729d9fe72",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionOrderConstraintCreate",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-3f1c2216830a3970ec75",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionRecognitionGenericValue",
       "capabilityId": "public_binding_surface",
       "requirementIds": [
         "KMIPKIT-0043-FR-021"
@@ -66814,192 +66156,10 @@
       "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
     },
     {
-      "declarationId": "java-observed-b0f858a9dde3aab18e49",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionRecognitionValidatedValue",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-5ea3aff143259a825b25",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaAllowedBitMask",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-36f858b55080298362cd",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaAllowedEnumeration",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-37f3eee2244c69d047fc",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaMaximumLength",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-d7637c8de2e261bf2cc6",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaMinimumLength",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-35db5fc26b2a9b0f8279",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaRequiredBitMask",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-c28d1d42f4476a5882a7",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaScalar",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-2ec8406b7efd84826382",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaSignedRange",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-f9c8a27bdc14b4dda063",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaStructure",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-e7cdd1e8a7835edb0ff4",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaUnsignedRange",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
       "declarationId": "java-observed-790a062cacace07ad05d",
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.NativeExtensionRegistry.release",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-620167d859ceabd2d407",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.validatedExtensionValueGenericValue",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-76885f1935cc9f203050",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.validatedExtensionValueIdentity",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-d50fbe1dec7a85680dd3",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.validatedExtensionValueValueAt",
       "capabilityId": "public_binding_surface",
       "requirementIds": [
         "KMIPKIT-0043-FR-021"
@@ -449176,6 +448336,726 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed against KMIPKIT-0012-FR-002/006/010/012, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The mapped TtlvPath facade invokes this exact internal NativeExtensionRegistry bridge; Rust, C, Java, and Python expose the equivalent typed path capability. docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.CHILD_RULE",
+      "reason": "This public static handle-kind constant is internal vendor-extension JNI plumbing used by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.COMPATIBILITY",
+      "reason": "This public static handle-kind constant is internal vendor-extension JNI plumbing used by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.CONFIGURATION",
+      "reason": "This public static handle-kind constant is internal vendor-extension JNI plumbing used by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.DEFINITION",
+      "reason": "This public static handle-kind constant is internal vendor-extension JNI plumbing used by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.DISCRIMINATOR",
+      "reason": "This public static handle-kind constant is internal vendor-extension JNI plumbing used by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.IDENTITY",
+      "reason": "This public static handle-kind constant is internal vendor-extension JNI plumbing used by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.INFORMATION",
+      "reason": "This public static handle-kind constant is internal vendor-extension JNI plumbing used by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ORDER_CONSTRAINT",
+      "reason": "This public static handle-kind constant is internal vendor-extension JNI plumbing used by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.RECOGNITION",
+      "reason": "This public static handle-kind constant is internal vendor-extension JNI plumbing used by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.REGISTERED_VALUE",
+      "reason": "This public static handle-kind constant is internal vendor-extension JNI plumbing used by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.REGISTRY",
+      "reason": "This public static handle-kind constant is internal vendor-extension JNI plumbing used by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.REQUEST_EXTENSION",
+      "reason": "This public static handle-kind constant is internal vendor-extension JNI plumbing used by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.SCHEMA",
+      "reason": "This public static handle-kind constant is internal vendor-extension JNI plumbing used by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_PATH",
+      "reason": "This public static handle-kind constant is internal vendor-extension JNI plumbing used by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.VALIDATED_VALUE",
+      "reason": "This public static handle-kind constant is internal vendor-extension JNI plumbing used by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemExtensionCriticalityIndicatorAt",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemExtensionIdentityAt",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemWithExtension",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientConfigurationCreate",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientConfigurationExtensionRegistry",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExtensionRegistryCreate",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExtensionRegistryDefinitionCount",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExtensionRegistryInspect",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExtensionRegistryValidate",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientRequestMessageExtensionCreate",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.compatibilityCreate",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.discriminatorCreate",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionChildRuleOptional",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionChildRuleRepeated",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionChildRuleRequired",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionDefinitionCreate",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionDefinitionValidate",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionDefinitionWithInformation",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionIdentityCreate",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionIdentityName",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionIdentityVendorIdentifier",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionIdentityVersion",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionInformationCreate",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionInformationToTtlv",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionInformationWithAttribute",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionInformationWithDescription",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionInformationWithEnumeration",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionInformationWithParentStructureTag",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionInformationWithTag",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionInformationWithType",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionOrderConstraintCreate",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionRecognitionGenericValue",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionRecognitionValidatedValue",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaAllowedBitMask",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaAllowedEnumeration",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaMaximumLength",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaMinimumLength",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaRequiredBitMask",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaScalar",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaSignedRange",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaStructure",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaUnsignedRange",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.validatedExtensionValueGenericValue",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.validatedExtensionValueIdentity",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.validatedExtensionValueValueAt",
+      "reason": "This public static method is internal vendor-extension JNI plumbing invoked by the mapped typed facade; it has no independent product capability. Java applications use the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
     }
   ],
   "apiLevels": [
