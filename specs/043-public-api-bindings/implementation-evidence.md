@@ -8139,3 +8139,23 @@ Focused verification:
 - Shared Rust inventory `--check` passed against the refreshed Rust audit report: 10,463 observed, 859 shared mapped declarations, and 3,612 approved exclusions. Its totals reconcile 8,420 direct plus 2,043 conditional observations and the current manifest classification.
 - Binding export audit completed with no missing, unobserved, or kind-mismatched exports: C 791 observed/747 matched, Java 1,520/1,114, Python 1,906/1,127. The aggregate binding declaration and exclusion identities are unchanged.
 - `git diff --check` passed (Git emitted only its existing CRLF-to-LF notice for the modified Python parity test).
+
+The full `tools/api_manifest/tests` discovery run was interrupted after about three minutes. Captured stale aggregate assertions included `test_manifest_v2.py::test_checked_in_manifest_inventories_all_rust_public_access_paths`, `test_manifest_v2.py::test_checked_in_manifest_inventories_all_java_public_access_paths`, `test_shared_rust_inventory.py::test_inventory_accounts_for_exact_approved_rust_exclusions_separately`, `test_shared_rust_inventory.py::test_current_inventory_links_every_mapped_rust_declaration_to_approved_owner_requirements`, and `test_c_api_docs.py::test_checked_in_binding_export_report_reconciles_every_package`. QA compared the Java and C/docs count failures with the exact pre-T100 PR head `345381c1e` and classified them as pre-existing; those aggregate expectations were left unchanged. The Rust and shared inventory expectations were updated to their current T100 report values.
+
+### T100 follow-up — exact owner requirement applicability (2026-11-01)
+
+Final review found overbroad owner requirement citations in the 12 mapped declarations and exclusion families. The corrected contract requires exact owner FR sets, rather than subset membership, for every mapped declaration and all 250 exclusions. Ping mappings cite FR-001/002/008/009; Query mappings cite FR-001/003/004/005/006/007/008/009/012. Exclusion citations now follow each operation or underlying model: Ping batch outcomes and PingResponse use FR-002/008/012; Query batch outcomes use FR-006/007/008/011/012; QueryResponseField and its variants, fields, and `tag` use FR-006/011, while `with_ttlv` also cites FR-012. Trait artifacts use the FR set of their underlying Ping or Query type. The contract checks exact owner citations in both reason and evidence for every exclusion identity.
+
+| Phase | Commit | Evidence | Result |
+|---|---|---|---|
+| Red — require exact mapped owner requirement sets | `203cf3372` | T100 mapping contract | The focused test failed for all 12 mappings: each Ping row had eight extra owner FRs and each Query row had three extra owner FRs. |
+| Red — require exact owner requirement sets for every exclusion and current Rust inventory counts | `84952ee9a` | T100 exclusion applicability contract; Rust/shared inventory assertions | The new exclusion contract failed for 177 rows against the prior broad citations. The CI Python-contract block now invokes the focused T100 and T041 parity suites after `test_t076_client_mapping`. |
+| Green — narrow all mapped and excluded owner citations | `0bc076c9b` | Manifest and generated parity inventories | The 12 mappings carry only their operation-specific owner FRs, and all 250 exclusions carry exact owner FR sets in both reason and evidence. Generated outputs were refreshed. |
+| Refactor/evidence — record the applicability matrix and focused CI evidence | this commit | Exact T100/T041 contracts, Rust count contracts, generator check | Current Rust and shared inventory assertions match the regenerated report; Java/C/docs aggregate expectations remain unchanged as pre-existing baseline drift. |
+
+Verification for this follow-up:
+
+- `python -B -m unittest tools.api_manifest.tests.test_t100_query_ping_declaration_mapping tools.api_manifest.tests.test_ping_query_parity_manifest -v` — 10 passed; the same focused invocation is now in CI.
+- Focused T100/T041 tests plus the Rust manifest count and two shared Rust inventory count tests — 13 passed.
+- `py -B tools/api_manifest/generate.py --write` regenerated 12 outputs; `py -B tools/api_manifest/generate.py --check` verified all 12.
+- Rust inventory assertions now pin 10,463 observed, 6,851 matched, and 3,612 excluded declarations.
