@@ -54,6 +54,15 @@ LIMIT_IDS = (
 LOGIN_TTLV_AGGREGATE_JNI_SYMBOL = (
     "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseLogin"
 )
+CRYPTO_RESPONSE_TTLV_AGGREGATE_FUNCTIONS = frozenset(
+    {
+        "client_batch_item_response_hash_ttlv",
+        "client_batch_item_response_mac_ttlv",
+        "client_batch_item_response_mac_verify_ttlv",
+        "client_batch_item_response_sign_ttlv",
+        "client_batch_item_response_signature_verify_ttlv",
+    }
+)
 REQUIREMENT_IDS = tuple(f"KMIPKIT-0012-FR-{number:03}" for number in range(1, 15))
 SHARED_PARITY_FIXTURE = ROOT / "tests" / "fixtures" / "api" / "shared-capability-parity.json"
 SHARED_PARITY_CASES = {
@@ -808,13 +817,6 @@ class PublicApiParityTests(unittest.TestCase):
                     # This Java accessor reads the batch's locally maintained
                     # count; it intentionally has no JNI bridge symbol.
                     "client_batch_item_count",
-                    # Each crypto response JNI aggregate returns its typed
-                    # fields and the complete successful response TTLV.
-                    "client_batch_item_response_hash_ttlv",
-                    "client_batch_item_response_mac_ttlv",
-                    "client_batch_item_response_mac_verify_ttlv",
-                    "client_batch_item_response_sign_ttlv",
-                    "client_batch_item_response_signature_verify_ttlv",
                     "client_batch_item_response_delegated_login_ttlv",
                     "client_batch_item_response_login_ttlv",
                     "client_batch_item_response_locate_unique_identifier_at",
@@ -845,7 +847,7 @@ class PublicApiParityTests(unittest.TestCase):
                     "attribute_request_get_attributes_attribute_reference_count",
                     "attribute_request_get_attributes_attribute_reference_at",
                     "attribute_request_get_attribute_list_unique_identifier",
-                }:
+                } | CRYPTO_RESPONSE_TTLV_AGGREGATE_FUNCTIONS:
                     self.assertNotIn("jniSymbol", java)
                     if function["id"] == "client_batch_item_count":
                         self.assertNotIn("jniAggregateSymbol", java)
@@ -853,12 +855,7 @@ class PublicApiParityTests(unittest.TestCase):
                         self.assertTrue(
                             java["jniAggregateSymbol"].startswith("Java_org_kmipkit_")
                         )
-                    if function["id"] in {
-                        "client_batch_item_response_hash_ttlv",
-                        "client_batch_item_response_mac_ttlv",
-                        "client_batch_item_response_mac_verify_ttlv",
-                        "client_batch_item_response_sign_ttlv",
-                        "client_batch_item_response_signature_verify_ttlv",
+                    if function["id"] in CRYPTO_RESPONSE_TTLV_AGGREGATE_FUNCTIONS | {
                         "client_batch_item_response_recertify_ttlv",
                         "client_batch_item_response_rekey_ttlv",
                         "client_batch_item_response_rekey_key_pair_ttlv",
