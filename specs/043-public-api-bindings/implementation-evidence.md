@@ -8255,3 +8255,22 @@ Verification:
 - `git diff --check` — passed.
 
 The manifest now has zero KMIPKIT-0043 candidates for these five declarations. T102 remains unchecked; the rest of its blocked declaration inventory is recorded in the task checkpoint. This slice does not claim the PR, branch, coverage thresholds, OASIS conformance, or interoperability complete.
+
+### T102 Rust runtime capability query correction (2026-11-01)
+
+The exact-head CI run `41352370261` exposed that the generated C capability list advertised `hashed_password_timestamp_sequence` while the Rust `capability_is_available` facade returned `false`. This was a real API parity defect, separate from CI's secondary diagnostic-renderer failures. The same CI run found a stale KMIPKIT-0008-FR-007 test reference; the corrected requirement row now points to the exact discoverable Rust and Python tests. The traceability checker accepts executable Rust/Python source references; compiled C and Java consumer evidence remains recorded in the T092 and shared-parity evidence.
+
+| Phase | Commit | Evidence |
+|---|---|---|
+| Red — require the ready timestamp-sequence capability from Rust and the C capability registry | `068c57de8` | The Rust metadata test failed with `Ok(false)` instead of `Ok(true)`; the FFI metadata test independently failed because the Rust facade omitted the ready C-mapped capability. |
+| Green — advertise the mapped capability consistently from Rust | `4ecbdf1d3` | Added the capability ID to `capability_is_available`; focused Rust and FFI tests pass. |
+| Refactor/evidence — repair executable requirement traceability and record CI diagnosis | This commit | The KMIPKIT-0008-FR-007 row now names actual discoverable tests; the focused feature-traceability check passes. |
+
+Verification:
+
+- `cargo test -p kmipkit --test runtime_metadata capability_query_matches_manifest_ready_capabilities` — passed.
+- `cargo test -p kmipkit-ffi --lib --features coverage-c-consumer capability_query_only_reports_c_mapped_nonblocked_capabilities` — passed.
+- `py -B -m unittest tools.normative_catalog.tests.test_feature_traceability.FeatureTraceabilityTests.test_credentials_and_attestation_traceability_rows_are_complete -v` — passed.
+- `cargo fmt --all --check` and `git diff --check` — passed.
+
+The correction changes capability discovery only; it does not add timestamp sequencing behavior or claim KMIP conformance.

@@ -229,6 +229,8 @@ T102 Hashed Password timestamp sequence checkpoint (2026-11-01): the five functi
 
 T102 Validate request-model helper parity checkpoint (2026-11-01): the four `ValidateRequest` helpers and `ValidateResponse::result` now map at the supported-capability level to the existing C, Java, and Python Validate constructors/common metadata under approved KMIPKIT-0042 and OASIS KMIP v2.1 §6.1.57 Tables 340–342. Red `c2a33d5ed`; Green `441783037`; focused mapping/parity tests pass 3/3 and all 12 generated outputs verify. This is an API inventory reconciliation with no runtime change or conformance claim. T102 remains open with 4,355 other blocked KMIPKIT-0043 candidate declarations; see `implementation-evidence.md`.
 
+T102 runtime-capability parity correction (2026-11-01): exact-head CI run `41352370261` exposed that the C manifest advertised `hashed_password_timestamp_sequence` while the Rust runtime metadata query returned false. Red `068c57de8` added the cross-surface expectations and failed with `Ok(false)`; Green `4ecbdf1d3` registers the capability in the Rust facade. Rust and FFI metadata tests now pass; the KMIPKIT-0008-FR-007 row also uses discoverable Rust/Python test references. This changes discovery only, not sequence behavior. T102 remains open with 4,355 other blocked candidate declarations; see `implementation-evidence.md`.
+
 ## Phase 13: Convergence
 
 - [x] T103 [US2] Enforce the signed 32-bit `ProtocolVersion` constructor contract in Python so its accepted major/minor values match Rust `i32`, C `int32_t`, and Java `int`; reject non-integers (including booleans) and out-of-range values with documented, safe errors. Add boundary and negative tests using Red, Green, Refactor commits. Cite KMIPKIT-0006-FR-012 and KMIPKIT-0043-FR-010/022.
