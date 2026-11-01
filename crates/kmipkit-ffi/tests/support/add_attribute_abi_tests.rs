@@ -106,6 +106,43 @@ fn standalone_add_attribute_request_serializes_and_builds_a_batch_item() {
     );
     assert!(!request.is_null());
 
+    let mut copied_identifier = empty_identifier_record();
+    assert_eq!(
+        client_abi::kmipkit_add_attribute_request_unique_identifier(
+            request,
+            &raw mut copied_identifier,
+        ),
+        SUCCESS
+    );
+    assert_eq!(copied_identifier.kind, crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING);
+    assert_eq!(copied_identifier.text_length, 8);
+    // SAFETY: the returned identifier bytes are borrowed from the live request handle.
+    assert_eq!(
+        unsafe {
+            std::slice::from_raw_parts(
+                copied_identifier.text_data,
+                usize::try_from(copied_identifier.text_length)
+                    .expect("fixture identifier length fits usize"),
+            )
+        },
+        identifier
+    );
+
+    let mut copied_attribute_handle = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_add_attribute_request_new_attribute(
+            request,
+            &raw mut copied_attribute_handle,
+        ),
+        SUCCESS
+    );
+    let copied_attribute = reference_handle(copied_attribute_handle, Kind::Item)
+        .expect("New Attribute is returned as an owned generic TTLV Item");
+    let HandleValue::Item(copied_attribute) = &copied_attribute.value else {
+        panic!("the New Attribute getter returns an Item handle");
+    };
+    assert_eq!(copied_attribute.tag().raw(), 0x0042_000a);
+
     let mut payload_handle = ptr::null_mut();
     assert_eq!(
         client_abi::kmipkit_add_attribute_request_to_ttlv_payload(
@@ -149,6 +186,7 @@ fn standalone_add_attribute_request_serializes_and_builds_a_batch_item() {
 
     kmipkit_client_batch_item_release(batch_item_handle);
     kmipkit_ttlv_structure_release(payload_handle);
+    kmipkit_ttlv_item_release(copied_attribute_handle);
     kmipkit_add_attribute_request_release(request);
     kmipkit_ttlv_item_release(input_item);
 }
