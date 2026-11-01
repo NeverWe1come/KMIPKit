@@ -991,8 +991,9 @@ def resolve_java_compile_classpath(root: Path) -> str:
     wrapper = java_root / wrapper_name
     if not wrapper.is_file():
         raise ValueError(f"Gradle wrapper is missing: {wrapper}")
-    command = [str(wrapper), "--offline", "--console=plain", "--quiet", "apiAuditClasspath"]
+    command = ["bash", str(wrapper), "--offline", "--console=plain", "--quiet", "apiAuditClasspath"]
     if os.name == "nt":
+        command = [str(wrapper), "--offline", "--console=plain", "--quiet", "apiAuditClasspath"]
         command = [os.environ.get("COMSPEC", "cmd.exe"), "/d", "/s", "/c",
                    subprocess.list2cmdline(command)]
     result = subprocess.run(command, cwd=java_root, check=False, capture_output=True, text=True,

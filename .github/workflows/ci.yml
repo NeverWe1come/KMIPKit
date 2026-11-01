@@ -292,6 +292,10 @@ jobs:
         id: install-pinned-python-contract-dependencies
         run: uv pip install --requirement tools/api_manifest/requirements-test.txt
 
+      - name: Fetch locked Cargo dependencies for offline ABI audit
+        id: fetch-locked-cargo-dependencies-for-offline-abi-audit
+        run: cargo fetch --locked
+
       - name: Run Python contracts
         id: run-python-contracts
         shell: pwsh
