@@ -72,6 +72,17 @@ class T097AttributeParityManifestTests(unittest.TestCase):
                 self.assertIn("KMIPKIT-0016-FR-006", requirement_ids)
                 self.assertNotIn("KMIPKIT-0016-FR-007", requirement_ids)
 
+        operation_rows = [
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("capabilityId") == "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES"
+        ]
+        self.assertTrue(operation_rows)
+        for row in operation_rows:
+            with self.subTest(declaration=row["exportName"]):
+                self.assertIn("KMIPKIT-0016-FR-006", row["requirementIds"])
+                self.assertNotIn("KMIPKIT-0016-FR-007", row["requirementIds"])
+
 
 if __name__ == "__main__":
     unittest.main()
