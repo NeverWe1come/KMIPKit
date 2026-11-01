@@ -720,6 +720,63 @@
             "name",
             "kind",
             "type",
+            "ownership",
+            "lifetime"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "callback"
+            },
+            "type": {
+              "const": "void (*)(const uint8_t *, uint64_t, void *)",
+              "description": "Synchronous borrowed byte-span callback with opaque caller context."
+            },
+            "ownership": {
+              "const": "borrowed"
+            },
+            "lifetime": {
+              "const": "synchronous-call"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "ownership",
+            "lifetime"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "callback-context"
+            },
+            "type": {
+              "const": "void *"
+            },
+            "ownership": {
+              "const": "borrowed"
+            },
+            "lifetime": {
+              "const": "synchronous-call"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
             "valueType",
             "ownership"
           ],

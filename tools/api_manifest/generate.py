@@ -1983,6 +1983,19 @@ def _validate_references(manifest: dict[str, Any]) -> None:
                 handle_name = param["type"].split()[0].strip()
                 if handle_name not in c_handle_names:
                     raise ManifestError("function output references an unknown opaque type")
+        callback_parameters = [
+            parameter for parameter in params if parameter["kind"] == "callback"
+        ]
+        callback_contexts = [
+            parameter for parameter in params if parameter["kind"] == "callback-context"
+        ]
+        if len(callback_parameters) > 1 or len(callback_parameters) != len(callback_contexts):
+            raise ManifestError("each C callback must have exactly one borrowed context parameter")
+        if callback_parameters:
+            callback_index = params.index(callback_parameters[0])
+            context_index = params.index(callback_contexts[0])
+            if context_index != callback_index + 1:
+                raise ManifestError("C callback context must immediately follow its callback")
         if any(
             parameter["kind"] in {"handle", "handle-array", "input-array", "consumed-handle-slot"}
             for parameter in params
@@ -2070,8 +2083,14 @@ def _c_parameter_type(parameter: dict[str, Any]) -> str:
 
 def _c_declaration(function: dict[str, Any]) -> str:
     parameters = function["c"]["parameters"]
-    arguments = ", ".join(f"{_c_parameter_type(item)} {item['name']}" for item in parameters) or "void"
+    arguments = ", ".join(_c_parameter_declaration(item) for item in parameters) or "void"
     return f"{function['c']['returnType']} {function['c']['symbol']}({arguments});"
+
+
+def _c_parameter_declaration(parameter: dict[str, Any]) -> str:
+    if parameter["kind"] == "callback":
+        return parameter["type"].replace("(*)", f"(*{parameter['name']})", 1)
+    return f"{_c_parameter_type(parameter)} {parameter['name']}"
 
 
 def _c_value_layout_is_complete(
