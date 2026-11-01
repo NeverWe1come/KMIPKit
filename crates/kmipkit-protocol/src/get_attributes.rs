@@ -58,6 +58,12 @@ impl GetAttributesRequest {
         self.unique_identifier.as_deref()
     }
 
+    /// Returns the ordered, unique Attribute References selected by this request.
+    #[must_use]
+    pub fn attribute_references(&self) -> &[AttributeReference] {
+        &self.attribute_references
+    }
+
     /// Builds the ordered Request Payload Structure defined in Table 223.
     ///
     /// # Errors
