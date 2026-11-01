@@ -64,6 +64,12 @@ DEVICE_CREDENTIAL_EXPORTS = {
     "kmipkit_protocol::DeviceCredential::with_ttlv",
     "kmipkit_protocol::DeviceCredential::into_ttlv",
 }
+USERNAME_PASSWORD_CREDENTIAL_EXPORTS = {
+    "kmipkit_protocol::UsernameAndPasswordCredential",
+    "kmipkit_protocol::UsernameAndPasswordCredential::try_from_ttlv",
+    "kmipkit_protocol::UsernameAndPasswordCredential::with_ttlv",
+    "kmipkit_protocol::UsernameAndPasswordCredential::into_ttlv",
+}
 VALIDATION_ERROR_EXPORTS = {
     "kmipkit_protocol::CredentialValidationError",
     "kmipkit_protocol::CredentialValidationError::kind",
@@ -118,6 +124,41 @@ def _has_approved_source(record: dict[str, object]) -> bool:
 
 
 class T092CredentialsParityManifestTests(unittest.TestCase):
+    def test_username_password_wrapper_has_exact_four_language_owner_mapping(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        rows = [
+            row
+            for row in manifest["publicDeclarations"]
+            if row.get("exportName") in USERNAME_PASSWORD_CREDENTIAL_EXPORTS
+        ]
+        rust_rows = {
+            row["exportName"]
+            for row in rows
+            if row.get("packageId") == "rust-kmipkit-protocol"
+        }
+
+        self.assertEqual(USERNAME_PASSWORD_CREDENTIAL_EXPORTS, rust_rows)
+        self.assertEqual(4, len(rows))
+        for row in rows:
+            with self.subTest(export=row["exportName"]):
+                self.assertEqual("declared", row.get("declarationState"))
+                self.assertEqual("credential_ttlv_parity", row.get("capabilityId"))
+                self.assertTrue(
+                    {"c", "java", "python", "rust"}
+                    <= set(row.get("languageMappings", {}))
+                )
+                self.assertTrue(
+                    {
+                        "KMIPKIT-0008-FR-003",
+                        "KMIPKIT-0008-FR-004",
+                        "KMIPKIT-0008-FR-010",
+                        "KMIPKIT-REQ-SPEC-9.11-001",
+                        "KMIPKIT-0043-FR-021",
+                        "KMIPKIT-0043-FR-022",
+                    }
+                    <= set(row.get("requirementIds", []))
+                )
+
     def test_validation_error_mapping_traces_all_credential_model_owners(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         owner_requirements = {

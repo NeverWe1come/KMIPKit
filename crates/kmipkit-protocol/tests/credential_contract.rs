@@ -11,7 +11,7 @@
 
 use kmipkit_protocol::{
     Authentication, CredentialType, CredentialValue, HashedPasswordTimestampSequence, Nonce,
-    RequestMessage,
+    RequestMessage, UsernameAndPasswordCredential,
 };
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
 
@@ -258,6 +258,44 @@ fn username_and_password_requires_username_and_preserves_optional_password_prese
     ] {
         assert!(credential_value(1, invalid).is_err());
     }
+}
+
+#[test]
+fn username_and_password_wrapper_preserves_optional_password_and_order() {
+    let source = structure([
+        item(EXTENSION_CHILD, Value::byte_string(vec![0x80, 0x01])),
+        item(USERNAME, Value::text_string("alice".to_owned())),
+        item(PASSWORD, Value::text_string(String::new())),
+    ]);
+    let credential = UsernameAndPasswordCredential::try_from_ttlv(source)
+        .expect("Table 411 requires Username and permits a present-empty Password");
+
+    assert!(!format!("{credential:?}").contains("alice"));
+    let restored = credential.into_ttlv();
+    let tags: Vec<_> = restored
+        .view()
+        .children()
+        .iter()
+        .map(|field| field.tag().raw())
+        .collect();
+    assert_eq!(tags, [EXTENSION_CHILD, USERNAME, PASSWORD]);
+}
+
+#[test]
+fn username_and_password_wrapper_rejects_missing_username_without_payload() {
+    let source = structure([item(
+        PASSWORD,
+        Value::text_string("sensitive-sentinel".to_owned()),
+    )]);
+
+    let error = UsernameAndPasswordCredential::try_from_ttlv(source)
+        .expect_err("Table 411 requires Username");
+
+    assert_eq!(
+        error.kind(),
+        kmipkit_protocol::CredentialValidationErrorKind::MissingField
+    );
+    assert!(!format!("{error}").contains("sensitive-sentinel"));
 }
 
 #[test]
