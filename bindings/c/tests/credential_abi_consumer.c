@@ -18,6 +18,7 @@ static const uint32_t HASHED_PASSWORD_USERNAME_TAG = 0x00420099;
 static const uint32_t HASHED_PASSWORD_TIMESTAMP_TAG = 0x00420092;
 static const uint32_t HASHING_ALGORITHM_TAG = 0x00420038;
 static const uint32_t HASHED_PASSWORD_TAG = 0x00420157;
+static const uint32_t ONE_TIME_PASSWORD_TAG = 0x00420156;
 static const uint32_t UNKNOWN_HASHING_ALGORITHM = 0xe1234567;
 static const uint8_t HASHED_PASSWORD_BYTES[] = {
     'h', 'a', 's', 'h', 'e', 'd', '-', 'p', 'a', 's', 's', 'w', 'o', 'r', 'd', 0, 0xff
@@ -1142,5 +1143,84 @@ int32_t kmipkit_hashed_password_credential_c_consumer_contract(void) {
     if (status == 0) status = hashed_password_credential_case(0);
     if (status == 0) status = hashed_password_credential_rejects_field_case(1);
     if (status == 0) status = hashed_password_credential_rejects_field_case(0);
+    return status;
+}
+
+static int32_t build_credential_value_structure(
+        uint32_t raw_type, kmipkit_ttlv_structure_t **out_structure) {
+    const uint8_t username[] = {'a', 'l', 'i', 'c', 'e'};
+    const uint8_t otp[] = {'o', 't', 'p', '-', 's', 'e', 'n', 't', 'i', 'n', 'e', 'l'};
+    kmipkit_codec_limits_t *limits = 0;
+    kmipkit_ttlv_structure_t *structure = 0;
+    kmipkit_ttlv_value_t *value = 0;
+    int32_t status = kmipkit_codec_limits_defaults(&limits);
+    if (status == 0) status = kmipkit_ttlv_structure_create(&structure);
+    if (status == 0 && raw_type == 4) {
+        status = kmipkit_ttlv_value_text_string(limits, username, sizeof(username), &value);
+        if (status == 0) {
+            status = append_item(&structure, limits, USERNAME_TAG, value);
+            value = 0;
+        }
+        if (status == 0) {
+            status = kmipkit_ttlv_value_text_string(limits, otp, sizeof(otp), &value);
+        }
+        if (status == 0) {
+            status = append_item(&structure, limits, ONE_TIME_PASSWORD_TAG, value);
+            value = 0;
+        }
+    } else if (status == 0) {
+        status = kmipkit_ttlv_value_integer(CREDENTIAL_PAYLOAD_VALUE, &value);
+        if (status == 0) {
+            status = append_item(&structure, limits, DEVICE_EXTENSION_TAG, value);
+            value = 0;
+        }
+    }
+    if (status == 0) {
+        *out_structure = structure;
+        structure = 0;
+    }
+    kmipkit_ttlv_value_release(value);
+    kmipkit_ttlv_structure_release(structure);
+    kmipkit_codec_limits_release(limits);
+    return status;
+}
+
+static int32_t credential_value_round_trip(uint32_t expected_type, uint64_t expected_count) {
+    kmipkit_ttlv_structure_t *structure = 0;
+    kmipkit_ttlv_structure_t *restored = 0;
+    kmipkit_ttlv_structure_view_t *view = 0;
+    kmipkit_credential_value_t *credential_value = 0;
+    uint32_t observed_type = 0;
+    uint64_t observed_count = 0;
+    int32_t status = build_credential_value_structure(expected_type, &structure);
+    if (status == 0) {
+        status = kmipkit_credential_value_from_ttlv(expected_type, structure, &credential_value);
+        structure = 0;
+    }
+    if (status == 0) status = kmipkit_credential_value_type_raw(credential_value, &observed_type);
+    if (status == 0 && observed_type != expected_type) status = 1;
+    if (status == 0) status = kmipkit_credential_value_ttlv_view(credential_value, &view);
+    if (status == 0) status = kmipkit_ttlv_structure_view_item_count(view, &observed_count);
+    if (status == 0 && observed_count != expected_count) status = 1;
+    kmipkit_ttlv_structure_view_release(view);
+    view = 0;
+    if (status == 0) status = kmipkit_credential_value_into_ttlv(credential_value, &restored);
+    if (status == 0) credential_value = 0;
+    if (status == 0) status = kmipkit_ttlv_structure_view(restored, &view);
+    if (status == 0) status = kmipkit_ttlv_structure_view_item_count(view, &observed_count);
+    if (status == 0 && observed_count != expected_count) status = 1;
+    kmipkit_ttlv_structure_view_release(view);
+    kmipkit_ttlv_structure_release(structure);
+    kmipkit_ttlv_structure_release(restored);
+    kmipkit_credential_value_release(credential_value);
+    return status;
+}
+
+int32_t kmipkit_credential_value_c_consumer_contract(void) {
+    // KMIP Specification v2.1 §9.11 Tables 414 and 442: validate the OTP shape and preserve raw
+    // Extensions and unknown Credential Type discriminators through the generic value facade.
+    int32_t status = credential_value_round_trip(4, 2);
+    if (status == 0) status = credential_value_round_trip(0x80004321, 1);
+    if (status == 0) status = credential_value_round_trip(0xf1234567, 1);
     return status;
 }

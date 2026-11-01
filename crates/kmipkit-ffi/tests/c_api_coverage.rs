@@ -43,6 +43,7 @@ unsafe extern "C" {
     fn kmipkit_credential_c_consumer_rejects_missing_required_field() -> i32;
     fn kmipkit_nonce_c_consumer_rejects_missing_required_value() -> i32;
     fn kmipkit_hashed_password_credential_c_consumer_contract() -> i32;
+    fn kmipkit_credential_value_c_consumer_contract() -> i32;
 }
 
 use kmipkit_ffi::kmipkit_codec_limits_t;
@@ -76,6 +77,13 @@ fn compiled_c_consumer_checks_secret_ownership_callbacks_and_ttlv_conversion() {
 fn compiled_c_consumer_preserves_hashed_password_algorithm_and_ttlv() {
     // SAFETY: The C consumer owns all temporary TTLV and credential handles it creates.
     let status = unsafe { kmipkit_hashed_password_credential_c_consumer_contract() };
+    assert_eq!(status, 0);
+}
+
+#[test]
+fn compiled_c_consumer_preserves_typed_and_opaque_credential_values() {
+    // SAFETY: The C consumer owns all temporary TTLV and credential-value handles it creates.
+    let status = unsafe { kmipkit_credential_value_c_consumer_contract() };
     assert_eq!(status, 0);
 }
 
