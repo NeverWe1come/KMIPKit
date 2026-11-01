@@ -71,6 +71,7 @@ public final class NativeExtensionRegistry {
     public static final int SECRET_BYTES = 52;
     public static final int SECRET_TEXT = 53;
     public static final int HASHED_PASSWORD_CREDENTIAL = 54;
+    public static final int CREDENTIAL_VALUE = 55;
 
     private static volatile boolean loaded;
 
@@ -111,6 +112,12 @@ public final class NativeExtensionRegistry {
     public static native long credentialTypeRaw(long credential);
     public static native long credentialTtlvView(long credential);
     public static native long credentialIntoTtlv(long credential);
+
+    public static native int credentialValueFromTtlv(
+            long credentialTypeRaw, long structure, long[] outCredentialValue);
+    public static native long credentialValueTypeRaw(long credentialValue);
+    public static native long credentialValueTtlvView(long credentialValue);
+    public static native long credentialValueIntoTtlv(long credentialValue);
 
     public static native int authenticationCreate(long[] credentials, long[] outAuthentication);
     public static native int authenticationFromTtlv(long structure, long[] outAuthentication);

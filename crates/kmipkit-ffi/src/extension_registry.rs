@@ -31,28 +31,28 @@ use crate::{
     kmipkit_client_batch_response_t, kmipkit_client_batch_t, kmipkit_client_configuration_t,
     kmipkit_client_extension_registry_t, kmipkit_client_request_message_extension_t,
     kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_credential_t,
-    kmipkit_credential_validation_error_v1_t, kmipkit_credential_view_t,
-    kmipkit_device_credential_t, kmipkit_extension_child_rule_t, kmipkit_extension_compatibility_t,
-    kmipkit_extension_definition_t, kmipkit_extension_discriminator_t,
-    kmipkit_extension_identity_t, kmipkit_extension_information_t,
-    kmipkit_extension_order_constraint_t, kmipkit_extension_recognition_t,
-    kmipkit_extension_registry_limits_v1_t, kmipkit_extension_schema_t,
-    kmipkit_hashed_password_credential_t, kmipkit_message_extension_view_t,
-    kmipkit_message_validation_error_t, kmipkit_nonce_t, kmipkit_profile_object_state_v1_t,
-    kmipkit_profile_validation_context_v1_t, kmipkit_profile_validation_error_t,
-    kmipkit_profile_validation_error_view_v1_t, kmipkit_profile_validation_selection_v1_t,
-    kmipkit_raw_tag_t, kmipkit_register_request_t, kmipkit_registered_extension_value_t,
-    kmipkit_request_batch_item_view_t, kmipkit_request_header_view_t, kmipkit_request_message_t,
-    kmipkit_request_options_v1_t, kmipkit_response_batch_item_view_t,
-    kmipkit_response_header_view_t, kmipkit_response_message_t, kmipkit_revocation_reason_t,
-    kmipkit_revoke_request_t, kmipkit_secret_bytes_t, kmipkit_secret_text_t,
-    kmipkit_split_key_reference_t, kmipkit_tag_t, kmipkit_timeout_limit_v1_t,
-    kmipkit_transport_config_t, kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t,
-    kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t,
-    kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t, kmipkit_ttlv_structure_view_t,
-    kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t, kmipkit_unique_identifier_v1_t,
-    kmipkit_usage_allocation_context_t, kmipkit_username_and_password_credential_t,
-    kmipkit_validated_extension_value_t,
+    kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
+    kmipkit_credential_view_t, kmipkit_device_credential_t, kmipkit_extension_child_rule_t,
+    kmipkit_extension_compatibility_t, kmipkit_extension_definition_t,
+    kmipkit_extension_discriminator_t, kmipkit_extension_identity_t,
+    kmipkit_extension_information_t, kmipkit_extension_order_constraint_t,
+    kmipkit_extension_recognition_t, kmipkit_extension_registry_limits_v1_t,
+    kmipkit_extension_schema_t, kmipkit_hashed_password_credential_t,
+    kmipkit_message_extension_view_t, kmipkit_message_validation_error_t, kmipkit_nonce_t,
+    kmipkit_profile_object_state_v1_t, kmipkit_profile_validation_context_v1_t,
+    kmipkit_profile_validation_error_t, kmipkit_profile_validation_error_view_v1_t,
+    kmipkit_profile_validation_selection_v1_t, kmipkit_raw_tag_t, kmipkit_register_request_t,
+    kmipkit_registered_extension_value_t, kmipkit_request_batch_item_view_t,
+    kmipkit_request_header_view_t, kmipkit_request_message_t, kmipkit_request_options_v1_t,
+    kmipkit_response_batch_item_view_t, kmipkit_response_header_view_t, kmipkit_response_message_t,
+    kmipkit_revocation_reason_t, kmipkit_revoke_request_t, kmipkit_secret_bytes_t,
+    kmipkit_secret_text_t, kmipkit_split_key_reference_t, kmipkit_tag_t,
+    kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t, kmipkit_transport_config_v1_t,
+    kmipkit_transport_input_v1_t, kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t,
+    kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
+    kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
+    kmipkit_unique_identifier_v1_t, kmipkit_usage_allocation_context_t,
+    kmipkit_username_and_password_credential_t, kmipkit_validated_extension_value_t,
 };
 use kmipkit_client::UsageAllocationContext;
 use kmipkit_client::extension_registry as client_extension;
@@ -82,8 +82,8 @@ use kmipkit_protocol::{
 };
 use kmipkit_protocol::{
     AttestationCredential, Authentication, Credential, CredentialType, CredentialValidationError,
-    CredentialValidationErrorKind, DeviceCredential, HashedPasswordCredential, Nonce,
-    UsernameAndPasswordCredential,
+    CredentialValidationErrorKind, CredentialValue, DeviceCredential, HashedPasswordCredential,
+    Nonce, UsernameAndPasswordCredential,
 };
 use kmipkit_protocol::{MessageValidationError, MessageValidationErrorKind, RequestMessage};
 use kmipkit_protocol::{
@@ -457,6 +457,7 @@ enum Kind {
     RevokeRequest,
     Nonce,
     Credential,
+    CredentialValue,
     Authentication,
     CredentialView,
     AttestationCredential,
@@ -496,6 +497,7 @@ enum HandleValue {
     RevokeRequest(Box<RevokeRequest>),
     Nonce(Nonce),
     Credential(Credential),
+    CredentialValue(CredentialValue),
     Authentication(Authentication),
     CredentialView {
         authentication: Arc<Handle>,
@@ -712,6 +714,8 @@ impl TtlvView {
                 HandleValue::Credential(credential) => {
                     credential.with_ttlv(|view| resolve_structure_path(&view, steps, callback))
                 }
+                HandleValue::CredentialValue(credential_value) => credential_value
+                    .with_ttlv(|view| resolve_structure_path(&view, steps, callback)),
                 HandleValue::Authentication(authentication) => {
                     authentication.with_ttlv(|view| resolve_structure_path(&view, steps, callback))
                 }
@@ -1138,12 +1142,10 @@ fn consume_unshared_owner<T>(pointer: *mut T, expected: Kind) -> FfiResult<Arc<H
         .lock()
         .map_err(|_| ERROR_INTERNAL)?;
     match handles.entry(id) {
-        Entry::Occupied(entry)
-            if entry.get().kind == expected && Arc::strong_count(entry.get()) == 1 =>
-        {
-            Ok(entry.remove())
-        }
-        Entry::Occupied(_) | Entry::Vacant(_) => Err(ERROR_INVALID_INPUT),
+        Entry::Occupied(entry) if entry.get().kind != expected => Err(ERROR_INVALID_INPUT),
+        Entry::Occupied(entry) if Arc::strong_count(entry.get()) != 1 => Err(ERROR_SHARED_OWNER),
+        Entry::Occupied(entry) => Ok(entry.remove()),
+        Entry::Vacant(_) => Err(ERROR_INVALID_INPUT),
     }
 }
 
@@ -8336,6 +8338,100 @@ pub extern "C" fn kmipkit_credential_into_ttlv(
 pub extern "C" fn kmipkit_credential_release(handle: *mut kmipkit_credential_t) {
     ffi_entrypoint(|| {
         release(handle, Kind::Credential);
+    });
+}
+
+/// Consumes and validates a Credential Value using its raw Credential Type discriminator.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_credential_value_from_ttlv(
+    credential_type_raw: u32,
+    structure: *mut kmipkit_ttlv_structure_t,
+    out_value: *mut *mut kmipkit_credential_value_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_value);
+        let owner = try_ffi!(consume_unshared_ttlv_source(structure));
+        let payload = try_ffi!(unwrap_payload(owner));
+        let HandleValue::Structure(structure) = payload else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let value = match CredentialValue::try_from_ttlv(
+            CredentialType::from_raw(credential_type_raw),
+            structure,
+        ) {
+            Ok(value) => value,
+            Err(error) => return record_credential_validation_error(error),
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::CredentialValue,
+            HandleValue::CredentialValue(value)
+        ));
+        SUCCESS
+    })
+}
+
+/// Returns the original unsigned 32-bit Credential Type discriminator.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_credential_value_type_raw(
+    value: *mut kmipkit_credential_value_t,
+    out_raw: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_raw);
+        *out = 0;
+        let handle = read_handle!(value, CredentialValue);
+        let HandleValue::CredentialValue(value) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = value.credential_type_raw();
+        SUCCESS
+    })
+}
+
+/// Creates a read-only view over the exact original Credential Value TTLV.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_credential_value_ttlv_view(
+    value: *mut kmipkit_credential_value_t,
+    out_view: *mut *mut kmipkit_ttlv_structure_view_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_view);
+        let owner = try_ffi!(clone_handle_owner(value, Kind::CredentialValue));
+        let view = TtlvView::new(owner, ViewRoot::Structure, ViewTarget::Structure);
+        *out = try_ffi!(try_make_handle(
+            Kind::StructureView,
+            HandleValue::StructureView(view)
+        ));
+        SUCCESS
+    })
+}
+
+/// Consumes the Credential Value and returns its exact original TTLV Structure.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_credential_value_into_ttlv(
+    value: *mut kmipkit_credential_value_t,
+    out_structure: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_structure);
+        let owner = try_ffi!(consume_unshared_owner(value, Kind::CredentialValue));
+        let payload = try_ffi!(unwrap_payload(owner));
+        let HandleValue::CredentialValue(value) = payload else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(value.into_ttlv())
+        ));
+        SUCCESS
+    })
+}
+
+/// Releases a Credential Value handle.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_credential_value_release(handle: *mut kmipkit_credential_value_t) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::CredentialValue);
     });
 }
 

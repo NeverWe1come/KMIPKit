@@ -9,12 +9,13 @@ runtime copies cannot be deterministically zeroized.
 
 from . import client, credentials, errors, extensions, messages, metadata, ttlv
 from .extensions import with_extension
-from .credentials import CredentialType
+from .credentials import CredentialType, CredentialValue
 
 __all__ = [
     "client",
     "credentials",
     "CredentialType",
+    "CredentialValue",
     "errors",
     "extensions",
     "messages",

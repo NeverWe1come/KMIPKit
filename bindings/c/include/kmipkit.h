@@ -134,6 +134,7 @@ typedef struct kmipkit_username_and_password_credential_t kmipkit_username_and_p
 typedef struct kmipkit_secret_bytes_t kmipkit_secret_bytes_t;
 typedef struct kmipkit_secret_text_t kmipkit_secret_text_t;
 typedef struct kmipkit_hashed_password_credential_t kmipkit_hashed_password_credential_t;
+typedef struct kmipkit_credential_value_t kmipkit_credential_value_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -396,6 +397,7 @@ void kmipkit_username_and_password_credential_release(kmipkit_username_and_passw
 void kmipkit_secret_bytes_release(kmipkit_secret_bytes_t *handle);
 void kmipkit_secret_text_release(kmipkit_secret_text_t *handle);
 void kmipkit_hashed_password_credential_release(kmipkit_hashed_password_credential_t *handle);
+void kmipkit_credential_value_release(kmipkit_credential_value_t *handle);
 #define KMIPKIT_ERROR_RESOURCE_LIMIT ((int32_t)6)
 #define KMIPKIT_ERROR_INTERNAL ((int32_t)7)
 #define KMIPKIT_ERROR_PROTOCOL ((int32_t)8)
@@ -1594,6 +1596,22 @@ int32_t kmipkit_hashed_password_credential_ttlv_view(kmipkit_hashed_password_cre
  */
 /* KMIPKIT-0008-FR-007, KMIPKIT-0008-FR-010, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.11-010-001, KMIPKIT-REQ-SPEC-9.11-010-002 */
 int32_t kmipkit_hashed_password_credential_into_ttlv(kmipkit_hashed_password_credential_t * credential, kmipkit_ttlv_structure_t ** out_structure);
+/* Consumes and validates the Credential Value using the supplied raw Credential Type. KMIP 2.1 known value structures are checked against §9.11 Tables 411–416; Extensions and unknown values remain opaque and retain their raw discriminator.
+ */
+/* KMIPKIT-0008-FR-003, KMIPKIT-0008-FR-004, KMIPKIT-0008-FR-010, KMIPKIT-0008-FR-011, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.11-001 */
+int32_t kmipkit_credential_value_from_ttlv(uint32_t credential_type_raw, kmipkit_ttlv_structure_t * structure, kmipkit_credential_value_t ** out_value);
+/* Returns the original unsigned 32-bit Credential Type discriminator, including Extensions and unknown values.
+ */
+/* KMIPKIT-0008-FR-003, KMIPKIT-0008-FR-004, KMIPKIT-0008-FR-010, KMIPKIT-0008-FR-011, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.11-001 */
+int32_t kmipkit_credential_value_type_raw(kmipkit_credential_value_t * value, uint32_t * out_raw);
+/* Creates a read-only view over the same ordered Credential Value TTLV allocation. C callers own and release the view; Java and Python wrappers close it when the callback returns.
+ */
+/* KMIPKIT-0008-FR-003, KMIPKIT-0008-FR-004, KMIPKIT-0008-FR-010, KMIPKIT-0008-FR-011, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.11-001 */
+int32_t kmipkit_credential_value_ttlv_view(kmipkit_credential_value_t * value, kmipkit_ttlv_structure_view_t ** out_view);
+/* Consumes the CredentialValue and transfers its exact original ordered TTLV Structure without rebuilding or copying its payload.
+ */
+/* KMIPKIT-0008-FR-003, KMIPKIT-0008-FR-004, KMIPKIT-0008-FR-010, KMIPKIT-0008-FR-011, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.11-001 */
+int32_t kmipkit_credential_value_into_ttlv(kmipkit_credential_value_t * value, kmipkit_ttlv_structure_t ** out_structure);
 /* KMIPKIT-0006-FR-021, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_message_extension_view_ttlv(kmipkit_message_extension_view_t * extension, kmipkit_ttlv_structure_t ** out_structure);
 /* KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */

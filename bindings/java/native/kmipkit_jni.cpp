@@ -2033,6 +2033,69 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_credentialIntoT
     });
 }
 
+JNIEXPORT jint JNICALL Java_org_kmipkit_NativeExtensionRegistry_credentialValueFromTtlv(
+        JNIEnv* env, jclass, jlong raw_credential_type, jlong raw_structure,
+        jlongArray out_credential_value) {
+    return guarded<jint>(env, KMIPKIT_ERROR_INTERNAL, [&] {
+        if (raw_credential_type < 0
+                || static_cast<uint64_t>(raw_credential_type) > UINT32_MAX
+                || out_credential_value == nullptr
+                || env->GetArrayLength(out_credential_value) != 1) {
+            throw_invalid_input(env);
+            return static_cast<jint>(KMIPKIT_ERROR_INVALID_INPUT);
+        }
+        kmipkit_credential_value_t* credential_value = nullptr;
+        const int32_t status = kmipkit_credential_value_from_ttlv(
+                static_cast<uint32_t>(raw_credential_type),
+                from_java_handle<kmipkit_ttlv_structure_t>(raw_structure),
+                &credential_value);
+        if (status != 0) {
+            return static_cast<jint>(status);
+        }
+        const jlong raw_credential_value = reinterpret_cast<jlong>(credential_value);
+        env->SetLongArrayRegion(out_credential_value, 0, 1, &raw_credential_value);
+        if (env->ExceptionCheck()) {
+            kmipkit_credential_value_release(credential_value);
+            return static_cast<jint>(KMIPKIT_ERROR_INTERNAL);
+        }
+        return static_cast<jint>(0);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_credentialValueTypeRaw(
+        JNIEnv* env, jclass, jlong raw_credential_value) {
+    return guarded<jlong>(env, 0, [&] {
+        uint32_t raw = 0;
+        const int32_t status = kmipkit_credential_value_type_raw(
+                from_java_handle<kmipkit_credential_value_t>(raw_credential_value), &raw);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jlong>(0);
+        }
+        return static_cast<jlong>(raw);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_credentialValueTtlvView(
+        JNIEnv* env, jclass, jlong raw_credential_value) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_ttlv_structure_view_t>(env, [&](auto output) {
+            return kmipkit_credential_value_ttlv_view(
+                    from_java_handle<kmipkit_credential_value_t>(raw_credential_value), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_credentialValueIntoTtlv(
+        JNIEnv* env, jclass, jlong raw_credential_value) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_ttlv_structure_t>(env, [&](auto output) {
+            return kmipkit_credential_value_into_ttlv(
+                    from_java_handle<kmipkit_credential_value_t>(raw_credential_value), output);
+        });
+    });
+}
+
 JNIEXPORT jint JNICALL Java_org_kmipkit_NativeExtensionRegistry_authenticationCreate(
         JNIEnv* env, jclass, jlongArray raw_credentials, jlongArray out_authentication) {
     return guarded<jint>(env, KMIPKIT_ERROR_INTERNAL, [&] {
@@ -4520,6 +4583,8 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_release(
                 from_java_handle<kmipkit_secret_text_t>(raw_handle)); break;
         case 54: kmipkit_hashed_password_credential_release(
                 from_java_handle<kmipkit_hashed_password_credential_t>(raw_handle)); break;
+        case 55: kmipkit_credential_value_release(
+                from_java_handle<kmipkit_credential_value_t>(raw_handle)); break;
         default: throw_invalid_input(env); break;
         }
         return 0;

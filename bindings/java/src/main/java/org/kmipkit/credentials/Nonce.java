@@ -69,8 +69,7 @@ public final class Nonce implements AutoCloseable {
         if (activeViews.get() != 0) {
             throw new InvalidInputException("nonce is in use by a scoped view");
         }
-        return TtlvStructure.fromNative(
-                NativeExtensionRegistry.nonceIntoTtlv(handle.transfer()), this);
+        return CredentialInterop.intoTtlv(handle, NativeExtensionRegistry::nonceIntoTtlv);
     }
 
     @Override

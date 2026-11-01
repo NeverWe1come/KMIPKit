@@ -23,6 +23,7 @@ from .ttlv import Structure, TtlvStructureView, Value
 _T = TypeVar("_T")
 _ACTIVE_NONCE_VIEWS: WeakKeyDictionary[object, int] = WeakKeyDictionary()
 _ACTIVE_CREDENTIAL_VIEWS: WeakKeyDictionary[object, int] = WeakKeyDictionary()
+_ACTIVE_CREDENTIAL_VALUE_VIEWS: WeakKeyDictionary[object, int] = WeakKeyDictionary()
 _ACTIVE_ATTESTATION_CREDENTIAL_VIEWS: WeakKeyDictionary[object, int] = WeakKeyDictionary()
 _ACTIVE_DEVICE_CREDENTIAL_VIEWS: WeakKeyDictionary[object, int] = WeakKeyDictionary()
 _ACTIVE_USERNAME_PASSWORD_CREDENTIAL_VIEWS: WeakKeyDictionary[object, int] = WeakKeyDictionary()
@@ -349,8 +350,8 @@ class Nonce(NativeHandle):
             lib.kmipkit_nonce_into_ttlv,
             self,
             consumed=(0,),
-            # The native ABI reports an active shared view before removing the owner.
-            restore_on_statuses=(4,),
+            # The native ABI reports a retained shared view before removing the owner.
+            restore_on_statuses=(errors._SHARED_OWNER_STATUS,),
         )
         return _wrap_owned_handle(Structure, handle)
 
@@ -428,9 +429,82 @@ class Credential(NativeHandle):
             lib.kmipkit_credential_into_ttlv,
             self,
             consumed=(0,),
-            restore_on_statuses=(4,),
+            restore_on_statuses=(errors._SHARED_OWNER_STATUS,),
         )
         return _wrap_owned_handle(Structure, handle)
+
+
+class CredentialValue(NativeHandle):
+    """Raw-preserving Credential Value with its original ordered TTLV structure."""
+
+    __slots__ = ("__weakref__",)
+
+    _release_name = "kmipkit_credential_value_release"
+
+    @classmethod
+    def from_ttlv(cls, credential_type_raw: int, structure: Structure) -> CredentialValue:
+        """Consume and validate a Credential Value while preserving its raw type."""
+        raw_type = _integer_range(credential_type_raw, 0, 0xFFFF_FFFF)
+        handle = _new_handle(
+            "kmipkit_credential_value_t",
+            lib.kmipkit_credential_value_from_ttlv,
+            raw_type,
+            structure,
+            consumed=(1,),
+            restore_on_statuses=(errors._SHARED_OWNER_STATUS,),
+            credential_validation_error=True,
+        )
+        return _wrap_owned_handle(cls, handle)
+
+    @synchronized_native_call
+    def credential_type_raw(self) -> int:
+        """Return the original unsigned 32-bit Credential Type discriminator."""
+        out_raw = ffi.new("uint32_t *")
+        errors.raise_for_status(
+            lib.kmipkit_credential_value_type_raw(self._pointer(), out_raw)
+        )
+        return int(out_raw[0])
+
+    @synchronized_native_call
+    def with_ttlv(self, callback: Callable[[TtlvStructureView], _T]) -> _T:
+        """Lend a read-only TTLV view and close it when the callback returns."""
+        if not callable(callback):
+            errors.raise_for_status(4)
+        view_handle = _new_handle(
+            "kmipkit_ttlv_structure_view_t",
+            lib.kmipkit_credential_value_ttlv_view,
+            self._pointer(),
+        )
+        view = _wrap_owned_handle(TtlvStructureView, view_handle, owner=self)
+        previous_view_count = _ACTIVE_CREDENTIAL_VALUE_VIEWS.get(self, 0)
+        _ACTIVE_CREDENTIAL_VALUE_VIEWS[self] = previous_view_count + 1
+        try:
+            return callback(view)
+        finally:
+            try:
+                view.close()
+            finally:
+                if previous_view_count:
+                    _ACTIVE_CREDENTIAL_VALUE_VIEWS[self] = previous_view_count
+                else:
+                    _ACTIVE_CREDENTIAL_VALUE_VIEWS.pop(self, None)
+
+    @synchronized_native_call
+    def into_ttlv(self) -> Structure:
+        """Transfer the original ordered TTLV Structure without rebuilding it."""
+        if _ACTIVE_CREDENTIAL_VALUE_VIEWS.get(self, 0):
+            errors.raise_for_status(4)
+        handle = _new_handle(
+            "kmipkit_ttlv_structure_t",
+            lib.kmipkit_credential_value_into_ttlv,
+            self,
+            consumed=(0,),
+            restore_on_statuses=(errors._SHARED_OWNER_STATUS,),
+        )
+        return _wrap_owned_handle(Structure, handle)
+
+    def __repr__(self) -> str:
+        return "CredentialValue([REDACTED])"
 
 
 class Authentication(NativeHandle):
@@ -536,8 +610,8 @@ class Authentication(NativeHandle):
             lib.kmipkit_authentication_into_ttlv,
             self,
             consumed=(0,),
-            # The opaque-model conversion reports a live owner as invalid_input.
-            restore_on_statuses=(4,),
+            # The native ABI reports a retained shared view before removing the owner.
+            restore_on_statuses=(errors._SHARED_OWNER_STATUS,),
         )
         return _wrap_owned_handle(Structure, handle)
 
@@ -643,7 +717,7 @@ class AttestationCredential(NativeHandle):
             lib.kmipkit_attestation_credential_into_ttlv,
             self,
             consumed=(0,),
-            restore_on_statuses=(4,),
+            restore_on_statuses=(errors._SHARED_OWNER_STATUS,),
         )
         return _wrap_owned_handle(Structure, handle)
 
@@ -702,7 +776,7 @@ class DeviceCredential(NativeHandle):
             lib.kmipkit_device_credential_into_ttlv,
             self,
             consumed=(0,),
-            restore_on_statuses=(4,),
+            restore_on_statuses=(errors._SHARED_OWNER_STATUS,),
         )
         return _wrap_owned_handle(Structure, handle)
 
@@ -761,7 +835,7 @@ class UsernameAndPasswordCredential(NativeHandle):
             lib.kmipkit_username_and_password_credential_into_ttlv,
             self,
             consumed=(0,),
-            restore_on_statuses=(4,),
+            restore_on_statuses=(errors._SHARED_OWNER_STATUS,),
         )
         return _wrap_owned_handle(Structure, handle)
 
@@ -841,7 +915,7 @@ class HashedPasswordCredential(NativeHandle):
             lib.kmipkit_hashed_password_credential_into_ttlv,
             self,
             consumed=(0,),
-            restore_on_statuses=(4,),
+            restore_on_statuses=(errors._SHARED_OWNER_STATUS,),
         )
         return _wrap_owned_handle(Structure, handle)
 
@@ -851,6 +925,7 @@ __all__ = [
     "Authentication",
     "Credential",
     "CredentialType",
+    "CredentialValue",
     "CredentialView",
     "DeviceCredential",
     "HashedPasswordCredential",

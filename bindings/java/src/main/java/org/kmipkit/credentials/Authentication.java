@@ -106,8 +106,8 @@ public final class Authentication implements AutoCloseable {
         return handle.withValue(value -> {
             long[] output = new long[1];
             int status = NativeExtensionRegistry.authenticationIntoTtlv(value, output);
-            // A live native view returns invalid_input before removing the owner.
-            if (status != 4) {
+            // A retained native child view returns shared_owner before removing the owner.
+            if (status != CredentialInterop.SHARED_OWNER_STATUS) {
                 handle.transfer();
             }
             CredentialInterop.throwIfFailed(status, "authentication");

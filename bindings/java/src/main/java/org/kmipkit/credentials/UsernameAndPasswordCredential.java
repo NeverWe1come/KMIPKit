@@ -62,8 +62,8 @@ public final class UsernameAndPasswordCredential implements AutoCloseable {
         if (activeViews.get() != 0) {
             throw new InvalidInputException("username and password credential is in use by a scoped view");
         }
-        return TtlvStructure.fromNative(
-                NativeExtensionRegistry.usernameAndPasswordCredentialIntoTtlv(handle.transfer()), this);
+        return CredentialInterop.intoTtlv(
+                handle, NativeExtensionRegistry::usernameAndPasswordCredentialIntoTtlv);
     }
 
     @Override

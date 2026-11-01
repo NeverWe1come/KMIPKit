@@ -74,8 +74,7 @@ public final class Credential implements AutoCloseable {
         if (activeViews.get() != 0) {
             throw new InvalidInputException("credential is in use by a scoped view");
         }
-        return TtlvStructure.fromNative(
-                NativeExtensionRegistry.credentialIntoTtlv(handle.transfer()), this);
+        return CredentialInterop.intoTtlv(handle, NativeExtensionRegistry::credentialIntoTtlv);
     }
 
     NativeHandle nativeHandleOwner() {

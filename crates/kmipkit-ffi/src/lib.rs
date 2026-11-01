@@ -216,6 +216,10 @@ pub struct kmipkit_credential_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_credential_value_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
 pub struct kmipkit_authentication_t {
     _private: [u8; 0],
 }

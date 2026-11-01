@@ -33554,6 +33554,92 @@
       "exportName": "kmipkit.credentials.HashedPasswordCredential.__slots__",
       "packageId": "python-kmipkit",
       "reason": "Exact Python slot layout used for internal HashedPasswordCredential wrapper state; it is not a KMIP credential field or product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. The NativeExtensionRegistry class is an internal JNI bridge and the supported API is the typed facade documented in docs/architecture/ffi-and-bindings.md.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.CREDENTIAL_VALUE",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static member is a raw-handle JNI bridge or internal handle-kind constant. Java applications use the typed KMIPKit credential facade; the bridge member has no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. The NativeExtensionRegistry class is an internal JNI bridge and the supported API is the typed facade documented in docs/architecture/ffi-and-bindings.md.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.credentialValueFromTtlv",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static member is a raw-handle JNI bridge or internal handle-kind constant. Java applications use the typed KMIPKit credential facade; the bridge member has no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. The NativeExtensionRegistry class is an internal JNI bridge and the supported API is the typed facade documented in docs/architecture/ffi-and-bindings.md.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.credentialValueIntoTtlv",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static member is a raw-handle JNI bridge or internal handle-kind constant. Java applications use the typed KMIPKit credential facade; the bridge member has no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. The NativeExtensionRegistry class is an internal JNI bridge and the supported API is the typed facade documented in docs/architecture/ffi-and-bindings.md.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.credentialValueTtlvView",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static member is a raw-handle JNI bridge or internal handle-kind constant. Java applications use the typed KMIPKit credential facade; the bridge member has no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. The NativeExtensionRegistry class is an internal JNI bridge and the supported API is the typed facade documented in docs/architecture/ffi-and-bindings.md.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.credentialValueTypeRaw",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static member is a raw-handle JNI bridge or internal handle-kind constant. Java applications use the typed KMIPKit credential facade; the bridge member has no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "The CredentialValue API exposes validated construction from a TTLV Structure and does not expose arbitrary native handles.",
+      "exportName": "kmipkit.credentials.CredentialValue.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "Inherited native-handle initializer requires KMIPKit’s private ownership token; callers construct CredentialValue only with from_ttlv."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "The CredentialValue facade exposes raw discriminator and TTLV operations; its storage layout is an implementation detail.",
+      "exportName": "kmipkit.credentials.CredentialValue.__slots__",
+      "packageId": "python-kmipkit",
+      "reason": "Exact Python slot layout used for internal wrapper state; it is not a KMIP Credential Value field or a product-level capability."
     }
   ],
   "capabilities": [
@@ -36321,6 +36407,12 @@
       "capabilityState": "declared",
       "mappings": {
         "c": [
+          "KMIPKIT_CREDENTIAL_TYPE_ATTESTATION",
+          "KMIPKIT_CREDENTIAL_TYPE_DEVICE",
+          "KMIPKIT_CREDENTIAL_TYPE_HASHED_PASSWORD",
+          "KMIPKIT_CREDENTIAL_TYPE_ONE_TIME_PASSWORD",
+          "KMIPKIT_CREDENTIAL_TYPE_TICKET",
+          "KMIPKIT_CREDENTIAL_TYPE_USERNAME_AND_PASSWORD",
           "kmipkit_attestation_credential_from_ttlv",
           "kmipkit_attestation_credential_into_ttlv",
           "kmipkit_attestation_credential_release",
@@ -36341,6 +36433,12 @@
           "kmipkit_credential_ttlv_view",
           "kmipkit_credential_type",
           "kmipkit_credential_type_raw",
+          "kmipkit_credential_value_from_ttlv",
+          "kmipkit_credential_value_into_ttlv",
+          "kmipkit_credential_value_release",
+          "kmipkit_credential_value_t",
+          "kmipkit_credential_value_ttlv_view",
+          "kmipkit_credential_value_type_raw",
           "kmipkit_credential_view_release",
           "kmipkit_credential_view_t",
           "kmipkit_credential_view_ttlv_view",
@@ -36358,6 +36456,7 @@
           "kmipkit_hashed_password_credential_release",
           "kmipkit_hashed_password_credential_t",
           "kmipkit_hashed_password_credential_ttlv_view",
+          "kmipkit_ttlv_structure_view_t",
           "kmipkit_username_and_password_credential_from_ttlv",
           "kmipkit_username_and_password_credential_into_ttlv",
           "kmipkit_username_and_password_credential_release",
@@ -36386,6 +36485,19 @@
           "org.kmipkit.credentials.Credential.intoTtlv",
           "org.kmipkit.credentials.Credential.toString",
           "org.kmipkit.credentials.Credential.withTtlv",
+          "org.kmipkit.credentials.CredentialType.ATTESTATION",
+          "org.kmipkit.credentials.CredentialType.DEVICE",
+          "org.kmipkit.credentials.CredentialType.HASHED_PASSWORD",
+          "org.kmipkit.credentials.CredentialType.ONE_TIME_PASSWORD",
+          "org.kmipkit.credentials.CredentialType.TICKET",
+          "org.kmipkit.credentials.CredentialType.USERNAME_AND_PASSWORD",
+          "org.kmipkit.credentials.CredentialValue",
+          "org.kmipkit.credentials.CredentialValue.close",
+          "org.kmipkit.credentials.CredentialValue.credentialTypeRaw",
+          "org.kmipkit.credentials.CredentialValue.fromTtlv",
+          "org.kmipkit.credentials.CredentialValue.intoTtlv",
+          "org.kmipkit.credentials.CredentialValue.toString",
+          "org.kmipkit.credentials.CredentialValue.withTtlv",
           "org.kmipkit.credentials.CredentialView",
           "org.kmipkit.credentials.CredentialView.close",
           "org.kmipkit.credentials.CredentialView.credentialType",
@@ -36410,9 +36522,11 @@
           "org.kmipkit.credentials.UsernameAndPasswordCredential.fromTtlv",
           "org.kmipkit.credentials.UsernameAndPasswordCredential.intoTtlv",
           "org.kmipkit.credentials.UsernameAndPasswordCredential.toString",
-          "org.kmipkit.credentials.UsernameAndPasswordCredential.withTtlv"
+          "org.kmipkit.credentials.UsernameAndPasswordCredential.withTtlv",
+          "org.kmipkit.ttlv.TtlvStructureView"
         ],
         "python": [
+          "kmipkit.CredentialValue",
           "kmipkit.credentials.AttestationCredential",
           "kmipkit.credentials.AttestationCredential.__enter__",
           "kmipkit.credentials.AttestationCredential.__exit__",
@@ -36438,6 +36552,22 @@
           "kmipkit.credentials.Credential.from_ttlv",
           "kmipkit.credentials.Credential.into_ttlv",
           "kmipkit.credentials.Credential.with_ttlv",
+          "kmipkit.credentials.CredentialType.ATTESTATION",
+          "kmipkit.credentials.CredentialType.DEVICE",
+          "kmipkit.credentials.CredentialType.HASHED_PASSWORD",
+          "kmipkit.credentials.CredentialType.ONE_TIME_PASSWORD",
+          "kmipkit.credentials.CredentialType.TICKET",
+          "kmipkit.credentials.CredentialType.USERNAME_AND_PASSWORD",
+          "kmipkit.credentials.CredentialValue",
+          "kmipkit.credentials.CredentialValue.__enter__",
+          "kmipkit.credentials.CredentialValue.__exit__",
+          "kmipkit.credentials.CredentialValue.__repr__",
+          "kmipkit.credentials.CredentialValue.close",
+          "kmipkit.credentials.CredentialValue.closed",
+          "kmipkit.credentials.CredentialValue.credential_type_raw",
+          "kmipkit.credentials.CredentialValue.from_ttlv",
+          "kmipkit.credentials.CredentialValue.into_ttlv",
+          "kmipkit.credentials.CredentialValue.with_ttlv",
           "kmipkit.credentials.CredentialView",
           "kmipkit.credentials.CredentialView.close",
           "kmipkit.credentials.CredentialView.credential_type",
@@ -36468,7 +36598,8 @@
           "kmipkit.credentials.UsernameAndPasswordCredential.closed",
           "kmipkit.credentials.UsernameAndPasswordCredential.from_ttlv",
           "kmipkit.credentials.UsernameAndPasswordCredential.into_ttlv",
-          "kmipkit.credentials.UsernameAndPasswordCredential.with_ttlv"
+          "kmipkit.credentials.UsernameAndPasswordCredential.with_ttlv",
+          "kmipkit.ttlv.TtlvStructureView"
         ],
         "rust": [
           "kmipkit_protocol::AttestationCredential",
@@ -36487,6 +36618,28 @@
           "kmipkit_protocol::Credential::into_ttlv",
           "kmipkit_protocol::Credential::try_from_ttlv",
           "kmipkit_protocol::Credential::with_ttlv",
+          "kmipkit_protocol::CredentialValue",
+          "kmipkit_protocol::CredentialValue::Attestation",
+          "kmipkit_protocol::CredentialValue::Attestation::0",
+          "kmipkit_protocol::CredentialValue::Device",
+          "kmipkit_protocol::CredentialValue::Device::0",
+          "kmipkit_protocol::CredentialValue::Extensions",
+          "kmipkit_protocol::CredentialValue::Extensions::0",
+          "kmipkit_protocol::CredentialValue::HashedPassword",
+          "kmipkit_protocol::CredentialValue::HashedPassword::0",
+          "kmipkit_protocol::CredentialValue::OneTimePassword",
+          "kmipkit_protocol::CredentialValue::OneTimePassword::0",
+          "kmipkit_protocol::CredentialValue::Ticket",
+          "kmipkit_protocol::CredentialValue::Ticket::0",
+          "kmipkit_protocol::CredentialValue::Unknown",
+          "kmipkit_protocol::CredentialValue::Unknown::credential_type",
+          "kmipkit_protocol::CredentialValue::Unknown::value",
+          "kmipkit_protocol::CredentialValue::UsernameAndPassword",
+          "kmipkit_protocol::CredentialValue::UsernameAndPassword::0",
+          "kmipkit_protocol::CredentialValue::credential_type_raw",
+          "kmipkit_protocol::CredentialValue::into_ttlv",
+          "kmipkit_protocol::CredentialValue::try_from_ttlv",
+          "kmipkit_protocol::CredentialValue::with_ttlv",
           "kmipkit_protocol::CredentialView",
           "kmipkit_protocol::CredentialView::credential_type",
           "kmipkit_protocol::CredentialView::credential_type_raw",
@@ -36501,6 +36654,15 @@
           "kmipkit_protocol::HashedPasswordCredential::into_ttlv",
           "kmipkit_protocol::HashedPasswordCredential::try_from_ttlv",
           "kmipkit_protocol::HashedPasswordCredential::with_ttlv",
+          "kmipkit_protocol::OneTimePasswordCredential",
+          "kmipkit_protocol::OneTimePasswordCredential::into_ttlv",
+          "kmipkit_protocol::OneTimePasswordCredential::with_ttlv",
+          "kmipkit_protocol::OpaqueTtlv",
+          "kmipkit_protocol::OpaqueTtlv::into_ttlv",
+          "kmipkit_protocol::OpaqueTtlv::with_ttlv",
+          "kmipkit_protocol::TicketCredential",
+          "kmipkit_protocol::TicketCredential::into_ttlv",
+          "kmipkit_protocol::TicketCredential::with_ttlv",
           "kmipkit_protocol::UsernameAndPasswordCredential",
           "kmipkit_protocol::UsernameAndPasswordCredential::into_ttlv",
           "kmipkit_protocol::UsernameAndPasswordCredential::try_from_ttlv",
@@ -71603,6 +71765,367 @@
         "requestBoundary": "not-applicable",
         "returnType": "Structure"
       }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Consumes and validates the Credential Value using the supplied raw Credential Type. KMIP 2.1 known value structures are checked against §9.11 Tables 411–416; Extensions and unknown values remain opaque and retain their raw discriminator."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "shared_owner"
+        ],
+        "parameters": [
+          {
+            "kind": "scalar",
+            "name": "credential_type_raw",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "handle",
+            "name": "structure",
+            "ownership": "consumed",
+            "type": "kmipkit_ttlv_structure_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_value",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_credential_value_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_credential_value_from_ttlv"
+      },
+      "id": "credential_value_from_ttlv",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input",
+          "shared_owner"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_credentialValueFromTtlv",
+        "method": "credentialValueFromTtlv",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "credentialTypeRaw",
+            "type": "long"
+          },
+          {
+            "name": "structure",
+            "type": "long"
+          },
+          {
+            "name": "outValue",
+            "type": "long[]"
+          }
+        ],
+        "returnType": "int"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_credential_value_from_ttlv",
+        "errorCategories": [
+          "invalid_input",
+          "shared_owner"
+        ],
+        "function": "CredentialValue.from_ttlv",
+        "module": "kmipkit.credentials",
+        "parameters": [
+          {
+            "name": "credential_type_raw",
+            "type": "int"
+          },
+          {
+            "name": "structure",
+            "type": "Structure"
+          }
+        ],
+        "returnType": "CredentialValue"
+      },
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::CredentialValue",
+        "name": "try_from_ttlv",
+        "owner": "protocol",
+        "parameters": [
+          {
+            "name": "credential_type",
+            "type": "CredentialType"
+          },
+          {
+            "name": "tree",
+            "type": "Structure"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "Result<CredentialValue, CredentialValidationError>"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Returns the original unsigned 32-bit Credential Type discriminator, including Extensions and unknown values."
+        ],
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "value",
+            "ownership": "borrowed",
+            "type": "kmipkit_credential_value_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_raw",
+            "ownership": "none",
+            "type": "uint32_t *"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_credential_value_type_raw"
+      },
+      "id": "credential_value_type_raw",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_credentialValueTypeRaw",
+        "method": "credentialValueTypeRaw",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "long"
+          }
+        ],
+        "returnType": "long"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_credential_value_type_raw",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "function": "CredentialValue.credential_type_raw",
+        "module": "kmipkit.credentials",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "CredentialValue"
+          }
+        ],
+        "returnType": "int"
+      },
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::CredentialValue",
+        "name": "credential_type_raw",
+        "owner": "protocol",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "u32"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Creates a read-only view over the same ordered Credential Value TTLV allocation. C callers own and release the view; Java and Python wrappers close it when the callback returns."
+        ],
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "value",
+            "ownership": "borrowed",
+            "type": "kmipkit_credential_value_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_view",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_ttlv_structure_view_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_credential_value_ttlv_view"
+      },
+      "id": "credential_value_ttlv_view",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_credentialValueTtlvView",
+        "method": "credentialValueTtlvView",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "long"
+          }
+        ],
+        "returnType": "long"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_credential_value_ttlv_view",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "function": "CredentialValue.with_ttlv",
+        "module": "kmipkit.credentials",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "CredentialValue"
+          },
+          {
+            "name": "callback",
+            "type": "Callable"
+          }
+        ],
+        "returnType": "T"
+      },
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::CredentialValue",
+        "name": "with_ttlv",
+        "owner": "protocol",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "impl for<'a> FnOnce(StructureView<'a>) -> R"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "R"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Consumes the CredentialValue and transfers its exact original ordered TTLV Structure without rebuilding or copying its payload."
+        ],
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "value",
+            "ownership": "consumed",
+            "type": "kmipkit_credential_value_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_structure",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_ttlv_structure_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_credential_value_into_ttlv"
+      },
+      "id": "credential_value_into_ttlv",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_credentialValueIntoTtlv",
+        "method": "credentialValueIntoTtlv",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "long"
+          }
+        ],
+        "returnType": "long"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_credential_value_into_ttlv",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "function": "CredentialValue.into_ttlv",
+        "module": "kmipkit.credentials",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "CredentialValue"
+          }
+        ],
+        "returnType": "Structure"
+      },
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::CredentialValue",
+        "name": "into_ttlv",
+        "owner": "protocol",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "Structure"
+      }
     }
   ],
   "languages": [
@@ -105171,6 +105694,581 @@
         "status": "Approved"
       },
       "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-1e06608241023752c365",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValue",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-43956d28c57f0695f9bb",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValue::UsernameAndPassword",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_TYPE_USERNAME_AND_PASSWORD",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialType.USERNAME_AND_PASSWORD",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialType.USERNAME_AND_PASSWORD",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::UsernameAndPassword",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-f6d4c0836949b6070fb2",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValue::Device",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_TYPE_DEVICE",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialType.DEVICE",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialType.DEVICE",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::Device",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001",
+        "KMIPKIT-0008-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-4acea3db336fb5367cfd",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValue::Attestation",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_TYPE_ATTESTATION",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialType.ATTESTATION",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialType.ATTESTATION",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::Attestation",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001",
+        "KMIPKIT-0008-FR-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-8a142ab11a31731d47a4",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValue::OneTimePassword",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_TYPE_ONE_TIME_PASSWORD",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialType.ONE_TIME_PASSWORD",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialType.ONE_TIME_PASSWORD",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::OneTimePassword",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-b685872a241e7efd8833",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValue::HashedPassword",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_TYPE_HASHED_PASSWORD",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialType.HASHED_PASSWORD",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialType.HASHED_PASSWORD",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::HashedPassword",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001",
+        "KMIPKIT-0008-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-0261ed8a5f9785ed9d12",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValue::Ticket",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_TYPE_TICKET",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialType.TICKET",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialType.TICKET",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::Ticket",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-09c9f91f8c98bf69fe50",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValue::Extensions",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_type_raw",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.credentialTypeRaw",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.credential_type_raw",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::Extensions",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-ba29da519ddbb0c99605",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValue::Unknown",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_type_raw",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.credentialTypeRaw",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.credential_type_raw",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::Unknown",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-c66ada09203fb81685dd",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValue::try_from_ttlv",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_from_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.fromTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.from_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::try_from_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-c387d4375e2ab64dc56d",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValue::into_ttlv",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_into_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.intoTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.into_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::into_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
       "declarationId": "rust-observed-079139eccf04c89b6587",
       "declarationState": "declared",
       "exportName": "kmipkit_protocol::CredentialView",
@@ -106082,6 +107180,318 @@
       ]
     },
     {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-94035357cdeec4ec402b",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::OneTimePasswordCredential",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::OneTimePasswordCredential",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-0728eaa00d90f6192533",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::OneTimePasswordCredential::with_ttlv",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_ttlv_view",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.withTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.with_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::OneTimePasswordCredential::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-e24fec79351f45e22eb4",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::OneTimePasswordCredential::into_ttlv",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_into_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.intoTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.into_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::OneTimePasswordCredential::into_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-185d9008e016913eeeb7",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::OpaqueTtlv",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::OpaqueTtlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-396de37e58c6f9f6086b",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::OpaqueTtlv::with_ttlv",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_ttlv_view",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.withTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.with_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::OpaqueTtlv::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-9823383ae4df19191987",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::OpaqueTtlv::into_ttlv",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_into_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.intoTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.into_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::OpaqueTtlv::into_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
       "approvalEvidence": {
         "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
         "kind": "feature-specification",
@@ -106535,6 +107945,162 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-2c2a77056606466f51c1",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::TicketCredential",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::TicketCredential",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-124f495137045dee6844",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::TicketCredential::with_ttlv",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_ttlv_view",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.withTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.with_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::TicketCredential::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-75d34e655796596bc13b",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::TicketCredential::into_ttlv",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_into_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.intoTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.into_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::TicketCredential::into_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
       ]
     },
     {
@@ -170133,6 +171699,477 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-ac8a29e6d6e418d7e453",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValue::Attestation::0",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_structure_view_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvStructureView",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.TtlvStructureView",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::Attestation::0",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001",
+        "KMIPKIT-0008-FR-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-282bf516fa38018a344b",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValue::Device::0",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_structure_view_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvStructureView",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.TtlvStructureView",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::Device::0",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001",
+        "KMIPKIT-0008-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-f37d96dc118542347a63",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValue::Extensions::0",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_structure_view_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvStructureView",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.TtlvStructureView",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::Extensions::0",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-414d8d76b784d8d3f4e1",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValue::HashedPassword::0",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_structure_view_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvStructureView",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.TtlvStructureView",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::HashedPassword::0",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001",
+        "KMIPKIT-0008-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-75a0ed1ee2e81b27c81d",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValue::OneTimePassword::0",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_structure_view_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvStructureView",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.TtlvStructureView",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::OneTimePassword::0",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-71ae35b0dc54ea162d14",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValue::Ticket::0",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_structure_view_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvStructureView",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.TtlvStructureView",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::Ticket::0",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-64491ccbde1352279bd0",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValue::Unknown::credential_type",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_type_raw",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.credentialTypeRaw",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.credential_type_raw",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::Unknown::credential_type",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-e5d2aad429a489c42576",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValue::Unknown::value",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_structure_view_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvStructureView",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.TtlvStructureView",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::Unknown::value",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-4c1ec0269d783a355a29",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValue::UsernameAndPassword::0",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_structure_view_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvStructureView",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.TtlvStructureView",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::UsernameAndPassword::0",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
       ]
     },
     {
@@ -279128,6 +281165,1153 @@
         "status": "Approved"
       },
       "capabilityId": "credential_ttlv_parity",
+      "declarationId": "CredentialValue:c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_credential_value_t",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "CredentialValue:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.CredentialValue",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "CredentialValue:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.CredentialValue",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "credential_value_from_ttlv:c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_credential_value_from_ttlv",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_from_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.fromTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.from_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::try_from_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "credential_value_from_ttlv:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.CredentialValue.fromTtlv",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_from_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.fromTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.from_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::try_from_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "credential_value_from_ttlv:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.CredentialValue.from_ttlv",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_from_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.fromTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.from_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::try_from_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "credential_value_with_ttlv:c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_credential_value_ttlv_view",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_ttlv_view",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.withTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.with_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "credential_value_with_ttlv:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.CredentialValue.withTtlv",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_ttlv_view",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.withTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.with_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "credential_value_with_ttlv:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.CredentialValue.with_ttlv",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_ttlv_view",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.withTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.with_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "credential_value_into_ttlv:c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_credential_value_into_ttlv",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_into_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.intoTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.into_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::into_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "credential_value_into_ttlv:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.CredentialValue.intoTtlv",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_into_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.intoTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.into_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::into_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "credential_value_into_ttlv:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.CredentialValue.into_ttlv",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_into_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.intoTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.into_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::into_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "credential_value_type_raw:c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_credential_value_type_raw",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_type_raw",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.credentialTypeRaw",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.credential_type_raw",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::credential_type_raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "credential_value_type_raw:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.CredentialValue.credentialTypeRaw",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_type_raw",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.credentialTypeRaw",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.credential_type_raw",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::credential_type_raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "credential_value_type_raw:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.CredentialValue.credential_type_raw",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_type_raw",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.credentialTypeRaw",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.credential_type_raw",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::credential_type_raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "CredentialValue:release:c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_credential_value_release",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "CredentialValue:release:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.CredentialValue.close",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "CredentialValue:release:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.CredentialValue.close",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "CredentialValue:toString:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.CredentialValue.toString",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.toString",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "CredentialValue:closed:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.CredentialValue.closed",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.closed",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "CredentialValue:enter:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.CredentialValue.__enter__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.__enter__",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "CredentialValue:exit:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.CredentialValue.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.__exit__",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
       "declarationId": "Credential:credential_type:c",
       "declarationState": "declared",
       "exportName": "kmipkit_credential_type",
@@ -289516,6 +292700,214 @@
         "KMIPKIT-REQ-SPEC-9.11-010-001",
         "KMIPKIT-REQ-SPEC-9.11-010-002"
       ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-3d6581292f42a0948095",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValue::credential_type_raw",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_type_raw",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.credentialTypeRaw",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.credential_type_raw",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::credential_type_raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-548c69cb98adda048e27",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValue::with_ttlv",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_ttlv_view",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.withTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.with_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "credential-value-python-root-alias",
+      "declarationState": "declared",
+      "exportName": "kmipkit.CredentialValue",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.CredentialValue",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "CredentialValue:repr:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.CredentialValue.__repr__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_value_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValue.toString",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialValue.__repr__",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValue",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialValueFacadeTest.java",
+        "bindings/python/tests/test_credential_value.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ]
     }
   ],
   "publicPackages": [
@@ -292705,6 +296097,44 @@
       "rust": {
         "module": "kmipkit_protocol",
         "name": "HashedPasswordCredential",
+        "owner": "protocol"
+      }
+    },
+    {
+      "c": {
+        "handleKind": "credential_value",
+        "kind": "opaque-handle",
+        "name": "kmipkit_credential_value_t",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_credential_value_release"
+      },
+      "id": "CredentialValue",
+      "java": {
+        "name": "CredentialValue",
+        "package": "org.kmipkit.credentials"
+      },
+      "kind": "opaque-handle",
+      "normativeSource": "KMIP 2.1 §9.11 Tables 410–416; §11.11 Table 442",
+      "python": {
+        "module": "kmipkit.credentials",
+        "name": "CredentialValue"
+      },
+      "requirementIds": [
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0008-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol",
+        "name": "CredentialValue",
         "owner": "protocol"
       }
     }

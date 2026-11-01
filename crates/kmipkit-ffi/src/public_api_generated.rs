@@ -1175,6 +1175,61 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::CredentialValidationErrorKind::InvalidTtlvStructure",
     ),
     (
+        "rust-observed-1e06608241023752c365",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValue",
+    ),
+    (
+        "rust-observed-43956d28c57f0695f9bb",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValue::UsernameAndPassword",
+    ),
+    (
+        "rust-observed-f6d4c0836949b6070fb2",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValue::Device",
+    ),
+    (
+        "rust-observed-4acea3db336fb5367cfd",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValue::Attestation",
+    ),
+    (
+        "rust-observed-8a142ab11a31731d47a4",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValue::OneTimePassword",
+    ),
+    (
+        "rust-observed-b685872a241e7efd8833",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValue::HashedPassword",
+    ),
+    (
+        "rust-observed-0261ed8a5f9785ed9d12",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValue::Ticket",
+    ),
+    (
+        "rust-observed-09c9f91f8c98bf69fe50",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValue::Extensions",
+    ),
+    (
+        "rust-observed-ba29da519ddbb0c99605",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValue::Unknown",
+    ),
+    (
+        "rust-observed-c66ada09203fb81685dd",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValue::try_from_ttlv",
+    ),
+    (
+        "rust-observed-c387d4375e2ab64dc56d",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValue::into_ttlv",
+    ),
+    (
         "rust-observed-079139eccf04c89b6587",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::CredentialView",
@@ -1265,6 +1320,36 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::Nonce::into_ttlv",
     ),
     (
+        "rust-observed-94035357cdeec4ec402b",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::OneTimePasswordCredential",
+    ),
+    (
+        "rust-observed-0728eaa00d90f6192533",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::OneTimePasswordCredential::with_ttlv",
+    ),
+    (
+        "rust-observed-e24fec79351f45e22eb4",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::OneTimePasswordCredential::into_ttlv",
+    ),
+    (
+        "rust-observed-185d9008e016913eeeb7",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::OpaqueTtlv",
+    ),
+    (
+        "rust-observed-396de37e58c6f9f6086b",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::OpaqueTtlv::with_ttlv",
+    ),
+    (
+        "rust-observed-9823383ae4df19191987",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::OpaqueTtlv::into_ttlv",
+    ),
+    (
         "rust-observed-63d3ca6826f6fd5a5933",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::SecretBytes",
@@ -1303,6 +1388,21 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-041098e8c308c48f52a8",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::SecretText::into_ttlv_value",
+    ),
+    (
+        "rust-observed-2c2a77056606466f51c1",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::TicketCredential",
+    ),
+    (
+        "rust-observed-124f495137045dee6844",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::TicketCredential::with_ttlv",
+    ),
+    (
+        "rust-observed-75d34e655796596bc13b",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::TicketCredential::into_ttlv",
     ),
     (
         "rust-observed-cf0c7611bde6020def37",
@@ -6846,6 +6946,51 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::CredentialType::Unknown::0",
     ),
     (
+        "rust-observed-ac8a29e6d6e418d7e453",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValue::Attestation::0",
+    ),
+    (
+        "rust-observed-282bf516fa38018a344b",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValue::Device::0",
+    ),
+    (
+        "rust-observed-f37d96dc118542347a63",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValue::Extensions::0",
+    ),
+    (
+        "rust-observed-414d8d76b784d8d3f4e1",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValue::HashedPassword::0",
+    ),
+    (
+        "rust-observed-75a0ed1ee2e81b27c81d",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValue::OneTimePassword::0",
+    ),
+    (
+        "rust-observed-71ae35b0dc54ea162d14",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValue::Ticket::0",
+    ),
+    (
+        "rust-observed-64491ccbde1352279bd0",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValue::Unknown::credential_type",
+    ),
+    (
+        "rust-observed-e5d2aad429a489c42576",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValue::Unknown::value",
+    ),
+    (
+        "rust-observed-4c1ec0269d783a355a29",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValue::UsernameAndPassword::0",
+    ),
+    (
         "rust-observed-8681e7bb9662a819b3b7",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::DelegatedLoginRequest",
@@ -8225,5 +8370,15 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-3a3570beb3af9b85a56b",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::UsernameAndPasswordCredential::try_from_ttlv",
+    ),
+    (
+        "rust-observed-3d6581292f42a0948095",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValue::credential_type_raw",
+    ),
+    (
+        "rust-observed-548c69cb98adda048e27",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValue::with_ttlv",
     ),
 ];

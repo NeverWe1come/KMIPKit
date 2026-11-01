@@ -61,8 +61,8 @@ public final class DeviceCredential implements AutoCloseable {
         if (activeViews.get() != 0) {
             throw new InvalidInputException("device credential is in use by a scoped view");
         }
-        return TtlvStructure.fromNative(
-                NativeExtensionRegistry.deviceCredentialIntoTtlv(handle.transfer()), this);
+        return CredentialInterop.intoTtlv(
+                handle, NativeExtensionRegistry::deviceCredentialIntoTtlv);
     }
 
     @Override

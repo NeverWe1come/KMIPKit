@@ -217,12 +217,11 @@ impl CredentialValue {
             Self::OneTimePassword(_) => 4,
             Self::HashedPassword(_) => 5,
             Self::Ticket(_) => 6,
-            Self::Extensions(value) => match value.extension_credential_type {
-                Some(raw) => raw,
+            Self::Extensions(value) => {
                 // The public extension variant is only created by the parser,
                 // which always records the received raw type.
-                None => 0x8000_0000,
-            },
+                value.extension_credential_type.unwrap_or(0x8000_0000)
+            }
             Self::Unknown {
                 credential_type, ..
             } => *credential_type,

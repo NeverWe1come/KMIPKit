@@ -71,8 +71,8 @@ public final class AttestationCredential implements AutoCloseable {
             throw new InvalidInputException(
                     "attestation credential is in use by a scoped view");
         }
-        return TtlvStructure.fromNative(
-                NativeExtensionRegistry.attestationCredentialIntoTtlv(handle.transfer()), this);
+        return CredentialInterop.intoTtlv(
+                handle, NativeExtensionRegistry::attestationCredentialIntoTtlv);
     }
 
     @Override

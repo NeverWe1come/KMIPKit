@@ -84,8 +84,8 @@ public final class HashedPasswordCredential implements AutoCloseable {
         if (activeViews.get() != 0) {
             throw new InvalidInputException("hashed password credential is in use by a scoped view");
         }
-        return TtlvStructure.fromNative(
-                NativeExtensionRegistry.hashedPasswordCredentialIntoTtlv(handle.transfer()), this);
+        return CredentialInterop.intoTtlv(
+                handle, NativeExtensionRegistry::hashedPasswordCredentialIntoTtlv);
     }
 
     @Override
