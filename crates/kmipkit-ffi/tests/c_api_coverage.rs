@@ -19,6 +19,7 @@ unsafe extern "C" {
 #[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
 unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_validates_attribute_set() -> i32;
+    fn kmipkit_client_abi_c_consumer_validates_standalone_attribute_requests() -> i32;
 }
 
 #[link(name = "kmipkit_credential_secret_abi_c_consumer", kind = "static")]
@@ -74,6 +75,15 @@ fn compiled_c_consumer_preserves_nonce_bytes_and_ttlv_structure() {
 fn compiled_c_consumer_validates_and_consumes_ordered_attribute_sets() {
     // SAFETY: The C consumer owns and releases every temporary handle it creates.
     let status = unsafe { kmipkit_client_abi_c_consumer_validates_attribute_set() };
+    assert_eq!(status, 1);
+}
+
+#[test]
+fn compiled_c_consumer_validates_standalone_attribute_request_models() {
+    // SAFETY: The C consumer owns and releases every temporary handle it creates.
+    let status = unsafe {
+        kmipkit_client_abi_c_consumer_validates_standalone_attribute_requests()
+    };
     assert_eq!(status, 1);
 }
 
