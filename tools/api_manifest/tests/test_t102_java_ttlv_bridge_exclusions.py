@@ -69,6 +69,12 @@ EXPECTED_TIMESTAMP_SEQUENCE_BRIDGE_EXPORTS = frozenset(
         "hashedPasswordTimestampSequenceLastTimestamp",
     )
 )
+EXPECTED_TTLV_PATH_BRIDGE_EXPORTS = frozenset(
+    {
+        "org.kmipkit.NativeExtensionRegistry.ttlvPathCreate",
+        "org.kmipkit.NativeExtensionRegistry.ttlvPathWithChildTag",
+    }
+)
 
 
 class JavaTtlvBridgeExclusionTests(unittest.TestCase):
@@ -141,6 +147,28 @@ class JavaTtlvBridgeExclusionTests(unittest.TestCase):
                 self.assertIn("KMIPKIT-0043-FR-008", exclusion["evidence"])
                 self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
                 self.assertIn("HashedPasswordTimestampSequence", exclusion["evidence"])
+                self.assertNotIn((PACKAGE, export_name), self.declarations)
+
+    def test_ttlv_path_jni_bridge_is_excluded_under_approved_extension_owner(self) -> None:
+        actual_exclusions = {
+            export_name
+            for package, export_name in self.exclusions
+            if package == PACKAGE and export_name in EXPECTED_TTLV_PATH_BRIDGE_EXPORTS
+        }
+        self.assertEqual(EXPECTED_TTLV_PATH_BRIDGE_EXPORTS, actual_exclusions)
+
+        for export_name in sorted(EXPECTED_TTLV_PATH_BRIDGE_EXPORTS):
+            with self.subTest(export_name=export_name):
+                exclusion = self.exclusions[(PACKAGE, export_name)]
+                self.assertEqual(PACKAGE, exclusion["packageId"])
+                self.assertEqual(export_name, exclusion["exportName"])
+                self.assertEqual(OWNER_SPEC, exclusion["approvalSource"]["path"])
+                self.assertEqual("Approved", exclusion["approvalSource"]["status"])
+                self.assertIn("JNI bridge", exclusion["reason"])
+                self.assertIn("TtlvPath facade", exclusion["reason"])
+                self.assertIn("KMIPKIT-0012-FR-002/006/010/012", exclusion["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-008", exclusion["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
                 self.assertNotIn((PACKAGE, export_name), self.declarations)
 
 
