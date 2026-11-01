@@ -7928,3 +7928,29 @@ Verification for this checkpoint:
 - `cargo fmt --all --check`, `cargo clippy -p kmipkit-ffi --all-targets --all-features -- -D warnings`, and `git diff --check` — passed. The local AWS-LC build emitted non-fatal toolchain warnings about its optional NASM/compiler-feature probes.
 
 The active KMIPKIT-0043 coverage-gate waiver remains in effect, so this checkpoint does not claim the branch coverage thresholds. Hosted CI and the independent final PR reviews must still run against the updated head.
+
+### T092 HashedPasswordCredential four-language mapping (2026-11-01)
+
+This batch maps `HashedPasswordCredential` from the approved KMIPKIT-0008 model through Rust, C, Java/JNI, and Python under FR-007/FR-010 and OASIS KMIP v2.1 §9.11/Table 415. The wrappers preserve original ordered TTLV and unknown raw Hashing Algorithm values, report the SHA-256 default when omitted without materializing a field, and do not compute or directly expose the hash bytes. Rust and each foreign-language consumer now reject duplicate fields and fields after their Table 415 order. No Credential send path or Authentication selection was added.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red — require four-language HashedPasswordCredential behavior and manifest ownership | `8f01ad11f` | Rust protocol, compiled C consumer, Java facade, Python facade, and T092 manifest contracts | The contracts exposed the missing HashedPasswordCredential binding and the declarations remained blocked until the facade was implemented. |
+| Red — require ready credential-secret capability availability and complete the FFI export audit input set | `7fd135eab` | `cargo test -p kmipkit --test runtime_metadata capability_query_matches_manifest_ready_capabilities`; FFI metadata tests | The new runtime assertion failed with `Ok(false)` for `credential_secret_parity`; the C metadata test also exposed a stale capability list and an omitted `credential_secrets.rs` source in its export scan. |
+| Green — advertise the ready capability and implement HashedPasswordCredential parity | `f7cda0f57`, `898e470f7` | Full focused verification below | Rust runtime metadata now matches the manifest. All four language surfaces expose the typed wrapper; exact TTLV is retained and all 12 generated API outputs are current. |
+| Refactor/evidence — record normative traceability, current inventories, QA disposition, and verification | this commit | Documentation, formatting, generator, Rust/binding audits, Rust/FFI/C/Java/Python checks, and whitespace validation | T092 maps 68/97 functional declarations; 29 remain blocked. The task remains open. |
+
+Verification for this checkpoint:
+
+- `cargo fmt --all --check`, `cargo clippy -p kmipkit-ffi --all-targets --all-features -- -D warnings`, and `git diff --check` — passed.
+- `cargo test -p kmipkit-protocol --all-features` — passed, including the §9.11 Table 415 duplicate/order negatives.
+- `cargo test -p kmipkit-ffi --all-features` — passed: 334 unit tests and 31 integration/C-consumer tests; doc tests passed.
+- From `bindings/java`, `gradlew.bat test --tests org.kmipkit.credentials.HashedPasswordCredentialFacadeTest` — `BUILD SUCCESSFUL`.
+- Python 3.12 isolated installed-package `pytest -q` from `bindings/python` — 881 passed, 1 skipped.
+- `py -3 -B -m unittest tools.api_manifest.tests.test_t092_credentials_parity_manifest -v` — 19 passed; `py -3 -B tools/api_manifest/generate.py --check` — all 12 outputs verified.
+- Binding export audit — zero discrepancies: C 659/659, Java 1,046/1,046, Python 1,038/1,038. Rust export audit — 8,814/8,814 declarations matched, 1,645 exact exclusions, zero issues. Shared Rust inventory — 10,459 observed declarations, 710 mapped, 1,645 approved exact exclusions.
+- Security review found no reportable defect in the HashedPasswordCredential data path. QA's missing duplicate/order negatives are covered across Rust, C, Java, and Python. QA classified `HashedPasswordTimestampSequence` as a separate KMIPKIT-0043 candidate tracked by T102, outside T092's KMIPKIT-0008 candidate set.
+
+Local Windows builds emitted non-fatal AWS-LC optional compiler-feature/NASM probe warnings and a C consumer linker warning; the commands above completed successfully. The temporary coverage-gate waiver for PR #104 remains active, so this checkpoint does not claim the branch coverage thresholds or close T092. Hosted CI must rerun on the pushed PR head before the PR can leave draft status.
+
+QA follow-up (2026-11-01): a Username readback assertion gap was closed in tests without changing production code. Rust now asserts the exact Text String `alice` after typed round-trip. C, Java, and Python assert the exact UTF-8 bytes in both scoped views and transferred TTLV; their Timestamp assertions also verify the exact DateTimeExtended value on those paths. Fresh verification: Rust credential contract hashed-password cases passed (8/8), compiled C consumer test passed (1/1), Java facade test passed, Python hashed-password tests passed (4/4), `cargo fmt --all --check` passed, and `git diff --check` passed. Independent QA recheck confirmed the exact Username readback coverage in all four languages and found no remaining material gap in this scope; the reviewer did not run tests.
