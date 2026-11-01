@@ -5,8 +5,8 @@ const ERROR_NONE: u32 = 0;
 const ERROR_CATEGORY_VALIDATION: u32 = 1;
 const ERROR_CAUSE_INVALID_INPUT: u32 = 1;
 const DELIVERY_NONE: u32 = 0;
-// Only the unresolved extension-registry value accessor remains blocked.
-const BLOCKED_C_SYMBOLS: [&str; 1] = ["kmipkit_validated_extension_value_value_at"];
+// Every extension-registry C symbol now has an approved public API mapping.
+const BLOCKED_C_SYMBOLS: [&str; 0] = [];
 
 fn starts_inside_shared_panic_boundary(body: &str) -> bool {
     body.trim_start().starts_with("ffi_entrypoint(||")
