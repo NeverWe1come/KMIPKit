@@ -8189,3 +8189,29 @@ Verification and generated audit evidence:
 - Binding audit `--check` passed and wrote `reports/binding-export-report-2026-11-01.json`: C 796 observed/752 matched, Java 1,525/1,119, and Python 1,911/1,132; zero missing, unobserved, kind-mismatched, or issue rows.
 - `py -B tools/api_manifest/generate.py --check` verifies all 12 generated outputs. `git diff --check` passed after the evidence and task updates.
 - The `tools/api_manifest/tests/test_binding_exports.py` `native_members` expectation was expanded only to account for the 10 T097 exclusions already approved and present in the T101 base, including `attributeSetTryPush`. This audit-test expectation correction did not change any manifest exclusion.
+
+### T102 Hashed Password timestamp sequence parity checkpoint (2026-11-01)
+
+This checkpoint resolves one T102 slice only. OASIS KMIP Specification v2.1 §9.11 requires the Hashed Password Timestamp used to produce the hash to increase monotonically and Table 415 types the field as Date Time Extended (`specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html:44598-44602, 44677-44690`). KMIPKIT-0008 OD-003, approved through KMIPKIT-0010 T056, supplies the project scope where OASIS is silent: one caller-owned sequence per Username and logical credential producer, caller-provided current timestamps, strict `new > previous`, and caller persistence/restoration when continuity across process restarts is required. KMIPKit does not read a clock, calculate the hash, or transmit Credentials.
+
+The five functional Rust declarations for `HashedPasswordTimestampSequence` and its payload-free error now map through the C ABI, Java/JNI, and Python/CFFI. All 36 exact Rust standard-trait artifacts for the sequence/error types have owner-approved KMIPKIT-0008 exclusions; these exclusions retain the types and inherent APIs. The shared fixture cites §9.11/Table 415 and OD-003. The C consumer now verifies that `has_last_timestamp = 2` returns `KMIPKIT_ERROR_INVALID_INPUT` and produces no handle. Rust, Java, and Python consumers verify restoration, strict increase, rejection without state change, independent instances, signed `i64` endpoints, and cleanup according to their ownership model.
+
+| Phase | Commits | Evidence |
+|---|---|---|
+| Red — add the T102 shared API contract | `4b3371905` | Four-language declaration and shared-fixture contracts for the timestamp sequence. |
+| Red — require source citation and exact owner exclusions | `c200874b1`, `c3e9bcba1` | Manifest tests fail when the fixture source citation or 36 exact owner exclusions are absent. |
+| Test-only hardening for invalid C/Python inputs | `817d7a7f5`, `046820360` | Adds a compiled C rejection case for presence flag `2` and Python rejection cases for booleans, floats, and values outside signed `i64`; the implementation already enforced these checks. |
+| Green — implement and generate four-language parity | `068a16bf5` | Opaque C handle, JNI and CFFI adapters, Java/Python wrappers, manifest mappings/exclusions, fixture citation, and 12 generated outputs. |
+| Refactor/evidence — record the slice and QA corrections | This checkpoint | Scope documentation is aligned across Rust/C/Java/Python; the task remains open for all other KMIPKIT-0043 candidates. |
+
+Verification:
+
+- `py -B -m unittest tools.api_manifest.tests.test_t102_hashed_password_timestamp_sequence -v` — 4 passed; `py -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
+- `cargo test -p kmipkit-protocol --test credential_contract hashed_password_timestamp_sequence` — 5 passed.
+- `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage compiled_c_consumer_matches_hashed_password_timestamp_sequence_fixture` — 1 passed, including the invalid C presence flag.
+- `gradlew.bat test` from `bindings/java` — BUILD SUCCESSFUL.
+- Built the Python wheel offline with pinned maturin 1.9.4 and CFFI 1.17.1, installed it into an isolated target directory, then ran `pytest -q bindings/python/tests/test_shared_parity_fixtures.py` — 38 passed, including invalid boolean, floating-point, and signed-`i64` overflow inputs.
+- `cargo fmt --all --check`, `cargo clippy -p kmipkit-protocol -p kmipkit-ffi --all-targets --all-features -- -D warnings`, and `git diff --check` — passed. AWS-LC emitted non-fatal optional compiler-feature/NASM probe warnings on Windows.
+- Independent QA found no behavior blocker; its documentation-scope, normative-citation, and negative-C-constructor observations are addressed above. Independent security review reported no actionable finding (scan `5027f201-f513-4168-9d86-b8dc3a98170e`; report under the local Codex Security scan state).
+
+The current manifest has zero KMIPKIT-0043 candidate rows for this sequence slice and 4,369 other blocked KMIPKIT-0043 candidates. T102 therefore remains unchecked. This checkpoint does not claim the PR, branch, full T102, coverage thresholds, or KMIP conformance complete.
