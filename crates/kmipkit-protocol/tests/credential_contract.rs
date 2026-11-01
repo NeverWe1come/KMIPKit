@@ -992,7 +992,6 @@ fn attestation_requires_nonce_type_and_one_or_both_evidence_fields() {
     }
 }
 
-
 // KMIP Specification v2.1 §9.11, Tables 414 and 416, and Table 442 require
 // the generic Credential Value facade to retain its discriminator and TTLV.
 #[test]
@@ -1002,7 +1001,10 @@ fn credential_value_exposes_raw_type_and_scoped_ttlv_without_rebuilding() {
             4,
             structure([
                 item(USERNAME, Value::text_string("alice".to_owned())),
-                item(ONE_TIME_PASSWORD, Value::text_string("otp-sentinel".to_owned())),
+                item(
+                    ONE_TIME_PASSWORD,
+                    Value::text_string("otp-sentinel".to_owned()),
+                ),
             ]),
             vec![USERNAME, ONE_TIME_PASSWORD],
         ),

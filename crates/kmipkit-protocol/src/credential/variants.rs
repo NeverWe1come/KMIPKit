@@ -52,13 +52,17 @@ pub struct TicketCredential {
 /// An opaque TTLV Structure for extension and unknown Credential Types.
 pub struct OpaqueTtlv {
     tree: Structure,
+    extension_credential_type: Option<u32>,
 }
 
 macro_rules! impl_tree_value {
     ($type:ty, $label:literal) => {
+        impl_tree_value!($type, $label, |tree| Self { tree });
+    };
+    ($type:ty, $label:literal, $make:expr) => {
         impl $type {
             fn from_tree(tree: Structure) -> Self {
-                Self { tree }
+                ($make)(tree)
             }
 
             /// Lends the original ordered TTLV Structure for callback-scoped access.
@@ -97,7 +101,19 @@ impl_tree_value!(
 impl_tree_value!(DeviceCredential, "DeviceCredential");
 impl_tree_value!(OneTimePasswordCredential, "OneTimePasswordCredential");
 impl_tree_value!(TicketCredential, "TicketCredential");
-impl_tree_value!(OpaqueTtlv, "OpaqueTtlv");
+impl_tree_value!(OpaqueTtlv, "OpaqueTtlv", |tree| Self {
+    tree,
+    extension_credential_type: None,
+});
+
+impl OpaqueTtlv {
+    fn from_extension_tree(tree: Structure, credential_type: u32) -> Self {
+        Self {
+            tree,
+            extension_credential_type: Some(credential_type),
+        }
+    }
+}
 
 impl UsernameAndPasswordCredential {
     /// Validates and retains a Username and Password Credential Value.
@@ -182,12 +198,47 @@ impl CredentialValue {
                 Ok(Self::Ticket(TicketCredential::from_tree(tree)))
             }
             raw if (0x8000_0000..=0x8FFF_FFFF).contains(&raw) => {
-                Ok(Self::Extensions(OpaqueTtlv::from_tree(tree)))
+                Ok(Self::Extensions(OpaqueTtlv::from_extension_tree(tree, raw)))
             }
             raw => Ok(Self::Unknown {
                 credential_type: raw,
                 value: OpaqueTtlv::from_tree(tree),
             }),
+        }
+    }
+
+    /// Returns the original unsigned Credential Type value used to validate this structure.
+    #[must_use]
+    pub fn credential_type_raw(&self) -> u32 {
+        match self {
+            Self::UsernameAndPassword(_) => 1,
+            Self::Device(_) => 2,
+            Self::Attestation(_) => 3,
+            Self::OneTimePassword(_) => 4,
+            Self::HashedPassword(_) => 5,
+            Self::Ticket(_) => 6,
+            Self::Extensions(value) => match value.extension_credential_type {
+                Some(raw) => raw,
+                // The public extension variant is only created by the parser,
+                // which always records the received raw type.
+                None => 0x8000_0000,
+            },
+            Self::Unknown {
+                credential_type, ..
+            } => *credential_type,
+        }
+    }
+
+    /// Lends the original ordered TTLV Structure for callback-scoped access.
+    pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> R {
+        match self {
+            Self::UsernameAndPassword(value) => value.with_ttlv(callback),
+            Self::Device(value) => value.with_ttlv(callback),
+            Self::Attestation(value) => value.with_ttlv(callback),
+            Self::OneTimePassword(value) => value.with_ttlv(callback),
+            Self::HashedPassword(value) => value.with_ttlv(callback),
+            Self::Ticket(value) => value.with_ttlv(callback),
+            Self::Extensions(value) | Self::Unknown { value, .. } => value.with_ttlv(callback),
         }
     }
 
