@@ -251,6 +251,15 @@ class WorkflowContractTests(unittest.TestCase):
             "Every supported pull-request platform must run fixture generator rejection tests.",
         )
 
+    def test_script_contract_job_runs_t102_java_ttlv_bridge_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_java_ttlv_bridge_exclusions -v",
+            python_contracts,
+            "The exact T102 JNI bridge exclusion contract must run on each supported platform.",
+        )
     def test_script_contract_job_installs_pinned_fixture_test_dependencies(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "script-contracts")
