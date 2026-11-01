@@ -1289,8 +1289,15 @@ int32_t kmipkit_hashed_password_timestamp_sequence_c_consumer_contract(
     kmipkit_hashed_password_timestamp_sequence_t *first = 0;
     kmipkit_hashed_password_timestamp_sequence_t *second = 0;
     kmipkit_hashed_password_timestamp_sequence_t *boundary = 0;
+    kmipkit_hashed_password_timestamp_sequence_t *invalid_flag = 0;
 
-    status = kmipkit_hashed_password_timestamp_sequence_new(
+    if (kmipkit_hashed_password_timestamp_sequence_new(
+                2, restored_timestamp, &invalid_flag) != KMIPKIT_ERROR_INVALID_INPUT
+            || invalid_flag != 0) {
+        status = 1;
+    }
+
+    if (status == 0) status = kmipkit_hashed_password_timestamp_sequence_new(
             1, restored_timestamp, &restored);
     if (status == 0) status = kmipkit_hashed_password_timestamp_sequence_last_timestamp(
             restored, &present, &observed);
