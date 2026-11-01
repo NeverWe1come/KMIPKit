@@ -808,6 +808,13 @@ class PublicApiParityTests(unittest.TestCase):
                     # This Java accessor reads the batch's locally maintained
                     # count; it intentionally has no JNI bridge symbol.
                     "client_batch_item_count",
+                    # Each crypto response JNI aggregate returns its typed
+                    # fields and the complete successful response TTLV.
+                    "client_batch_item_response_hash_ttlv",
+                    "client_batch_item_response_mac_ttlv",
+                    "client_batch_item_response_mac_verify_ttlv",
+                    "client_batch_item_response_sign_ttlv",
+                    "client_batch_item_response_signature_verify_ttlv",
                     "client_batch_item_response_delegated_login_ttlv",
                     "client_batch_item_response_login_ttlv",
                     "client_batch_item_response_locate_unique_identifier_at",
