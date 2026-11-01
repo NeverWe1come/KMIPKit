@@ -31,6 +31,11 @@ typedef struct kmipkit_client_batch_item_response_t kmipkit_client_batch_item_re
 typedef struct kmipkit_usage_allocation_context_t kmipkit_usage_allocation_context_t;
 typedef struct kmipkit_revocation_reason_t kmipkit_revocation_reason_t;
 typedef struct kmipkit_revoke_request_t kmipkit_revoke_request_t;
+typedef struct kmipkit_add_attribute_request_t kmipkit_add_attribute_request_t;
+typedef struct kmipkit_adjust_attribute_request_t kmipkit_adjust_attribute_request_t;
+typedef struct kmipkit_delete_attribute_request_t kmipkit_delete_attribute_request_t;
+typedef struct kmipkit_modify_attribute_request_t kmipkit_modify_attribute_request_t;
+typedef struct kmipkit_set_attribute_request_t kmipkit_set_attribute_request_t;
 typedef struct kmipkit_request_message_t kmipkit_request_message_t;
 typedef struct kmipkit_request_header_view_t kmipkit_request_header_view_t;
 typedef struct kmipkit_request_batch_item_view_t kmipkit_request_batch_item_view_t;
@@ -196,6 +201,58 @@ int32_t kmipkit_client_batch_item_modify_attribute(
 int32_t kmipkit_client_batch_item_set_attribute(
         const kmipkit_unique_identifier_v1_t*, kmipkit_ttlv_item_t*,
         kmipkit_client_batch_item_t**);
+int32_t kmipkit_add_attribute_request_create(
+        const kmipkit_unique_identifier_v1_t*, kmipkit_ttlv_item_t*,
+        kmipkit_add_attribute_request_t**);
+int32_t kmipkit_add_attribute_request_new_attribute(
+        kmipkit_add_attribute_request_t*, kmipkit_ttlv_item_t**);
+int32_t kmipkit_add_attribute_request_to_ttlv_payload(
+        kmipkit_add_attribute_request_t*, kmipkit_ttlv_structure_t**);
+int32_t kmipkit_client_batch_item_add_attribute_from_request(
+        kmipkit_add_attribute_request_t*, kmipkit_client_batch_item_t**);
+void kmipkit_add_attribute_request_release(kmipkit_add_attribute_request_t*);
+int32_t kmipkit_adjust_attribute_request_create(
+        const kmipkit_unique_identifier_v1_t*, const kmipkit_attribute_reference_v1_t*,
+        uint32_t, kmipkit_ttlv_value_t*, kmipkit_adjust_attribute_request_t**);
+int32_t kmipkit_adjust_attribute_request_adjustment_value(
+        kmipkit_adjust_attribute_request_t*, uint8_t*, kmipkit_ttlv_value_t**);
+int32_t kmipkit_adjust_attribute_request_to_ttlv_payload(
+        kmipkit_adjust_attribute_request_t*, kmipkit_ttlv_structure_t**);
+int32_t kmipkit_client_batch_item_adjust_attribute_from_request(
+        kmipkit_adjust_attribute_request_t*, kmipkit_client_batch_item_t**);
+void kmipkit_adjust_attribute_request_release(kmipkit_adjust_attribute_request_t*);
+int32_t kmipkit_delete_attribute_request_create(
+        const kmipkit_unique_identifier_v1_t*, kmipkit_ttlv_item_t*,
+        const kmipkit_attribute_reference_v1_t*, kmipkit_delete_attribute_request_t**);
+int32_t kmipkit_delete_attribute_request_current_attribute(
+        kmipkit_delete_attribute_request_t*, uint8_t*, kmipkit_ttlv_item_t**);
+int32_t kmipkit_delete_attribute_request_to_ttlv_payload(
+        kmipkit_delete_attribute_request_t*, kmipkit_ttlv_structure_t**);
+int32_t kmipkit_client_batch_item_delete_attribute_from_request(
+        kmipkit_delete_attribute_request_t*, kmipkit_client_batch_item_t**);
+void kmipkit_delete_attribute_request_release(kmipkit_delete_attribute_request_t*);
+int32_t kmipkit_modify_attribute_request_create(
+        const kmipkit_unique_identifier_v1_t*, kmipkit_ttlv_item_t*, kmipkit_ttlv_item_t*,
+        kmipkit_modify_attribute_request_t**);
+int32_t kmipkit_modify_attribute_request_current_attribute(
+        kmipkit_modify_attribute_request_t*, uint8_t*, kmipkit_ttlv_item_t**);
+int32_t kmipkit_modify_attribute_request_new_attribute(
+        kmipkit_modify_attribute_request_t*, kmipkit_ttlv_item_t**);
+int32_t kmipkit_modify_attribute_request_to_ttlv_payload(
+        kmipkit_modify_attribute_request_t*, kmipkit_ttlv_structure_t**);
+int32_t kmipkit_client_batch_item_modify_attribute_from_request(
+        kmipkit_modify_attribute_request_t*, kmipkit_client_batch_item_t**);
+void kmipkit_modify_attribute_request_release(kmipkit_modify_attribute_request_t*);
+int32_t kmipkit_set_attribute_request_create(
+        const kmipkit_unique_identifier_v1_t*, kmipkit_ttlv_item_t*,
+        kmipkit_set_attribute_request_t**);
+int32_t kmipkit_set_attribute_request_new_attribute(
+        kmipkit_set_attribute_request_t*, kmipkit_ttlv_item_t**);
+int32_t kmipkit_set_attribute_request_to_ttlv_payload(
+        kmipkit_set_attribute_request_t*, kmipkit_ttlv_structure_t**);
+int32_t kmipkit_client_batch_item_set_attribute_from_request(
+        kmipkit_set_attribute_request_t*, kmipkit_client_batch_item_t**);
+void kmipkit_set_attribute_request_release(kmipkit_set_attribute_request_t*);
 int32_t kmipkit_client_batch_item_response_modify_attribute(
         kmipkit_client_batch_item_response_t*, uint8_t*, kmipkit_unique_identifier_v1_t*);
 int32_t kmipkit_client_batch_item_response_set_attribute(
@@ -579,6 +636,20 @@ jlong return_handle(JNIEnv* env, Function&& function, bool nullable = false) noe
         return 0;
     }
     return to_java_handle(output);
+}
+
+jobject wrap_owned_ttlv_handle(JNIEnv* env, jlong handle, const char* class_name) noexcept {
+    if (handle == 0) return nullptr;
+    jclass type = env->FindClass(class_name);
+    if (type == nullptr) return nullptr;
+    jmethodID constructor = env->GetMethodID(type, "<init>", "(J)V");
+    if (constructor == nullptr) {
+        env->DeleteLocalRef(type);
+        return nullptr;
+    }
+    jobject result = env->NewObject(type, constructor, handle);
+    env->DeleteLocalRef(type);
+    return result;
 }
 
 template <typename Function>
@@ -4593,6 +4664,16 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_release(
                 from_java_handle<kmipkit_process_request_t>(raw_handle)); break;
         case 59: kmipkit_query_async_requests_request_release(
                 from_java_handle<kmipkit_query_async_requests_request_t>(raw_handle)); break;
+        case 60: kmipkit_add_attribute_request_release(
+                from_java_handle<kmipkit_add_attribute_request_t>(raw_handle)); break;
+        case 61: kmipkit_adjust_attribute_request_release(
+                from_java_handle<kmipkit_adjust_attribute_request_t>(raw_handle)); break;
+        case 62: kmipkit_delete_attribute_request_release(
+                from_java_handle<kmipkit_delete_attribute_request_t>(raw_handle)); break;
+        case 63: kmipkit_modify_attribute_request_release(
+                from_java_handle<kmipkit_modify_attribute_request_t>(raw_handle)); break;
+        case 64: kmipkit_set_attribute_request_release(
+                from_java_handle<kmipkit_set_attribute_request_t>(raw_handle)); break;
         default: throw_invalid_input(env); break;
         }
         return 0;
@@ -9977,6 +10058,298 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_processRequestT
             return kmipkit_process_request_to_ttlv_payload(
                     from_java_handle<kmipkit_process_request_t>(raw_request), output);
         });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_attributeRequestCreate(
+        JNIEnv* env, jclass, jint operation, jint raw_identifier_kind,
+        jbyteArray raw_identifier_text, jlong raw_identifier_number,
+        jlong raw_current_attribute, jlong raw_new_attribute, jint raw_reference_kind,
+        jlong raw_reference_tag, jbyteArray raw_vendor_identification,
+        jbyteArray raw_attribute_name, jlong raw_adjustment_type,
+        jlong raw_adjustment_value) {
+    return guarded<jlong>(env, 0, [&] {
+        std::vector<uint8_t> identifier_text;
+        std::vector<uint8_t> vendor_identification;
+        std::vector<uint8_t> attribute_name;
+        kmipkit::secure::VectorWiper identifier_text_wiper(identifier_text);
+        kmipkit::secure::VectorWiper vendor_identification_wiper(vendor_identification);
+        kmipkit::secure::VectorWiper attribute_name_wiper(attribute_name);
+        kmipkit_unique_identifier_v1_t identifier{};
+        bool identifier_present = false;
+        if (!read_optional_identifier(env, raw_identifier_kind, raw_identifier_text,
+                    raw_identifier_number, &identifier, identifier_text, &identifier_present)) {
+            return static_cast<jlong>(0);
+        }
+        if (identifier_present
+                && identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        const kmipkit_unique_identifier_v1_t* identifier_pointer =
+                identifier_present ? &identifier : nullptr;
+
+        kmipkit_attribute_reference_v1_t reference{};
+        const kmipkit_attribute_reference_v1_t* reference_pointer = nullptr;
+        if (raw_reference_kind == KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG) {
+            if (raw_reference_tag < 0
+                    || static_cast<uint64_t>(raw_reference_tag) > UINT32_MAX
+                    || raw_vendor_identification != nullptr || raw_attribute_name != nullptr) {
+                throw_invalid_input(env);
+                return static_cast<jlong>(0);
+            }
+            reference.struct_size = static_cast<uint32_t>(sizeof(reference));
+            reference.abi_version = 1;
+            reference.kind = KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG;
+            reference.tag_value = static_cast<uint32_t>(raw_reference_tag);
+            reference_pointer = &reference;
+        } else if (raw_reference_kind == KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME) {
+            if (raw_reference_tag != 0 || raw_vendor_identification == nullptr
+                    || raw_attribute_name == nullptr
+                    || !read_java_bytes(env, raw_vendor_identification,
+                            vendor_identification, false)
+                    || !read_java_bytes(env, raw_attribute_name, attribute_name, false)) {
+                if (!env->ExceptionCheck()) throw_invalid_input(env);
+                return static_cast<jlong>(0);
+            }
+            reference.struct_size = static_cast<uint32_t>(sizeof(reference));
+            reference.abi_version = 1;
+            reference.kind = KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME;
+            reference.vendor_identification_data = vendor_identification.empty()
+                    ? nullptr : vendor_identification.data();
+            reference.vendor_identification_length =
+                    static_cast<uint64_t>(vendor_identification.size());
+            reference.attribute_name_data = attribute_name.empty()
+                    ? nullptr : attribute_name.data();
+            reference.attribute_name_length = static_cast<uint64_t>(attribute_name.size());
+            reference_pointer = &reference;
+        } else if (raw_reference_kind != 0 || raw_reference_tag != 0
+                || raw_vendor_identification != nullptr || raw_attribute_name != nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+
+        if (operation == 1
+                && (raw_adjustment_type < 0
+                    || static_cast<uint64_t>(raw_adjustment_type) > UINT32_MAX)) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        const bool unused_adjustment = operation != 1
+                && (raw_adjustment_type != 0 || raw_adjustment_value != 0);
+        if (unused_adjustment) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        switch (operation) {
+        case 0:
+            if (raw_current_attribute != 0 || reference_pointer != nullptr
+                    || raw_new_attribute == 0) {
+                throw_invalid_input(env);
+                return static_cast<jlong>(0);
+            }
+            return return_handle<kmipkit_add_attribute_request_t>(env, [&](auto output) {
+                return kmipkit_add_attribute_request_create(
+                        identifier_pointer,
+                        from_java_handle<kmipkit_ttlv_item_t>(raw_new_attribute), output);
+            });
+        case 1:
+            if (raw_current_attribute != 0 || raw_new_attribute != 0
+                    || reference_pointer == nullptr) {
+                throw_invalid_input(env);
+                return static_cast<jlong>(0);
+            }
+            return return_handle<kmipkit_adjust_attribute_request_t>(env, [&](auto output) {
+                return kmipkit_adjust_attribute_request_create(
+                        identifier_pointer, reference_pointer,
+                        static_cast<uint32_t>(raw_adjustment_type),
+                        raw_adjustment_value == 0 ? nullptr
+                                : from_java_handle<kmipkit_ttlv_value_t>(raw_adjustment_value),
+                        output);
+            });
+        case 2:
+            if (raw_new_attribute != 0 || raw_adjustment_value != 0) {
+                throw_invalid_input(env);
+                return static_cast<jlong>(0);
+            }
+            return return_handle<kmipkit_delete_attribute_request_t>(env, [&](auto output) {
+                return kmipkit_delete_attribute_request_create(
+                        identifier_pointer,
+                        raw_current_attribute == 0 ? nullptr
+                                : from_java_handle<kmipkit_ttlv_item_t>(raw_current_attribute),
+                        reference_pointer, output);
+            });
+        case 3:
+            if (reference_pointer != nullptr || raw_new_attribute == 0
+                    || raw_adjustment_value != 0) {
+                throw_invalid_input(env);
+                return static_cast<jlong>(0);
+            }
+            return return_handle<kmipkit_modify_attribute_request_t>(env, [&](auto output) {
+                return kmipkit_modify_attribute_request_create(
+                        identifier_pointer,
+                        raw_current_attribute == 0 ? nullptr
+                                : from_java_handle<kmipkit_ttlv_item_t>(raw_current_attribute),
+                        from_java_handle<kmipkit_ttlv_item_t>(raw_new_attribute), output);
+            });
+        case 4:
+            if (raw_current_attribute != 0 || reference_pointer != nullptr
+                    || raw_new_attribute == 0 || raw_adjustment_value != 0) {
+                throw_invalid_input(env);
+                return static_cast<jlong>(0);
+            }
+            return return_handle<kmipkit_set_attribute_request_t>(env, [&](auto output) {
+                return kmipkit_set_attribute_request_create(
+                        identifier_pointer,
+                        from_java_handle<kmipkit_ttlv_item_t>(raw_new_attribute), output);
+            });
+        default:
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+    });
+}
+
+JNIEXPORT jobject JNICALL Java_org_kmipkit_NativeExtensionRegistry_attributeRequestTtlvItem(
+        JNIEnv* env, jclass, jint operation, jlong raw_request, jint field) {
+    return guarded<jobject>(env, nullptr, [&] {
+        jlong raw_item = 0;
+        bool optional_item = false;
+        switch (operation) {
+        case 0:
+            if (field != 1) break;
+            raw_item = return_handle<kmipkit_ttlv_item_t>(env, [&](auto output) {
+                return kmipkit_add_attribute_request_new_attribute(
+                        from_java_handle<kmipkit_add_attribute_request_t>(raw_request), output);
+            });
+            break;
+        case 2:
+            if (field != 0) break;
+            optional_item = true;
+            raw_item = return_handle<kmipkit_ttlv_item_t>(env, [&](auto output) {
+                uint8_t present = 0;
+                const int32_t status = kmipkit_delete_attribute_request_current_attribute(
+                        from_java_handle<kmipkit_delete_attribute_request_t>(raw_request),
+                        &present, output);
+                return present == 0 && status == 0 ? 0 : status;
+            }, true);
+            break;
+        case 3:
+            if (field == 0) {
+                optional_item = true;
+                raw_item = return_handle<kmipkit_ttlv_item_t>(env, [&](auto output) {
+                    uint8_t present = 0;
+                    const int32_t status = kmipkit_modify_attribute_request_current_attribute(
+                            from_java_handle<kmipkit_modify_attribute_request_t>(raw_request),
+                            &present, output);
+                    return present == 0 && status == 0 ? 0 : status;
+                }, true);
+            } else if (field == 1) {
+                raw_item = return_handle<kmipkit_ttlv_item_t>(env, [&](auto output) {
+                    return kmipkit_modify_attribute_request_new_attribute(
+                            from_java_handle<kmipkit_modify_attribute_request_t>(raw_request),
+                            output);
+                });
+            } else {
+                break;
+            }
+            break;
+        case 4:
+            if (field != 1) break;
+            raw_item = return_handle<kmipkit_ttlv_item_t>(env, [&](auto output) {
+                return kmipkit_set_attribute_request_new_attribute(
+                        from_java_handle<kmipkit_set_attribute_request_t>(raw_request), output);
+            });
+            break;
+        default:
+            break;
+        }
+        if (raw_item == 0) {
+            if (!env->ExceptionCheck() && !optional_item) throw_invalid_input(env);
+            return static_cast<jobject>(nullptr);
+        }
+        return wrap_owned_ttlv_handle(env, raw_item, "org/kmipkit/ttlv/TtlvItem");
+    });
+}
+
+JNIEXPORT jobject JNICALL Java_org_kmipkit_NativeExtensionRegistry_attributeRequestTtlvValue(
+        JNIEnv* env, jclass, jint operation, jlong raw_request) {
+    return guarded<jobject>(env, nullptr, [&] {
+        if (operation != 1) {
+            throw_invalid_input(env);
+            return static_cast<jobject>(nullptr);
+        }
+        uint8_t present = 0;
+        const jlong raw_value = return_handle<kmipkit_ttlv_value_t>(env, [&](auto output) {
+            const int32_t status = kmipkit_adjust_attribute_request_adjustment_value(
+                    from_java_handle<kmipkit_adjust_attribute_request_t>(raw_request),
+                    &present, output);
+            return present == 0 && status == 0 ? 0 : status;
+        }, true);
+        if (raw_value == 0) return static_cast<jobject>(nullptr);
+        return wrap_owned_ttlv_handle(env, raw_value, "org/kmipkit/ttlv/TtlvValue");
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_attributeRequestToTtlvPayload(
+        JNIEnv* env, jclass, jint operation, jlong raw_request) {
+    return guarded<jlong>(env, 0, [&] {
+        switch (operation) {
+        case 0: return return_handle<kmipkit_ttlv_structure_t>(env, [&](auto output) {
+            return kmipkit_add_attribute_request_to_ttlv_payload(
+                    from_java_handle<kmipkit_add_attribute_request_t>(raw_request), output);
+        });
+        case 1: return return_handle<kmipkit_ttlv_structure_t>(env, [&](auto output) {
+            return kmipkit_adjust_attribute_request_to_ttlv_payload(
+                    from_java_handle<kmipkit_adjust_attribute_request_t>(raw_request), output);
+        });
+        case 2: return return_handle<kmipkit_ttlv_structure_t>(env, [&](auto output) {
+            return kmipkit_delete_attribute_request_to_ttlv_payload(
+                    from_java_handle<kmipkit_delete_attribute_request_t>(raw_request), output);
+        });
+        case 3: return return_handle<kmipkit_ttlv_structure_t>(env, [&](auto output) {
+            return kmipkit_modify_attribute_request_to_ttlv_payload(
+                    from_java_handle<kmipkit_modify_attribute_request_t>(raw_request), output);
+        });
+        case 4: return return_handle<kmipkit_ttlv_structure_t>(env, [&](auto output) {
+            return kmipkit_set_attribute_request_to_ttlv_payload(
+                    from_java_handle<kmipkit_set_attribute_request_t>(raw_request), output);
+        });
+        default:
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemFromAttributeRequest(
+        JNIEnv* env, jclass, jint operation, jlong raw_request) {
+    return guarded<jlong>(env, 0, [&] {
+        switch (operation) {
+        case 0: return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_add_attribute_from_request(
+                    from_java_handle<kmipkit_add_attribute_request_t>(raw_request), output);
+        });
+        case 1: return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_adjust_attribute_from_request(
+                    from_java_handle<kmipkit_adjust_attribute_request_t>(raw_request), output);
+        });
+        case 2: return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_delete_attribute_from_request(
+                    from_java_handle<kmipkit_delete_attribute_request_t>(raw_request), output);
+        });
+        case 3: return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_modify_attribute_from_request(
+                    from_java_handle<kmipkit_modify_attribute_request_t>(raw_request), output);
+        });
+        case 4: return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_set_attribute_from_request(
+                    from_java_handle<kmipkit_set_attribute_request_t>(raw_request), output);
+        });
+        default:
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
     });
 }
 
