@@ -13,8 +13,8 @@ MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 OWNER_SPEC = "specs/020-query-ping/spec.md"
 BASE_CANDIDATE_COUNT = 262
 BASE_CANDIDATE_SHA256 = "a525c1d1f8af9eb4d76ef7c243f0ab780bdb2fbbe8a486865de933059cf6a48a"
-T100_MAPPING_COUNT = 16
-T100_EXCLUSION_COUNT = 246
+T100_MAPPING_COUNT = 12
+T100_EXCLUSION_COUNT = 250
 SHARED_REQUIREMENTS = {
     "KMIPKIT-0043-FR-004",
     "KMIPKIT-0043-FR-005",
@@ -83,22 +83,6 @@ def _expected_mappings() -> dict[str, tuple[str, dict[str, str], set[str]]]:
                     {**request_targets, "rust": export_name},
                     request_requirements,
                 )
-            execute_targets = {
-                "rust": f"{package}::Client::{operation.lower()}",
-                "c": "kmipkit_client_execute",
-                "java": "org.kmipkit.extensions.Client.execute",
-                "python": "kmipkit.client.Client.execute",
-            }
-            execute_requirements = details["owner_requirements"] | {
-                "KMIPKIT-0043-FR-004", "KMIPKIT-0043-FR-005", "KMIPKIT-0043-FR-010",
-                "KMIPKIT-0043-FR-017", "KMIPKIT-0043-FR-021", "KMIPKIT-0043-FR-022",
-            }
-            export_name = f"{package}::Client::{operation.lower()}"
-            expected[export_name] = (
-                details["capability"],
-                {**execute_targets, "rust": export_name},
-                execute_requirements,
-            )
     return expected
 
 
@@ -190,6 +174,25 @@ class T100QueryPingDeclarationMappingTests(unittest.TestCase):
                 self.assertIn("KMIPKIT-0020-FR-", row["reason"])
                 self.assertIn("KMIPKIT-0020-FR-", row["evidence"])
                 self.assertTrue(all(requirement in row["evidence"] for requirement in SHARED_REQUIREMENTS))
+
+    def test_client_convenience_methods_are_not_mapped_to_batch_item_construction(self) -> None:
+        expected = {
+            ("rust-kmipkit-client", "kmipkit_client::Client::ping"): "Client::ping",
+            ("rust-kmipkit-client", "kmipkit_client::Client::query"): "Client::query",
+            ("rust-kmipkit", "kmipkit::Client::ping"): "Client::ping",
+            ("rust-kmipkit", "kmipkit::Client::query"): "Client::query",
+        }
+        excluded = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.manifest["approvedExclusions"]
+            if row.get("approvalSource", {}).get("path") == OWNER_SPEC
+            and "T100" in row.get("evidence", "")
+        }
+        self.assertTrue(expected <= excluded.keys())
+        for identity, direct_method in expected.items():
+            row = excluded[identity]
+            self.assertIn(direct_method, row["reason"])
+            self.assertIn("KMIPKIT-0020-FR-009", row["reason"])
 
 
 if __name__ == "__main__":
