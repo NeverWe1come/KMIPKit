@@ -69,10 +69,7 @@ def _expected_mappings() -> dict[str, tuple[str, dict[str, str], set[str]]]:
                 "rust": f"{request_prefix}::{operation}",
                 **details["batch_item"],
             }
-            request_requirements = details["owner_requirements"] | {
-                "KMIPKIT-0043-FR-004", "KMIPKIT-0043-FR-005", "KMIPKIT-0043-FR-010",
-                "KMIPKIT-0043-FR-017", "KMIPKIT-0043-FR-021", "KMIPKIT-0043-FR-022",
-            }
+            request_requirements = details["owner_requirements"]
             for export_name in (
                 f"{request_prefix}::{operation}",
                 f"{request_prefix}::{operation}::0",
@@ -150,7 +147,14 @@ class T100QueryPingDeclarationMappingTests(unittest.TestCase):
                     {"rust": row["packageId"], "c": "c-kmipkit", "java": "java-kmipkit", "python": "python-kmipkit"},
                     {language: mapping["packageId"] for language, mapping in row["languageMappings"].items()},
                 )
-                self.assertTrue(owner_requirements <= set(row["requirementIds"]))
+                self.assertEqual(
+                    owner_requirements,
+                    {
+                        requirement
+                        for requirement in row["requirementIds"]
+                        if requirement.startswith("KMIPKIT-0020-FR-")
+                    },
+                )
                 self.assertTrue(SHARED_REQUIREMENTS <= set(row["requirementIds"]))
                 self.assertTrue(EVIDENCE <= set(row["parityEvidenceIds"]))
                 for path in EVIDENCE:
