@@ -345,6 +345,34 @@ class BindingExportAuditTests(unittest.TestCase):
         })
         self.assertTrue(result["complete"])
 
+    def test_javap_inventory_propagates_members_from_package_private_bases(self):
+        outputs = {
+            "org/kmipkit/extensions/AttributeRequest.class": """
+                abstract class org.kmipkit.extensions.AttributeRequest implements java.lang.AutoCloseable {
+                  public final java.util.Optional<org.kmipkit.extensions.UniqueIdentifier> uniqueIdentifier();
+                  public final org.kmipkit.extensions.ClientBatchItem toBatchItem();
+                  public final void close();
+                }
+            """,
+            "org/kmipkit/extensions/AddAttributeRequest.class": """
+                public final class org.kmipkit.extensions.AddAttributeRequest extends org.kmipkit.extensions.AttributeRequest {
+                  public static org.kmipkit.extensions.AddAttributeRequest create(org.kmipkit.extensions.UniqueIdentifier, org.kmipkit.ttlv.TtlvItem);
+                  public org.kmipkit.ttlv.TtlvItem newAttribute();
+                }
+            """,
+        }
+
+        result = AUDIT.inventory_javap_outputs(outputs)
+        names = {row["exportName"] for row in result["declarations"]}
+
+        self.assertTrue(result["complete"])
+        self.assertIn("org.kmipkit.extensions.AddAttributeRequest.uniqueIdentifier", names)
+        self.assertIn("org.kmipkit.extensions.AddAttributeRequest.toBatchItem", names)
+        self.assertIn("org.kmipkit.extensions.AddAttributeRequest.close", names)
+        self.assertIn("org.kmipkit.extensions.AddAttributeRequest.newAttribute", names)
+        self.assertNotIn("org.kmipkit.extensions.AttributeRequest", names)
+        self.assertNotIn("org.kmipkit.extensions.AttributeRequest.uniqueIdentifier", names)
+
     def test_python_inventory_resolves_explicit_all_and_class_fields(self):
         sources = {
             "kmipkit/__init__.py": "from .core import Client\n__all__ = ['Client']\n",
@@ -821,6 +849,27 @@ class BindingExportAuditTests(unittest.TestCase):
             "responseHeaderViewTtlv", "responseMessageBatchItemAt",
             "responseMessageBatchItemCount", "responseMessageFromTtlv",
             "responseMessageHeader", "responseMessageTtlv",
+            "CANCEL_REQUEST", "CREDENTIAL_VALUE", "HASHED_PASSWORD_CREDENTIAL",
+            "POLL_REQUEST", "PROCESS_REQUEST", "QUERY_ASYNC_REQUESTS_REQUEST",
+            "SECRET_BYTES", "SECRET_TEXT", "USERNAME_AND_PASSWORD_CREDENTIAL",
+            "cancelRequestCreate", "cancelRequestToTtlvPayload",
+            "credentialValueFromTtlv", "credentialValueIntoTtlv",
+            "credentialValueTtlvView", "credentialValueTypeRaw",
+            "hashedPasswordCredentialEffectiveHashingAlgorithmRaw",
+            "hashedPasswordCredentialFromTtlv",
+            "hashedPasswordCredentialHashingAlgorithmRaw",
+            "hashedPasswordCredentialIntoTtlv", "hashedPasswordCredentialTtlvView",
+            "pollRequestCreate", "pollRequestToTtlvPayload",
+            "processRequestCreate", "processRequestToTtlvPayload",
+            "queryAsyncRequestsRequestCreate", "queryAsyncRequestsRequestToTtlvPayload",
+            "queryAsyncRequestsRequestWithCorrelationValues",
+            "queryAsyncRequestsRequestWithOperations", "secretBytesCreate",
+            "secretBytesIntoTtlvValue", "secretBytesWithBytes", "secretTextCreate",
+            "secretTextIntoTtlvValue", "secretTextWithStr",
+            "usernameAndPasswordCredentialFromTtlv",
+            "usernameAndPasswordCredentialIntoTtlv",
+            "usernameAndPasswordCredentialTtlvView",
+            "withCancelRequestCorrelationValue", "withPollRequestCorrelationValue",
         }
         expected_native = {
             ("java-kmipkit", f"org.kmipkit.NativeExtensionRegistry.{member}")
@@ -838,8 +887,12 @@ class BindingExportAuditTests(unittest.TestCase):
         for key in expected_native:
             exclusion = exclusions[key]
             evidence = exclusion["evidence"]
-            combined_approved_references = (
-                "KMIPKIT-0043-FR-008/010/021/022" in evidence
+            combined_approved_references = any(
+                reference_group in evidence
+                for reference_group in (
+                    "KMIPKIT-0043-FR-008/010/021/022",
+                    "KMIPKIT-0043-FR-004/005/010/021/022",
+                )
             )
             self.assertTrue(
                 "KMIPKIT-0043-FR-021" in evidence
@@ -849,10 +902,27 @@ class BindingExportAuditTests(unittest.TestCase):
             bridge_owner = {
                 "org.kmipkit.NativeExtensionRegistry.clientExecuteWithProfiles": "T036",
                 "org.kmipkit.NativeExtensionRegistry.withClientAsyncOperationOutcomeCorrelationValue": "T035",
+                "org.kmipkit.NativeExtensionRegistry.CANCEL_REQUEST": "T093",
+                "org.kmipkit.NativeExtensionRegistry.POLL_REQUEST": "T093",
+                "org.kmipkit.NativeExtensionRegistry.PROCESS_REQUEST": "T093",
+                "org.kmipkit.NativeExtensionRegistry.QUERY_ASYNC_REQUESTS_REQUEST": "T093",
+                "org.kmipkit.NativeExtensionRegistry.cancelRequestCreate": "T093",
+                "org.kmipkit.NativeExtensionRegistry.cancelRequestToTtlvPayload": "T093",
+                "org.kmipkit.NativeExtensionRegistry.pollRequestCreate": "T093",
+                "org.kmipkit.NativeExtensionRegistry.pollRequestToTtlvPayload": "T093",
+                "org.kmipkit.NativeExtensionRegistry.processRequestCreate": "T093",
+                "org.kmipkit.NativeExtensionRegistry.processRequestToTtlvPayload": "T093",
+                "org.kmipkit.NativeExtensionRegistry.queryAsyncRequestsRequestCreate": "T093",
+                "org.kmipkit.NativeExtensionRegistry.queryAsyncRequestsRequestToTtlvPayload": "T093",
+                "org.kmipkit.NativeExtensionRegistry.queryAsyncRequestsRequestWithCorrelationValues": "T093",
+                "org.kmipkit.NativeExtensionRegistry.queryAsyncRequestsRequestWithOperations": "T093",
+                "org.kmipkit.NativeExtensionRegistry.withCancelRequestCorrelationValue": "T093",
+                "org.kmipkit.NativeExtensionRegistry.withPollRequestCorrelationValue": "T093",
             }.get(key[1])
             if bridge_owner is None:
-                self.assertIn("KMIPKIT-0043-FR-008", evidence)
-                if "ffi-and-bindings.md" not in evidence:
+                if not combined_approved_references:
+                    self.assertIn("KMIPKIT-0043-FR-008", evidence)
+                if "ffi-and-bindings.md" not in evidence and not combined_approved_references:
                     self.assertTrue(
                         any(task_id in evidence for task_id in ("T035", "T037", "T039"))
                         or "Reviewed against KMIPKIT-0043-FR-008/010/021/022" in evidence,
@@ -860,7 +930,10 @@ class BindingExportAuditTests(unittest.TestCase):
                     )
             else:
                 self.assertIn(bridge_owner, evidence)
-                self.assertIn("minimal JNI bridge", evidence)
+                if bridge_owner == "T093":
+                    self.assertIn("only dispatch to the JNI layer", evidence)
+                else:
+                    self.assertIn("minimal JNI bridge", evidence)
 
         get_usage_request = exclusions[(
             "java-kmipkit",
