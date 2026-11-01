@@ -61,10 +61,28 @@ def _is_ip_literal(host: str) -> bool:
 
 def _stage_correlation_value(
     value: bytes | bytearray | memoryview,
-) -> tuple[bytes, Any]:
+) -> tuple[bytearray, Any]:
     if not isinstance(value, (bytes, bytearray, memoryview)):
         errors.raise_for_status(4)
-    return _owned_bytes(value, maximum=_MAX_INPUT_BYTES)
+    try:
+        view = memoryview(value)
+    except (TypeError, ValueError):
+        errors.raise_for_status(4)
+    if view.nbytes > _MAX_INPUT_BYTES:
+        errors.raise_for_status(6)
+    try:
+        staging = bytearray(view)
+    except (BufferError, TypeError, ValueError):
+        errors.raise_for_status(4)
+    if len(staging) > _MAX_INPUT_BYTES:
+        staging[:] = bytes(len(staging))
+        errors.raise_for_status(6)
+    try:
+        pointer = ffi.from_buffer("const uint8_t[]", staging) if staging else ffi.NULL
+    except BaseException:
+        staging[:] = bytes(len(staging))
+        raise
+    return staging, pointer
 
 
 class CredentialEncoding(IntEnum):
