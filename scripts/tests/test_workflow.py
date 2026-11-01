@@ -265,6 +265,15 @@ class WorkflowContractTests(unittest.TestCase):
             python_contracts,
             "The complete binding namespace exclusion contract must run on each supported platform.",
         )
+
+    def test_script_contract_job_fetches_locked_cargo_dependencies_for_offline_audit(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        fetch = self.require_named_step(job, "Fetch locked Cargo dependencies for offline ABI audit")
+        python_contracts = self.require_named_step(job, "Run Python contracts")
+        self.assertIn("cargo fetch --locked", fetch.group(1))
+        self.assertLess(fetch.start(), python_contracts.start())
+
     def test_script_contract_job_installs_pinned_fixture_test_dependencies(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "script-contracts")

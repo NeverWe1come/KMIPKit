@@ -25,6 +25,29 @@ SPEC.loader.exec_module(AUDIT)
 
 
 class BindingExportAuditTests(unittest.TestCase):
+    def test_java_classpath_resolution_uses_bash_for_posix_gradle_wrapper(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            wrapper = root / "bindings" / "java" / "gradlew"
+            wrapper.parent.mkdir(parents=True)
+            wrapper.write_text("#!/bin/sh\n", encoding="utf-8")
+            completed = subprocess.CompletedProcess(
+                ["gradlew"],
+                0,
+                stdout="KMIPKIT_API_AUDIT_CLASSPATH=/tmp/jspecify.jar\n",
+                stderr="",
+            )
+
+            with patch.object(AUDIT.os, "name", "posix"), patch.object(
+                AUDIT.subprocess, "run", return_value=completed
+            ) as run:
+                classpath = AUDIT.resolve_java_compile_classpath(root)
+
+        command = run.call_args.args[0]
+        self.assertEqual(command[0], "bash")
+        self.assertEqual(command[1], str(wrapper))
+        self.assertEqual(classpath, "/tmp/jspecify.jar")
+
     def test_java_compile_uses_gradle_configured_jspecify_classpath(self):
         repo_root = Path(__file__).resolve().parents[3]
         with tempfile.TemporaryDirectory() as directory:
