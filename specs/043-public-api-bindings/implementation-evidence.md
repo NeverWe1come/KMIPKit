@@ -8044,3 +8044,22 @@ Verification for this checkpoint:
 T095 review follow-up (2026-11-01): the independent reviewer confirmed exact owner requirement provenance and identified stale plan wording that called `Transport::exchange` the sole Rust-only exception. `plan.md` now includes the six concrete adapter exports permitted by KMIPKIT-0013 FR-016 and ADR-0014; no API boundary or implementation scope changed.
 
 T095 exact-head CI closeout (2026-11-01): CI run [41300452240](https://github.com/NeverWe1come/KMIPKit/actions/runs/41300452240) completed successfully for `e88cbcc82b35f3b81cda4e197015d870ed35e2b2`, with 35 jobs passed, three expected jobs skipped, and zero failures. The Ubuntu, Windows, and macOS script-contract jobs all passed. CodeQL and zizmor also passed for this head. This completes the T095 owner reconciliation and PR verification; the temporary branch coverage waiver was still active, so this result does not assert the coverage thresholds pass or close T075.
+
+### T096 — KMIPKIT-0014 server-generated creation mapping (2026-11-01)
+
+The pinned base inventory contained 316 exact Rust declaration paths owned by KMIPKIT-0014. All are resolved: 51 functional declarations map to existing Rust, C, Java, and Python exports; 39 non-trait declarations have exact owner-approved exclusions (17 request-inspection helpers and 22 Rust parser/error declarations); and 226 Rust trait implementation paths have exact exclusions, with direct `From` conversions distinguished from other trait paths. The public API capability inventories and all generated outputs are synchronized. No runtime behavior changed and no KMIPKIT-0014 candidate remains.
+
+| Phase | Commit | Evidence | Result |
+|---|---|---|---|
+| Red — pin the base inventory and require every candidate to be mapped or exactly excluded | `9b907f756` | T096 creation parity manifest contract | The original manifest failed with 316 unresolved KMIPKIT-0014 candidates. |
+| Red — require ready creation declarations in the capability mapping | `5fd61a4c8` | T096 capability mapping contract | The test exposed missing capability entries for the six Rust `ObjectType`/`UniqueIdentifier` exports and the C, Java, and Python Create factories. |
+| Green — resolve owner declarations and regenerate manifest artifacts and Rust reports | `21c7a33dc` | Focused tests and export audits | 51 four-language mappings, 265 exact exclusions, and zero remaining owner candidates. |
+| Refactor/evidence — verify generated outputs, refresh the shared inventory, and record this closeout | this commit | Focused suite, generator, Rust/binding/shared audits, whitespace check | All recorded checks pass; no unrelated public declarations changed. |
+
+Verification:
+
+- `python -B -m unittest tools.api_manifest.tests.test_t096_creation_parity_manifest tools.api_manifest.tests.test_creation_parity_manifest tools.api_manifest.tests.test_validate_parity_manifest` — 8 tests passed.
+- `python tools/api_manifest/generate.py --write` regenerated 12 outputs; `python tools/api_manifest/generate.py --check` verified all 12.
+- Rust export audit `--check` passed: 10,462 observed declarations, 7,849 exact manifest matches, 2,613 exact exclusions, and zero missing, unobserved, kind-mismatched, or issue rows.
+- Binding export audit `--check` passed for C, Java, and Python with complete inventories and no discrepancies. The shared Rust inventory `--check` passed with 10,462 observed declarations, 859 mapped declarations, 2,613 approved exclusions, and the same two unrelated blocked namespace entries.
+- `git diff --check` passed. The Windows Rust audit emitted non-fatal AWS-LC compiler-feature and missing-NASM probe warnings; the audit completed successfully.
