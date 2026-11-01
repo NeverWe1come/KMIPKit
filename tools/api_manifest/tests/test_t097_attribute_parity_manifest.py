@@ -492,30 +492,73 @@ class T097AttributeParityManifestTests(unittest.TestCase):
                             ),
                         )
 
-    def test_attribute_set_validation_methods_map_to_foreign_facades(self) -> None:
+    def test_attribute_set_maps_to_validated_collection_facades(self) -> None:
         declarations = {
             row["exportName"]: row for row in self.manifest["publicDeclarations"]
         }
         expected = {
+            "type": (
+                "kmipkit_attribute_set_t",
+                "org.kmipkit.extensions.AttributeSet",
+                "kmipkit.attribute_operations.AttributeSet",
+            ),
             "kmipkit_attribute_set_create": (
+                "try_new",
                 "org.kmipkit.extensions.AttributeSet.tryNew",
                 "kmipkit.attribute_operations.AttributeSet.try_new",
             ),
             "kmipkit_attribute_set_try_push": (
+                "try_push",
                 "org.kmipkit.extensions.AttributeSet.tryPush",
                 "kmipkit.attribute_operations.AttributeSet.try_push",
             ),
+            "kmipkit_attribute_set_as_items": (
+                "as_items",
+                "org.kmipkit.extensions.AttributeSet.asItems",
+                "kmipkit.attribute_operations.AttributeSet.as_items",
+            ),
+            "kmipkit_attribute_set_len": (
+                "len",
+                "org.kmipkit.extensions.AttributeSet.len",
+                "kmipkit.attribute_operations.AttributeSet.len",
+            ),
+            "kmipkit_attribute_set_is_empty": (
+                "is_empty",
+                "org.kmipkit.extensions.AttributeSet.isEmpty",
+                "kmipkit.attribute_operations.AttributeSet.is_empty",
+            ),
+            "kmipkit_attribute_set_into_items": (
+                "into_items",
+                "org.kmipkit.extensions.AttributeSet.intoItems",
+                "kmipkit.attribute_operations.AttributeSet.into_items",
+            ),
         }
         for module in ("kmipkit_protocol::", "kmipkit_protocol::attribute::"):
-            for method, (c_name, (java_name, python_name)) in zip(
-                ("try_new", "try_push"), expected.items(), strict=True
-            ):
-                export = f"{module}AttributeSet::{method}"
+            type_export = f"{module}AttributeSet"
+            type_row = declarations.get(type_export)
+            with self.subTest(export=type_export):
+                self.assertIsNotNone(type_row, f"missing {type_export}")
+                if type_row is not None:
+                    self.assertEqual(
+                        {
+                            "c": expected["type"][0],
+                            "java": expected["type"][1],
+                            "python": expected["type"][2],
+                        },
+                        {
+                            language: type_row["languageMappings"][language]["name"]
+                            for language in ("c", "java", "python")
+                        },
+                    )
+            for c_name, (method, java_name, python_name) in expected.items():
+                if c_name == "type":
+                    continue
+                export = f"{type_export}::{method}"
                 with self.subTest(export=export):
                     row = declarations.get(export)
                     self.assertIsNotNone(
                         row,
-                        f"{export} must be mapped, not excluded as a Rust-only helper",
+                        f"{export} must map to a validated collection facade",
                     )
                     if row is None:
                         continue
