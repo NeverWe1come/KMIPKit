@@ -47,15 +47,23 @@ PARITY_EVIDENCE = {
 }
 EXPECTED_MAPPINGS = {
     "rust": ERROR_EXPORTS | {PARSER_EXPORT},
-    "c": {"KMIPKIT_ERROR_PROTOCOL", "kmipkit_client_batch_item_response_validate"},
+    "c": {"kmipkit_client_batch_item_response_validate"},
     "java": {
-        "org.kmipkit.ProtocolException",
         "org.kmipkit.extensions.ClientBatchItemResult.validateResponse",
     },
     "python": {
-        "kmipkit.errors.ClientErrorCategory.PROTOCOL",
         "kmipkit.client.BatchItemResult.validate_response",
     },
+}
+ERROR_MAPPINGS = {
+    "c": "KMIPKIT_ERROR_PROTOCOL",
+    "java": "org.kmipkit.ProtocolException",
+    "python": "kmipkit.errors.ClientExecutionError",
+}
+PARSER_MAPPINGS = {
+    "c": "kmipkit_client_batch_item_response_validate",
+    "java": "org.kmipkit.extensions.ClientBatchItemResult.validateResponse",
+    "python": "kmipkit.client.BatchItemResult.validate_response",
 }
 
 
@@ -99,6 +107,12 @@ class ValidateResponseErrorMappingTests(unittest.TestCase):
                     PARITY_EVIDENCE <= set(declaration["parityEvidenceIds"]),
                     declaration["exportName"],
                 )
+                expected = PARSER_MAPPINGS if declaration["exportName"] == PARSER_EXPORT else ERROR_MAPPINGS
+                actual = {
+                    language: declaration["languageMappings"][language]["name"]
+                    for language in ("c", "java", "python")
+                }
+                self.assertEqual(expected, actual, declaration["exportName"])
 
 
 if __name__ == "__main__":

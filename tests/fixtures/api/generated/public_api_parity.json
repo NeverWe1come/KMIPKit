@@ -113025,7 +113025,16 @@
           "rust-observed-68a4aff3b7248f645984",
           "rust-observed-0f33ecd4a711c5d7c2e6",
           "rust-observed-41b6ca198ada73397c03",
-          "rust-observed-2d1a636cef5cce33502b"
+          "rust-observed-2d1a636cef5cce33502b",
+          "rust-observed-f0cb654e18703283fcd2",
+          "rust-observed-87f1d5ee287865605d6d",
+          "rust-observed-8df4c7076c658fc094bc",
+          "rust-observed-45fea922d9b7611a59ad",
+          "rust-observed-3d1744f6e2a987e4f50c",
+          "rust-observed-c58416f1423e3b812614",
+          "rust-observed-a176d22aa2feea16319f",
+          "rust-observed-68af8576a21d4da997c0",
+          "rust-observed-39b8d116695a484b9066"
         ]
       },
       "featureSpecId": "KMIPKIT-0042",
@@ -239574,6 +239583,606 @@
         "status": "Approved"
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-VALIDATE",
+      "declarationId": "rust-observed-f0cb654e18703283fcd2",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::ValidateError",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_ERROR_PROTOCOL",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ProtocolException",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.ClientExecutionError",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::ValidateError",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ValidateJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ValidateResponseMappingTest.java",
+        "bindings/python/tests/test_validate_operation.py",
+        "crates/kmipkit-client/tests/unit/validate_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/validate_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_validate_response_error_mapping.py",
+        "tools/api_manifest/tests/test_validate_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0042-FR-001",
+        "KMIPKIT-0042-FR-002",
+        "KMIPKIT-0042-FR-003",
+        "KMIPKIT-0042-FR-004",
+        "KMIPKIT-0042-FR-005",
+        "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
+        "KMIPKIT-0042-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.57-001",
+        "KMIPKIT-REQ-SPEC-6.1.57-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.57-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.57-004",
+        "KMIPKIT-REQ-SPEC-6.1.57-005",
+        "KMIPKIT-REQ-SPEC-6.1.57-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-VALIDATE",
+      "declarationId": "rust-observed-87f1d5ee287865605d6d",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::ValidateError::InvalidOperationResult",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_ERROR_PROTOCOL",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ProtocolException",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.ClientExecutionError",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::ValidateError::InvalidOperationResult",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ValidateJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ValidateResponseMappingTest.java",
+        "bindings/python/tests/test_validate_operation.py",
+        "crates/kmipkit-client/tests/unit/validate_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/validate_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_validate_response_error_mapping.py",
+        "tools/api_manifest/tests/test_validate_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0042-FR-001",
+        "KMIPKIT-0042-FR-002",
+        "KMIPKIT-0042-FR-003",
+        "KMIPKIT-0042-FR-004",
+        "KMIPKIT-0042-FR-005",
+        "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
+        "KMIPKIT-0042-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.57-001",
+        "KMIPKIT-REQ-SPEC-6.1.57-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.57-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.57-004",
+        "KMIPKIT-REQ-SPEC-6.1.57-005",
+        "KMIPKIT-REQ-SPEC-6.1.57-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-VALIDATE",
+      "declarationId": "rust-observed-8df4c7076c658fc094bc",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::ValidateError::InvalidOperationResult::0",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_ERROR_PROTOCOL",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ProtocolException",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.ClientExecutionError",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::ValidateError::InvalidOperationResult::0",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ValidateJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ValidateResponseMappingTest.java",
+        "bindings/python/tests/test_validate_operation.py",
+        "crates/kmipkit-client/tests/unit/validate_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/validate_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_validate_response_error_mapping.py",
+        "tools/api_manifest/tests/test_validate_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0042-FR-001",
+        "KMIPKIT-0042-FR-002",
+        "KMIPKIT-0042-FR-003",
+        "KMIPKIT-0042-FR-004",
+        "KMIPKIT-0042-FR-005",
+        "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
+        "KMIPKIT-0042-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.57-001",
+        "KMIPKIT-REQ-SPEC-6.1.57-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.57-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.57-004",
+        "KMIPKIT-REQ-SPEC-6.1.57-005",
+        "KMIPKIT-REQ-SPEC-6.1.57-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-VALIDATE",
+      "declarationId": "rust-observed-45fea922d9b7611a59ad",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::ValidateError::MalformedResponseItem",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_ERROR_PROTOCOL",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ProtocolException",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.ClientExecutionError",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::ValidateError::MalformedResponseItem",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ValidateJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ValidateResponseMappingTest.java",
+        "bindings/python/tests/test_validate_operation.py",
+        "crates/kmipkit-client/tests/unit/validate_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/validate_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_validate_response_error_mapping.py",
+        "tools/api_manifest/tests/test_validate_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0042-FR-001",
+        "KMIPKIT-0042-FR-002",
+        "KMIPKIT-0042-FR-003",
+        "KMIPKIT-0042-FR-004",
+        "KMIPKIT-0042-FR-005",
+        "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
+        "KMIPKIT-0042-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.57-001",
+        "KMIPKIT-REQ-SPEC-6.1.57-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.57-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.57-004",
+        "KMIPKIT-REQ-SPEC-6.1.57-005",
+        "KMIPKIT-REQ-SPEC-6.1.57-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-VALIDATE",
+      "declarationId": "rust-observed-3d1744f6e2a987e4f50c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::ValidateError::MalformedResponsePayload",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_ERROR_PROTOCOL",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ProtocolException",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.ClientExecutionError",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::ValidateError::MalformedResponsePayload",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ValidateJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ValidateResponseMappingTest.java",
+        "bindings/python/tests/test_validate_operation.py",
+        "crates/kmipkit-client/tests/unit/validate_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/validate_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_validate_response_error_mapping.py",
+        "tools/api_manifest/tests/test_validate_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0042-FR-001",
+        "KMIPKIT-0042-FR-002",
+        "KMIPKIT-0042-FR-003",
+        "KMIPKIT-0042-FR-004",
+        "KMIPKIT-0042-FR-005",
+        "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
+        "KMIPKIT-0042-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.57-001",
+        "KMIPKIT-REQ-SPEC-6.1.57-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.57-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.57-004",
+        "KMIPKIT-REQ-SPEC-6.1.57-005",
+        "KMIPKIT-REQ-SPEC-6.1.57-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-VALIDATE",
+      "declarationId": "rust-observed-c58416f1423e3b812614",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::ValidateError::MissingResponsePayload",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_ERROR_PROTOCOL",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ProtocolException",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.ClientExecutionError",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::ValidateError::MissingResponsePayload",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ValidateJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ValidateResponseMappingTest.java",
+        "bindings/python/tests/test_validate_operation.py",
+        "crates/kmipkit-client/tests/unit/validate_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/validate_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_validate_response_error_mapping.py",
+        "tools/api_manifest/tests/test_validate_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0042-FR-001",
+        "KMIPKIT-0042-FR-002",
+        "KMIPKIT-0042-FR-003",
+        "KMIPKIT-0042-FR-004",
+        "KMIPKIT-0042-FR-005",
+        "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
+        "KMIPKIT-0042-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.57-001",
+        "KMIPKIT-REQ-SPEC-6.1.57-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.57-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.57-004",
+        "KMIPKIT-REQ-SPEC-6.1.57-005",
+        "KMIPKIT-REQ-SPEC-6.1.57-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-VALIDATE",
+      "declarationId": "rust-observed-a176d22aa2feea16319f",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::ValidateError::MissingResultStatus",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_ERROR_PROTOCOL",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ProtocolException",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.ClientExecutionError",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::ValidateError::MissingResultStatus",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ValidateJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ValidateResponseMappingTest.java",
+        "bindings/python/tests/test_validate_operation.py",
+        "crates/kmipkit-client/tests/unit/validate_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/validate_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_validate_response_error_mapping.py",
+        "tools/api_manifest/tests/test_validate_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0042-FR-001",
+        "KMIPKIT-0042-FR-002",
+        "KMIPKIT-0042-FR-003",
+        "KMIPKIT-0042-FR-004",
+        "KMIPKIT-0042-FR-005",
+        "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
+        "KMIPKIT-0042-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.57-001",
+        "KMIPKIT-REQ-SPEC-6.1.57-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.57-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.57-004",
+        "KMIPKIT-REQ-SPEC-6.1.57-005",
+        "KMIPKIT-REQ-SPEC-6.1.57-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-VALIDATE",
+      "declarationId": "rust-observed-68af8576a21d4da997c0",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::ValidateError::UnexpectedOperation",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_ERROR_PROTOCOL",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ProtocolException",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.ClientExecutionError",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::ValidateError::UnexpectedOperation",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ValidateJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ValidateResponseMappingTest.java",
+        "bindings/python/tests/test_validate_operation.py",
+        "crates/kmipkit-client/tests/unit/validate_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/validate_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_validate_response_error_mapping.py",
+        "tools/api_manifest/tests/test_validate_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0042-FR-001",
+        "KMIPKIT-0042-FR-002",
+        "KMIPKIT-0042-FR-003",
+        "KMIPKIT-0042-FR-004",
+        "KMIPKIT-0042-FR-005",
+        "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
+        "KMIPKIT-0042-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.57-001",
+        "KMIPKIT-REQ-SPEC-6.1.57-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.57-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.57-004",
+        "KMIPKIT-REQ-SPEC-6.1.57-005",
+        "KMIPKIT-REQ-SPEC-6.1.57-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-VALIDATE",
       "declarationId": "rust-observed-c6d5a2a2438c70d00bfe",
       "declarationState": "verified",
       "exportName": "kmipkit_protocol::ValidateRequest",
@@ -239975,6 +240584,81 @@
         "crates/kmipkit-ffi/tests/support/validate_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs",
         "specs/028-diagnostics-interop/traceability.md",
+        "tools/api_manifest/tests/test_validate_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0042-FR-001",
+        "KMIPKIT-0042-FR-002",
+        "KMIPKIT-0042-FR-003",
+        "KMIPKIT-0042-FR-004",
+        "KMIPKIT-0042-FR-005",
+        "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
+        "KMIPKIT-0042-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.57-001",
+        "KMIPKIT-REQ-SPEC-6.1.57-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.57-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.57-004",
+        "KMIPKIT-REQ-SPEC-6.1.57-005",
+        "KMIPKIT-REQ-SPEC-6.1.57-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-VALIDATE",
+      "declarationId": "rust-observed-39b8d116695a484b9066",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::ValidateResponse::try_from_response_item",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_validate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.validateResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.validate_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::ValidateResponse::try_from_response_item",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ValidateJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ValidateResponseMappingTest.java",
+        "bindings/python/tests/test_validate_operation.py",
+        "crates/kmipkit-client/tests/unit/validate_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/validate_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_validate_response_error_mapping.py",
         "tools/api_manifest/tests/test_validate_parity_manifest.py"
       ],
       "parityScope": "four-language",
