@@ -70,6 +70,14 @@ USERNAME_PASSWORD_CREDENTIAL_EXPORTS = {
     "kmipkit_protocol::UsernameAndPasswordCredential::with_ttlv",
     "kmipkit_protocol::UsernameAndPasswordCredential::into_ttlv",
 }
+HASHED_PASSWORD_CREDENTIAL_EXPORTS = {
+    "kmipkit_protocol::HashedPasswordCredential",
+    "kmipkit_protocol::HashedPasswordCredential::try_from_ttlv",
+    "kmipkit_protocol::HashedPasswordCredential::hashing_algorithm_raw",
+    "kmipkit_protocol::HashedPasswordCredential::effective_hashing_algorithm_raw",
+    "kmipkit_protocol::HashedPasswordCredential::with_ttlv",
+    "kmipkit_protocol::HashedPasswordCredential::into_ttlv",
+}
 VALIDATION_ERROR_EXPORTS = {
     "kmipkit_protocol::CredentialValidationError",
     "kmipkit_protocol::CredentialValidationError::kind",
@@ -118,6 +126,7 @@ EXPECTED_MAPPED_CREDENTIAL_EXPORTS = (
     | ATTESTATION_CREDENTIAL_EXPORTS
     | DEVICE_CREDENTIAL_EXPORTS
     | USERNAME_PASSWORD_CREDENTIAL_EXPORTS
+    | HASHED_PASSWORD_CREDENTIAL_EXPORTS
     | AUTHENTICATION_EXPORTS
     | VALIDATION_ERROR_EXPORTS
     | (SECRET_WRAPPER_EXPORTS - SECRET_ROOT_ALIAS_EXPORTS)
@@ -156,6 +165,41 @@ def _has_approved_source(record: dict[str, object]) -> bool:
 
 
 class T092CredentialsParityManifestTests(unittest.TestCase):
+    def test_hashed_password_wrapper_has_exact_four_language_owner_mapping(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        rows = [
+            row
+            for row in manifest["publicDeclarations"]
+            if row.get("exportName") in HASHED_PASSWORD_CREDENTIAL_EXPORTS
+        ]
+        rust_rows = {
+            row["exportName"]
+            for row in rows
+            if row.get("packageId") == "rust-kmipkit-protocol"
+        }
+
+        self.assertEqual(HASHED_PASSWORD_CREDENTIAL_EXPORTS, rust_rows)
+        self.assertEqual(6, len(rows))
+        for row in rows:
+            with self.subTest(export=row["exportName"]):
+                self.assertEqual("declared", row.get("declarationState"))
+                self.assertEqual("credential_ttlv_parity", row.get("capabilityId"))
+                self.assertTrue(
+                    {"c", "java", "python", "rust"}
+                    <= set(row.get("languageMappings", {}))
+                )
+                self.assertTrue(
+                    {
+                        "KMIPKIT-0008-FR-007",
+                        "KMIPKIT-0008-FR-010",
+                        "KMIPKIT-REQ-SPEC-9.11-010-001",
+                        "KMIPKIT-REQ-SPEC-9.11-010-002",
+                        "KMIPKIT-0043-FR-021",
+                        "KMIPKIT-0043-FR-022",
+                    }
+                    <= set(row.get("requirementIds", []))
+                )
+
     def test_username_password_wrapper_has_exact_four_language_owner_mapping(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         rows = [

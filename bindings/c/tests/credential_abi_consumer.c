@@ -14,6 +14,14 @@ static const uint32_t NETWORK_IDENTIFIER_TAG = 0x004200AB;
 static const uint32_t MACHINE_IDENTIFIER_TAG = 0x004200A9;
 static const uint32_t MEDIA_IDENTIFIER_TAG = 0x004200AA;
 static const uint32_t DEVICE_EXTENSION_TAG = 0x00540001;
+static const uint32_t HASHED_PASSWORD_USERNAME_TAG = 0x00420099;
+static const uint32_t HASHED_PASSWORD_TIMESTAMP_TAG = 0x00420092;
+static const uint32_t HASHING_ALGORITHM_TAG = 0x00420038;
+static const uint32_t HASHED_PASSWORD_TAG = 0x00420157;
+static const uint32_t UNKNOWN_HASHING_ALGORITHM = 0xe1234567;
+static const uint8_t HASHED_PASSWORD_BYTES[] = {
+    'h', 'a', 's', 'h', 'e', 'd', '-', 'p', 'a', 's', 's', 'w', 'o', 'r', 'd', 0, 0xff
+};
 
 static int32_t append_item(
         kmipkit_ttlv_structure_t **structure, kmipkit_codec_limits_t *limits,
@@ -904,5 +912,132 @@ int32_t kmipkit_nonce_c_consumer_rejects_missing_required_value(void) {
         status = 1;
     kmipkit_ttlv_structure_release(structure);
     kmipkit_nonce_release(nonce);
+    return status;
+}
+
+static int32_t hashed_password_tags_match(
+        kmipkit_ttlv_structure_view_t *view, int include_algorithm) {
+    const uint32_t with_algorithm[] = {
+        HASHED_PASSWORD_USERNAME_TAG, HASHED_PASSWORD_TIMESTAMP_TAG,
+        HASHING_ALGORITHM_TAG, HASHED_PASSWORD_TAG
+    };
+    const uint32_t without_algorithm[] = {
+        HASHED_PASSWORD_USERNAME_TAG, HASHED_PASSWORD_TIMESTAMP_TAG, HASHED_PASSWORD_TAG
+    };
+    const uint32_t *expected = include_algorithm ? with_algorithm : without_algorithm;
+    uint64_t expected_count = include_algorithm ? 4 : 3;
+    uint64_t count = 0;
+    int32_t status = kmipkit_ttlv_structure_view_item_count(view, &count);
+    if (status != 0 || count != expected_count) return status == 0 ? 1 : status;
+    for (uint64_t index = 0; index < count; index++) {
+        kmipkit_ttlv_item_view_t *item = 0;
+        kmipkit_tag_t *tag = 0;
+        uint32_t actual = 0;
+        status = kmipkit_ttlv_structure_view_item_at(view, index, &item);
+        if (status == 0) status = kmipkit_ttlv_item_view_tag(item, &tag);
+        if (status == 0) status = kmipkit_ttlv_tag_value(tag, &actual);
+        if (status == 0 && actual != expected[index]) status = 1;
+        kmipkit_tag_release(tag);
+        kmipkit_ttlv_item_view_release(item);
+        if (status != 0) return status;
+    }
+    return 0;
+}
+
+static int32_t hashed_password_bytes_match(
+        kmipkit_ttlv_structure_view_t *view, int include_algorithm) {
+    uint64_t index = include_algorithm ? 3 : 2;
+    uint64_t length = 0;
+    kmipkit_ttlv_item_view_t *item = 0;
+    kmipkit_ttlv_value_view_t *value = 0;
+    int32_t status = kmipkit_ttlv_structure_view_item_at(view, index, &item);
+    if (status == 0) status = kmipkit_ttlv_item_view_value(item, &value);
+    if (status == 0) status = kmipkit_ttlv_value_view_byte_length(value, &length);
+    if (status == 0 && length != sizeof(HASHED_PASSWORD_BYTES)) status = 1;
+    for (uint64_t offset = 0; status == 0 && offset < length; offset++) {
+        uint8_t actual = 0;
+        status = kmipkit_ttlv_value_view_byte_at(value, offset, &actual);
+        if (status == 0 && actual != HASHED_PASSWORD_BYTES[offset]) status = 1;
+    }
+    kmipkit_ttlv_value_view_release(value);
+    kmipkit_ttlv_item_view_release(item);
+    return status;
+}
+
+static int32_t hashed_password_credential_case(int include_algorithm) {
+    const uint8_t username[] = {'a', 'l', 'i', 'c', 'e'};
+    kmipkit_codec_limits_t *limits = 0;
+    kmipkit_ttlv_structure_t *structure = 0;
+    kmipkit_ttlv_structure_t *restored = 0;
+    kmipkit_ttlv_structure_view_t *view = 0;
+    kmipkit_ttlv_structure_view_t *restored_view = 0;
+    kmipkit_hashed_password_credential_t *credential = 0;
+    uint8_t algorithm_present = 0;
+    uint32_t algorithm_raw = 0;
+    uint32_t effective_algorithm = 0;
+    int32_t status = kmipkit_codec_limits_defaults(&limits);
+    if (status == 0) status = kmipkit_ttlv_structure_create(&structure);
+    kmipkit_ttlv_value_t *value = 0;
+    if (status == 0) status = kmipkit_ttlv_value_text_string(
+            limits, username, sizeof(username), &value);
+    if (status == 0) {
+        status = append_item(&structure, limits, HASHED_PASSWORD_USERNAME_TAG, value);
+        value = 0;
+    }
+    if (status == 0) status = kmipkit_ttlv_value_date_time_extended(1800000000, &value);
+    if (status == 0) {
+        status = append_item(&structure, limits, HASHED_PASSWORD_TIMESTAMP_TAG, value);
+        value = 0;
+    }
+    if (status == 0 && include_algorithm)
+        status = kmipkit_ttlv_value_enumeration(UNKNOWN_HASHING_ALGORITHM, &value);
+    if (status == 0 && include_algorithm) {
+        status = append_item(&structure, limits, HASHING_ALGORITHM_TAG, value);
+        value = 0;
+    }
+    if (status == 0) status = kmipkit_ttlv_value_byte_string(
+            limits, HASHED_PASSWORD_BYTES, sizeof(HASHED_PASSWORD_BYTES), &value);
+    if (status == 0) {
+        status = append_item(&structure, limits, HASHED_PASSWORD_TAG, value);
+        value = 0;
+    }
+    if (status == 0) {
+        status = kmipkit_hashed_password_credential_from_ttlv(structure, &credential);
+        structure = 0;
+    }
+    if (status == 0) status = kmipkit_hashed_password_credential_hashing_algorithm_raw(
+            credential, &algorithm_present, &algorithm_raw);
+    if (status == 0 && algorithm_present != (uint8_t)include_algorithm) status = 1;
+    if (status == 0 && include_algorithm && algorithm_raw != UNKNOWN_HASHING_ALGORITHM) status = 1;
+    if (status == 0 && !include_algorithm && algorithm_raw != 0) status = 1;
+    if (status == 0) status = kmipkit_hashed_password_credential_effective_hashing_algorithm_raw(
+            credential, &effective_algorithm);
+    if (status == 0 && effective_algorithm != (include_algorithm ? UNKNOWN_HASHING_ALGORITHM : 6))
+        status = 1;
+    if (status == 0) status = kmipkit_hashed_password_credential_ttlv_view(credential, &view);
+    if (status == 0) status = hashed_password_tags_match(view, include_algorithm);
+    if (status == 0) status = hashed_password_bytes_match(view, include_algorithm);
+    kmipkit_ttlv_structure_view_release(view);
+    view = 0;
+    if (status == 0) status = kmipkit_hashed_password_credential_into_ttlv(credential, &restored);
+    if (status == 0) {
+        credential = 0;
+        status = kmipkit_ttlv_structure_view(restored, &restored_view);
+    }
+    if (status == 0) status = hashed_password_tags_match(restored_view, include_algorithm);
+    if (status == 0) status = hashed_password_bytes_match(restored_view, include_algorithm);
+    kmipkit_codec_limits_release(limits);
+    kmipkit_ttlv_value_release(value);
+    kmipkit_ttlv_structure_release(structure);
+    kmipkit_ttlv_structure_release(restored);
+    kmipkit_ttlv_structure_view_release(view);
+    kmipkit_ttlv_structure_view_release(restored_view);
+    kmipkit_hashed_password_credential_release(credential);
+    return status;
+}
+
+int32_t kmipkit_hashed_password_credential_c_consumer_contract(void) {
+    int32_t status = hashed_password_credential_case(1);
+    if (status == 0) status = hashed_password_credential_case(0);
     return status;
 }
