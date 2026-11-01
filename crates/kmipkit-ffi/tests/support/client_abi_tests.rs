@@ -8823,6 +8823,46 @@ fn ffi_attribute_set_copy_preserves_nonempty_unknown_attributes() {
     release(handle, Kind::Structure);
 }
 
+fn nested_name_attribute(depth: usize) -> Item {
+    let mut nested_value = Value::integer(1);
+    for _ in 0..depth {
+        let tag = RawTag::new(0x0042_0029)
+            .expect("Cryptographic Parameters tag is valid")
+            .try_checked()
+            .expect("Cryptographic Parameters tag is allocated");
+        let item =
+            Item::new(tag, nested_value).expect("each nested Structure child is a valid TTLV Item");
+        let mut structure = Structure::new();
+        structure
+            .try_push(item)
+            .expect("one nested item fits in each test structure");
+        nested_value = Value::structure(structure);
+    }
+    let name_tag = RawTag::new(0x0042_0053)
+        .expect("Name tag is valid")
+        .try_checked()
+        .expect("Name tag is allocated");
+    Item::new(name_tag, nested_value).expect("Name has a Structure value")
+}
+
+#[test]
+fn attribute_set_item_limit_includes_enclosing_structure_depth() {
+    let limits = CodecLimits::defaults();
+    let within_limit = nested_name_attribute(limits.max_structure_depth() - 1);
+    assert!(check_item_limits(&within_limit, &limits).is_ok());
+    assert_eq!(
+        validate_attribute_set_item_limits(std::iter::once(&within_limit)),
+        Ok(())
+    );
+
+    let too_deep = nested_name_attribute(limits.max_structure_depth());
+    assert!(check_item_limits(&too_deep, &limits).is_ok());
+    assert_eq!(
+        validate_attribute_set_item_limits(std::iter::once(&too_deep)),
+        Err(ERROR_RESOURCE_LIMIT)
+    );
+}
+
 #[test]
 fn ffi_create_key_pair_preserves_each_supplied_attribute_set() {
     let common = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
