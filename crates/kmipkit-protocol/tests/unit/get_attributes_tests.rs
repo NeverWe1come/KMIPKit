@@ -122,6 +122,18 @@ fn attribute_enumeration(attribute: &Item) -> Option<u32> {
 }
 
 #[test]
+fn request_exposes_attribute_references_in_wire_order() {
+    let references = vec![
+        AttributeReference::tag(0x0042_002F),
+        AttributeReference::name("KMIPKit.TestVendor_1", "Opaque.Attribute"),
+    ];
+    let request = GetAttributesRequest::try_new(None, references.clone())
+        .expect("the request references are unique");
+
+    assert_eq!(request.attribute_references(), references);
+}
+
+#[test]
 fn request_follows_table_223_order_and_allows_repeated_reference_fields() {
     let request = GetAttributesRequest::try_new(
         Some(OBJECT_IDENTIFIER.to_owned()),
