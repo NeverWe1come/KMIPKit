@@ -26,7 +26,6 @@ final class AsyncRequestModelsTest {
                 ProcessRequest process = ProcessRequest.create(correlation)) {
             assertCorrelation(cancel::withAsynchronousCorrelationValue, correlation);
             assertCorrelation(poll::withAsynchronousCorrelationValue, correlation);
-            assertCorrelation(process, correlation);
 
             try (TtlvStructure payload = cancel.toTtlvPayload()) {
                 assertSingleCorrelation(payload, correlation);

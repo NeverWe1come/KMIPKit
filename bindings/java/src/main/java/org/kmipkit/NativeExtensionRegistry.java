@@ -72,6 +72,10 @@ public final class NativeExtensionRegistry {
     public static final int SECRET_TEXT = 53;
     public static final int HASHED_PASSWORD_CREDENTIAL = 54;
     public static final int CREDENTIAL_VALUE = 55;
+    public static final int CANCEL_REQUEST = 56;
+    public static final int POLL_REQUEST = 57;
+    public static final int PROCESS_REQUEST = 58;
+    public static final int QUERY_ASYNC_REQUESTS_REQUEST = 59;
 
     private static volatile boolean loaded;
 
@@ -344,6 +348,22 @@ public final class NativeExtensionRegistry {
     public static native long registerRequestCreate(int objectType, long attributes, long object);
     public static native long registerRequestWithOpaqueObjectContext(long request, int context);
     public static native long clientBatchItemRegister(long request);
+    public static native long cancelRequestCreate(byte[] correlationValue);
+    public static native boolean withCancelRequestCorrelationValue(
+            long request, Consumer<ByteBuffer> callback);
+    public static native long cancelRequestToTtlvPayload(long request);
+    public static native long pollRequestCreate(byte[] correlationValue);
+    public static native boolean withPollRequestCorrelationValue(
+            long request, Consumer<ByteBuffer> callback);
+    public static native long pollRequestToTtlvPayload(long request);
+    public static native long processRequestCreate(byte[] correlationValue);
+    public static native long processRequestToTtlvPayload(long request);
+    public static native long queryAsyncRequestsRequestCreate();
+    public static native long queryAsyncRequestsRequestWithCorrelationValues(
+            long request, byte[][] values);
+    public static native long queryAsyncRequestsRequestWithOperations(
+            long request, long[] operations);
+    public static native long queryAsyncRequestsRequestToTtlvPayload(long request);
     public static native long revocationReasonCreate(long rawCode, @Nullable byte[] message);
     public static native long revokeRequestCreate(int identifierKind,
             @Nullable byte[] identifierText, long identifierNumber, long reason,

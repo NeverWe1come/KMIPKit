@@ -192,6 +192,22 @@ pub struct kmipkit_register_request_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_cancel_request_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_poll_request_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_process_request_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_query_async_requests_request_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
 pub struct kmipkit_revocation_reason_t {
     _private: [u8; 0],
 }

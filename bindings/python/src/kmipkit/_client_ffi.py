@@ -32,6 +32,10 @@ ffi.cdef(
     typedef struct kmipkit_client_batch_item_response_t kmipkit_client_batch_item_response_t;
     typedef struct kmipkit_client_batch_item_t kmipkit_client_batch_item_t;
     typedef struct kmipkit_client_async_operation_outcome_t kmipkit_client_async_operation_outcome_t;
+    typedef struct kmipkit_cancel_request_t kmipkit_cancel_request_t;
+    typedef struct kmipkit_poll_request_t kmipkit_poll_request_t;
+    typedef struct kmipkit_process_request_t kmipkit_process_request_t;
+    typedef struct kmipkit_query_async_requests_request_t kmipkit_query_async_requests_request_t;
     typedef struct kmipkit_usage_allocation_context_t kmipkit_usage_allocation_context_t;
     typedef struct kmipkit_split_key_reference_t kmipkit_split_key_reference_t;
     typedef struct kmipkit_register_request_t kmipkit_register_request_t;
@@ -1293,6 +1297,57 @@ ffi.cdef(
         kmipkit_profile_validation_error_view_v1_t *out_view);
     void kmipkit_profile_validation_error_release(kmipkit_profile_validation_error_t *error);
     int32_t kmipkit_last_error_clear(void);
+
+    int32_t kmipkit_cancel_request_create(
+        const uint8_t *correlation_value,
+        uint64_t correlation_value_length,
+        kmipkit_cancel_request_t **out_request);
+    int32_t kmipkit_cancel_request_asynchronous_correlation_value(
+        kmipkit_cancel_request_t *request,
+        kmipkit_byte_span_v1_t *out_value);
+    int32_t kmipkit_cancel_request_to_ttlv_payload(
+        kmipkit_cancel_request_t *request,
+        kmipkit_ttlv_structure_t **out_payload);
+    void kmipkit_cancel_request_release(kmipkit_cancel_request_t *handle);
+
+    int32_t kmipkit_poll_request_create(
+        const uint8_t *correlation_value,
+        uint64_t correlation_value_length,
+        kmipkit_poll_request_t **out_request);
+    int32_t kmipkit_poll_request_asynchronous_correlation_value(
+        kmipkit_poll_request_t *request,
+        kmipkit_byte_span_v1_t *out_value);
+    int32_t kmipkit_poll_request_to_ttlv_payload(
+        kmipkit_poll_request_t *request,
+        kmipkit_ttlv_structure_t **out_payload);
+    void kmipkit_poll_request_release(kmipkit_poll_request_t *handle);
+
+    int32_t kmipkit_process_request_create(
+        const uint8_t *correlation_value,
+        uint64_t correlation_value_length,
+        kmipkit_process_request_t **out_request);
+    int32_t kmipkit_process_request_to_ttlv_payload(
+        kmipkit_process_request_t *request,
+        kmipkit_ttlv_structure_t **out_payload);
+    void kmipkit_process_request_release(kmipkit_process_request_t *handle);
+
+    int32_t kmipkit_query_async_requests_request_create(
+        kmipkit_query_async_requests_request_t **out_request);
+    int32_t kmipkit_query_async_requests_request_with_correlation_values(
+        kmipkit_query_async_requests_request_t *request,
+        const kmipkit_byte_span_v1_t *values,
+        uint64_t value_count,
+        kmipkit_query_async_requests_request_t **out_request);
+    int32_t kmipkit_query_async_requests_request_with_operations(
+        kmipkit_query_async_requests_request_t *request,
+        const uint32_t *operations,
+        uint64_t operation_count,
+        kmipkit_query_async_requests_request_t **out_request);
+    int32_t kmipkit_query_async_requests_request_to_ttlv_payload(
+        kmipkit_query_async_requests_request_t *request,
+        kmipkit_ttlv_structure_t **out_payload);
+    void kmipkit_query_async_requests_request_release(
+        kmipkit_query_async_requests_request_t *handle);
     """
 )
 

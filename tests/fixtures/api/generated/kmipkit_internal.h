@@ -135,6 +135,10 @@ typedef struct kmipkit_secret_bytes_t kmipkit_secret_bytes_t;
 typedef struct kmipkit_secret_text_t kmipkit_secret_text_t;
 typedef struct kmipkit_hashed_password_credential_t kmipkit_hashed_password_credential_t;
 typedef struct kmipkit_credential_value_t kmipkit_credential_value_t;
+typedef struct kmipkit_cancel_request_t kmipkit_cancel_request_t;
+typedef struct kmipkit_poll_request_t kmipkit_poll_request_t;
+typedef struct kmipkit_process_request_t kmipkit_process_request_t;
+typedef struct kmipkit_query_async_requests_request_t kmipkit_query_async_requests_request_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -411,6 +415,10 @@ void kmipkit_secret_bytes_release(kmipkit_secret_bytes_t *handle);
 void kmipkit_secret_text_release(kmipkit_secret_text_t *handle);
 void kmipkit_hashed_password_credential_release(kmipkit_hashed_password_credential_t *handle);
 void kmipkit_credential_value_release(kmipkit_credential_value_t *handle);
+void kmipkit_cancel_request_release(kmipkit_cancel_request_t *handle);
+void kmipkit_poll_request_release(kmipkit_poll_request_t *handle);
+void kmipkit_process_request_release(kmipkit_process_request_t *handle);
+void kmipkit_query_async_requests_request_release(kmipkit_query_async_requests_request_t *handle);
 #define KMIPKIT_ERROR_COMPATIBILITY_MISMATCH ((int32_t)1)
 #define KMIPKIT_ERROR_DUPLICATE_KEY ((int32_t)2)
 #define KMIPKIT_ERROR_INVALID_IDENTITY ((int32_t)3)
@@ -1632,6 +1640,60 @@ int32_t kmipkit_credential_value_ttlv_view(kmipkit_credential_value_t * value, k
  */
 /* KMIPKIT-0008-FR-003, KMIPKIT-0008-FR-004, KMIPKIT-0008-FR-010, KMIPKIT-0008-FR-011, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.11-001 */
 int32_t kmipkit_credential_value_into_ttlv(kmipkit_credential_value_t * value, kmipkit_ttlv_structure_t ** out_structure);
+/* Provides the in-memory CancelRequest request model; it does not execute a KMIP operation.
+ */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-004, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-012, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_cancel_request_create(const uint8_t * correlation_value, uint64_t correlation_value_length, kmipkit_cancel_request_t ** out_request);
+/* Provides the in-memory CancelRequest request model; it does not execute a KMIP operation.
+ */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-004, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-012, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_cancel_request_asynchronous_correlation_value(kmipkit_cancel_request_t * request, kmipkit_byte_span_v1_t * out_value);
+/* Provides the in-memory CancelRequest request model; it does not execute a KMIP operation.
+ */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-004, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-012, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_cancel_request_to_ttlv_payload(kmipkit_cancel_request_t * request, kmipkit_ttlv_structure_t ** out_payload);
+/* Provides the in-memory PollRequest request model; it does not execute a KMIP operation.
+ */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-003, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-012, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_poll_request_create(const uint8_t * correlation_value, uint64_t correlation_value_length, kmipkit_poll_request_t ** out_request);
+/* Provides the in-memory PollRequest request model; it does not execute a KMIP operation.
+ */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-003, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-012, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_poll_request_asynchronous_correlation_value(kmipkit_poll_request_t * request, kmipkit_byte_span_v1_t * out_value);
+/* Provides the in-memory PollRequest request model; it does not execute a KMIP operation.
+ */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-003, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-012, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_poll_request_to_ttlv_payload(kmipkit_poll_request_t * request, kmipkit_ttlv_structure_t ** out_payload);
+/* Provides the in-memory ProcessRequest request model; it does not execute a KMIP operation.
+ */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-005, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-012, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_process_request_create(const uint8_t * correlation_value, uint64_t correlation_value_length, kmipkit_process_request_t ** out_request);
+/* Provides the in-memory ProcessRequest request model; it does not execute a KMIP operation.
+ */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-005, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-012, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_process_request_to_ttlv_payload(kmipkit_process_request_t * request, kmipkit_ttlv_structure_t ** out_payload);
+/* Provides the in-memory QueryAsyncRequestsRequest request model; it does not execute a KMIP operation.
+ */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-006, KMIPKIT-0009-FR-007, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-012, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_query_async_requests_request_create(kmipkit_query_async_requests_request_t ** out_request);
+/* Provides the in-memory QueryAsyncRequestsRequest request model; it does not execute a KMIP operation.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-006, KMIPKIT-0009-FR-007, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-012, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_query_async_requests_request_with_correlation_values(kmipkit_query_async_requests_request_t * request, const kmipkit_byte_span_v1_t * values, uint64_t value_count, kmipkit_query_async_requests_request_t ** out_request);
+/* Provides the in-memory QueryAsyncRequestsRequest request model; it does not execute a KMIP operation.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-006, KMIPKIT-0009-FR-007, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-012, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_query_async_requests_request_with_operations(kmipkit_query_async_requests_request_t * request, const uint32_t * operations, uint64_t operation_count, kmipkit_query_async_requests_request_t ** out_request);
+/* Provides the in-memory QueryAsyncRequestsRequest request model; it does not execute a KMIP operation.
+ */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-006, KMIPKIT-0009-FR-007, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-012, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_query_async_requests_request_to_ttlv_payload(kmipkit_query_async_requests_request_t * request, kmipkit_ttlv_structure_t ** out_payload);
 /* KMIPKIT-0006-FR-021, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_message_extension_view_ttlv(kmipkit_message_extension_view_t * extension, kmipkit_ttlv_structure_t ** out_structure);
 /* KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */

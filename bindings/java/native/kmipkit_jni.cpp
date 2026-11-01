@@ -4585,6 +4585,14 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_release(
                 from_java_handle<kmipkit_hashed_password_credential_t>(raw_handle)); break;
         case 55: kmipkit_credential_value_release(
                 from_java_handle<kmipkit_credential_value_t>(raw_handle)); break;
+        case 56: kmipkit_cancel_request_release(
+                from_java_handle<kmipkit_cancel_request_t>(raw_handle)); break;
+        case 57: kmipkit_poll_request_release(
+                from_java_handle<kmipkit_poll_request_t>(raw_handle)); break;
+        case 58: kmipkit_process_request_release(
+                from_java_handle<kmipkit_process_request_t>(raw_handle)); break;
+        case 59: kmipkit_query_async_requests_request_release(
+                from_java_handle<kmipkit_query_async_requests_request_t>(raw_handle)); break;
         default: throw_invalid_input(env); break;
         }
         return 0;
@@ -9440,6 +9448,57 @@ private:
     size_t length_;
 };
 
+jboolean call_with_correlation_value(
+        JNIEnv* env, const kmipkit_byte_span_v1_t& value, jobject callback) {
+    if (callback == nullptr || value.length > 16 * 1024 * 1024
+            || (value.length > 0 && value.data == nullptr)) {
+        throw_invalid_input(env);
+        return JNI_FALSE;
+    }
+    if (value.length == 0 && value.data != nullptr) {
+        throw_invalid_input(env);
+        return JNI_FALSE;
+    }
+    jclass byte_buffer_class = env->FindClass("java/nio/ByteBuffer");
+    if (byte_buffer_class == nullptr) return JNI_FALSE;
+    jmethodID allocate_direct = env->GetStaticMethodID(
+            byte_buffer_class, "allocateDirect", "(I)Ljava/nio/ByteBuffer;");
+    jmethodID as_read_only = env->GetMethodID(
+            byte_buffer_class, "asReadOnlyBuffer", "()Ljava/nio/ByteBuffer;");
+    if (allocate_direct == nullptr || as_read_only == nullptr) {
+        env->DeleteLocalRef(byte_buffer_class);
+        return JNI_FALSE;
+    }
+    jobject temporary = env->CallStaticObjectMethod(
+            byte_buffer_class, allocate_direct, static_cast<jint>(value.length));
+    if (env->ExceptionCheck() || temporary == nullptr) {
+        env->DeleteLocalRef(byte_buffer_class);
+        return JNI_FALSE;
+    }
+    auto* temporary_data = static_cast<uint8_t*>(env->GetDirectBufferAddress(temporary));
+    const jlong capacity = env->GetDirectBufferCapacity(temporary);
+    if (capacity != static_cast<jlong>(value.length)
+            || (value.length > 0 && temporary_data == nullptr)) {
+        env->DeleteLocalRef(temporary);
+        env->DeleteLocalRef(byte_buffer_class);
+        throw_invalid_input(env);
+        return JNI_FALSE;
+    }
+    DirectBufferWiper temporary_wiper(temporary_data, static_cast<size_t>(value.length));
+    for (size_t index = 0; index < static_cast<size_t>(value.length); ++index) {
+        temporary_data[index] = value.data[index];
+    }
+
+    jobject borrowed = env->CallObjectMethod(temporary, as_read_only);
+    if (env->ExceptionCheck() || borrowed == nullptr) return JNI_FALSE;
+    jclass consumer_class = env->FindClass("java/util/function/Consumer");
+    if (consumer_class == nullptr) return JNI_FALSE;
+    jmethodID accept = env->GetMethodID(consumer_class, "accept", "(Ljava/lang/Object;)V");
+    if (accept == nullptr) return JNI_FALSE;
+    env->CallVoidMethod(callback, accept, borrowed);
+    return env->ExceptionCheck() ? JNI_FALSE : JNI_TRUE;
+}
+
 bool read_async_correlation_values(JNIEnv* env, jobjectArray input,
         std::vector<std::vector<uint8_t>>& values,
         std::vector<kmipkit_byte_span_v1_t>& spans) {
@@ -9808,6 +9867,169 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecuteQu
                 static_cast<uint8_t>(has_indicator == JNI_TRUE), static_cast<uint32_t>(raw_indicator),
                 limits.get(), &options, &outcome);
         return execute_async_client_operation(env, status, outcome);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_cancelRequestCreate(
+        JNIEnv* env, jclass, jbyteArray raw_correlation) {
+    return guarded<jlong>(env, 0, [&] {
+        std::vector<uint8_t> correlation;
+        kmipkit::secure::VectorWiper correlation_wiper(correlation);
+        if (!read_bytes(env, raw_correlation, 16 * 1024 * 1024, correlation)) {
+            return static_cast<jlong>(0);
+        }
+        return return_handle<kmipkit_cancel_request_t>(env, [&](auto output) {
+            return kmipkit_cancel_request_create(
+                    correlation.empty() ? nullptr : correlation.data(),
+                    static_cast<uint64_t>(correlation.size()), output);
+        });
+    });
+}
+
+JNIEXPORT jboolean JNICALL Java_org_kmipkit_NativeExtensionRegistry_withCancelRequestCorrelationValue(
+        JNIEnv* env, jclass, jlong raw_request, jobject callback) {
+    return guarded<jboolean>(env, JNI_FALSE, [&] {
+        auto* request = from_java_handle<kmipkit_cancel_request_t>(raw_request);
+        if (request == nullptr || callback == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jboolean>(JNI_FALSE);
+        }
+        kmipkit_byte_span_v1_t value{};
+        if (!check_status(env, [&] {
+                return kmipkit_cancel_request_asynchronous_correlation_value(request, &value);
+            })) return static_cast<jboolean>(JNI_FALSE);
+        return static_cast<jboolean>(call_with_correlation_value(env, value, callback));
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_cancelRequestToTtlvPayload(
+        JNIEnv* env, jclass, jlong raw_request) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_ttlv_structure_t>(env, [&](auto output) {
+            return kmipkit_cancel_request_to_ttlv_payload(
+                    from_java_handle<kmipkit_cancel_request_t>(raw_request), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_pollRequestCreate(
+        JNIEnv* env, jclass, jbyteArray raw_correlation) {
+    return guarded<jlong>(env, 0, [&] {
+        std::vector<uint8_t> correlation;
+        kmipkit::secure::VectorWiper correlation_wiper(correlation);
+        if (!read_bytes(env, raw_correlation, 16 * 1024 * 1024, correlation)) {
+            return static_cast<jlong>(0);
+        }
+        return return_handle<kmipkit_poll_request_t>(env, [&](auto output) {
+            return kmipkit_poll_request_create(
+                    correlation.empty() ? nullptr : correlation.data(),
+                    static_cast<uint64_t>(correlation.size()), output);
+        });
+    });
+}
+
+JNIEXPORT jboolean JNICALL Java_org_kmipkit_NativeExtensionRegistry_withPollRequestCorrelationValue(
+        JNIEnv* env, jclass, jlong raw_request, jobject callback) {
+    return guarded<jboolean>(env, JNI_FALSE, [&] {
+        auto* request = from_java_handle<kmipkit_poll_request_t>(raw_request);
+        if (request == nullptr || callback == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jboolean>(JNI_FALSE);
+        }
+        kmipkit_byte_span_v1_t value{};
+        if (!check_status(env, [&] {
+                return kmipkit_poll_request_asynchronous_correlation_value(request, &value);
+            })) return static_cast<jboolean>(JNI_FALSE);
+        return static_cast<jboolean>(call_with_correlation_value(env, value, callback));
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_pollRequestToTtlvPayload(
+        JNIEnv* env, jclass, jlong raw_request) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_ttlv_structure_t>(env, [&](auto output) {
+            return kmipkit_poll_request_to_ttlv_payload(
+                    from_java_handle<kmipkit_poll_request_t>(raw_request), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_processRequestCreate(
+        JNIEnv* env, jclass, jbyteArray raw_correlation) {
+    return guarded<jlong>(env, 0, [&] {
+        std::vector<uint8_t> correlation;
+        kmipkit::secure::VectorWiper correlation_wiper(correlation);
+        if (!read_bytes(env, raw_correlation, 16 * 1024 * 1024, correlation)) {
+            return static_cast<jlong>(0);
+        }
+        return return_handle<kmipkit_process_request_t>(env, [&](auto output) {
+            return kmipkit_process_request_create(
+                    correlation.empty() ? nullptr : correlation.data(),
+                    static_cast<uint64_t>(correlation.size()), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_processRequestToTtlvPayload(
+        JNIEnv* env, jclass, jlong raw_request) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_ttlv_structure_t>(env, [&](auto output) {
+            return kmipkit_process_request_to_ttlv_payload(
+                    from_java_handle<kmipkit_process_request_t>(raw_request), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_queryAsyncRequestsRequestCreate(
+        JNIEnv* env, jclass) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_query_async_requests_request_t>(env, [&](auto output) {
+            return kmipkit_query_async_requests_request_create(output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_queryAsyncRequestsRequestWithCorrelationValues(
+        JNIEnv* env, jclass, jlong raw_request, jobjectArray raw_values) {
+    return guarded<jlong>(env, 0, [&] {
+        std::vector<std::vector<uint8_t>> values;
+        AsyncCorrelationValuesWiper value_wiper(values);
+        std::vector<kmipkit_byte_span_v1_t> spans;
+        if (!read_async_correlation_values(env, raw_values, values, spans)) {
+            return static_cast<jlong>(0);
+        }
+        return return_handle<kmipkit_query_async_requests_request_t>(env, [&](auto output) {
+            return kmipkit_query_async_requests_request_with_correlation_values(
+                    from_java_handle<kmipkit_query_async_requests_request_t>(raw_request),
+                    spans.empty() ? nullptr : spans.data(),
+                    static_cast<uint64_t>(spans.size()), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_queryAsyncRequestsRequestWithOperations(
+        JNIEnv* env, jclass, jlong raw_request, jlongArray raw_operations) {
+    return guarded<jlong>(env, 0, [&] {
+        std::vector<uint32_t> operations;
+        if (!read_async_operations(env, raw_operations, operations)) {
+            return static_cast<jlong>(0);
+        }
+        return return_handle<kmipkit_query_async_requests_request_t>(env, [&](auto output) {
+            return kmipkit_query_async_requests_request_with_operations(
+                    from_java_handle<kmipkit_query_async_requests_request_t>(raw_request),
+                    operations.empty() ? nullptr : operations.data(),
+                    static_cast<uint64_t>(operations.size()), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_queryAsyncRequestsRequestToTtlvPayload(
+        JNIEnv* env, jclass, jlong raw_request) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_ttlv_structure_t>(env, [&](auto output) {
+            return kmipkit_query_async_requests_request_to_ttlv_payload(
+                    from_java_handle<kmipkit_query_async_requests_request_t>(raw_request), output);
+        });
     });
 }
 

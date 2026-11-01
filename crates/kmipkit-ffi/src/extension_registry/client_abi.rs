@@ -1212,6 +1212,336 @@ pub extern "C" fn kmipkit_client_execute(
     })
 }
 
+fn copy_async_correlation_spans(
+    spans: &[crate::kmipkit_byte_span_v1_t],
+) -> FfiResult<Vec<Vec<u8>>> {
+    let mut values: Vec<Vec<u8>> = Vec::new();
+    let mut total_bytes = 0_usize;
+    let maximum = match usize::try_from(MAX_FFI_INPUT_BYTES) {
+        Ok(maximum) => maximum,
+        Err(_) => usize::MAX,
+    };
+    values
+        .try_reserve_exact(spans.len())
+        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    for span in spans {
+        let bytes = match input_span(span.data, span.length, MAX_FFI_INPUT_BYTES) {
+            Ok(bytes) => bytes,
+            Err(status) => {
+                for value in &mut values {
+                    value.zeroize();
+                }
+                return Err(status);
+            }
+        };
+        if bytes.len() > maximum - total_bytes {
+            for value in &mut values {
+                value.zeroize();
+            }
+            return Err(ERROR_RESOURCE_LIMIT);
+        }
+        let mut value = Vec::new();
+        if value.try_reserve_exact(bytes.len()).is_err() {
+            for value in &mut values {
+                value.zeroize();
+            }
+            return Err(ERROR_RESOURCE_LIMIT);
+        }
+        value.extend_from_slice(bytes);
+        total_bytes += bytes.len();
+        values.push(value);
+    }
+    Ok(values)
+}
+
+/// Creates a local KMIP 2.1 Cancel request model without performing I/O.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_cancel_request_create(
+    correlation_value: *const u8,
+    correlation_value_length: u64,
+    out_request: *mut *mut kmipkit_cancel_request_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_request);
+        let correlation = try_ffi!(input_span(
+            correlation_value,
+            correlation_value_length,
+            MAX_FFI_INPUT_BYTES
+        ));
+        *out = try_ffi!(try_make_handle(
+            Kind::CancelRequest,
+            HandleValue::CancelRequest(Box::new(CancelRequest::new(correlation))),
+        ));
+        SUCCESS
+    })
+}
+
+/// Borrows the exact Cancel correlation bytes for the lifetime of its request handle.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_cancel_request_asynchronous_correlation_value(
+    request: *mut kmipkit_cancel_request_t,
+    out_value: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_value);
+        let request = read_handle!(request, CancelRequest);
+        let HandleValue::CancelRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let bytes = request.asynchronous_correlation_value();
+        *out = crate::kmipkit_byte_span_v1_t {
+            data: if bytes.is_empty() {
+                ptr::null()
+            } else {
+                bytes.as_ptr()
+            },
+            length: bytes.len() as u64,
+        };
+        SUCCESS
+    })
+}
+
+/// Copies the Cancel request payload into an owned generic TTLV structure.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_cancel_request_to_ttlv_payload(
+    request: *mut kmipkit_cancel_request_t,
+    out_payload: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_payload);
+        let request = read_handle!(request, CancelRequest);
+        let HandleValue::CancelRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let payload = try_ffi!(
+            request
+                .to_ttlv_payload()
+                .map_err(|error| protocol_status(&error))
+        );
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(payload),
+        ));
+        SUCCESS
+    })
+}
+
+/// Creates a local KMIP 2.1 Poll request model without performing I/O.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_poll_request_create(
+    correlation_value: *const u8,
+    correlation_value_length: u64,
+    out_request: *mut *mut kmipkit_poll_request_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_request);
+        let correlation = try_ffi!(input_span(
+            correlation_value,
+            correlation_value_length,
+            MAX_FFI_INPUT_BYTES
+        ));
+        *out = try_ffi!(try_make_handle(
+            Kind::PollRequest,
+            HandleValue::PollRequest(Box::new(PollRequest::new(correlation))),
+        ));
+        SUCCESS
+    })
+}
+
+/// Borrows the exact Poll correlation bytes for the lifetime of its request handle.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_poll_request_asynchronous_correlation_value(
+    request: *mut kmipkit_poll_request_t,
+    out_value: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_value);
+        let request = read_handle!(request, PollRequest);
+        let HandleValue::PollRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let bytes = request.asynchronous_correlation_value();
+        *out = crate::kmipkit_byte_span_v1_t {
+            data: if bytes.is_empty() {
+                ptr::null()
+            } else {
+                bytes.as_ptr()
+            },
+            length: bytes.len() as u64,
+        };
+        SUCCESS
+    })
+}
+
+/// Copies the Poll request payload into an owned generic TTLV structure.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_poll_request_to_ttlv_payload(
+    request: *mut kmipkit_poll_request_t,
+    out_payload: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_payload);
+        let request = read_handle!(request, PollRequest);
+        let HandleValue::PollRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let payload = try_ffi!(
+            request
+                .to_ttlv_payload()
+                .map_err(|error| protocol_status(&error))
+        );
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(payload),
+        ));
+        SUCCESS
+    })
+}
+
+/// Creates a local KMIP 2.1 Process request model without performing I/O.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_process_request_create(
+    correlation_value: *const u8,
+    correlation_value_length: u64,
+    out_request: *mut *mut kmipkit_process_request_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_request);
+        let correlation = try_ffi!(input_span(
+            correlation_value,
+            correlation_value_length,
+            MAX_FFI_INPUT_BYTES
+        ));
+        *out = try_ffi!(try_make_handle(
+            Kind::ProcessRequest,
+            HandleValue::ProcessRequest(Box::new(ProcessRequest::new(correlation))),
+        ));
+        SUCCESS
+    })
+}
+
+/// Copies the Process request payload into an owned generic TTLV structure.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_process_request_to_ttlv_payload(
+    request: *mut kmipkit_process_request_t,
+    out_payload: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_payload);
+        let request = read_handle!(request, ProcessRequest);
+        let HandleValue::ProcessRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let payload = try_ffi!(
+            request
+                .to_ttlv_payload()
+                .map_err(|error| protocol_status(&error))
+        );
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(payload),
+        ));
+        SUCCESS
+    })
+}
+
+/// Creates an unfiltered local Query Asynchronous Requests model.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_query_async_requests_request_create(
+    out_request: *mut *mut kmipkit_query_async_requests_request_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_request);
+        *out = try_ffi!(try_make_handle(
+            Kind::QueryAsyncRequestsRequest,
+            HandleValue::QueryAsyncRequestsRequest(Box::new(QueryAsyncRequestsRequest::new())),
+        ));
+        SUCCESS
+    })
+}
+
+/// Returns a query model with the supplied correlation filter and preserves the input handle.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_query_async_requests_request_with_correlation_values(
+    request: *mut kmipkit_query_async_requests_request_t,
+    values: *const crate::kmipkit_byte_span_v1_t,
+    value_count: u64,
+    out_request: *mut *mut kmipkit_query_async_requests_request_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_request);
+        let request = read_handle!(request, QueryAsyncRequestsRequest);
+        let spans = try_ffi!(input_array(values, value_count, 100_000));
+        let values = try_ffi!(copy_async_correlation_spans(spans));
+        let HandleValue::QueryAsyncRequestsRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let request = request.as_ref().clone().with_correlation_values(values);
+        *out = try_ffi!(try_make_handle(
+            Kind::QueryAsyncRequestsRequest,
+            HandleValue::QueryAsyncRequestsRequest(Box::new(request)),
+        ));
+        SUCCESS
+    })
+}
+
+/// Returns a query model with the supplied operation filter and preserves the input handle.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_query_async_requests_request_with_operations(
+    request: *mut kmipkit_query_async_requests_request_t,
+    operations: *const u32,
+    operation_count: u64,
+    out_request: *mut *mut kmipkit_query_async_requests_request_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_request);
+        let request = read_handle!(request, QueryAsyncRequestsRequest);
+        let operations = try_ffi!(input_array(operations, operation_count, 100_000));
+        let mut operation_values = Vec::new();
+        if operation_values
+            .try_reserve_exact(operations.len())
+            .is_err()
+        {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        }
+        operation_values.extend_from_slice(operations);
+        let HandleValue::QueryAsyncRequestsRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let request = request.as_ref().clone().with_operations(operation_values);
+        *out = try_ffi!(try_make_handle(
+            Kind::QueryAsyncRequestsRequest,
+            HandleValue::QueryAsyncRequestsRequest(Box::new(request)),
+        ));
+        SUCCESS
+    })
+}
+
+/// Copies the query filters into an owned generic TTLV request payload.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_query_async_requests_request_to_ttlv_payload(
+    request: *mut kmipkit_query_async_requests_request_t,
+    out_payload: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_payload);
+        let request = read_handle!(request, QueryAsyncRequestsRequest);
+        let HandleValue::QueryAsyncRequestsRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let payload = try_ffi!(
+            request
+                .to_ttlv_payload()
+                .map_err(|error| protocol_status(&error))
+        );
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(payload),
+        ));
+        SUCCESS
+    })
+}
+
 /// Executes exactly one KMIP 2.1 Poll request with the caller's opaque correlation bytes.
 ///
 /// The outcome is caller-owned and must be released with

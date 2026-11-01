@@ -24,7 +24,7 @@ macro_rules! test_pointer_ffi_call {
 mod ffi_pointer_safety_tests;
 
 use crate::{
-    kmipkit_attestation_credential_t, kmipkit_authentication_t,
+    kmipkit_attestation_credential_t, kmipkit_authentication_t, kmipkit_cancel_request_t,
     kmipkit_client_async_operation_metadata_v1_t, kmipkit_client_async_operation_outcome_t,
     kmipkit_client_batch_item_metadata_v1_t, kmipkit_client_batch_item_metadata_v2_t,
     kmipkit_client_batch_item_response_t, kmipkit_client_batch_item_t,
@@ -39,9 +39,10 @@ use crate::{
     kmipkit_extension_recognition_t, kmipkit_extension_registry_limits_v1_t,
     kmipkit_extension_schema_t, kmipkit_hashed_password_credential_t,
     kmipkit_message_extension_view_t, kmipkit_message_validation_error_t, kmipkit_nonce_t,
-    kmipkit_profile_object_state_v1_t, kmipkit_profile_validation_context_v1_t,
-    kmipkit_profile_validation_error_t, kmipkit_profile_validation_error_view_v1_t,
-    kmipkit_profile_validation_selection_v1_t, kmipkit_raw_tag_t, kmipkit_register_request_t,
+    kmipkit_poll_request_t, kmipkit_process_request_t, kmipkit_profile_object_state_v1_t,
+    kmipkit_profile_validation_context_v1_t, kmipkit_profile_validation_error_t,
+    kmipkit_profile_validation_error_view_v1_t, kmipkit_profile_validation_selection_v1_t,
+    kmipkit_query_async_requests_request_t, kmipkit_raw_tag_t, kmipkit_register_request_t,
     kmipkit_registered_extension_value_t, kmipkit_request_batch_item_view_t,
     kmipkit_request_header_view_t, kmipkit_request_message_t, kmipkit_request_options_v1_t,
     kmipkit_response_batch_item_view_t, kmipkit_response_header_view_t, kmipkit_response_message_t,
@@ -64,21 +65,21 @@ use kmipkit_protocol::Pkcs11Request;
 use kmipkit_protocol::extension;
 use kmipkit_protocol::{
     ActivateRequest, AddAttributeRequest, AdjustAttributeRequest, AdjustmentType, ArchiveRequest,
-    AttributeReference, AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest,
-    CreateRequest, CreateSplitKeyRequest, CurrentAttribute, DecryptRequest, DelegatedLoginRequest,
-    DeleteAttributeRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest,
-    DestroyRequest, EncryptRequest, ExportRequest, GetAttributeListRequest, GetAttributesRequest,
-    GetConstraintsRequest, GetRequest, GetUsageAllocationRequest, HashRequest, ImportRequest,
-    InteropRequest, JoinSplitKeyRequest, KeyCompressionType, KeyFormatType, KeyWrapType,
-    LocateRequest, LogRequest, LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest,
-    ModifyAttributeRequest, NewAttribute, ObjectGroupMember, ObjectType, ObtainLeaseRequest,
-    OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind, QueryFunction,
-    QueryRequest, ReProvisionRequest, RecertifyRequest, RecoverRequest, RegisterRequest,
-    RekeyKeyPairRequest, RekeyRequest, ResponseMessage, ResultStatus, RevocationReason,
-    RevokeRequest, RngRetrieveRequest, RngSeedRequest, SecretBytes, SecretText,
-    SetAttributeRequest, SetConstraintsRequest, SetDefaultsRequest, SignRequest,
-    SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask, Ticket,
-    UniqueIdentifier, ValidateRequest,
+    AttributeReference, AttributeSet, CancelRequest, CertifyRequest, CheckRequest,
+    CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest, CurrentAttribute, DecryptRequest,
+    DelegatedLoginRequest, DeleteAttributeRequest, DerivationMethod, DerivationParameters,
+    DeriveKeyRequest, DestroyRequest, EncryptRequest, ExportRequest, GetAttributeListRequest,
+    GetAttributesRequest, GetConstraintsRequest, GetRequest, GetUsageAllocationRequest,
+    HashRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest, KeyCompressionType,
+    KeyFormatType, KeyWrapType, LocateRequest, LogRequest, LoginRequest, LogoutRequest, MacRequest,
+    MacVerifyRequest, ModifyAttributeRequest, NewAttribute, ObjectGroupMember, ObjectType,
+    ObtainLeaseRequest, OpaqueObjectContext, OperationData, PollRequest, ProcessRequest,
+    ProtocolError, ProtocolErrorKind, QueryAsyncRequestsRequest, QueryFunction, QueryRequest,
+    ReProvisionRequest, RecertifyRequest, RecoverRequest, RegisterRequest, RekeyKeyPairRequest,
+    RekeyRequest, ResponseMessage, ResultStatus, RevocationReason, RevokeRequest,
+    RngRetrieveRequest, RngSeedRequest, SecretBytes, SecretText, SetAttributeRequest,
+    SetConstraintsRequest, SetDefaultsRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
+    SplitKeyReference, StorageStatusMask, Ticket, UniqueIdentifier, ValidateRequest,
 };
 use kmipkit_protocol::{
     AttestationCredential, Authentication, Credential, CredentialType, CredentialValidationError,
@@ -466,6 +467,10 @@ enum Kind {
     HashedPasswordCredential,
     SecretBytes,
     SecretText,
+    CancelRequest,
+    PollRequest,
+    ProcessRequest,
+    QueryAsyncRequestsRequest,
 }
 
 enum HandleValue {
@@ -509,6 +514,10 @@ enum HandleValue {
     HashedPasswordCredential(HashedPasswordCredential),
     SecretBytes(SecretBytes),
     SecretText(SecretText),
+    CancelRequest(Box<CancelRequest>),
+    PollRequest(Box<PollRequest>),
+    ProcessRequest(Box<ProcessRequest>),
+    QueryAsyncRequestsRequest(Box<QueryAsyncRequestsRequest>),
     ChildRule(Box<extension::ExtensionChildRule>),
     OrderConstraint(extension::ExtensionOrderConstraint),
     Value(Value),
@@ -1877,6 +1886,36 @@ pub extern "C" fn kmipkit_client_request_message_extension_release(
 pub extern "C" fn kmipkit_register_request_release(handle: *mut kmipkit_register_request_t) {
     ffi_entrypoint(|| {
         release(handle, Kind::RegisterRequest);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_cancel_request_release(handle: *mut kmipkit_cancel_request_t) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::CancelRequest);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_poll_request_release(handle: *mut kmipkit_poll_request_t) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::PollRequest);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_process_request_release(handle: *mut kmipkit_process_request_t) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::ProcessRequest);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_query_async_requests_request_release(
+    handle: *mut kmipkit_query_async_requests_request_t,
+) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::QueryAsyncRequestsRequest);
     });
 }
 
