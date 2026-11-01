@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from kmipkit import attribute_operations, extensions, ttlv
+import pytest
+
+from kmipkit import attribute_operations, errors, extensions, ttlv
 
 
 def _attribute_item() -> tuple[ttlv.CodecLimits, ttlv.TtlvItem]:
@@ -77,3 +79,37 @@ def test_delete_modify_and_set_models_remain_separate_from_batch_items():
                 assert not hasattr(request, "adjustment_type")
             _assert_standalone_request(request, expected_count)
     limits.close()
+
+
+def test_get_attributes_request_preserves_order_and_supports_all_attributes():
+    identifier = extensions.UniqueIdentifier.text_string("object-7")
+    references = (
+        extensions.AttributeReference.tag(0x0042_000A),
+        extensions.AttributeReference.name("KMIPKit", "Counter"),
+    )
+    with attribute_operations.GetAttributesRequest.create(identifier, references) as request:
+        assert request.unique_identifier == identifier
+        assert request.attribute_references == references
+        _assert_standalone_request(request, 3)
+
+    with attribute_operations.GetAttributesRequest.create(None, ()) as request:
+        assert request.unique_identifier is None
+        assert request.attribute_references == ()
+        _assert_standalone_request(request, 0)
+
+
+def test_get_attributes_request_rejects_duplicate_references():
+    reference = extensions.AttributeReference.tag(0x0042_000A)
+    with pytest.raises(errors.InvalidInputError):
+        attribute_operations.GetAttributesRequest.create(None, (reference, reference))
+
+
+def test_get_attribute_list_request_has_only_its_optional_identifier():
+    identifier = extensions.UniqueIdentifier.text_string("object-7")
+    with attribute_operations.GetAttributeListRequest.create(identifier) as request:
+        assert request.unique_identifier == identifier
+        _assert_standalone_request(request, 1)
+
+    with attribute_operations.GetAttributeListRequest.create(None) as request:
+        assert request.unique_identifier is None
+        _assert_standalone_request(request, 0)
