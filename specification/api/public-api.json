@@ -448593,7 +448593,7 @@
       "candidateSpecId": "KMIPKIT-0008",
       "evidence": "The HashedPasswordTimestampSequence facade exposes caller-managed sequence behavior; its Python slot layout is implementation metadata."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.RAW_TAG",
       "reason": "This public static member is an internal dispatch constant for the generic TTLV JNI bridge and has no independent product capability. Java applications use the typed facade classes.",
@@ -448605,7 +448605,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.TAG",
       "reason": "This public static member is an internal dispatch constant for the generic TTLV JNI bridge and has no independent product capability. Java applications use the typed facade classes.",
@@ -448617,7 +448617,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_ITEM",
       "reason": "This public static member is an internal dispatch constant for the generic TTLV JNI bridge and has no independent product capability. Java applications use the typed facade classes.",
@@ -448629,7 +448629,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_ITEM_VIEW",
       "reason": "This public static member is an internal dispatch constant for the generic TTLV JNI bridge and has no independent product capability. Java applications use the typed facade classes.",
@@ -448641,7 +448641,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_STRUCTURE",
       "reason": "This public static member is an internal dispatch constant for the generic TTLV JNI bridge and has no independent product capability. Java applications use the typed facade classes.",
@@ -448653,7 +448653,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_STRUCTURE_VIEW",
       "reason": "This public static member is an internal dispatch constant for the generic TTLV JNI bridge and has no independent product capability. Java applications use the typed facade classes.",
@@ -448665,7 +448665,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_VALUE",
       "reason": "This public static member is an internal dispatch constant for the generic TTLV JNI bridge and has no independent product capability. Java applications use the typed facade classes.",
@@ -448677,7 +448677,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_VALUE_VIEW",
       "reason": "This public static member is an internal dispatch constant for the generic TTLV JNI bridge and has no independent product capability. Java applications use the typed facade classes.",
@@ -448689,7 +448689,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.codecLimitValues",
       "reason": "This public static member adapts native codec-limit values for the typed facade and is internal generic TTLV JNI bridge plumbing. Java applications use the CodecLimits typed facade; this adapter has no independent product capability.",
@@ -448701,7 +448701,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0005-FR-007, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge; the immutable CodecLimits API is the supported typed facade for configured limits. docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.rawTagChecked",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -448713,7 +448713,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.rawTagCreate",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -448725,7 +448725,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.rawTagValue",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -448737,7 +448737,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.tagValue",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -448749,7 +448749,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvItemCreate",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -448761,7 +448761,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvItemViewTag",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -448773,7 +448773,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvItemViewType",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -448785,7 +448785,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvItemViewValue",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -448797,7 +448797,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvStructureCreate",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -448809,7 +448809,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvStructureView",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -448821,7 +448821,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvStructureViewItemAt",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -448833,7 +448833,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvStructureViewItemCount",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -448845,7 +448845,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvStructureWithItem",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -448857,7 +448857,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueBigInteger",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -448869,7 +448869,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueBoolean",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -448881,7 +448881,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueByteString",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -448893,7 +448893,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueDateTime",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -448905,7 +448905,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueDateTimeExtended",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -448917,7 +448917,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueEnumeration",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -448929,7 +448929,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueInteger",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -448941,7 +448941,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueInterval",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -448953,7 +448953,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueLongInteger",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -448965,7 +448965,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueStructure",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -448977,7 +448977,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueTextString",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -448989,7 +448989,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueView",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -449001,7 +449001,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewBoolean",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -449013,7 +449013,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewByteAt",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -449025,7 +449025,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewByteLength",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -449037,7 +449037,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewDateTime",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -449049,7 +449049,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewDateTimeExtended",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -449061,7 +449061,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewEnumeration",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -449073,7 +449073,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewInteger",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -449085,7 +449085,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewInterval",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -449097,7 +449097,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewLongInteger",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -449109,7 +449109,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewStructure",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -449121,7 +449121,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     },
-        {
+    {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewType",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
@@ -449132,6 +449132,54 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.HASHED_PASSWORD_TIMESTAMP_SEQUENCE",
+      "reason": "This public static member is internal hashed-password timestamp-sequence JNI plumbing. Java applications use the typed HashedPasswordTimestampSequence facade; this bridge declaration has no independent product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0008-FR-007/010 and KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The typed HashedPasswordTimestampSequence facade uses this handle kind or native entry point for its caller-managed create, record, and lastTimestamp behavior; applications use the typed facade without raw JNI handles. docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.hashedPasswordTimestampSequenceLastTimestamp",
+      "reason": "This public static member is internal hashed-password timestamp-sequence JNI plumbing. Java applications use the typed HashedPasswordTimestampSequence facade; this bridge declaration has no independent product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0008-FR-007/010 and KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The typed HashedPasswordTimestampSequence facade uses this handle kind or native entry point for its caller-managed create, record, and lastTimestamp behavior; applications use the typed facade without raw JNI handles. docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.hashedPasswordTimestampSequenceNew",
+      "reason": "This public static member is internal hashed-password timestamp-sequence JNI plumbing. Java applications use the typed HashedPasswordTimestampSequence facade; this bridge declaration has no independent product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0008-FR-007/010 and KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The typed HashedPasswordTimestampSequence facade uses this handle kind or native entry point for its caller-managed create, record, and lastTimestamp behavior; applications use the typed facade without raw JNI handles. docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.hashedPasswordTimestampSequenceRecord",
+      "reason": "This public static member is internal hashed-password timestamp-sequence JNI plumbing. Java applications use the typed HashedPasswordTimestampSequence facade; this bridge declaration has no independent product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0008-FR-007/010 and KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The typed HashedPasswordTimestampSequence facade uses this handle kind or native entry point for its caller-managed create, record, and lastTimestamp behavior; applications use the typed facade without raw JNI handles. docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
     }
   ],
   "apiLevels": [

@@ -313,6 +313,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B -m unittest tools.api_manifest.tests.test_t102_java_ttlv_bridge_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $python -B -m unittest tools.api_manifest.tests.test_binding_exports -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B -m unittest tools.api_manifest.tests.test_operation_readiness -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B tools/api_manifest/generate.py --check

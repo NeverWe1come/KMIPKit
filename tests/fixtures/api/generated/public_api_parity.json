@@ -64454,6 +64454,54 @@
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewType",
       "packageId": "java-kmipkit",
       "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0008-FR-007/010 and KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The typed HashedPasswordTimestampSequence facade uses this handle kind or native entry point for its caller-managed create, record, and lastTimestamp behavior; applications use the typed facade without raw JNI handles. docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.HASHED_PASSWORD_TIMESTAMP_SEQUENCE",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal hashed-password timestamp-sequence JNI plumbing. Java applications use the typed HashedPasswordTimestampSequence facade; this bridge declaration has no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0008-FR-007/010 and KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The typed HashedPasswordTimestampSequence facade uses this handle kind or native entry point for its caller-managed create, record, and lastTimestamp behavior; applications use the typed facade without raw JNI handles. docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.hashedPasswordTimestampSequenceLastTimestamp",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal hashed-password timestamp-sequence JNI plumbing. Java applications use the typed HashedPasswordTimestampSequence facade; this bridge declaration has no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0008-FR-007/010 and KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The typed HashedPasswordTimestampSequence facade uses this handle kind or native entry point for its caller-managed create, record, and lastTimestamp behavior; applications use the typed facade without raw JNI handles. docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.hashedPasswordTimestampSequenceNew",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal hashed-password timestamp-sequence JNI plumbing. Java applications use the typed HashedPasswordTimestampSequence facade; this bridge declaration has no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0008-FR-007/010 and KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The typed HashedPasswordTimestampSequence facade uses this handle kind or native entry point for its caller-managed create, record, and lastTimestamp behavior; applications use the typed facade without raw JNI handles. docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.hashedPasswordTimestampSequenceRecord",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal hashed-password timestamp-sequence JNI plumbing. Java applications use the typed HashedPasswordTimestampSequence facade; this bridge declaration has no independent product capability."
     }
   ],
   "capabilities": [
