@@ -1511,6 +1511,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
       ],
+      "normativeSource": "OASIS KMIP v2.1 §9.11, Table 415; KMIPKIT-0008 OD-003",
       "input": {
         "restoredTimestamp": 1800000001,
         "nextTimestamp": 1800000002,

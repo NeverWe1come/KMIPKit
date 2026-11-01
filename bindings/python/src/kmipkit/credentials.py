@@ -920,6 +920,51 @@ class HashedPasswordCredential(NativeHandle):
         return _wrap_owned_handle(Structure, handle)
 
 
+class HashedPasswordTimestampSequence(NativeHandle):
+    """Caller-owned timestamp state for each Username and logical credential producer."""
+
+    __slots__ = ()
+    _release_name = "kmipkit_hashed_password_timestamp_sequence_release"
+
+    @classmethod
+    def create(cls, last_timestamp: int | None = None) -> HashedPasswordTimestampSequence:
+        """Create a new sequence or restore it from a caller-persisted timestamp."""
+        has_previous = last_timestamp is not None
+        previous = (
+            _integer_range(last_timestamp, -(1 << 63), (1 << 63) - 1)
+            if has_previous
+            else 0
+        )
+        handle = _new_handle(
+            "kmipkit_hashed_password_timestamp_sequence_t",
+            lib.kmipkit_hashed_password_timestamp_sequence_new,
+            int(has_previous),
+            previous,
+        )
+        return _wrap_owned_handle(cls, handle)
+
+    @synchronized_native_call
+    def record(self, timestamp: int) -> None:
+        """Accept a strictly later caller-supplied timestamp, or raise InvalidInputError."""
+        value = _integer_range(timestamp, -(1 << 63), (1 << 63) - 1)
+        status = lib.kmipkit_hashed_password_timestamp_sequence_record(
+            self._pointer(), value
+        )
+        errors.raise_for_status(status)
+
+    @property
+    @synchronized_native_call
+    def last_timestamp(self) -> int | None:
+        """Return the last accepted timestamp for caller-managed persistence."""
+        present = ffi.new("uint8_t *")
+        timestamp = ffi.new("int64_t *")
+        status = lib.kmipkit_hashed_password_timestamp_sequence_last_timestamp(
+            self._pointer(), present, timestamp
+        )
+        errors.raise_for_status(status)
+        return int(timestamp[0]) if present[0] else None
+
+
 __all__ = [
     "AttestationCredential",
     "Authentication",
@@ -929,6 +974,7 @@ __all__ = [
     "CredentialView",
     "DeviceCredential",
     "HashedPasswordCredential",
+    "HashedPasswordTimestampSequence",
     "Nonce",
     "SecretBytes",
     "SecretText",

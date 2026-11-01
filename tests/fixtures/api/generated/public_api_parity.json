@@ -63420,6 +63420,474 @@
       "exportName": "kmipkit_protocol::SignatureVerifyResponse::try_from_response_item_with_context",
       "packageId": "rust-kmipkit-protocol",
       "reason": "This exact Rust response conversion helper is not a separate foreign parser; foreign typed accessors decode the matching successful result. Owner requirements: KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-015."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequence as core::any::Any>::type_id appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequence as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequence as core::borrow::Borrow<kmipkit_protocol::credential::hashed_password::HashedPasswordTimestampSequence>>::borrow appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequence as core::borrow::Borrow<kmipkit_protocol::credential::hashed_password::HashedPasswordTimestampSequence>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequence as core::borrow::BorrowMut<kmipkit_protocol::credential::hashed_password::HashedPasswordTimestampSequence>>::borrow_mut appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequence as core::borrow::BorrowMut<kmipkit_protocol::credential::hashed_password::HashedPasswordTimestampSequence>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequence as core::convert::From<kmipkit_protocol::credential::hashed_password::HashedPasswordTimestampSequence>>::from appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequence as core::convert::From<kmipkit_protocol::credential::hashed_password::HashedPasswordTimestampSequence>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequence as core::convert::Into<U>>::into appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequence as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequence as core::convert::TryFrom<U>>::Error appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequence as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequence as core::convert::TryFrom<U>>::try_from appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequence as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequence as core::convert::TryInto<U>>::Error appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequence as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequence as core::convert::TryInto<U>>::try_into appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequence as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequence as core::fmt::Debug>::fmt appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequence as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as alloc::borrow::ToOwned>::Owned appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as alloc::borrow::ToOwned>::clone_into appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as alloc::borrow::ToOwned>::to_owned appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as alloc::string::ToString>::to_string appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as core::any::Any>::type_id appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as core::borrow::Borrow<kmipkit_protocol::credential::hashed_password::HashedPasswordTimestampSequenceError>>::borrow appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as core::borrow::Borrow<kmipkit_protocol::credential::hashed_password::HashedPasswordTimestampSequenceError>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as core::borrow::BorrowMut<kmipkit_protocol::credential::hashed_password::HashedPasswordTimestampSequenceError>>::borrow_mut appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as core::borrow::BorrowMut<kmipkit_protocol::credential::hashed_password::HashedPasswordTimestampSequenceError>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as core::clone::Clone>::clone appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as core::clone::Clone>::clone_from appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as core::clone::CloneToUninit>::clone_to_uninit appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as core::cmp::Eq>::assert_receiver_is_total_eq appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as core::cmp::PartialEq>::eq appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as core::cmp::PartialEq>::ne appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as core::convert::From<kmipkit_protocol::credential::hashed_password::HashedPasswordTimestampSequenceError>>::from appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as core::convert::From<kmipkit_protocol::credential::hashed_password::HashedPasswordTimestampSequenceError>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as core::convert::Into<U>>::into appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as core::convert::TryFrom<U>>::Error appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as core::convert::TryFrom<U>>::try_from appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as core::convert::TryInto<U>>::Error appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as core::convert::TryInto<U>>::try_into appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as core::error::Error>::cause appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as core::error::Error>::description appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as core::error::Error>::description",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as core::error::Error>::provide appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as core::error::Error>::source appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as core::error::Error>::source",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as core::error::Error>::type_id appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as core::fmt::Debug>::fmt appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as core::fmt::Display>::fmt appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics.",
+      "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
     }
   ],
   "capabilities": [
@@ -66796,6 +67264,66 @@
         "path": "specs/008-credentials-attestation/spec.md",
         "status": "Approved"
       },
+      "capabilityId": "hashed_password_timestamp_sequence",
+      "capabilityState": "declared",
+      "mappings": {
+        "c": [
+          "KMIPKIT_ERROR_INVALID_INPUT",
+          "kmipkit_hashed_password_timestamp_sequence_last_timestamp",
+          "kmipkit_hashed_password_timestamp_sequence_new",
+          "kmipkit_hashed_password_timestamp_sequence_record",
+          "kmipkit_hashed_password_timestamp_sequence_release",
+          "kmipkit_hashed_password_timestamp_sequence_t"
+        ],
+        "java": [
+          "org.kmipkit.InvalidInputException",
+          "org.kmipkit.credentials.HashedPasswordTimestampSequence",
+          "org.kmipkit.credentials.HashedPasswordTimestampSequence.close",
+          "org.kmipkit.credentials.HashedPasswordTimestampSequence.create",
+          "org.kmipkit.credentials.HashedPasswordTimestampSequence.lastTimestamp",
+          "org.kmipkit.credentials.HashedPasswordTimestampSequence.record",
+          "org.kmipkit.credentials.HashedPasswordTimestampSequence.toString"
+        ],
+        "python": [
+          "kmipkit.credentials.HashedPasswordTimestampSequence",
+          "kmipkit.credentials.HashedPasswordTimestampSequence.__enter__",
+          "kmipkit.credentials.HashedPasswordTimestampSequence.__exit__",
+          "kmipkit.credentials.HashedPasswordTimestampSequence.close",
+          "kmipkit.credentials.HashedPasswordTimestampSequence.closed",
+          "kmipkit.credentials.HashedPasswordTimestampSequence.create",
+          "kmipkit.credentials.HashedPasswordTimestampSequence.last_timestamp",
+          "kmipkit.credentials.HashedPasswordTimestampSequence.record",
+          "kmipkit.errors.InvalidInputError"
+        ],
+        "rust": [
+          "kmipkit_protocol::HashedPasswordTimestampSequence",
+          "kmipkit_protocol::HashedPasswordTimestampSequence::last_timestamp",
+          "kmipkit_protocol::HashedPasswordTimestampSequence::new",
+          "kmipkit_protocol::HashedPasswordTimestampSequence::record",
+          "kmipkit_protocol::HashedPasswordTimestampSequenceError"
+        ]
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
       "capabilityId": "credential_secret_parity",
       "capabilityState": "declared",
       "mappings": {
@@ -66875,6 +67403,15 @@
     }
   ],
   "errorCategories": [
+    {
+      "cCode": "KMIPKIT_ERROR_INVALID_INPUT",
+      "cValue": 4,
+      "id": "invalid_input",
+      "javaException": "org.kmipkit.InvalidInputException",
+      "mappingState": "ready",
+      "pythonException": "kmipkit.errors.InvalidInputError",
+      "rustVariant": "InvalidInput"
+    },
     {
       "cCode": "KMIPKIT_ERROR_RESOURCE_LIMIT",
       "cValue": 6,
@@ -101745,6 +102282,282 @@
         "parameters": [],
         "requestBoundary": "not-applicable",
         "returnType": "Value"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Returns the last accepted value for caller-managed persistence. Output slots are cleared on entry and may not overlap."
+        ],
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "sequence",
+            "ownership": "borrowed",
+            "type": "kmipkit_hashed_password_timestamp_sequence_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_present",
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_timestamp",
+            "ownership": "none",
+            "type": "int64_t *",
+            "valueType": "int64_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_hashed_password_timestamp_sequence_last_timestamp"
+      },
+      "id": "hashed_password_timestamp_sequence_last_timestamp",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_hashedPasswordTimestampSequenceLastTimestamp",
+        "method": "hashedPasswordTimestampSequenceLastTimestamp",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "sequence",
+            "type": "long"
+          },
+          {
+            "name": "outPresentAndTimestamp",
+            "type": "long[]"
+          }
+        ],
+        "returnType": "int"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_hashed_password_timestamp_sequence_last_timestamp",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "function": "HashedPasswordTimestampSequence.last_timestamp",
+        "module": "kmipkit.credentials",
+        "parameters": [
+          {
+            "name": "sequence",
+            "type": "HashedPasswordTimestampSequence"
+          }
+        ],
+        "returnType": "int | None"
+      },
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::HashedPasswordTimestampSequence",
+        "name": "last_timestamp",
+        "owner": "protocol",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "Option<i64>"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Records a caller-supplied timestamp only when strictly greater than the previous value. Rejection preserves state and reports KMIPKIT_ERROR_INVALID_INPUT without including timestamps in diagnostics."
+        ],
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "sequence",
+            "ownership": "borrowed",
+            "type": "kmipkit_hashed_password_timestamp_sequence_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "timestamp",
+            "type": "int64_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_hashed_password_timestamp_sequence_record"
+      },
+      "id": "hashed_password_timestamp_sequence_record",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_hashedPasswordTimestampSequenceRecord",
+        "method": "hashedPasswordTimestampSequenceRecord",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "sequence",
+            "type": "long"
+          },
+          {
+            "name": "timestamp",
+            "type": "long"
+          }
+        ],
+        "returnType": "int"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_hashed_password_timestamp_sequence_record",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "function": "HashedPasswordTimestampSequence.record",
+        "module": "kmipkit.credentials",
+        "parameters": [
+          {
+            "name": "sequence",
+            "type": "HashedPasswordTimestampSequence"
+          },
+          {
+            "name": "timestamp",
+            "type": "int"
+          }
+        ],
+        "returnType": "None"
+      },
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::HashedPasswordTimestampSequence",
+        "name": "record",
+        "owner": "protocol",
+        "parameters": [
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "Result<(), HashedPasswordTimestampSequenceError>"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Creates caller-owned sequence state for one Username and logical credential producer. Set has_last_timestamp to one to restore caller-persisted state; the timestamp is ignored when it is zero. No clock is read or hash calculated."
+        ],
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "parameters": [
+          {
+            "kind": "scalar",
+            "name": "has_last_timestamp",
+            "type": "uint8_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "last_timestamp",
+            "type": "int64_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_sequence",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_hashed_password_timestamp_sequence_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_hashed_password_timestamp_sequence_new"
+      },
+      "id": "hashed_password_timestamp_sequence_new",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_hashedPasswordTimestampSequenceNew",
+        "method": "hashedPasswordTimestampSequenceNew",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "hasLastTimestamp",
+            "type": "boolean"
+          },
+          {
+            "name": "lastTimestamp",
+            "type": "long"
+          },
+          {
+            "name": "outSequence",
+            "type": "long[]"
+          }
+        ],
+        "returnType": "int"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_hashed_password_timestamp_sequence_new",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "function": "HashedPasswordTimestampSequence.create",
+        "module": "kmipkit.credentials",
+        "parameters": [
+          {
+            "name": "last_timestamp",
+            "type": "int | None"
+          }
+        ],
+        "returnType": "HashedPasswordTimestampSequence"
+      },
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::HashedPasswordTimestampSequence",
+        "name": "new",
+        "owner": "protocol",
+        "parameters": [
+          {
+            "name": "last_timestamp",
+            "type": "Option<i64>"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "HashedPasswordTimestampSequence"
       }
     },
     {
@@ -313297,6 +314110,1065 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "hashed_password_timestamp_sequence",
+      "declarationId": "t102-sequence-c-type",
+      "declarationState": "declared",
+      "exportName": "kmipkit_hashed_password_timestamp_sequence_t",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_timestamp_sequence_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordTimestampSequence",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordTimestampSequence",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordTimestampSequence",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "hashed_password_timestamp_sequence",
+      "declarationId": "t102-sequence-java-type",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.HashedPasswordTimestampSequence",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_timestamp_sequence_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordTimestampSequence",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordTimestampSequence",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordTimestampSequence",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "hashed_password_timestamp_sequence",
+      "declarationId": "t102-sequence-python-type",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.HashedPasswordTimestampSequence",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_timestamp_sequence_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordTimestampSequence",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordTimestampSequence",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordTimestampSequence",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "hashed_password_timestamp_sequence",
+      "declarationId": "t102-sequence-c-create",
+      "declarationState": "declared",
+      "exportName": "kmipkit_hashed_password_timestamp_sequence_new",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_timestamp_sequence_new",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordTimestampSequence.create",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordTimestampSequence.create",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordTimestampSequence::new",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "hashed_password_timestamp_sequence",
+      "declarationId": "t102-sequence-java-create",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.HashedPasswordTimestampSequence.create",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_timestamp_sequence_new",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordTimestampSequence.create",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordTimestampSequence.create",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordTimestampSequence::new",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "hashed_password_timestamp_sequence",
+      "declarationId": "t102-sequence-python-create",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.HashedPasswordTimestampSequence.create",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_timestamp_sequence_new",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordTimestampSequence.create",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordTimestampSequence.create",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordTimestampSequence::new",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "hashed_password_timestamp_sequence",
+      "declarationId": "t102-sequence-c-record",
+      "declarationState": "declared",
+      "exportName": "kmipkit_hashed_password_timestamp_sequence_record",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_timestamp_sequence_record",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordTimestampSequence.record",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordTimestampSequence.record",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordTimestampSequence::record",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "hashed_password_timestamp_sequence",
+      "declarationId": "t102-sequence-java-record",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.HashedPasswordTimestampSequence.record",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_timestamp_sequence_record",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordTimestampSequence.record",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordTimestampSequence.record",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordTimestampSequence::record",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "hashed_password_timestamp_sequence",
+      "declarationId": "t102-sequence-python-record",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.HashedPasswordTimestampSequence.record",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_timestamp_sequence_record",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordTimestampSequence.record",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordTimestampSequence.record",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordTimestampSequence::record",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "hashed_password_timestamp_sequence",
+      "declarationId": "t102-sequence-c-last",
+      "declarationState": "declared",
+      "exportName": "kmipkit_hashed_password_timestamp_sequence_last_timestamp",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_timestamp_sequence_last_timestamp",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordTimestampSequence.lastTimestamp",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordTimestampSequence.last_timestamp",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordTimestampSequence::last_timestamp",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "hashed_password_timestamp_sequence",
+      "declarationId": "t102-sequence-java-last",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.HashedPasswordTimestampSequence.lastTimestamp",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_timestamp_sequence_last_timestamp",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordTimestampSequence.lastTimestamp",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordTimestampSequence.last_timestamp",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordTimestampSequence::last_timestamp",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "hashed_password_timestamp_sequence",
+      "declarationId": "t102-sequence-python-last",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.HashedPasswordTimestampSequence.last_timestamp",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_timestamp_sequence_last_timestamp",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordTimestampSequence.lastTimestamp",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordTimestampSequence.last_timestamp",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordTimestampSequence::last_timestamp",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "hashed_password_timestamp_sequence",
+      "declarationId": "t102-sequence-c-release",
+      "declarationState": "declared",
+      "exportName": "kmipkit_hashed_password_timestamp_sequence_release",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_timestamp_sequence_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordTimestampSequence.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordTimestampSequence.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordTimestampSequence",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "hashed_password_timestamp_sequence",
+      "declarationId": "t102-sequence-java-close",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.HashedPasswordTimestampSequence.close",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_timestamp_sequence_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordTimestampSequence.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordTimestampSequence.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordTimestampSequence",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "hashed_password_timestamp_sequence",
+      "declarationId": "t102-sequence-python-close",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.HashedPasswordTimestampSequence.close",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_timestamp_sequence_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordTimestampSequence.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordTimestampSequence.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordTimestampSequence",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "hashed_password_timestamp_sequence",
+      "declarationId": "t102-sequence-java-to-string",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.HashedPasswordTimestampSequence.toString",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_timestamp_sequence_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordTimestampSequence.toString",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordTimestampSequence",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordTimestampSequence",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "hashed_password_timestamp_sequence",
+      "declarationId": "t102-sequence-python-closed",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.HashedPasswordTimestampSequence.closed",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_timestamp_sequence_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordTimestampSequence",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordTimestampSequence.closed",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordTimestampSequence",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "hashed_password_timestamp_sequence",
+      "declarationId": "t102-sequence-python-__enter__",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.HashedPasswordTimestampSequence.__enter__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_timestamp_sequence_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordTimestampSequence",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordTimestampSequence.__enter__",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordTimestampSequence",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "hashed_password_timestamp_sequence",
+      "declarationId": "t102-sequence-python-__exit__",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.HashedPasswordTimestampSequence.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_timestamp_sequence_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordTimestampSequence",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordTimestampSequence.__exit__",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordTimestampSequence",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "hashed_password_timestamp_sequence",
+      "declarationId": "rust-observed-25f837c102304b00719a",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::HashedPasswordTimestampSequence",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_timestamp_sequence_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordTimestampSequence",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordTimestampSequence",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordTimestampSequence",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "hashed_password_timestamp_sequence",
+      "declarationId": "rust-observed-3ac6030b68ef122d9547",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::HashedPasswordTimestampSequence::last_timestamp",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_timestamp_sequence_last_timestamp",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordTimestampSequence.lastTimestamp",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordTimestampSequence.last_timestamp",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordTimestampSequence::last_timestamp",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "hashed_password_timestamp_sequence",
+      "declarationId": "rust-observed-77ba52e1f640fdc9eb2d",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::HashedPasswordTimestampSequence::new",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_timestamp_sequence_new",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordTimestampSequence.create",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordTimestampSequence.create",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordTimestampSequence::new",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "hashed_password_timestamp_sequence",
+      "declarationId": "rust-observed-fa6b4407f05c32c6fe5d",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::HashedPasswordTimestampSequence::record",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_timestamp_sequence_record",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordTimestampSequence.record",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordTimestampSequence.record",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordTimestampSequence::record",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "hashed_password_timestamp_sequence",
+      "declarationId": "rust-observed-a881aedc1066c475e335",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::HashedPasswordTimestampSequenceError",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_ERROR_INVALID_INPUT",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.InvalidInputException",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.InvalidInputError",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordTimestampSequenceError",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ]
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
         "kind": "feature-specification",
         "path": "specs/010-profile-conformance/spec.md",
@@ -368318,6 +370190,42 @@
       "rust": {
         "module": "kmipkit_protocol",
         "name": "SecretText",
+        "owner": "protocol"
+      }
+    },
+    {
+      "c": {
+        "handleKind": "hashed_password_timestamp_sequence",
+        "kind": "opaque-handle",
+        "name": "kmipkit_hashed_password_timestamp_sequence_t",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_hashed_password_timestamp_sequence_release"
+      },
+      "id": "HashedPasswordTimestampSequence",
+      "java": {
+        "name": "HashedPasswordTimestampSequence",
+        "package": "org.kmipkit.credentials"
+      },
+      "kind": "opaque-handle",
+      "normativeSource": "KMIP 2.1 §9.11 Table 415; KMIPKIT-0008 OD-003",
+      "python": {
+        "module": "kmipkit.credentials",
+        "name": "HashedPasswordTimestampSequence"
+      },
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol",
+        "name": "HashedPasswordTimestampSequence",
         "owner": "protocol"
       }
     },

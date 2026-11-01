@@ -87,6 +87,7 @@ public final class NativeExtensionRegistry {
     public static final int GET_ATTRIBUTES_REQUEST = 65;
     public static final int GET_ATTRIBUTE_LIST_REQUEST = 66;
     public static final int ATTRIBUTE_SET = 67;
+    public static final int HASHED_PASSWORD_TIMESTAMP_SEQUENCE = 68;
 
     public static final int ATTRIBUTE_OPERATION_ADD = 0;
     public static final int ATTRIBUTE_OPERATION_ADJUST = 1;
@@ -174,6 +175,12 @@ public final class NativeExtensionRegistry {
     public static native long hashedPasswordCredentialEffectiveHashingAlgorithmRaw(long credential);
     public static native long hashedPasswordCredentialTtlvView(long credential);
     public static native long hashedPasswordCredentialIntoTtlv(long credential);
+
+    public static native int hashedPasswordTimestampSequenceNew(
+            boolean hasLastTimestamp, long lastTimestamp, long[] outSequence);
+    public static native int hashedPasswordTimestampSequenceRecord(long sequence, long timestamp);
+    public static native int hashedPasswordTimestampSequenceLastTimestamp(
+            long sequence, long[] outPresentAndTimestamp);
 
     public static native int secretBytesCreate(byte[] data, long[] outSecret);
     public static native Object secretBytesWithBytes(long secret, Function<byte[], Object> callback);

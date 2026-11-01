@@ -40,9 +40,10 @@ use crate::{
     kmipkit_extension_order_constraint_t, kmipkit_extension_recognition_t,
     kmipkit_extension_registry_limits_v1_t, kmipkit_extension_schema_t,
     kmipkit_get_attribute_list_request_t, kmipkit_get_attributes_request_t,
-    kmipkit_hashed_password_credential_t, kmipkit_message_extension_view_t,
-    kmipkit_message_validation_error_t, kmipkit_modify_attribute_request_t, kmipkit_nonce_t,
-    kmipkit_poll_request_t, kmipkit_process_request_t, kmipkit_profile_object_state_v1_t,
+    kmipkit_hashed_password_credential_t, kmipkit_hashed_password_timestamp_sequence_t,
+    kmipkit_message_extension_view_t, kmipkit_message_validation_error_t,
+    kmipkit_modify_attribute_request_t, kmipkit_nonce_t, kmipkit_poll_request_t,
+    kmipkit_process_request_t, kmipkit_profile_object_state_v1_t,
     kmipkit_profile_validation_context_v1_t, kmipkit_profile_validation_error_t,
     kmipkit_profile_validation_error_view_v1_t, kmipkit_profile_validation_selection_v1_t,
     kmipkit_query_async_requests_request_t, kmipkit_raw_tag_t, kmipkit_register_request_t,
@@ -87,7 +88,7 @@ use kmipkit_protocol::{
 use kmipkit_protocol::{
     AttestationCredential, Authentication, Credential, CredentialType, CredentialValidationError,
     CredentialValidationErrorKind, CredentialValue, DeviceCredential, HashedPasswordCredential,
-    Nonce, UsernameAndPasswordCredential,
+    HashedPasswordTimestampSequence, Nonce, UsernameAndPasswordCredential,
 };
 use kmipkit_protocol::{MessageValidationError, MessageValidationErrorKind, RequestMessage};
 use kmipkit_protocol::{
@@ -476,6 +477,7 @@ enum Kind {
     DeviceCredential,
     UsernameAndPasswordCredential,
     HashedPasswordCredential,
+    HashedPasswordTimestampSequence,
     SecretBytes,
     SecretText,
     CancelRequest,
@@ -531,6 +533,7 @@ enum HandleValue {
     DeviceCredential(DeviceCredential),
     UsernameAndPasswordCredential(UsernameAndPasswordCredential),
     HashedPasswordCredential(HashedPasswordCredential),
+    HashedPasswordTimestampSequence(Mutex<HashedPasswordTimestampSequence>),
     SecretBytes(SecretBytes),
     SecretText(SecretText),
     CancelRequest(Box<CancelRequest>),
@@ -9150,6 +9153,98 @@ pub extern "C" fn kmipkit_hashed_password_credential_release(
 ) {
     ffi_entrypoint(|| {
         release(handle, Kind::HashedPasswordCredential);
+    });
+}
+
+/// Creates caller-owned sequence state for Hashed Password timestamps.
+///
+/// `has_last_timestamp` must be zero or one. When it is one, `last_timestamp`
+/// restores the caller's previously accepted value. The sequence only compares
+/// caller-supplied values; it does not read a clock, calculate hashes, or send Credentials.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_hashed_password_timestamp_sequence_new(
+    has_last_timestamp: u8,
+    last_timestamp: i64,
+    out_sequence: *mut *mut kmipkit_hashed_password_timestamp_sequence_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_sequence);
+        if has_last_timestamp > 1 {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let restored = (has_last_timestamp == 1).then_some(last_timestamp);
+        *out = try_ffi!(try_make_handle(
+            Kind::HashedPasswordTimestampSequence,
+            HandleValue::HashedPasswordTimestampSequence(Mutex::new(
+                HashedPasswordTimestampSequence::new(restored),
+            )),
+        ));
+        SUCCESS
+    })
+}
+
+/// Records a timestamp only when it strictly increases from the previous value.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_hashed_password_timestamp_sequence_record(
+    sequence: *mut kmipkit_hashed_password_timestamp_sequence_t,
+    timestamp: i64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let handle = read_handle!(sequence, HashedPasswordTimestampSequence);
+        let HandleValue::HashedPasswordTimestampSequence(sequence) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(mut sequence) = sequence.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        match sequence.record(timestamp) {
+            Ok(()) => SUCCESS,
+            Err(_redacted_error) => record_ffi_error(ERROR_INVALID_INPUT),
+        }
+    })
+}
+
+/// Returns the last accepted timestamp, if any, without exposing it in diagnostics.
+///
+/// The output regions must not overlap. Both are cleared before reading the handle.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_hashed_password_timestamp_sequence_last_timestamp(
+    sequence: *mut kmipkit_hashed_password_timestamp_sequence_t,
+    out_present: *mut u8,
+    out_timestamp: *mut i64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        try_ffi!(validate_output_regions(&[
+            (out_present.cast(), size_of::<u8>()),
+            (out_timestamp.cast(), size_of::<i64>()),
+        ]));
+        let present = scalar_out!(out_present);
+        let timestamp_out = scalar_out!(out_timestamp);
+        *present = 0;
+        *timestamp_out = 0;
+
+        let handle = read_handle!(sequence, HashedPasswordTimestampSequence);
+        let HandleValue::HashedPasswordTimestampSequence(sequence) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(sequence) = sequence.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if let Some(timestamp) = sequence.last_timestamp() {
+            *present = 1;
+            *timestamp_out = timestamp;
+        }
+        SUCCESS
+    })
+}
+
+/// Releases a Hashed Password timestamp sequence handle.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_hashed_password_timestamp_sequence_release(
+    handle: *mut kmipkit_hashed_password_timestamp_sequence_t,
+) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::HashedPasswordTimestampSequence);
     });
 }
 

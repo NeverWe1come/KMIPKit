@@ -786,7 +786,7 @@ fn hashed_password_timestamp_sequence_debug_redacts_the_recorded_value() {
 #[test]
 fn hashed_password_timestamp_sequence_matches_shared_fixture() {
     let fixture: serde_json::Value = serde_json::from_str(include_str!(
-        "../../tests/fixtures/api/shared-capability-parity.json"
+        "../../../tests/fixtures/api/shared-capability-parity.json"
     ))
     .expect("shared API parity fixture is valid JSON");
     let case = fixture["cases"]
@@ -807,9 +807,17 @@ fn hashed_password_timestamp_sequence_matches_shared_fixture() {
     // KMIP Specification v2.1 §9.11, Table 415; OD-003 is resolved in
     // KMIPKIT-0008 and KMIPKIT-0010 T056 as caller-owned per-Username state.
     let mut sequence = HashedPasswordTimestampSequence::new(Some(restored));
-    assert_eq!(sequence.last_timestamp(), Some(expected["initialTimestamp"].as_i64().unwrap()));
-    sequence.record(next).expect("a strictly later timestamp is accepted");
-    assert_eq!(sequence.last_timestamp(), Some(expected["lastAfterIncrease"].as_i64().unwrap()));
+    assert_eq!(
+        sequence.last_timestamp(),
+        Some(expected["initialTimestamp"].as_i64().unwrap())
+    );
+    sequence
+        .record(next)
+        .expect("a strictly later timestamp is accepted");
+    assert_eq!(
+        sequence.last_timestamp(),
+        Some(expected["lastAfterIncrease"].as_i64().unwrap())
+    );
 
     for field in ["equalTimestamp", "earlierTimestamp"] {
         let rejected = input[field].as_i64().expect("timestamp is signed 64-bit");
@@ -820,11 +828,19 @@ fn hashed_password_timestamp_sequence_matches_shared_fixture() {
         assert_eq!(sequence.last_timestamp(), Some(next));
     }
 
-    let minimum = input["minimumTimestamp"].as_i64().expect("i64 minimum is valid");
-    let maximum = input["maximumTimestamp"].as_i64().expect("i64 maximum is valid");
+    let minimum = input["minimumTimestamp"]
+        .as_i64()
+        .expect("i64 minimum is valid");
+    let maximum = input["maximumTimestamp"]
+        .as_i64()
+        .expect("i64 maximum is valid");
     let mut boundary = HashedPasswordTimestampSequence::new(None);
-    boundary.record(minimum).expect("i64 minimum is a valid first timestamp");
-    boundary.record(maximum).expect("i64 maximum strictly increases from minimum");
+    boundary
+        .record(minimum)
+        .expect("i64 minimum is a valid first timestamp");
+    boundary
+        .record(maximum)
+        .expect("i64 maximum strictly increases from minimum");
     assert!(boundary.record(maximum).is_err());
     assert_eq!(boundary.last_timestamp(), Some(maximum));
 }

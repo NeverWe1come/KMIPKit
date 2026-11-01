@@ -133,6 +133,7 @@ typedef struct kmipkit_credential_validation_error_v1_t kmipkit_credential_valid
 typedef struct kmipkit_username_and_password_credential_t kmipkit_username_and_password_credential_t;
 typedef struct kmipkit_secret_bytes_t kmipkit_secret_bytes_t;
 typedef struct kmipkit_secret_text_t kmipkit_secret_text_t;
+typedef struct kmipkit_hashed_password_timestamp_sequence_t kmipkit_hashed_password_timestamp_sequence_t;
 typedef struct kmipkit_hashed_password_credential_t kmipkit_hashed_password_credential_t;
 typedef struct kmipkit_credential_value_t kmipkit_credential_value_t;
 typedef struct kmipkit_cancel_request_t kmipkit_cancel_request_t;
@@ -421,6 +422,7 @@ void kmipkit_credential_view_release(kmipkit_credential_view_t *handle);
 void kmipkit_username_and_password_credential_release(kmipkit_username_and_password_credential_t *handle);
 void kmipkit_secret_bytes_release(kmipkit_secret_bytes_t *handle);
 void kmipkit_secret_text_release(kmipkit_secret_text_t *handle);
+void kmipkit_hashed_password_timestamp_sequence_release(kmipkit_hashed_password_timestamp_sequence_t *handle);
 void kmipkit_hashed_password_credential_release(kmipkit_hashed_password_credential_t *handle);
 void kmipkit_credential_value_release(kmipkit_credential_value_t *handle);
 void kmipkit_cancel_request_release(kmipkit_cancel_request_t *handle);
@@ -1645,6 +1647,18 @@ int32_t kmipkit_secret_text_with_str(kmipkit_secret_text_t * secret, void (*call
  */
 /* KMIPKIT-0008-FR-010, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_secret_text_into_ttlv_value(kmipkit_secret_text_t * secret, kmipkit_ttlv_value_t ** out_value);
+/* Returns the last accepted value for caller-managed persistence. Output slots are cleared on entry and may not overlap.
+ */
+/* KMIPKIT-0008-FR-007, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.11-010-001 */
+int32_t kmipkit_hashed_password_timestamp_sequence_last_timestamp(kmipkit_hashed_password_timestamp_sequence_t * sequence, uint8_t * out_present, int64_t * out_timestamp);
+/* Records a caller-supplied timestamp only when strictly greater than the previous value. Rejection preserves state and reports KMIPKIT_ERROR_INVALID_INPUT without including timestamps in diagnostics.
+ */
+/* KMIPKIT-0008-FR-007, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.11-010-001 */
+int32_t kmipkit_hashed_password_timestamp_sequence_record(kmipkit_hashed_password_timestamp_sequence_t * sequence, int64_t timestamp);
+/* Creates caller-owned sequence state for one Username and logical credential producer. Set has_last_timestamp to one to restore caller-persisted state; the timestamp is ignored when it is zero. No clock is read or hash calculated.
+ */
+/* KMIPKIT-0008-FR-007, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.11-010-001 */
+int32_t kmipkit_hashed_password_timestamp_sequence_new(uint8_t has_last_timestamp, int64_t last_timestamp, kmipkit_hashed_password_timestamp_sequence_t ** out_sequence);
 /* Consumes and validates a KMIP 2.1 §9.11 Table 415 Credential Value. Preserves caller-supplied hashed bytes and Timestamp, does not hash, and retains unknown fields and original order.
  */
 /* KMIPKIT-0008-FR-007, KMIPKIT-0008-FR-010, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.11-010-001, KMIPKIT-REQ-SPEC-9.11-010-002 */

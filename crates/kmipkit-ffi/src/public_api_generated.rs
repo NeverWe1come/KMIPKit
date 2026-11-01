@@ -15,6 +15,7 @@ pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
     "discover_versions_request_item",
     "ffi_runtime_metadata",
     "generic_ttlv_model",
+    "hashed_password_timestamp_sequence",
     "nonce_ttlv_parity",
     "opaque_register_context",
     "production_transport",
@@ -10105,6 +10106,31 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-2a56e06570043a74365c",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::GetAttributesRequest::unique_identifier",
+    ),
+    (
+        "rust-observed-25f837c102304b00719a",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::HashedPasswordTimestampSequence",
+    ),
+    (
+        "rust-observed-3ac6030b68ef122d9547",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::HashedPasswordTimestampSequence::last_timestamp",
+    ),
+    (
+        "rust-observed-77ba52e1f640fdc9eb2d",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::HashedPasswordTimestampSequence::new",
+    ),
+    (
+        "rust-observed-fa6b4407f05c32c6fe5d",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::HashedPasswordTimestampSequence::record",
+    ),
+    (
+        "rust-observed-a881aedc1066c475e335",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::HashedPasswordTimestampSequenceError",
     ),
     (
         "rust-observed-9e1407bb6593f1bc2b97",

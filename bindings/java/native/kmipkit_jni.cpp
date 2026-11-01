@@ -2574,6 +2574,65 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_hashedPasswordC
     });
 }
 
+JNIEXPORT jint JNICALL Java_org_kmipkit_NativeExtensionRegistry_hashedPasswordTimestampSequenceNew(
+        JNIEnv* env, jclass, jboolean has_last_timestamp, jlong last_timestamp,
+        jlongArray out_sequence) {
+    return guarded<jint>(env, KMIPKIT_ERROR_INTERNAL, [&] {
+        if (out_sequence == nullptr || env->GetArrayLength(out_sequence) != 1) {
+            throw_invalid_input(env);
+            return static_cast<jint>(KMIPKIT_ERROR_INVALID_INPUT);
+        }
+        kmipkit_hashed_password_timestamp_sequence_t* sequence = nullptr;
+        const int32_t status = kmipkit_hashed_password_timestamp_sequence_new(
+                has_last_timestamp == JNI_TRUE ? 1 : 0,
+                static_cast<int64_t>(last_timestamp), &sequence);
+        if (status != 0) {
+            return static_cast<jint>(status);
+        }
+        const jlong raw_sequence = reinterpret_cast<jlong>(sequence);
+        env->SetLongArrayRegion(out_sequence, 0, 1, &raw_sequence);
+        if (env->ExceptionCheck()) {
+            kmipkit_hashed_password_timestamp_sequence_release(sequence);
+            return static_cast<jint>(KMIPKIT_ERROR_INTERNAL);
+        }
+        return static_cast<jint>(0);
+    });
+}
+
+JNIEXPORT jint JNICALL Java_org_kmipkit_NativeExtensionRegistry_hashedPasswordTimestampSequenceRecord(
+        JNIEnv* env, jclass, jlong raw_sequence, jlong timestamp) {
+    return guarded<jint>(env, KMIPKIT_ERROR_INTERNAL, [&] {
+        return static_cast<jint>(kmipkit_hashed_password_timestamp_sequence_record(
+                from_java_handle<kmipkit_hashed_password_timestamp_sequence_t>(raw_sequence),
+                static_cast<int64_t>(timestamp)));
+    });
+}
+
+JNIEXPORT jint JNICALL Java_org_kmipkit_NativeExtensionRegistry_hashedPasswordTimestampSequenceLastTimestamp(
+        JNIEnv* env, jclass, jlong raw_sequence, jlongArray out_present_and_timestamp) {
+    return guarded<jint>(env, KMIPKIT_ERROR_INTERNAL, [&] {
+        if (out_present_and_timestamp == nullptr
+                || env->GetArrayLength(out_present_and_timestamp) != 2) {
+            throw_invalid_input(env);
+            return static_cast<jint>(KMIPKIT_ERROR_INVALID_INPUT);
+        }
+        uint8_t present = 0;
+        int64_t timestamp = 0;
+        const int32_t status = kmipkit_hashed_password_timestamp_sequence_last_timestamp(
+                from_java_handle<kmipkit_hashed_password_timestamp_sequence_t>(raw_sequence),
+                &present, &timestamp);
+        if (status != 0) {
+            return static_cast<jint>(status);
+        }
+        const jlong result[] = {static_cast<jlong>(present), static_cast<jlong>(timestamp)};
+        env->SetLongArrayRegion(out_present_and_timestamp, 0, 2, result);
+        if (env->ExceptionCheck()) {
+            return static_cast<jint>(KMIPKIT_ERROR_INTERNAL);
+        }
+        return static_cast<jint>(0);
+    });
+}
+
 JNIEXPORT jstring JNICALL Java_org_kmipkit_NativeExtensionRegistry_extensionIdentityVendorIdentifier(
         JNIEnv* env, jclass, jlong identity) {
     return identity_text(env, identity, kmipkit_extension_identity_vendor_identifier);
@@ -4746,6 +4805,8 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_release(
                 from_java_handle<kmipkit_get_attribute_list_request_t>(raw_handle)); break;
         case 67: kmipkit_attribute_set_release(
                 from_java_handle<kmipkit_attribute_set_t>(raw_handle)); break;
+        case 68: kmipkit_hashed_password_timestamp_sequence_release(
+                from_java_handle<kmipkit_hashed_password_timestamp_sequence_t>(raw_handle)); break;
         default: throw_invalid_input(env); break;
         }
         return 0;
