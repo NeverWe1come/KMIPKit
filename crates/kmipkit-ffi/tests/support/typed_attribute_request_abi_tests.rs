@@ -47,7 +47,10 @@ fn standalone_adjust_attribute_model_serializes_and_enters_a_batch() {
     let HandleValue::BatchItem(batch_item) = &batch_handle.value else {
         panic!("the conversion returns a batch-item handle");
     };
-    assert!(matches!(batch_item.request(), ClientRequest::AdjustAttribute(_)));
+    assert!(matches!(
+        batch_item.request(),
+        ClientRequest::AdjustAttribute(_)
+    ));
 
     kmipkit_client_batch_item_release(batch_item_handle_ptr);
     kmipkit_ttlv_structure_release(payload_handle_ptr);
@@ -100,7 +103,10 @@ fn standalone_delete_attribute_model_preserves_both_optional_selectors() {
     let HandleValue::BatchItem(batch_item) = &batch_handle.value else {
         panic!("the conversion returns a batch-item handle");
     };
-    assert!(matches!(batch_item.request(), ClientRequest::DeleteAttribute(_)));
+    assert!(matches!(
+        batch_item.request(),
+        ClientRequest::DeleteAttribute(_)
+    ));
 
     kmipkit_client_batch_item_release(batch_item_handle_ptr);
     kmipkit_ttlv_structure_release(payload_handle_ptr);
@@ -153,7 +159,10 @@ fn standalone_modify_attribute_model_keeps_current_and_new_items_distinct() {
     let HandleValue::BatchItem(batch_item) = &batch_handle.value else {
         panic!("the conversion returns a batch-item handle");
     };
-    assert!(matches!(batch_item.request(), ClientRequest::ModifyAttribute(_)));
+    assert!(matches!(
+        batch_item.request(),
+        ClientRequest::ModifyAttribute(_)
+    ));
 
     kmipkit_client_batch_item_release(batch_item_handle_ptr);
     kmipkit_ttlv_structure_release(payload_handle_ptr);
@@ -205,7 +214,10 @@ fn standalone_set_attribute_model_serializes_and_enters_a_batch() {
     let HandleValue::BatchItem(batch_item) = &batch_handle.value else {
         panic!("the conversion returns a batch-item handle");
     };
-    assert!(matches!(batch_item.request(), ClientRequest::SetAttribute(_)));
+    assert!(matches!(
+        batch_item.request(),
+        ClientRequest::SetAttribute(_)
+    ));
 
     kmipkit_client_batch_item_release(batch_item_handle_ptr);
     kmipkit_ttlv_structure_release(payload_handle_ptr);
@@ -231,9 +243,7 @@ fn name_attribute_reference_record() -> crate::kmipkit_attribute_reference_v1_t 
     static VENDOR: &[u8] = b"KMIPKit";
     static NAME: &[u8] = b"Counter";
     crate::kmipkit_attribute_reference_v1_t {
-        struct_size: u32::try_from(
-            std::mem::size_of::<crate::kmipkit_attribute_reference_v1_t>(),
-        )
+        struct_size: u32::try_from(std::mem::size_of::<crate::kmipkit_attribute_reference_v1_t>())
             .expect("attribute-reference record size fits the ABI"),
         abi_version: 1,
         kind: crate::KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME,
