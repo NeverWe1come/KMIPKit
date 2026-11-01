@@ -276,6 +276,16 @@ class WorkflowContractTests(unittest.TestCase):
             "Every supported platform must verify the exact ADR-0014 TransportResponse trait exclusions.",
         )
 
+    def test_script_contract_job_runs_t102_runtime_version_component_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_runtime_version_component_mapping -v",
+            python_contracts,
+            "Every supported platform must verify runtime-version component parity.",
+        )
+
     def test_script_contract_job_fetches_locked_cargo_dependencies_for_offline_audit(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "script-contracts")
