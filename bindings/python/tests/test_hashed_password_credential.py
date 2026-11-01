@@ -60,6 +60,45 @@ def hashed_password_structure(*, algorithm: int | None):
     return structure
 
 
+def malformed_hashed_password_structure(*, duplicate_username: bool):
+    limits = ttlv.codec_limits_defaults()
+    structure = ttlv.ttlv_structure_create()
+    structure = append(
+        structure,
+        USERNAME_TAG,
+        ttlv.ttlv_value_text_string(b"alice", limits),
+        limits,
+    )
+    if duplicate_username:
+        structure = append(
+            structure,
+            USERNAME_TAG,
+            ttlv.ttlv_value_text_string(b"alice", limits),
+            limits,
+        )
+    structure = append(
+        structure,
+        TIMESTAMP_TAG,
+        ttlv.ttlv_value_date_time_extended(1_800_000_000),
+        limits,
+    )
+    structure = append(
+        structure,
+        HASHED_PASSWORD_TAG,
+        ttlv.ttlv_value_byte_string(HASHED_PASSWORD_BYTES, limits),
+        limits,
+    )
+    if not duplicate_username:
+        structure = append(
+            structure,
+            HASHING_ALGORITHM_TAG,
+            ttlv.ttlv_value_enumeration(UNKNOWN_HASHING_ALGORITHM),
+            limits,
+        )
+    limits.close()
+    return structure
+
+
 def tags(view: ttlv.TtlvStructureView) -> tuple[int, ...]:
     result: list[int] = []
     for index in range(ttlv.ttlv_structure_view_item_count(view)):
@@ -178,6 +217,26 @@ class HashedPasswordCredentialTests(unittest.TestCase):
             raised.exception.kind,
         )
         self.assertNotIn("alice", str(raised.exception))
+
+    # KMIP Specification v2.1 §9.11, Table 415 defines uniqueness and field order.
+    def test_duplicate_and_out_of_order_fields_return_typed_validation_errors(self) -> None:
+        facade = getattr(kmipkit.credentials, "HashedPasswordCredential", None)
+        self.assertIsNotNone(facade)
+        if facade is None:
+            return
+
+        for duplicate_username, expected_kind in (
+            (True, errors.CredentialValidationErrorKind.DUPLICATE_FIELD),
+            (False, errors.CredentialValidationErrorKind.FIELD_OUT_OF_ORDER),
+        ):
+            with self.subTest(duplicate_username=duplicate_username):
+                with self.assertRaises(errors.CredentialValidationError) as raised:
+                    facade.from_ttlv(
+                        malformed_hashed_password_structure(
+                            duplicate_username=duplicate_username
+                        )
+                    )
+                self.assertEqual(expected_kind, raised.exception.kind)
 
 
 if __name__ == "__main__":

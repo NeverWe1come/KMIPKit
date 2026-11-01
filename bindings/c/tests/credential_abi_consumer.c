@@ -1036,8 +1036,69 @@ static int32_t hashed_password_credential_case(int include_algorithm) {
     return status;
 }
 
+/* KMIP Specification v2.1 §9.11, Table 415 defines uniqueness and field order. */
+static int32_t hashed_password_credential_rejects_field_case(int duplicate_username) {
+    const uint8_t username[] = {'a', 'l', 'i', 'c', 'e'};
+    kmipkit_codec_limits_t *limits = 0;
+    kmipkit_ttlv_structure_t *structure = 0;
+    kmipkit_ttlv_value_t *value = 0;
+    kmipkit_hashed_password_credential_t *credential = 0;
+    kmipkit_credential_validation_error_v1_t error = {
+        (uint32_t)sizeof(kmipkit_credential_validation_error_v1_t), 1, 0
+    };
+    int32_t expected_kind = duplicate_username
+            ? KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_DUPLICATE_FIELD
+            : KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_FIELD_OUT_OF_ORDER;
+    int32_t status = kmipkit_codec_limits_defaults(&limits);
+    if (status == 0) status = kmipkit_ttlv_structure_create(&structure);
+    if (status == 0) status = kmipkit_ttlv_value_text_string(
+            limits, username, sizeof(username), &value);
+    if (status == 0) {
+        status = append_item(&structure, limits, HASHED_PASSWORD_USERNAME_TAG, value);
+        value = 0;
+    }
+    if (status == 0 && duplicate_username) status = kmipkit_ttlv_value_text_string(
+            limits, username, sizeof(username), &value);
+    if (status == 0 && duplicate_username) {
+        status = append_item(&structure, limits, HASHED_PASSWORD_USERNAME_TAG, value);
+        value = 0;
+    }
+    if (status == 0) status = kmipkit_ttlv_value_date_time_extended(1800000000, &value);
+    if (status == 0) {
+        status = append_item(&structure, limits, HASHED_PASSWORD_TIMESTAMP_TAG, value);
+        value = 0;
+    }
+    if (status == 0) status = kmipkit_ttlv_value_byte_string(
+            limits, HASHED_PASSWORD_BYTES, sizeof(HASHED_PASSWORD_BYTES), &value);
+    if (status == 0) {
+        status = append_item(&structure, limits, HASHED_PASSWORD_TAG, value);
+        value = 0;
+    }
+    if (status == 0 && !duplicate_username)
+        status = kmipkit_ttlv_value_enumeration(UNKNOWN_HASHING_ALGORITHM, &value);
+    if (status == 0 && !duplicate_username) {
+        status = append_item(&structure, limits, HASHING_ALGORITHM_TAG, value);
+        value = 0;
+    }
+    if (status == 0) {
+        status = kmipkit_hashed_password_credential_from_ttlv(structure, &credential);
+        structure = 0;
+        if (status != 4 || credential != 0) status = 1;
+        else status = 0;
+    }
+    if (status == 0) status = kmipkit_last_credential_validation_error_get_v1(&error);
+    if (status == 0 && error.kind != (uint32_t)expected_kind) status = 1;
+    kmipkit_codec_limits_release(limits);
+    kmipkit_ttlv_value_release(value);
+    kmipkit_ttlv_structure_release(structure);
+    kmipkit_hashed_password_credential_release(credential);
+    return status;
+}
+
 int32_t kmipkit_hashed_password_credential_c_consumer_contract(void) {
     int32_t status = hashed_password_credential_case(1);
     if (status == 0) status = hashed_password_credential_case(0);
+    if (status == 0) status = hashed_password_credential_rejects_field_case(1);
+    if (status == 0) status = hashed_password_credential_rejects_field_case(0);
     return status;
 }

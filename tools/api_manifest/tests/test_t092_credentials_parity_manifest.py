@@ -314,6 +314,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                         "kmipkit_protocol::AttestationCredential",
                         "kmipkit_protocol::DeviceCredential",
                         "kmipkit_protocol::UsernameAndPasswordCredential",
+                        "kmipkit_protocol::HashedPasswordCredential",
                         "kmipkit_protocol::Authentication",
                         "kmipkit_protocol::CredentialView",
                         "kmipkit_protocol::CredentialValidationError",
@@ -481,7 +482,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             row for row in meaningful
             if row.get("exportName") not in EXPECTED_MAPPED_CREDENTIAL_EXPORTS
         ]
-        self.assertEqual(35, len(remaining))
+        self.assertEqual(29, len(remaining))
         self.assertTrue(all(row.get("declarationState") == "blocked" for row in remaining))
 
     def test_credential_type_is_mapped_as_an_open_raw_enum(self) -> None:
@@ -632,7 +633,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             for declaration in declarations
             if declaration.get("declarationState") == "blocked"
         ]
-        self.assertEqual(35, len(blocked))
+        self.assertEqual(29, len(blocked))
 
         exclusions = {
             (row.get("packageId"), row.get("exportName")): row

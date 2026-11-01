@@ -133,6 +133,7 @@ typedef struct kmipkit_credential_validation_error_v1_t kmipkit_credential_valid
 typedef struct kmipkit_username_and_password_credential_t kmipkit_username_and_password_credential_t;
 typedef struct kmipkit_secret_bytes_t kmipkit_secret_bytes_t;
 typedef struct kmipkit_secret_text_t kmipkit_secret_text_t;
+typedef struct kmipkit_hashed_password_credential_t kmipkit_hashed_password_credential_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -407,6 +408,7 @@ void kmipkit_credential_view_release(kmipkit_credential_view_t *handle);
 void kmipkit_username_and_password_credential_release(kmipkit_username_and_password_credential_t *handle);
 void kmipkit_secret_bytes_release(kmipkit_secret_bytes_t *handle);
 void kmipkit_secret_text_release(kmipkit_secret_text_t *handle);
+void kmipkit_hashed_password_credential_release(kmipkit_hashed_password_credential_t *handle);
 #define KMIPKIT_ERROR_COMPATIBILITY_MISMATCH ((int32_t)1)
 #define KMIPKIT_ERROR_DUPLICATE_KEY ((int32_t)2)
 #define KMIPKIT_ERROR_INVALID_IDENTITY ((int32_t)3)
@@ -1592,6 +1594,26 @@ int32_t kmipkit_secret_text_with_str(kmipkit_secret_text_t * secret, void (*call
  */
 /* KMIPKIT-0008-FR-010, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_secret_text_into_ttlv_value(kmipkit_secret_text_t * secret, kmipkit_ttlv_value_t ** out_value);
+/* Consumes and validates a KMIP 2.1 §9.11 Table 415 Credential Value. Preserves caller-supplied hashed bytes and Timestamp, does not hash, and retains unknown fields and original order.
+ */
+/* KMIPKIT-0008-FR-007, KMIPKIT-0008-FR-010, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.11-010-001, KMIPKIT-REQ-SPEC-9.11-010-002 */
+int32_t kmipkit_hashed_password_credential_from_ttlv(kmipkit_ttlv_structure_t * structure, kmipkit_hashed_password_credential_t ** out_credential);
+/* Returns the explicitly supplied raw Hashing Algorithm, if present, preserving unknown Enumeration values. An absent field is reported as absent and raw zero.
+ */
+/* KMIPKIT-0008-FR-007, KMIPKIT-0008-FR-010, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.11-010-001, KMIPKIT-REQ-SPEC-9.11-010-002 */
+int32_t kmipkit_hashed_password_credential_hashing_algorithm_raw(kmipkit_hashed_password_credential_t * credential, uint8_t * out_present, uint32_t * out_algorithm);
+/* Returns the effective raw Hashing Algorithm without inserting an omitted field; absent Hashing Algorithm has the KMIP 2.1 Table 415 effective default SHA-256.
+ */
+/* KMIPKIT-0008-FR-007, KMIPKIT-0008-FR-010, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.11-010-001, KMIPKIT-REQ-SPEC-9.11-010-002 */
+int32_t kmipkit_hashed_password_credential_effective_hashing_algorithm_raw(kmipkit_hashed_password_credential_t * credential, uint32_t * out_algorithm);
+/* Creates a read-only view over the same ordered Hashed Password Credential TTLV allocation. C callers own and release the view; Java and Python wrappers close it when the callback returns.
+ */
+/* KMIPKIT-0008-FR-007, KMIPKIT-0008-FR-010, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.11-010-001, KMIPKIT-REQ-SPEC-9.11-010-002 */
+int32_t kmipkit_hashed_password_credential_ttlv_view(kmipkit_hashed_password_credential_t * credential, kmipkit_ttlv_structure_view_t ** out_view);
+/* Consumes the HashedPasswordCredential and transfers its exact original ordered TTLV Structure without rebuilding or copying its payload.
+ */
+/* KMIPKIT-0008-FR-007, KMIPKIT-0008-FR-010, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.11-010-001, KMIPKIT-REQ-SPEC-9.11-010-002 */
+int32_t kmipkit_hashed_password_credential_into_ttlv(kmipkit_hashed_password_credential_t * credential, kmipkit_ttlv_structure_t ** out_structure);
 /* KMIPKIT-0006-FR-021, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_message_extension_view_ttlv(kmipkit_message_extension_view_t * extension, kmipkit_ttlv_structure_t ** out_structure);
 /* KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */

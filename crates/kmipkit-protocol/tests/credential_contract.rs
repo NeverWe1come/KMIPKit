@@ -10,8 +10,8 @@
 //! FR-009; SC-001, SC-002.
 
 use kmipkit_protocol::{
-    Authentication, CredentialType, CredentialValue, HashedPasswordTimestampSequence, Nonce,
-    RequestMessage, UsernameAndPasswordCredential,
+    Authentication, CredentialType, CredentialValidationErrorKind, CredentialValue,
+    HashedPasswordTimestampSequence, Nonce, RequestMessage, UsernameAndPasswordCredential,
 };
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
 
@@ -590,6 +590,41 @@ fn hashed_password_requires_username_timestamp_and_hash_bytes_with_table_types()
     ] {
         assert!(credential_value(5, invalid).is_err());
     }
+}
+
+// KMIP Specification v2.1 §9.11, Table 415 requires unique fields in the
+// listed order: Username, Timestamp, optional Hashing Algorithm, Hashed Password.
+#[test]
+fn hashed_password_rejects_duplicate_and_out_of_order_table_415_fields() {
+    let duplicate_username = credential_value(
+        5,
+        structure([
+            item(USERNAME, Value::text_string("alice".to_owned())),
+            item(USERNAME, Value::text_string("alice".to_owned())),
+            item(TIME_STAMP, Value::date_time_extended(1)),
+            item(HASHED_PASSWORD, Value::byte_string(vec![0x01])),
+        ]),
+    )
+    .expect_err("Table 415 members cannot be duplicated");
+    assert_eq!(
+        duplicate_username.kind(),
+        CredentialValidationErrorKind::DuplicateField
+    );
+
+    let algorithm_after_hash = credential_value(
+        5,
+        structure([
+            item(USERNAME, Value::text_string("alice".to_owned())),
+            item(TIME_STAMP, Value::date_time_extended(1)),
+            item(HASHED_PASSWORD, Value::byte_string(vec![0x01])),
+            item(HASHING_ALGORITHM, Value::enumeration(6)),
+        ]),
+    )
+    .expect_err("Table 415 members must follow the OASIS field order");
+    assert_eq!(
+        algorithm_after_hash.kind(),
+        CredentialValidationErrorKind::FieldOutOfOrder
+    );
 }
 
 // KMIP Specification v2.1 §9.11 (paragraph before Table 415) defaults an omitted

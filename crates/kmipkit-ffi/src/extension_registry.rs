@@ -37,21 +37,22 @@ use crate::{
     kmipkit_extension_identity_t, kmipkit_extension_information_t,
     kmipkit_extension_order_constraint_t, kmipkit_extension_recognition_t,
     kmipkit_extension_registry_limits_v1_t, kmipkit_extension_schema_t,
-    kmipkit_message_extension_view_t, kmipkit_message_validation_error_t, kmipkit_nonce_t,
-    kmipkit_profile_object_state_v1_t, kmipkit_profile_validation_context_v1_t,
-    kmipkit_profile_validation_error_t, kmipkit_profile_validation_error_view_v1_t,
-    kmipkit_profile_validation_selection_v1_t, kmipkit_raw_tag_t, kmipkit_register_request_t,
-    kmipkit_registered_extension_value_t, kmipkit_request_batch_item_view_t,
-    kmipkit_request_header_view_t, kmipkit_request_message_t, kmipkit_request_options_v1_t,
-    kmipkit_response_batch_item_view_t, kmipkit_response_header_view_t, kmipkit_response_message_t,
-    kmipkit_revocation_reason_t, kmipkit_revoke_request_t, kmipkit_secret_bytes_t,
-    kmipkit_secret_text_t, kmipkit_split_key_reference_t, kmipkit_tag_t,
-    kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t, kmipkit_transport_config_v1_t,
-    kmipkit_transport_input_v1_t, kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t,
-    kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
-    kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
-    kmipkit_unique_identifier_v1_t, kmipkit_usage_allocation_context_t,
-    kmipkit_username_and_password_credential_t, kmipkit_validated_extension_value_t,
+    kmipkit_hashed_password_credential_t, kmipkit_message_extension_view_t,
+    kmipkit_message_validation_error_t, kmipkit_nonce_t, kmipkit_profile_object_state_v1_t,
+    kmipkit_profile_validation_context_v1_t, kmipkit_profile_validation_error_t,
+    kmipkit_profile_validation_error_view_v1_t, kmipkit_profile_validation_selection_v1_t,
+    kmipkit_raw_tag_t, kmipkit_register_request_t, kmipkit_registered_extension_value_t,
+    kmipkit_request_batch_item_view_t, kmipkit_request_header_view_t, kmipkit_request_message_t,
+    kmipkit_request_options_v1_t, kmipkit_response_batch_item_view_t,
+    kmipkit_response_header_view_t, kmipkit_response_message_t, kmipkit_revocation_reason_t,
+    kmipkit_revoke_request_t, kmipkit_secret_bytes_t, kmipkit_secret_text_t,
+    kmipkit_split_key_reference_t, kmipkit_tag_t, kmipkit_timeout_limit_v1_t,
+    kmipkit_transport_config_t, kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t,
+    kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t,
+    kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t, kmipkit_ttlv_structure_view_t,
+    kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t, kmipkit_unique_identifier_v1_t,
+    kmipkit_usage_allocation_context_t, kmipkit_username_and_password_credential_t,
+    kmipkit_validated_extension_value_t,
 };
 use kmipkit_client::UsageAllocationContext;
 use kmipkit_client::extension_registry as client_extension;
@@ -81,7 +82,8 @@ use kmipkit_protocol::{
 };
 use kmipkit_protocol::{
     AttestationCredential, Authentication, Credential, CredentialType, CredentialValidationError,
-    CredentialValidationErrorKind, DeviceCredential, Nonce, UsernameAndPasswordCredential,
+    CredentialValidationErrorKind, DeviceCredential, HashedPasswordCredential, Nonce,
+    UsernameAndPasswordCredential,
 };
 use kmipkit_protocol::{MessageValidationError, MessageValidationErrorKind, RequestMessage};
 use kmipkit_protocol::{
@@ -460,6 +462,7 @@ enum Kind {
     AttestationCredential,
     DeviceCredential,
     UsernameAndPasswordCredential,
+    HashedPasswordCredential,
     SecretBytes,
     SecretText,
 }
@@ -501,6 +504,7 @@ enum HandleValue {
     AttestationCredential(AttestationCredential),
     DeviceCredential(DeviceCredential),
     UsernameAndPasswordCredential(UsernameAndPasswordCredential),
+    HashedPasswordCredential(HashedPasswordCredential),
     SecretBytes(SecretBytes),
     SecretText(SecretText),
     ChildRule(Box<extension::ExtensionChildRule>),
@@ -718,6 +722,9 @@ impl TtlvView {
                     credential.with_ttlv(|view| resolve_structure_path(&view, steps, callback))
                 }
                 HandleValue::UsernameAndPasswordCredential(credential) => {
+                    credential.with_ttlv(|view| resolve_structure_path(&view, steps, callback))
+                }
+                HandleValue::HashedPasswordCredential(credential) => {
                     credential.with_ttlv(|view| resolve_structure_path(&view, steps, callback))
                 }
                 _ => Err(ERROR_INVALID_INPUT),
@@ -8786,6 +8793,134 @@ pub extern "C" fn kmipkit_username_and_password_credential_release(
 ) {
     ffi_entrypoint(|| {
         release(handle, Kind::UsernameAndPasswordCredential);
+    });
+}
+
+/// Consumes and validates a Hashed Password Credential Value, retaining its original TTLV fields.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_hashed_password_credential_from_ttlv(
+    structure: *mut kmipkit_ttlv_structure_t,
+    out_credential: *mut *mut kmipkit_hashed_password_credential_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_credential);
+        let owner = try_ffi!(consume_unshared_ttlv_source(structure));
+        let payload = try_ffi!(unwrap_payload(owner));
+        let HandleValue::Structure(structure) = payload else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let credential = match HashedPasswordCredential::try_from_ttlv(structure) {
+            Ok(credential) => credential,
+            Err(error) => return record_credential_validation_error(error),
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::HashedPasswordCredential,
+            HandleValue::HashedPasswordCredential(credential)
+        ));
+        SUCCESS
+    })
+}
+
+/// Returns the raw Hashing Algorithm when explicitly present, preserving unknown Enumeration values.
+///
+/// The `out_present` and `out_algorithm` slots must not overlap.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_hashed_password_credential_hashing_algorithm_raw(
+    credential: *mut kmipkit_hashed_password_credential_t,
+    out_present: *mut u8,
+    out_algorithm: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        try_ffi!(validate_output_regions(&[
+            (out_present.cast(), std::mem::size_of::<u8>()),
+            (out_algorithm.cast(), std::mem::size_of::<u32>()),
+        ]));
+        let present = scalar_out!(out_present);
+        let algorithm_out = scalar_out!(out_algorithm);
+        *present = 0;
+        *algorithm_out = 0;
+        let handle = read_handle!(credential, HashedPasswordCredential);
+        let HandleValue::HashedPasswordCredential(credential) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        if let Some(algorithm) = credential.hashing_algorithm_raw() {
+            *present = 1;
+            *algorithm_out = algorithm;
+        }
+        SUCCESS
+    })
+}
+
+/// Returns the effective raw Hashing Algorithm without inserting an absent field.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_hashed_password_credential_effective_hashing_algorithm_raw(
+    credential: *mut kmipkit_hashed_password_credential_t,
+    out_algorithm: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let algorithm_out = scalar_out!(out_algorithm);
+        *algorithm_out = 0;
+        let handle = read_handle!(credential, HashedPasswordCredential);
+        let HandleValue::HashedPasswordCredential(credential) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *algorithm_out = credential.effective_hashing_algorithm_raw();
+        SUCCESS
+    })
+}
+
+/// Creates a read-only view over the Hashed Password Credential's original ordered TTLV.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_hashed_password_credential_ttlv_view(
+    credential: *mut kmipkit_hashed_password_credential_t,
+    out_view: *mut *mut kmipkit_ttlv_structure_view_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_view);
+        let owner = try_ffi!(clone_handle_owner(
+            credential,
+            Kind::HashedPasswordCredential
+        ));
+        let view = TtlvView::new(owner, ViewRoot::Structure, ViewTarget::Structure);
+        *out = try_ffi!(try_make_handle(
+            Kind::StructureView,
+            HandleValue::StructureView(view)
+        ));
+        SUCCESS
+    })
+}
+
+/// Consumes the Hashed Password Credential and returns its exact original TTLV Structure.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_hashed_password_credential_into_ttlv(
+    credential: *mut kmipkit_hashed_password_credential_t,
+    out_structure: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_structure);
+        let owner = try_ffi!(consume_unshared_owner(
+            credential,
+            Kind::HashedPasswordCredential
+        ));
+        let payload = try_ffi!(unwrap_payload(owner));
+        let HandleValue::HashedPasswordCredential(credential) = payload else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(credential.into_ttlv())
+        ));
+        SUCCESS
+    })
+}
+
+/// Releases a Hashed Password Credential handle.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_hashed_password_credential_release(
+    handle: *mut kmipkit_hashed_password_credential_t,
+) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::HashedPasswordCredential);
     });
 }
 

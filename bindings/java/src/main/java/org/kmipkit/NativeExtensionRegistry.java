@@ -70,6 +70,7 @@ public final class NativeExtensionRegistry {
     public static final int USERNAME_AND_PASSWORD_CREDENTIAL = 51;
     public static final int SECRET_BYTES = 52;
     public static final int SECRET_TEXT = 53;
+    public static final int HASHED_PASSWORD_CREDENTIAL = 54;
 
     private static volatile boolean loaded;
 
@@ -134,6 +135,14 @@ public final class NativeExtensionRegistry {
             long structure, long[] outCredential);
     public static native long usernameAndPasswordCredentialTtlvView(long credential);
     public static native long usernameAndPasswordCredentialIntoTtlv(long credential);
+
+    public static native int hashedPasswordCredentialFromTtlv(
+            long structure, long[] outCredential);
+    public static native int hashedPasswordCredentialHashingAlgorithmRaw(
+            long credential, long[] outPresentAndRaw);
+    public static native long hashedPasswordCredentialEffectiveHashingAlgorithmRaw(long credential);
+    public static native long hashedPasswordCredentialTtlvView(long credential);
+    public static native long hashedPasswordCredentialIntoTtlv(long credential);
 
     public static native int secretBytesCreate(byte[] data, long[] outSecret);
     public static native Object secretBytesWithBytes(long secret, Function<byte[], Object> callback);

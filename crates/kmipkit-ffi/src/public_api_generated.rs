@@ -1215,6 +1215,36 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::DeviceCredential::into_ttlv",
     ),
     (
+        "rust-observed-d6f9666c1486d4f90577",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::HashedPasswordCredential",
+    ),
+    (
+        "rust-observed-41bff2af465affae3fba",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::HashedPasswordCredential::try_from_ttlv",
+    ),
+    (
+        "rust-observed-d1b8011a842af7dc30fa",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::HashedPasswordCredential::hashing_algorithm_raw",
+    ),
+    (
+        "rust-observed-2ed261f9ed696adab1b8",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::HashedPasswordCredential::effective_hashing_algorithm_raw",
+    ),
+    (
+        "rust-observed-f6679d9149e3b2de8119",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::HashedPasswordCredential::with_ttlv",
+    ),
+    (
+        "rust-observed-7fee6d5f0e8281d5ea70",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::HashedPasswordCredential::into_ttlv",
+    ),
+    (
         "rust-observed-b9db592df59582578b06",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::Nonce",

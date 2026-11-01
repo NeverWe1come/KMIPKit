@@ -33456,6 +33456,104 @@
       "exportName": "kmipkit.credentials.SecretText.__slots__",
       "packageId": "python-kmipkit",
       "reason": "Exact Python slot layout is internal wrapper storage, not a KMIP value or product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0008-FR-007/010 and KMIPKIT-0043-FR-004/005/010/021/022. The typed facade carries the supported credential behavior; this bridge declaration has no independent product capability.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.HASHED_PASSWORD_CREDENTIAL",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static member is an internal handle-kind discriminator. Java applications use the typed HashedPasswordCredential facade; the bridge constant has no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0008-FR-007/010 and KMIPKIT-0043-FR-004/005/010/021/022. The typed facade carries the supported credential behavior; this bridge declaration has no independent product capability.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.hashedPasswordCredentialFromTtlv",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal hashed-password JNI plumbing; Java applications use the typed HashedPasswordCredential facade, which exposes the capability without raw native handles."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0008-FR-007/010 and KMIPKIT-0043-FR-004/005/010/021/022. The typed facade carries the supported credential behavior; this bridge declaration has no independent product capability.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.hashedPasswordCredentialHashingAlgorithmRaw",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal hashed-password JNI plumbing; Java applications use the typed HashedPasswordCredential facade, which exposes the capability without raw native handles."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0008-FR-007/010 and KMIPKIT-0043-FR-004/005/010/021/022. The typed facade carries the supported credential behavior; this bridge declaration has no independent product capability.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.hashedPasswordCredentialEffectiveHashingAlgorithmRaw",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal hashed-password JNI plumbing; Java applications use the typed HashedPasswordCredential facade, which exposes the capability without raw native handles."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0008-FR-007/010 and KMIPKIT-0043-FR-004/005/010/021/022. The typed facade carries the supported credential behavior; this bridge declaration has no independent product capability.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.hashedPasswordCredentialTtlvView",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal hashed-password JNI plumbing; Java applications use the typed HashedPasswordCredential facade, which exposes the capability without raw native handles."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0008-FR-007/010 and KMIPKIT-0043-FR-004/005/010/021/022. The typed facade carries the supported credential behavior; this bridge declaration has no independent product capability.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.hashedPasswordCredentialIntoTtlv",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal hashed-password JNI plumbing; Java applications use the typed HashedPasswordCredential facade, which exposes the capability without raw native handles."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "The HashedPasswordCredential API exposes validated construction from TTLV and does not expose arbitrary native handles.",
+      "exportName": "kmipkit.credentials.HashedPasswordCredential.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "Inherited native-handle construction is internal; Python applications construct HashedPasswordCredential only through validated from_ttlv."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "The HashedPasswordCredential facade exposes its validated TTLV operations; its Python storage layout is an implementation detail.",
+      "exportName": "kmipkit.credentials.HashedPasswordCredential.__slots__",
+      "packageId": "python-kmipkit",
+      "reason": "Exact Python slot layout used for internal HashedPasswordCredential wrapper state; it is not a KMIP credential field or product-level capability."
     }
   ],
   "capabilities": [
@@ -36253,6 +36351,13 @@
           "kmipkit_device_credential_release",
           "kmipkit_device_credential_t",
           "kmipkit_device_credential_ttlv_view",
+          "kmipkit_hashed_password_credential_effective_hashing_algorithm_raw",
+          "kmipkit_hashed_password_credential_from_ttlv",
+          "kmipkit_hashed_password_credential_hashing_algorithm_raw",
+          "kmipkit_hashed_password_credential_into_ttlv",
+          "kmipkit_hashed_password_credential_release",
+          "kmipkit_hashed_password_credential_t",
+          "kmipkit_hashed_password_credential_ttlv_view",
           "kmipkit_username_and_password_credential_from_ttlv",
           "kmipkit_username_and_password_credential_into_ttlv",
           "kmipkit_username_and_password_credential_release",
@@ -36292,6 +36397,14 @@
           "org.kmipkit.credentials.DeviceCredential.intoTtlv",
           "org.kmipkit.credentials.DeviceCredential.toString",
           "org.kmipkit.credentials.DeviceCredential.withTtlv",
+          "org.kmipkit.credentials.HashedPasswordCredential",
+          "org.kmipkit.credentials.HashedPasswordCredential.close",
+          "org.kmipkit.credentials.HashedPasswordCredential.effectiveHashingAlgorithmRaw",
+          "org.kmipkit.credentials.HashedPasswordCredential.fromTtlv",
+          "org.kmipkit.credentials.HashedPasswordCredential.hashingAlgorithmRaw",
+          "org.kmipkit.credentials.HashedPasswordCredential.intoTtlv",
+          "org.kmipkit.credentials.HashedPasswordCredential.toString",
+          "org.kmipkit.credentials.HashedPasswordCredential.withTtlv",
           "org.kmipkit.credentials.UsernameAndPasswordCredential",
           "org.kmipkit.credentials.UsernameAndPasswordCredential.close",
           "org.kmipkit.credentials.UsernameAndPasswordCredential.fromTtlv",
@@ -36338,6 +36451,16 @@
           "kmipkit.credentials.DeviceCredential.from_ttlv",
           "kmipkit.credentials.DeviceCredential.into_ttlv",
           "kmipkit.credentials.DeviceCredential.with_ttlv",
+          "kmipkit.credentials.HashedPasswordCredential",
+          "kmipkit.credentials.HashedPasswordCredential.__enter__",
+          "kmipkit.credentials.HashedPasswordCredential.__exit__",
+          "kmipkit.credentials.HashedPasswordCredential.close",
+          "kmipkit.credentials.HashedPasswordCredential.closed",
+          "kmipkit.credentials.HashedPasswordCredential.effective_hashing_algorithm_raw",
+          "kmipkit.credentials.HashedPasswordCredential.from_ttlv",
+          "kmipkit.credentials.HashedPasswordCredential.hashing_algorithm_raw",
+          "kmipkit.credentials.HashedPasswordCredential.into_ttlv",
+          "kmipkit.credentials.HashedPasswordCredential.with_ttlv",
           "kmipkit.credentials.UsernameAndPasswordCredential",
           "kmipkit.credentials.UsernameAndPasswordCredential.__enter__",
           "kmipkit.credentials.UsernameAndPasswordCredential.__exit__",
@@ -36372,6 +36495,12 @@
           "kmipkit_protocol::DeviceCredential::into_ttlv",
           "kmipkit_protocol::DeviceCredential::try_from_ttlv",
           "kmipkit_protocol::DeviceCredential::with_ttlv",
+          "kmipkit_protocol::HashedPasswordCredential",
+          "kmipkit_protocol::HashedPasswordCredential::effective_hashing_algorithm_raw",
+          "kmipkit_protocol::HashedPasswordCredential::hashing_algorithm_raw",
+          "kmipkit_protocol::HashedPasswordCredential::into_ttlv",
+          "kmipkit_protocol::HashedPasswordCredential::try_from_ttlv",
+          "kmipkit_protocol::HashedPasswordCredential::with_ttlv",
           "kmipkit_protocol::UsernameAndPasswordCredential",
           "kmipkit_protocol::UsernameAndPasswordCredential::into_ttlv",
           "kmipkit_protocol::UsernameAndPasswordCredential::try_from_ttlv",
@@ -71042,6 +71171,438 @@
         "requestBoundary": "not-applicable",
         "returnType": "Value"
       }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Consumes and validates a KMIP 2.1 §9.11 Table 415 Credential Value. Preserves caller-supplied hashed bytes and Timestamp, does not hash, and retains unknown fields and original order."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "shared_owner"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "structure",
+            "ownership": "consumed",
+            "type": "kmipkit_ttlv_structure_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_credential",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_hashed_password_credential_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_hashed_password_credential_from_ttlv"
+      },
+      "id": "hashed_password_credential_from_ttlv",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input",
+          "shared_owner"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_hashedPasswordCredentialFromTtlv",
+        "method": "hashedPasswordCredentialFromTtlv",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "structure",
+            "type": "long"
+          },
+          {
+            "name": "outCredential",
+            "type": "long[]"
+          }
+        ],
+        "returnType": "int"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_hashed_password_credential_from_ttlv",
+        "errorCategories": [
+          "invalid_input",
+          "shared_owner"
+        ],
+        "function": "HashedPasswordCredential.from_ttlv",
+        "module": "kmipkit.credentials",
+        "parameters": [
+          {
+            "name": "structure",
+            "type": "Structure"
+          }
+        ],
+        "returnType": "HashedPasswordCredential"
+      },
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::HashedPasswordCredential",
+        "name": "try_from_ttlv",
+        "owner": "protocol",
+        "parameters": [
+          {
+            "name": "tree",
+            "type": "Structure"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "Result<HashedPasswordCredential, CredentialValidationError>"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Returns the explicitly supplied raw Hashing Algorithm, if present, preserving unknown Enumeration values. An absent field is reported as absent and raw zero."
+        ],
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "credential",
+            "ownership": "borrowed",
+            "type": "kmipkit_hashed_password_credential_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_present",
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_algorithm",
+            "ownership": "none",
+            "type": "uint32_t *",
+            "valueType": "uint32_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_hashed_password_credential_hashing_algorithm_raw"
+      },
+      "id": "hashed_password_credential_hashing_algorithm_raw",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_hashedPasswordCredentialHashingAlgorithmRaw",
+        "method": "hashedPasswordCredentialHashingAlgorithmRaw",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "credential",
+            "type": "long"
+          },
+          {
+            "name": "outPresentAndRaw",
+            "type": "long[]"
+          }
+        ],
+        "returnType": "int"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_hashed_password_credential_hashing_algorithm_raw",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "function": "HashedPasswordCredential.hashing_algorithm_raw",
+        "module": "kmipkit.credentials",
+        "parameters": [
+          {
+            "name": "credential",
+            "type": "HashedPasswordCredential"
+          }
+        ],
+        "returnType": "int | None"
+      },
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::HashedPasswordCredential",
+        "name": "hashing_algorithm_raw",
+        "owner": "protocol",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "Option<u32>"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Returns the effective raw Hashing Algorithm without inserting an omitted field; absent Hashing Algorithm has the KMIP 2.1 Table 415 effective default SHA-256."
+        ],
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "credential",
+            "ownership": "borrowed",
+            "type": "kmipkit_hashed_password_credential_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_algorithm",
+            "ownership": "none",
+            "type": "uint32_t *",
+            "valueType": "uint32_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_hashed_password_credential_effective_hashing_algorithm_raw"
+      },
+      "id": "hashed_password_credential_effective_hashing_algorithm_raw",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_hashedPasswordCredentialEffectiveHashingAlgorithmRaw",
+        "method": "hashedPasswordCredentialEffectiveHashingAlgorithmRaw",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "credential",
+            "type": "long"
+          }
+        ],
+        "returnType": "long"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_hashed_password_credential_effective_hashing_algorithm_raw",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "function": "HashedPasswordCredential.effective_hashing_algorithm_raw",
+        "module": "kmipkit.credentials",
+        "parameters": [
+          {
+            "name": "credential",
+            "type": "HashedPasswordCredential"
+          }
+        ],
+        "returnType": "int"
+      },
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::HashedPasswordCredential",
+        "name": "effective_hashing_algorithm_raw",
+        "owner": "protocol",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "u32"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Creates a read-only view over the same ordered Hashed Password Credential TTLV allocation. C callers own and release the view; Java and Python wrappers close it when the callback returns."
+        ],
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "credential",
+            "ownership": "borrowed",
+            "type": "kmipkit_hashed_password_credential_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_view",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_ttlv_structure_view_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_hashed_password_credential_ttlv_view"
+      },
+      "id": "hashed_password_credential_ttlv_view",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_hashedPasswordCredentialTtlvView",
+        "method": "hashedPasswordCredentialTtlvView",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "credential",
+            "type": "long"
+          }
+        ],
+        "returnType": "long"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_hashed_password_credential_ttlv_view",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "function": "HashedPasswordCredential.with_ttlv",
+        "module": "kmipkit.credentials",
+        "parameters": [
+          {
+            "name": "credential",
+            "type": "HashedPasswordCredential"
+          },
+          {
+            "name": "callback",
+            "type": "Callable"
+          }
+        ],
+        "returnType": "T"
+      },
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::HashedPasswordCredential",
+        "name": "with_ttlv",
+        "owner": "protocol",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "impl for<'a> FnOnce(StructureView<'a>) -> R"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "R"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Consumes the HashedPasswordCredential and transfers its exact original ordered TTLV Structure without rebuilding or copying its payload."
+        ],
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "credential",
+            "ownership": "consumed",
+            "type": "kmipkit_hashed_password_credential_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_structure",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_ttlv_structure_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_hashed_password_credential_into_ttlv"
+      },
+      "id": "hashed_password_credential_into_ttlv",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_hashedPasswordCredentialIntoTtlv",
+        "method": "hashedPasswordCredentialIntoTtlv",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "credential",
+            "type": "long"
+          }
+        ],
+        "returnType": "long"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_hashed_password_credential_into_ttlv",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "function": "HashedPasswordCredential.into_ttlv",
+        "module": "kmipkit.credentials",
+        "parameters": [
+          {
+            "name": "credential",
+            "type": "HashedPasswordCredential"
+          }
+        ],
+        "returnType": "Structure"
+      },
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::HashedPasswordCredential",
+        "name": "into_ttlv",
+        "owner": "protocol",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "Structure"
+      }
     }
   ],
   "languages": [
@@ -105016,6 +105577,312 @@
         "KMIPKIT-REQ-SPEC-9.11-004-001",
         "KMIPKIT-REQ-SPEC-9.11-004-002",
         "KMIPKIT-REQ-SPEC-9.11-004-003"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-d6f9666c1486d4f90577",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::HashedPasswordCredential",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-41bff2af465affae3fba",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::HashedPasswordCredential::try_from_ttlv",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_from_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential.fromTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential.from_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential::try_from_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-d1b8011a842af7dc30fa",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::HashedPasswordCredential::hashing_algorithm_raw",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_hashing_algorithm_raw",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential.hashingAlgorithmRaw",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential.hashing_algorithm_raw",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential::hashing_algorithm_raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-2ed261f9ed696adab1b8",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::HashedPasswordCredential::effective_hashing_algorithm_raw",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_effective_hashing_algorithm_raw",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential.effectiveHashingAlgorithmRaw",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential.effective_hashing_algorithm_raw",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential::effective_hashing_algorithm_raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-f6679d9149e3b2de8119",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::HashedPasswordCredential::with_ttlv",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_ttlv_view",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential.withTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential.with_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "rust-observed-7fee6d5f0e8281d5ea70",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::HashedPasswordCredential::into_ttlv",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_into_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential.intoTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential.into_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential::into_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
       ]
     },
     {
@@ -287371,6 +288238,1284 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
       ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "hashed_password_credential:a45838bc97b777ae6282",
+      "declarationState": "declared",
+      "exportName": "kmipkit_hashed_password_credential_t",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "hashed_password_credential:ddb96f3d7da73593a181",
+      "declarationState": "declared",
+      "exportName": "kmipkit_hashed_password_credential_from_ttlv",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_from_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential.fromTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential.from_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential::try_from_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "hashed_password_credential:c34a0cdc76df5d18a84a",
+      "declarationState": "declared",
+      "exportName": "kmipkit_hashed_password_credential_hashing_algorithm_raw",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_hashing_algorithm_raw",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential.hashingAlgorithmRaw",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential.hashing_algorithm_raw",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential::hashing_algorithm_raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "hashed_password_credential:6f67a43281b2ccf68888",
+      "declarationState": "declared",
+      "exportName": "kmipkit_hashed_password_credential_effective_hashing_algorithm_raw",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_effective_hashing_algorithm_raw",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential.effectiveHashingAlgorithmRaw",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential.effective_hashing_algorithm_raw",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential::effective_hashing_algorithm_raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "hashed_password_credential:1ab5f59e8897e591404b",
+      "declarationState": "declared",
+      "exportName": "kmipkit_hashed_password_credential_ttlv_view",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_ttlv_view",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential.withTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential.with_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "hashed_password_credential:1a01311bd9c6ee81d040",
+      "declarationState": "declared",
+      "exportName": "kmipkit_hashed_password_credential_into_ttlv",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_into_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential.intoTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential.into_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential::into_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "hashed_password_credential:be1f7401314ab28cd142",
+      "declarationState": "declared",
+      "exportName": "kmipkit_hashed_password_credential_release",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "hashed_password_credential:9f3c674a2f83c73778fa",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.HashedPasswordCredential",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "hashed_password_credential:d461f439d7e6135ebbab",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.HashedPasswordCredential.fromTtlv",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_from_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential.fromTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential.from_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential::try_from_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "hashed_password_credential:acff36fd1aae5a6f54ff",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.HashedPasswordCredential.hashingAlgorithmRaw",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_hashing_algorithm_raw",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential.hashingAlgorithmRaw",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential.hashing_algorithm_raw",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential::hashing_algorithm_raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "hashed_password_credential:55abb9d1da536a58b05b",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.HashedPasswordCredential.effectiveHashingAlgorithmRaw",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_effective_hashing_algorithm_raw",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential.effectiveHashingAlgorithmRaw",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential.effective_hashing_algorithm_raw",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential::effective_hashing_algorithm_raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "hashed_password_credential:c8e920a280e67a352305",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.HashedPasswordCredential.withTtlv",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_ttlv_view",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential.withTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential.with_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "hashed_password_credential:b17c6bec78980e9d8682",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.HashedPasswordCredential.intoTtlv",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_into_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential.intoTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential.into_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential::into_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "hashed_password_credential:0958e3878f85dc262f5d",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.HashedPasswordCredential.close",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "hashed_password_credential:7df1b433a067be1d09b9",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.HashedPasswordCredential.toString",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential.toString",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "hashed_password_credential:e0df3ba65e4424888ea3",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.HashedPasswordCredential",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "hashed_password_credential:46774ac6e9ffdd57b76b",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.HashedPasswordCredential.from_ttlv",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_from_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential.fromTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential.from_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential::try_from_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "hashed_password_credential:7189af9171401d3314d7",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.HashedPasswordCredential.hashing_algorithm_raw",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_hashing_algorithm_raw",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential.hashingAlgorithmRaw",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential.hashing_algorithm_raw",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential::hashing_algorithm_raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "hashed_password_credential:e907056b05a52892e7a0",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.HashedPasswordCredential.effective_hashing_algorithm_raw",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_effective_hashing_algorithm_raw",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential.effectiveHashingAlgorithmRaw",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential.effective_hashing_algorithm_raw",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential::effective_hashing_algorithm_raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "hashed_password_credential:c52d16377936d02ebcb4",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.HashedPasswordCredential.with_ttlv",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_ttlv_view",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential.withTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential.with_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "hashed_password_credential:a6ef338dc0ed9d3c2cf5",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.HashedPasswordCredential.into_ttlv",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_into_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential.intoTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential.into_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential::into_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "hashed_password_credential:1059cddb91329d488baa",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.HashedPasswordCredential.close",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "hashed_password_credential:ec92cd33844222ddae44",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.HashedPasswordCredential.closed",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential.closed",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "hashed_password_credential:381fe4eca91744fe9367",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.HashedPasswordCredential.__enter__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential.__enter__",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_ttlv_parity",
+      "declarationId": "hashed_password_credential:3e9e74f59f399d2c04cf",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.HashedPasswordCredential.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_hashed_password_credential_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.HashedPasswordCredential.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.HashedPasswordCredential.__exit__",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashedPasswordCredential",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/HashedPasswordCredentialFacadeTest.java",
+        "bindings/python/tests/test_hashed_password_credential.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ]
     }
   ],
   "publicPackages": [
@@ -290523,6 +292668,43 @@
       "rust": {
         "module": "kmipkit_protocol",
         "name": "SecretText",
+        "owner": "protocol"
+      }
+    },
+    {
+      "c": {
+        "handleKind": "hashed_password_credential",
+        "kind": "opaque-handle",
+        "name": "kmipkit_hashed_password_credential_t",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_hashed_password_credential_release"
+      },
+      "id": "HashedPasswordCredential",
+      "java": {
+        "name": "HashedPasswordCredential",
+        "package": "org.kmipkit.credentials"
+      },
+      "kind": "opaque-handle",
+      "normativeSource": "KMIP 2.1 §9.11 Table 415",
+      "python": {
+        "module": "kmipkit.credentials",
+        "name": "HashedPasswordCredential"
+      },
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol",
+        "name": "HashedPasswordCredential",
         "owner": "protocol"
       }
     }

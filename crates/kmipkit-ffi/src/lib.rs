@@ -236,6 +236,10 @@ pub struct kmipkit_username_and_password_credential_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_hashed_password_credential_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
 pub struct kmipkit_extension_child_rule_t {
     _private: [u8; 0],
 }

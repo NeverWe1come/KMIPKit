@@ -86,6 +86,22 @@ final class HashedPasswordCredentialFacadeTest {
         assertFalse(error.getMessage().contains("alice"));
     }
 
+    @Test
+    // KMIP Specification v2.1 §9.11, Table 415 defines uniqueness and field order.
+    void rejectsDuplicateAndOutOfOrderTable415Fields() {
+        CredentialValidationException duplicate = assertThrows(
+                CredentialValidationException.class,
+                () -> HashedPasswordCredential.fromTtlv(
+                        malformedHashedPasswordStructure(true)));
+        assertEquals(CredentialValidationErrorKind.DUPLICATE_FIELD, duplicate.kind());
+
+        CredentialValidationException outOfOrder = assertThrows(
+                CredentialValidationException.class,
+                () -> HashedPasswordCredential.fromTtlv(
+                        malformedHashedPasswordStructure(false)));
+        assertEquals(CredentialValidationErrorKind.FIELD_OUT_OF_ORDER, outOfOrder.kind());
+    }
+
     private static List<Integer> readTags(TtlvStructureView view) {
         java.util.ArrayList<Integer> tags = new java.util.ArrayList<>();
         for (long index = 0; index < view.itemCount(); index++) {
@@ -143,6 +159,49 @@ final class HashedPasswordCredentialFacadeTest {
             structure = TtlvStructure.withItem(structure, TtlvItem.create(tag, value, limits), limits);
         }
         return structure;
+    }
+
+    private static TtlvStructure malformedHashedPasswordStructure(boolean duplicateUsername) {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure structure = TtlvStructure.create();
+        structure = appendText(structure, USERNAME_TAG, "alice", limits);
+        if (duplicateUsername) {
+            structure = appendText(structure, USERNAME_TAG, "alice", limits);
+        }
+        structure = appendDateTime(structure, TIMESTAMP_TAG, 1_800_000_000L, limits);
+        structure = appendHashedPassword(structure, limits);
+        if (!duplicateUsername) {
+            structure = appendEnumeration(structure, HASHING_ALGORITHM_TAG,
+                    UNKNOWN_HASHING_ALGORITHM, limits);
+        }
+        return structure;
+    }
+
+    private static TtlvStructure appendDateTime(
+            TtlvStructure structure, int rawTag, long timestamp, CodecLimits limits) {
+        try (RawTag raw = RawTag.fromRaw(rawTag);
+                Tag tag = raw.checked();
+                TtlvValue value = TtlvValue.DateTimeExtended(timestamp)) {
+            return TtlvStructure.withItem(structure, TtlvItem.create(tag, value, limits), limits);
+        }
+    }
+
+    private static TtlvStructure appendEnumeration(
+            TtlvStructure structure, int rawTag, long rawValue, CodecLimits limits) {
+        try (RawTag raw = RawTag.fromRaw(rawTag);
+                Tag tag = raw.checked();
+                TtlvValue value = TtlvValue.Enumeration(rawValue)) {
+            return TtlvStructure.withItem(structure, TtlvItem.create(tag, value, limits), limits);
+        }
+    }
+
+    private static TtlvStructure appendHashedPassword(
+            TtlvStructure structure, CodecLimits limits) {
+        try (RawTag raw = RawTag.fromRaw(HASHED_PASSWORD_TAG);
+                Tag tag = raw.checked();
+                TtlvValue value = TtlvValue.ByteString(HASHED_PASSWORD_BYTES, limits)) {
+            return TtlvStructure.withItem(structure, TtlvItem.create(tag, value, limits), limits);
+        }
     }
 
     private static TtlvStructure appendText(

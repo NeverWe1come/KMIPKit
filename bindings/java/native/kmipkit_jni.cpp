@@ -2327,6 +2327,87 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_usernameAndPass
     });
 }
 
+JNIEXPORT jint JNICALL Java_org_kmipkit_NativeExtensionRegistry_hashedPasswordCredentialFromTtlv(
+        JNIEnv* env, jclass, jlong raw_structure, jlongArray out_credential) {
+    return guarded<jint>(env, KMIPKIT_ERROR_INTERNAL, [&] {
+        if (out_credential == nullptr || env->GetArrayLength(out_credential) != 1) {
+            throw_invalid_input(env);
+            return static_cast<jint>(KMIPKIT_ERROR_INVALID_INPUT);
+        }
+        kmipkit_hashed_password_credential_t* credential = nullptr;
+        const int32_t status = kmipkit_hashed_password_credential_from_ttlv(
+                from_java_handle<kmipkit_ttlv_structure_t>(raw_structure), &credential);
+        if (status != 0) {
+            return static_cast<jint>(status);
+        }
+        const jlong raw_credential = reinterpret_cast<jlong>(credential);
+        env->SetLongArrayRegion(out_credential, 0, 1, &raw_credential);
+        if (env->ExceptionCheck()) {
+            kmipkit_hashed_password_credential_release(credential);
+            return static_cast<jint>(KMIPKIT_ERROR_INTERNAL);
+        }
+        return static_cast<jint>(0);
+    });
+}
+
+JNIEXPORT jint JNICALL Java_org_kmipkit_NativeExtensionRegistry_hashedPasswordCredentialHashingAlgorithmRaw(
+        JNIEnv* env, jclass, jlong raw_credential, jlongArray out_present_and_raw) {
+    return guarded<jint>(env, KMIPKIT_ERROR_INTERNAL, [&] {
+        if (out_present_and_raw == nullptr || env->GetArrayLength(out_present_and_raw) != 2) {
+            throw_invalid_input(env);
+            return static_cast<jint>(KMIPKIT_ERROR_INVALID_INPUT);
+        }
+        uint8_t present = 0;
+        uint32_t algorithm = 0;
+        const int32_t status = kmipkit_hashed_password_credential_hashing_algorithm_raw(
+                from_java_handle<kmipkit_hashed_password_credential_t>(raw_credential),
+                &present, &algorithm);
+        if (status != 0) {
+            return static_cast<jint>(status);
+        }
+        const jlong result[] = {present, static_cast<jlong>(algorithm)};
+        env->SetLongArrayRegion(out_present_and_raw, 0, 2, result);
+        if (env->ExceptionCheck()) {
+            return static_cast<jint>(KMIPKIT_ERROR_INTERNAL);
+        }
+        return static_cast<jint>(0);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_hashedPasswordCredentialEffectiveHashingAlgorithmRaw(
+        JNIEnv* env, jclass, jlong raw_credential) {
+    return guarded<jlong>(env, 0, [&] {
+        uint32_t algorithm = 0;
+        const int32_t status = kmipkit_hashed_password_credential_effective_hashing_algorithm_raw(
+                from_java_handle<kmipkit_hashed_password_credential_t>(raw_credential), &algorithm);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jlong>(0);
+        }
+        return static_cast<jlong>(algorithm);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_hashedPasswordCredentialTtlvView(
+        JNIEnv* env, jclass, jlong raw_credential) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_ttlv_structure_view_t>(env, [&](auto output) {
+            return kmipkit_hashed_password_credential_ttlv_view(
+                    from_java_handle<kmipkit_hashed_password_credential_t>(raw_credential), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_hashedPasswordCredentialIntoTtlv(
+        JNIEnv* env, jclass, jlong raw_credential) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_ttlv_structure_t>(env, [&](auto output) {
+            return kmipkit_hashed_password_credential_into_ttlv(
+                    from_java_handle<kmipkit_hashed_password_credential_t>(raw_credential), output);
+        });
+    });
+}
+
 JNIEXPORT jstring JNICALL Java_org_kmipkit_NativeExtensionRegistry_extensionIdentityVendorIdentifier(
         JNIEnv* env, jclass, jlong identity) {
     return identity_text(env, identity, kmipkit_extension_identity_vendor_identifier);
@@ -4437,6 +4518,8 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_release(
                 from_java_handle<kmipkit_secret_bytes_t>(raw_handle)); break;
         case 53: kmipkit_secret_text_release(
                 from_java_handle<kmipkit_secret_text_t>(raw_handle)); break;
+        case 54: kmipkit_hashed_password_credential_release(
+                from_java_handle<kmipkit_hashed_password_credential_t>(raw_handle)); break;
         default: throw_invalid_input(env); break;
         }
         return 0;
