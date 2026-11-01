@@ -824,6 +824,20 @@ class PublicApiParityTests(unittest.TestCase):
                     "client_batch_item_response_reprovision_ttlv",
                     "kmipkit_client_batch_item_response_rng_retrieve_ttlv",
                     "kmipkit_client_batch_item_response_rng_seed_ttlv",
+                    # Typed attribute request models retain these values at
+                    # construction time, so their Java accessors are local.
+                    "attribute_request_add_attribute_unique_identifier",
+                    "attribute_request_adjust_attribute_adjustment_type",
+                    "attribute_request_adjust_attribute_attribute_reference",
+                    "attribute_request_adjust_attribute_unique_identifier",
+                    "attribute_request_delete_attribute_attribute_reference",
+                    "attribute_request_delete_attribute_unique_identifier",
+                    "attribute_request_modify_attribute_unique_identifier",
+                    "attribute_request_set_attribute_unique_identifier",
+                    "attribute_request_get_attributes_unique_identifier",
+                    "attribute_request_get_attributes_attribute_reference_count",
+                    "attribute_request_get_attributes_attribute_reference_at",
+                    "attribute_request_get_attribute_list_unique_identifier",
                 }:
                     self.assertNotIn("jniSymbol", java)
                     if function["id"] == "client_batch_item_count":
@@ -857,8 +871,6 @@ class PublicApiParityTests(unittest.TestCase):
         self.assertEqual(len(cffi_symbols), len(set(cffi_symbols)))
         for symbol, aliases in jni_symbols.items():
             with self.subTest(jni_symbol=symbol):
-                # Additive C ABI compatibility symbols can share the one
-                # Java entrypoint when they describe the same Java operation.
                 java_signatures = {
                     (
                         row["java"]["package"],
@@ -869,7 +881,25 @@ class PublicApiParityTests(unittest.TestCase):
                     )
                     for row in aliases
                 }
-                self.assertEqual(len(java_signatures), 1)
+                if symbol in {
+                    "Java_org_kmipkit_NativeExtensionRegistry_attributeRequestCreate",
+                    "Java_org_kmipkit_NativeExtensionRegistry_attributeRequestTtlvItem",
+                    "Java_org_kmipkit_NativeExtensionRegistry_attributeRequestTtlvValue",
+                    "Java_org_kmipkit_NativeExtensionRegistry_attributeRequestToTtlvPayload",
+                    "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemFromAttributeRequest",
+                    "Java_org_kmipkit_extensions_NativeAttributeRequests_create",
+                }:
+                    # These native entrypoints accept an operation discriminator
+                    # and back distinct typed request wrappers.
+                    self.assertTrue(all(row["id"].startswith("attribute_request_") for row in aliases))
+                    self.assertEqual(len(aliases), len(java_signatures))
+                    self.assertTrue(
+                        all(row["java"]["package"] == "org.kmipkit.extensions" for row in aliases)
+                    )
+                else:
+                    # Additive C ABI compatibility symbols can share one Java
+                    # entrypoint only when they expose the same Java operation.
+                    self.assertEqual(len(java_signatures), 1)
 
     def test_t029_fixture_consumers_assert_runtime_values_for_only_core_shared_cases(self) -> None:
         """T029 parity is limited to shared capabilities, not operation-specific rows."""

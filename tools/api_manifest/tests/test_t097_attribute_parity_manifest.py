@@ -7,16 +7,18 @@ import json
 import unittest
 from pathlib import Path
 
+from tools.api_manifest import generate as api_manifest_generator
+
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 OWNER_SPEC = "KMIPKIT-0016"
-BASE_CANDIDATE_COUNT = 846
-BASE_CANDIDATE_SHA256 = "5cc153ae5f04d8c0a1fd2d34b9b46fc230acaf16bb0f4ce3969a04fa7ade1c66"
+BASE_CANDIDATE_COUNT = 871
+BASE_CANDIDATE_SHA256 = "9bb3ad387dedafe61eaf8c03ddd87b2388d2a233c8856fff2a2729c912ba08e6"
 BASE_TRAIT_COUNT = 524
 BASE_TRAIT_SHA256 = "86e73fe96baf9ee1249010f7cfa8d927e18d22cbf48fb6a86df4a87b8cfe2554"
-MAPPED_COUNT = 193
-EXCLUDED_COUNT = 653
+MAPPED_COUNT = 219
+EXCLUDED_COUNT = 652
 OWNER_SPEC_PATH = "specs/016-attribute-operations/spec.md"
 SHARED_REQUIREMENTS = {
     "KMIPKIT-0043-FR-004",
@@ -65,6 +67,20 @@ REQUEST_MODEL_METHODS = {
         "to_ttlv_payload",
     ),
     "set_attribute": ("unique_identifier", "new_attribute", "to_ttlv_payload"),
+}
+READ_REQUEST_MODEL_METHODS = {
+    "get_attributes": (
+        "unique_identifier",
+        "attribute_reference_count",
+        "to_ttlv_payload",
+        "to_batch_item",
+        "attribute_reference_at",
+    ),
+    "get_attribute_list": (
+        "unique_identifier",
+        "to_ttlv_payload",
+        "to_batch_item",
+    ),
 }
 
 
@@ -148,6 +164,33 @@ def _expected_mapped_exports() -> set[str]:
                 f"{python_model}.to_batch_item",
             }
         )
+    for operation in READ_REQUEST_MODEL_METHODS:
+        class_name = "".join(part.title() for part in operation.split("_")) + "Request"
+        java_model = f"org.kmipkit.extensions.{class_name}"
+        python_model = f"kmipkit.attribute_operations.{class_name}"
+        mapped.update(
+            {
+                java_model,
+                f"{java_model}.create",
+                f"{java_model}.close",
+                f"{java_model}.uniqueIdentifier",
+                f"{java_model}.toTtlvPayload",
+                f"{java_model}.toBatchItem",
+                python_model,
+                f"{python_model}.create",
+                f"{python_model}.close",
+                f"{python_model}.unique_identifier",
+                f"{python_model}.to_ttlv_payload",
+                f"{python_model}.to_batch_item",
+            }
+        )
+        if operation == "get_attributes":
+            mapped.update(
+                {
+                    f"{java_model}.attributeReferences",
+                    f"{python_model}.attribute_references",
+                }
+            )
     return mapped
 
 
@@ -441,6 +484,57 @@ class T097AttributeParityManifestTests(unittest.TestCase):
                                 for language in ("c", "java", "python")
                             ),
                         )
+
+    def test_get_attributes_c_abi_uses_a_bounded_versioned_reference_array(self) -> None:
+        create = next(
+            row for row in self.manifest["functions"]
+            if row["id"] == "attribute_request_get_attributes_create"
+        )
+        parameters = create["c"]["parameters"]
+        self.assertEqual(
+            {
+                "name": "attribute_references",
+                "type": "const kmipkit_attribute_reference_v1_t *",
+                "kind": "input-array",
+                "elementType": "kmipkit_attribute_reference_v1_t",
+                "ownership": "borrowed",
+                "countParameter": "attribute_reference_count",
+                "nullable": True,
+            },
+            parameters[1],
+        )
+        self.assertEqual("uint64_t", parameters[2]["type"])
+        self.assertEqual("attribute_reference_count", parameters[1]["countParameter"])
+        api_manifest_generator._validate_references(self.manifest)
+
+    def test_read_request_functions_use_the_expected_java_jni_bridges(self) -> None:
+        functions = {row["id"]: row for row in self.manifest["functions"]}
+        expected = {
+            "attribute_request_get_attributes_create": (
+                "Java_org_kmipkit_extensions_NativeAttributeRequests_create"
+            ),
+            "attribute_request_get_attribute_list_create": (
+                "Java_org_kmipkit_extensions_NativeAttributeRequests_create"
+            ),
+            "attribute_request_get_attributes_to_ttlv_payload": (
+                "Java_org_kmipkit_NativeExtensionRegistry_attributeRequestToTtlvPayload"
+            ),
+            "attribute_request_get_attributes_to_batch_item": (
+                "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemFromAttributeRequest"
+            ),
+            "attribute_request_get_attribute_list_to_ttlv_payload": (
+                "Java_org_kmipkit_NativeExtensionRegistry_attributeRequestToTtlvPayload"
+            ),
+            "attribute_request_get_attribute_list_to_batch_item": (
+                "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemFromAttributeRequest"
+            ),
+        }
+        for function_id, jni_symbol in expected.items():
+            with self.subTest(function=function_id):
+                self.assertEqual(
+                    jni_symbol,
+                    functions[function_id]["java"].get("jniSymbol"),
+                )
 
     def test_typed_request_lifecycle_batch_conversion_and_abi_are_mapped(self) -> None:
         declarations = {
