@@ -346,6 +346,19 @@ or uninitialized capacity is covered only when initialized and cleanup is
 verified. Logging, formatting, and validation diagnostics redact Credential
 contents, including identifiers inside a Credential.
 
+The C secret callbacks expose a pointer and length only for the synchronous
+callback invocation. A callback must not retain the pointer, use it
+asynchronously, or unwind or jump across the ABI; copies made by the callback
+are outside KMIPKit's zeroization guarantee. Java callbacks receive temporary
+arrays that the bridge wipes after return, although applications may retain
+other copies and immutable `String` values cannot be erased. Python
+`SecretBytes.with_bytes` copies the span into a temporary `bytearray`, passes a
+read-only `memoryview`, then releases the view and wipes the bytearray. The
+view's `.obj` remains a mutable route to that temporary copy while the callback
+runs; changes there do not affect the native owner. `SecretText.with_str`
+decodes to an immutable `str`, which Python cannot reliably erase. Copies
+deliberately made by application code remain caller-owned.
+
 ## Errors
 
 The shared Rust result/error contract is exposed by the `kmipkit` facade:

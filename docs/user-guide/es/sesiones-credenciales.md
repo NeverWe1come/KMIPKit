@@ -78,6 +78,18 @@ respuesta Logout correcta tiene un payload de operación vacío; Failure y
 Pending conservan los metadatos de resultado KMIP. KMIPKit no reintenta, no
 ejecuta Poll ni reutiliza el Ticket silenciosamente.
 
+`SecretBytes` y `SecretText` están disponibles en las API de los cuatro
+lenguajes para poseer secretos en memoria de forma explícita. Rust presta slices
+o texto durante closures; C expone handles opacos y callbacks síncronos con
+puntero y longitud; Java usa propietarios `AutoCloseable` y callbacks con
+`byte[]` o `char[]` temporales; Python usa propietarios gestionados por contexto,
+un `memoryview` de solo lectura temporal para bytes y un `str` inmutable para
+texto. Todos los callbacks son síncronos. Las copias de la aplicación son de su
+propiedad; Python no puede borrar de forma fiable las cadenas de texto y
+`memoryview.obj` solo expone la copia temporal de bytes. Estos wrappers no
+seleccionan Authentication, no adjuntan credenciales a peticiones ni las envían
+implícitamente.
+
 ## Delegated Login
 
 Delegated Login requiere una estructura Rights del llamador y devuelve un

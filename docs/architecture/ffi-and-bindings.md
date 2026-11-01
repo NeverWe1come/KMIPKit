@@ -96,6 +96,16 @@ secrets. Snapshots contain no source strings or request payloads.
   clearing the thread-local error snapshot does not change them. Copy the bytes
   before releasing the detail handle to keep them longer.
 - Secret outputs use zeroizing opaque handles.
+- C secret callback spans are valid only until the synchronous callback
+  returns. A callback must not retain the pointer, use it asynchronously, or
+  unwind or jump across the ABI; no registry lock is held while it runs.
+- Java and Python secret callbacks use temporary runtime copies. The Java
+  bridge wipes its temporary byte and character arrays. Python byte callbacks
+  expose a read-only view over a temporary `bytearray`, then release the view
+  and wipe the array; `memoryview.obj` can mutate that temporary copy during
+  the callback without changing the native owner. Python text callbacks create
+  an immutable `str`, which cannot be reliably erased. Deliberate application
+  copies remain outside KMIPKit's zeroization guarantee.
 
 ## Generated and manual portions
 

@@ -7906,3 +7906,25 @@ The independent QA review found that the compiled C consumer asserted only the i
 - Historical mapping counts in `traceability.md` now carry their 2026-10-31 and 2026-11-01 checkpoint dates; the current 54/97 count is explicitly dated 2026-11-01.
 - QA recheck — no actionable residual findings.
 - python -m pytest -q scripts/tests/test_requirement_traceability.py tools/normative_catalog/tests/test_feature_traceability.py — 31 passed, 1 skipped in 90.83s.
+
+### T092 SecretBytes and SecretText four-language mapping (2026-11-01)
+
+This batch maps the Rust `SecretBytes` and `SecretText` zeroizing owners and their six lifecycle/callback methods through C, Java/JNI, and Python. The approved owner is KMIPKIT-0008-FR-010, with KMIPKIT-0043-FR-004/005/010/013/017/021/022. These wrappers are in-memory only; they do not select Authentication credentials, attach credentials to requests, or add a send path. C lends native pointers only for the synchronous callback. Java clears temporary byte and character arrays. Python copies bytes into a mutable bytearray, lends a read-only memoryview, releases the view, and clears the bytearray; callers can mutate `memoryview.obj`, which is only that temporary copy. Python text callbacks receive an immutable `str` copy that cannot be reliably erased.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red — specify secret facade lifetimes and ownership | `420e20e9b`; C ABI ownership contract `a8fa7d3c4` | Rust/C/Java/Python facade contract tests | The lifecycle and foreign-runtime ownership behavior was missing. The first Python callback run also failed at CFFI's generated callback declaration (`expected ')'` for the nullable Rust callback type), confirming that CFFI could not express that ABI. |
+| Green — implement the native C handles and four-language mappings | `94b50f466`, `08aaf6023` | Focused native consumer, Java facade, Python package and manifest tests | Rust/C ownership is zeroizing; Java/JNI and Python expose matching scoped wrappers. Python uses `ctypes` for only the synchronous callback entrypoints, loaded from the same canonical absolute path selected for CFFI. |
+| Refactor — document limits, traces, and remaining T092 scope | this commit | Formatting, manifest generation, export audit, Rust/C, Java, and Python checks | T092 maps 62/97 functional declarations; 35 remain blocked. The task remains open. |
+
+Verification for this checkpoint:
+
+- `cargo test -p kmipkit-ffi --test c_api_coverage compiled_c_consumer_checks_secret_ownership_callbacks_and_ttlv_conversion --features coverage-c-consumer -- --exact` — 1 compiled C consumer passed.
+- From `bindings/java`, `.\gradlew.bat test --no-daemon --tests org.kmipkit.credentials.SecretCredentialFacadeTest` — `BUILD SUCCESSFUL`.
+- Python 3.12 installed-wheel full suite — 877 passed, 1 skipped, and 114 subtests passed. The clean test environment included the declared `maturin` build tool needed by the wheel-artifact test.
+- `py -3 -B -m unittest tools.api_manifest.tests.test_t092_credentials_parity_manifest -v` — 18 tests passed.
+- `py -3 -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
+- `py -3 -B tools/api_manifest/audit_binding_exports.py --repo-root . --report <temporary-report> --check` — zero discrepancies: C 652/652, Java 1,038/1,038, Python 1,028/1,028; no missing, unobserved, or kind-mismatched declarations.
+- `cargo fmt --all --check`, `cargo clippy -p kmipkit-ffi --all-targets --all-features -- -D warnings`, and `git diff --check` — passed. The local AWS-LC build emitted non-fatal toolchain warnings about its optional NASM/compiler-feature probes.
+
+The active KMIPKIT-0043 coverage-gate waiver remains in effect, so this checkpoint does not claim the branch coverage thresholds. Hosted CI and the independent final PR reviews must still run against the updated head.

@@ -76,6 +76,17 @@ limitations. Logout sends exactly the Ticket supplied by the caller. A successfu
 Logout has an empty operation payload; Failure and Pending preserve their KMIP
 result metadata. KMIPKit does not retry, poll, or silently reuse the Ticket.
 
+`SecretBytes` and `SecretText` are available in all four language APIs for
+explicit in-memory secret ownership. Rust lends scoped slices or text through
+closures; C exposes opaque handles and synchronous pointer/length callbacks;
+Java uses `AutoCloseable` owners and temporary `byte[]` or `char[]` callbacks;
+Python uses context-managed owners, a temporary read-only `memoryview` for
+bytes, and an immutable `str` for text. Each callback is synchronous. Copies
+made by application code remain caller-owned; Python text strings cannot be
+reliably erased, and `memoryview.obj` exposes only the temporary byte copy.
+These wrappers do not select Authentication, attach credentials to requests, or
+send them implicitly.
+
 ## Delegated Login
 
 Delegated Login requires a caller-supplied Rights structure and returns a
