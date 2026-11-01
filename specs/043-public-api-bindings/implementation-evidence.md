@@ -7897,3 +7897,12 @@ Verification on the current local worktree:
 - `tools/api_manifest/generate.py --check` — all 12 outputs current. Rust audit — 10,459 observed, 8,814/8,814 manifest matches, 0 discrepancies. Shared Rust inventory — 692 mapped declarations and 1,645 approved exact exclusions. Binding audit — C 642/642, Java 1,026/1,026, and Python 1,010/1,010, with zero missing or kind-mismatched exports.
 
 The agreed temporary coverage-gate waiver for the active KMIPKIT-0043 branch remains in effect; this checkpoint does not report a full coverage-threshold run. Hosted CI must rerun on the pushed PR head. Independent security and QA reviews are still required before the PR can leave draft status.
+
+### QA follow-up: UsernameAndPassword C round-trip assertions (2026-11-01)
+
+The independent QA review found that the compiled C consumer asserted only the item count. It now checks the ordered Username and Password tags and exact TEXT_STRING bytes on both the credential's scoped TTLV view and the structure returned by ownership transfer. The case covers Username `alice` and the permitted empty Password value. A temporary expected-value mutation (`alice` to `alixe`) made the focused consumer test fail with status 1; after restoring the expected value, the test passed.
+
+- `cargo test -p kmipkit-ffi --test c_api_coverage compiled_c_consumer_preserves_username_password_ttlv_and_scoped_ownership --all-features` — 1 passed.
+- Historical mapping counts in `traceability.md` now carry their 2026-10-31 and 2026-11-01 checkpoint dates; the current 54/97 count is explicitly dated 2026-11-01.
+- QA recheck — no actionable residual findings.
+- python -m pytest -q scripts/tests/test_requirement_traceability.py tools/normative_catalog/tests/test_feature_traceability.py — 31 passed, 1 skipped in 90.83s.

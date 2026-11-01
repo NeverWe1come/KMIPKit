@@ -497,6 +497,31 @@ static int32_t device_text_value_matches(
     return status;
 }
 
+static int32_t username_password_fields_match(kmipkit_ttlv_structure_view_t *view) {
+    const uint32_t expected_tags[] = {USERNAME_TAG, PASSWORD_TAG};
+    static const uint8_t username[] = "alice";
+    static const uint8_t password[] = "";
+    const uint8_t *expected_values[] = {username, password};
+    const uint64_t expected_lengths[] = {
+        sizeof(username) - 1, sizeof(password) - 1
+    };
+    for (uint64_t index = 0; index < 2; index++) {
+        kmipkit_ttlv_item_view_t *item = 0;
+        kmipkit_tag_t *tag = 0;
+        uint32_t actual_tag = 0;
+        int32_t status = kmipkit_ttlv_structure_view_item_at(view, index, &item);
+        if (status == 0) status = kmipkit_ttlv_item_view_tag(item, &tag);
+        if (status == 0) status = kmipkit_ttlv_tag_value(tag, &actual_tag);
+        if (status == 0 && actual_tag != expected_tags[index]) status = 1;
+        if (status == 0) status = device_text_value_matches(
+                view, index, expected_values[index], expected_lengths[index]);
+        kmipkit_tag_release(tag);
+        kmipkit_ttlv_item_view_release(item);
+        if (status != 0) return status;
+    }
+    return 0;
+}
+
 static int32_t device_values_match(kmipkit_ttlv_structure_view_t *view) {
     static const uint8_t serial_number[] = "";
     static const uint8_t password[] = "sensitive-sentinel";
@@ -632,6 +657,7 @@ int32_t kmipkit_username_password_credential_c_consumer_round_trip(uint64_t *out
             credential, &view);
     if (status == 0) status = kmipkit_ttlv_structure_view_item_count(view, &count);
     if (status == 0 && count != 2) status = 1;
+    if (status == 0) status = username_password_fields_match(view);
     if (status == 0) {
         int32_t shared_status = kmipkit_username_and_password_credential_into_ttlv(
                 credential, &restored);
@@ -647,6 +673,7 @@ int32_t kmipkit_username_password_credential_c_consumer_round_trip(uint64_t *out
     }
     if (status == 0) status = kmipkit_ttlv_structure_view_item_count(restored_view, &count);
     if (status == 0 && count != 2) status = 3;
+    if (status == 0) status = username_password_fields_match(restored_view);
     if (status == 0) *out_count = count;
     kmipkit_codec_limits_release(limits);
     kmipkit_ttlv_structure_release(structure);
