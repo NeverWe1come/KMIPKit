@@ -22,6 +22,8 @@ const BEFORE_TAG: u32 = 0x0054_0002;
 const ENUMERATION_TAG: u32 = 0x0054_0003;
 const BITMASK_TAG: u32 = 0x0054_0004;
 const AFTER_TAG: u32 = 0x0054_0005;
+const VALUE_PATH_ROOT_TAG: u32 = 0x0054_0100;
+const VALUE_PATH_CHILD_TAG: u32 = 0x0054_0101;
 const DISCRIMINATOR: &str = "preservation-fixture-v1";
 
 const REQUEST_HEADER_TAG: u32 = 0x0042_0077;
@@ -299,6 +301,84 @@ fn repeated_discriminator_tag_is_a_non_match_without_a_typed_value() {
             .kind(),
         ProtocolErrorKind::InvalidSchema
     );
+}
+
+#[test]
+fn validated_extension_value_with_value_at_reads_the_first_ordered_path_match() {
+    let payload = structure([
+        item(
+            DISCRIMINATOR_TAG,
+            Value::text_string(DISCRIMINATOR.to_owned()),
+        ),
+        item(BEFORE_TAG, Value::integer(-7)),
+        item(ENUMERATION_TAG, Value::enumeration(u32::MAX)),
+        item(BITMASK_TAG, Value::integer(-1)),
+        item(AFTER_TAG, Value::boolean(true)),
+        item(
+            VALUE_PATH_ROOT_TAG,
+            Value::structure(structure([
+                item(VALUE_PATH_CHILD_TAG, Value::enumeration(0xDEAD_BEEF)),
+                item(VALUE_PATH_CHILD_TAG, Value::enumeration(0x1234_5678)),
+            ])),
+        ),
+    ]);
+    let validated = extension::validate(&definition(), payload, &CodecLimits::defaults())
+        .expect("the fixture retains unknown nested extension fields");
+    let path = extension::with_child_tag(
+        extension::ttlv_path(tag(VALUE_PATH_ROOT_TAG)).expect("path root is valid"),
+        tag(VALUE_PATH_CHILD_TAG),
+    )
+    .expect("path child is valid");
+
+    let selected = validated
+        .with_value_at(&path, |value| match value {
+            ValueView::Enumeration(raw) => Some(*raw),
+            _ => None,
+        })
+        .expect("the exact path resolves");
+
+    assert_eq!(selected, Some(0xDEAD_BEEF));
+}
+
+#[test]
+fn validated_extension_value_with_value_at_rejects_missing_and_non_structure_steps() {
+    let payload = structure([
+        item(
+            DISCRIMINATOR_TAG,
+            Value::text_string(DISCRIMINATOR.to_owned()),
+        ),
+        item(BEFORE_TAG, Value::integer(-7)),
+        item(ENUMERATION_TAG, Value::enumeration(u32::MAX)),
+        item(BITMASK_TAG, Value::integer(-1)),
+        item(AFTER_TAG, Value::boolean(true)),
+        item(
+            VALUE_PATH_ROOT_TAG,
+            Value::structure(structure([item(
+                VALUE_PATH_CHILD_TAG,
+                Value::enumeration(0xDEAD_BEEF),
+            )])),
+        ),
+    ]);
+    let validated = extension::validate(&definition(), payload, &CodecLimits::defaults())
+        .expect("the fixture retains unknown nested extension fields");
+    let missing_child = extension::with_child_tag(
+        extension::ttlv_path(tag(VALUE_PATH_ROOT_TAG)).expect("path root is valid"),
+        tag(0x0054_0102),
+    )
+    .expect("missing child path is structurally valid");
+    let non_structure_step = extension::with_child_tag(
+        extension::ttlv_path(tag(BEFORE_TAG)).expect("path root is valid"),
+        tag(VALUE_PATH_CHILD_TAG),
+    )
+    .expect("non-Structure path is structurally valid");
+
+    for path in [&missing_child, &non_structure_step] {
+        let error = validated
+            .with_value_at(path, |_| ())
+            .expect_err("an unresolved path does not expose a partial value");
+        assert_eq!(error.kind(), ProtocolErrorKind::InvalidValue);
+        assert!(!format!("{error:?}").contains("DEAD_BEEF"));
+    }
 }
 
 #[test]
