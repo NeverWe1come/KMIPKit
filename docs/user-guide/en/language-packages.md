@@ -72,6 +72,15 @@ changes to this table.
 | `opaque_register_context` | declared | Explicit Opaque Object context and Register request-shape validation are mapped across four languages; this separate capability remains declared. The Register operation row is verified. |
 | `server_generated_creation` | declared | Server-generated identifiers, result metadata, and unique-identifier representations are mapped across four languages; complete operation conformance remains pending. |
 | `usage_allocation_guard` | declared | A caller-owned local Usage Allocation context guards Encrypt, MAC, and Sign execution across four languages; it does not enforce server policy. See [policy controls](policy-controls.md). |
+| `client_profile_validation` | declared | Profile-validation entry points and typed validation errors map across four languages; this mapping does not claim Baseline profile support. |
+| `credential_type_parity` | declared | Credential Type values, including unknown values, map across four languages; complete parity verification remains pending. |
+| `typed_message_model` | declared | Typed request/response message models and extension views map across four languages; complete parity verification remains pending. |
+| `nonce_ttlv_parity` | declared | Nonce TTLV conversion and lifecycle operations map across four languages; complete parity verification remains pending. |
+| `credential_ttlv_parity` | declared | Typed credential and authentication TTLV models map across four languages; complete parity verification remains pending. |
+| `ffi_shared_owner_status` | declared | C exposes the `KMIPKIT_ERROR_SHARED_OWNER` status; this capability is C-only. |
+| `credential_validation_error_parity` | declared | Typed credential-validation error kinds map across four languages; complete parity verification remains pending. |
+| `credential_validation_error_abi_layout` | declared | C maps the versioned credential-validation error ABI layout fields; this capability is C-only. |
+| `credential_secret_parity` | declared | Secret byte and text wrappers map across four languages; complete parity verification remains pending. |
 
 Of the **56** KMIP `client_1_0` operation rows, **0 / 56** remain `blocked`.
 **12** rows are `declared`: Cancel, Create, Create Key Pair, Create Split Key,

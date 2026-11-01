@@ -25,20 +25,21 @@ mod ffi_pointer_safety_tests;
 
 use crate::{
     kmipkit_add_attribute_request_t, kmipkit_adjust_attribute_request_t,
-    kmipkit_attestation_credential_t, kmipkit_authentication_t, kmipkit_cancel_request_t,
-    kmipkit_client_async_operation_metadata_v1_t, kmipkit_client_async_operation_outcome_t,
-    kmipkit_client_batch_item_metadata_v1_t, kmipkit_client_batch_item_metadata_v2_t,
-    kmipkit_client_batch_item_response_t, kmipkit_client_batch_item_t,
-    kmipkit_client_batch_response_t, kmipkit_client_batch_t, kmipkit_client_configuration_t,
-    kmipkit_client_extension_registry_t, kmipkit_client_request_message_extension_t,
-    kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_credential_t,
-    kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
+    kmipkit_attestation_credential_t, kmipkit_attribute_set_t, kmipkit_authentication_t,
+    kmipkit_cancel_request_t, kmipkit_client_async_operation_metadata_v1_t,
+    kmipkit_client_async_operation_outcome_t, kmipkit_client_batch_item_metadata_v1_t,
+    kmipkit_client_batch_item_metadata_v2_t, kmipkit_client_batch_item_response_t,
+    kmipkit_client_batch_item_t, kmipkit_client_batch_response_t, kmipkit_client_batch_t,
+    kmipkit_client_configuration_t, kmipkit_client_extension_registry_t,
+    kmipkit_client_request_message_extension_t, kmipkit_client_t, kmipkit_codec_limits_t,
+    kmipkit_credential_t, kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
     kmipkit_credential_view_t, kmipkit_delete_attribute_request_t, kmipkit_device_credential_t,
     kmipkit_extension_child_rule_t, kmipkit_extension_compatibility_t,
     kmipkit_extension_definition_t, kmipkit_extension_discriminator_t,
     kmipkit_extension_identity_t, kmipkit_extension_information_t,
     kmipkit_extension_order_constraint_t, kmipkit_extension_recognition_t,
     kmipkit_extension_registry_limits_v1_t, kmipkit_extension_schema_t,
+    kmipkit_get_attribute_list_request_t, kmipkit_get_attributes_request_t,
     kmipkit_hashed_password_credential_t, kmipkit_message_extension_view_t,
     kmipkit_message_validation_error_t, kmipkit_modify_attribute_request_t, kmipkit_nonce_t,
     kmipkit_poll_request_t, kmipkit_process_request_t, kmipkit_profile_object_state_v1_t,
@@ -426,6 +427,7 @@ enum Kind {
     Registered,
     MessageExtension,
     Structure,
+    AttributeSet,
     BatchItem,
     RegisterRequest,
     AddAttributeRequest,
@@ -433,6 +435,8 @@ enum Kind {
     DeleteAttributeRequest,
     ModifyAttributeRequest,
     SetAttributeRequest,
+    GetAttributesRequest,
+    GetAttributeListRequest,
     ChildRule,
     OrderConstraint,
     Value,
@@ -499,6 +503,7 @@ enum HandleValue {
     Registered(client_extension::RegisteredExtensionValue),
     MessageExtension(client_extension::ClientRequestMessageExtension),
     Structure(Structure),
+    AttributeSet(Mutex<AttributeSet>),
     BatchItem(Box<ClientBatchItem>),
     BatchItemReadback(ClientBatchItemReadback),
     RegisterRequest(Box<RegisterRequest>),
@@ -507,6 +512,8 @@ enum HandleValue {
     DeleteAttributeRequest(Box<DeleteAttributeRequest>),
     ModifyAttributeRequest(Box<ModifyAttributeRequest>),
     SetAttributeRequest(Box<SetAttributeRequest>),
+    GetAttributesRequest(Box<GetAttributesRequest>),
+    GetAttributeListRequest(Box<GetAttributeListRequest>),
     RevocationReason {
         reason: RevocationReason,
         message: Option<String>,
@@ -1947,6 +1954,24 @@ pub extern "C" fn kmipkit_set_attribute_request_release(
 }
 
 #[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_get_attributes_request_release(
+    handle: *mut kmipkit_get_attributes_request_t,
+) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::GetAttributesRequest);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_get_attribute_list_request_release(
+    handle: *mut kmipkit_get_attribute_list_request_t,
+) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::GetAttributeListRequest);
+    });
+}
+
+#[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_cancel_request_release(handle: *mut kmipkit_cancel_request_t) {
     ffi_entrypoint(|| {
         release(handle, Kind::CancelRequest);
@@ -1994,6 +2019,13 @@ pub extern "C" fn kmipkit_revoke_request_release(handle: *mut kmipkit_revoke_req
 pub extern "C" fn kmipkit_ttlv_structure_release(handle: *mut kmipkit_ttlv_structure_t) {
     ffi_entrypoint(|| {
         release(handle, Kind::Structure);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_attribute_set_release(handle: *mut kmipkit_attribute_set_t) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::AttributeSet);
     });
 }
 
@@ -6800,6 +6832,11 @@ fn check_structure_limits(structure: &Structure, limits: &CodecLimits) -> FfiRes
 }
 
 fn check_item_limits(item: &Item, limits: &CodecLimits) -> FfiResult<(u64, u64)> {
+    let (encoded_size, total_elements, _) = check_item_limits_with_depth(item, limits)?;
+    Ok((encoded_size, total_elements))
+}
+
+fn check_item_limits_with_depth(item: &Item, limits: &CodecLimits) -> FfiResult<(u64, u64, u64)> {
     let (payload_bytes, nested_elements, depth) = item.with_value(measure_value)?;
     let encoded_size = 8_u64
         .checked_add(padded_length(payload_bytes)?)
@@ -6814,7 +6851,7 @@ fn check_item_limits(item: &Item, limits: &CodecLimits) -> FfiResult<(u64, u64)>
     {
         return Err(ERROR_RESOURCE_LIMIT);
     }
-    Ok((encoded_size, total_elements))
+    Ok((encoded_size, total_elements, depth))
 }
 
 fn codec_limits_from_handle(pointer: *mut kmipkit_codec_limits_t) -> FfiResult<Arc<CodecLimits>> {

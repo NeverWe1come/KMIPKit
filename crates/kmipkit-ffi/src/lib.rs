@@ -152,6 +152,10 @@ pub struct kmipkit_ttlv_structure_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_attribute_set_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
 pub struct kmipkit_request_message_t {
     _private: [u8; 0],
 }
@@ -209,6 +213,14 @@ pub struct kmipkit_modify_attribute_request_t {
 }
 #[repr(C)]
 pub struct kmipkit_set_attribute_request_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_get_attributes_request_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_get_attribute_list_request_t {
     _private: [u8; 0],
 }
 #[repr(C)]

@@ -2,6 +2,18 @@
 
 KMIPKit ofrece modelos Rust tipados de petición y respuesta para las siete operaciones de atributos iniciadas por el cliente en KMIP 2.1. Los modelos construyen el payload de la operación; la API de ejecución del cliente lo envía mediante el transporte configurado. Consulta [Ejecución del cliente](client-execution.md) para configurar el transporte, interpretar el estado de entrega y tratar resultados asíncronos.
 
+Las cinco operaciones de mutación también tienen modelos de petición independientes en C, Java y Python. Así, la petición inspeccionable se mantiene separada del elemento de batch que se usa para enviarla:
+
+| Lenguaje | Modelo Add Attribute | Copia del payload | Copia del elemento de batch |
+| --- | --- | --- | --- |
+| C | `kmipkit_add_attribute_request_t` | `kmipkit_add_attribute_request_to_ttlv_payload` | `kmipkit_client_batch_item_add_attribute_from_request` |
+| Java | `org.kmipkit.extensions.AddAttributeRequest` | `toTtlvPayload()` | `toBatchItem()` |
+| Python | `kmipkit.attribute_operations.AddAttributeRequest` | `to_ttlv_payload()` | `to_batch_item()` |
+
+Se aplica el mismo patrón a Adjust, Delete, Modify y Set Attribute. Cada constructor copia los campos recibidos en un modelo propio. Los accesores TTLV devuelven copias independientes; los identificadores, las referencias y los valores raw de Adjustment Type se pueden inspeccionar directamente. La conversión a elemento de batch deja abierto el modelo de petición; el llamador libera ambos objetos según las reglas de propiedad de su lenguaje.
+
+Usa `create` para construir el modelo independiente, el método del payload para inspeccionar o codificar sus campos y la conversión a elemento de batch para añadir una copia independiente a la ejecución del cliente.
+
 | Operación | Campos de petición | Respuesta satisfactoria |
 | --- | --- | --- |
 | Add Attribute | Unique Identifier opcional; un New Attribute | Unique Identifier |

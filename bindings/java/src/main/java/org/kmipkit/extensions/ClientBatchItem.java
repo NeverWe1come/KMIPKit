@@ -52,6 +52,10 @@ public final class ClientBatchItem implements AutoCloseable {
         return new ClientBatchItem(nativeHandle, List.of(), true);
     }
 
+    static ClientBatchItem fromRequestHandle(long nativeHandle) {
+        return new ClientBatchItem(nativeHandle, List.of());
+    }
+
     /** Creates the supported Discover Versions request batch item. */
     public static ClientBatchItem discoverVersions() {
         NativeExtensionRegistry.ensureLoaded();

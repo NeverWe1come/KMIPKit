@@ -2030,6 +2030,240 @@ pub extern "C" fn kmipkit_client_batch_item_set_attribute_from_request(
     })
 }
 
+/// Creates a standalone KMIP 2.1 §6.1.21 Get Attribute List request.
+/// The optional Unique Identifier input is borrowed and copied.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_get_attribute_list_request_create(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    out_request: *mut *mut kmipkit_get_attribute_list_request_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_request);
+        let identifier = try_ffi!(copy_optional_text_identifier(unique_identifier));
+        let request = GetAttributeListRequest::new(identifier);
+        *out = try_ffi!(try_make_handle(
+            Kind::GetAttributeListRequest,
+            HandleValue::GetAttributeListRequest(Box::new(request)),
+        ));
+        SUCCESS
+    })
+}
+
+/// Returns the optional Unique Identifier as a borrowed view into the request.
+/// Its Text String span remains valid only while the request handle remains open;
+/// copy the bytes before releasing the request.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_get_attribute_list_request_unique_identifier(
+    request: *mut kmipkit_get_attribute_list_request_t,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let handle = read_handle!(request, GetAttributeListRequest);
+        let HandleValue::GetAttributeListRequest(request) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        if let Err(status) =
+            write_unique_identifier_text_v1(out_unique_identifier, request.unique_identifier())
+        {
+            return record_ffi_error(status);
+        }
+        SUCCESS
+    })
+}
+
+/// Copies the Get Attribute List Request Payload into a caller-owned structure.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_get_attribute_list_request_to_ttlv_payload(
+    request: *mut kmipkit_get_attribute_list_request_t,
+    out_payload: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_payload);
+        let handle = read_handle!(request, GetAttributeListRequest);
+        let HandleValue::GetAttributeListRequest(request) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let payload = try_ffi!(
+            request
+                .to_ttlv_payload()
+                .map_err(|error| protocol_status(&error))
+        );
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(payload),
+        ));
+        SUCCESS
+    })
+}
+
+/// Creates an independent `ClientBatchItem` from a standalone Get Attribute List request.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_get_attribute_list_from_request(
+    request: *mut kmipkit_get_attribute_list_request_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let handle = read_handle!(request, GetAttributeListRequest);
+        let HandleValue::GetAttributeListRequest(request) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = try_ffi!(batch_item_handle(ClientRequest::get_attribute_list(
+            request.as_ref().clone(),
+        )));
+        SUCCESS
+    })
+}
+
+/// Creates a standalone KMIP 2.1 §6.1.20 Get Attributes request.
+/// Inputs are borrowed and copied; duplicate Attribute References are rejected.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_get_attributes_request_create(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    attribute_references: *const crate::kmipkit_attribute_reference_v1_t,
+    attribute_reference_count: u64,
+    out_request: *mut *mut crate::kmipkit_get_attributes_request_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_request);
+        let identifier = try_ffi!(copy_optional_text_identifier(unique_identifier));
+        let source_references = try_ffi!(input_array(
+            attribute_references,
+            attribute_reference_count,
+            MAX_GET_ATTRIBUTES_REFERENCES,
+        ));
+        let mut references = Vec::new();
+        try_ffi!(
+            references
+                .try_reserve_exact(source_references.len())
+                .map_err(|_| ERROR_RESOURCE_LIMIT)
+        );
+        for reference in source_references {
+            references.push(try_ffi!(copy_attribute_reference(ptr::from_ref(reference))));
+        }
+        let request = try_ffi!(
+            GetAttributesRequest::try_new(identifier, references).map_err(|_| ERROR_INVALID_INPUT)
+        );
+        *out = try_ffi!(try_make_handle(
+            Kind::GetAttributesRequest,
+            HandleValue::GetAttributesRequest(Box::new(request)),
+        ));
+        SUCCESS
+    })
+}
+
+/// Returns the optional Unique Identifier as a borrowed view into the request.
+/// Its Text String span remains valid only while the request handle remains open;
+/// copy the bytes before releasing the request.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_get_attributes_request_unique_identifier(
+    request: *mut crate::kmipkit_get_attributes_request_t,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let handle = read_handle!(request, GetAttributesRequest);
+        let HandleValue::GetAttributesRequest(request) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        if let Err(status) =
+            write_unique_identifier_text_v1(out_unique_identifier, request.unique_identifier())
+        {
+            return record_ffi_error(status);
+        }
+        SUCCESS
+    })
+}
+
+/// Returns the number of ordered Attribute References in the request.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_get_attributes_request_attribute_reference_count(
+    request: *mut crate::kmipkit_get_attributes_request_t,
+    out_count: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_count);
+        let handle = read_handle!(request, GetAttributesRequest);
+        let HandleValue::GetAttributesRequest(request) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = try_ffi!(
+            u64::try_from(request.attribute_references().len()).map_err(|_| ERROR_RESOURCE_LIMIT)
+        );
+        SUCCESS
+    })
+}
+
+/// Returns one Attribute Reference as a borrowed view into the request.
+/// Name-form text spans remain valid only while the request handle remains open;
+/// copy the bytes before releasing the request.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_get_attributes_request_attribute_reference_at(
+    request: *mut crate::kmipkit_get_attributes_request_t,
+    index: u64,
+    out_reference: *mut crate::kmipkit_attribute_reference_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let handle = read_handle!(request, GetAttributesRequest);
+        let HandleValue::GetAttributesRequest(request) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(index) = usize::try_from(index) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(reference) = request.attribute_references().get(index) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        if let Err(status) = write_attribute_reference_v1(out_reference, Some(reference)) {
+            return record_ffi_error(status);
+        }
+        SUCCESS
+    })
+}
+
+/// Copies the Get Attributes Request Payload into a caller-owned structure.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_get_attributes_request_to_ttlv_payload(
+    request: *mut crate::kmipkit_get_attributes_request_t,
+    out_payload: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_payload);
+        let handle = read_handle!(request, GetAttributesRequest);
+        let HandleValue::GetAttributesRequest(request) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let payload = try_ffi!(
+            request
+                .to_ttlv_payload()
+                .map_err(|error| protocol_status(&error))
+        );
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(payload),
+        ));
+        SUCCESS
+    })
+}
+
+/// Creates an independent `ClientBatchItem` from a standalone Get Attributes request.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_get_attributes_from_request(
+    request: *mut crate::kmipkit_get_attributes_request_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let handle = read_handle!(request, GetAttributesRequest);
+        let HandleValue::GetAttributesRequest(request) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = try_ffi!(batch_item_handle(ClientRequest::get_attributes(
+            request.as_ref().clone(),
+        )));
+        SUCCESS
+    })
+}
+
 /// Creates a local KMIP 2.1 Cancel request model without performing I/O.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_cancel_request_create(
@@ -6864,3 +7098,198 @@ pub unsafe extern "C" fn kmipkit_client_batch_item_response_discover_versions_su
 #[cfg(test)]
 #[path = "../../tests/support/profile_validation_mapping_tests.rs"]
 mod profile_validation_mapping_tests;
+
+fn validate_attribute_set_item_limits<'a>(items: impl Iterator<Item = &'a Item>) -> FfiResult<()> {
+    let limits = CodecLimits::defaults();
+    let max_bytes = u64::try_from(limits.max_message_bytes()).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    let max_elements = u64::try_from(limits.max_elements()).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    let max_depth =
+        u64::try_from(limits.max_structure_depth()).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    let mut encoded_size = 8_u64;
+    let mut element_count = 1_u64;
+    for item in items {
+        let (item_size, item_elements, item_depth) = check_item_limits_with_depth(item, &limits)?;
+        let structure_depth = item_depth.saturating_add(u64::from(item_depth > 0)).max(1);
+        if structure_depth > max_depth {
+            return Err(ERROR_RESOURCE_LIMIT);
+        }
+        encoded_size = encoded_size
+            .checked_add(item_size)
+            .filter(|size| *size <= max_bytes)
+            .ok_or(ERROR_RESOURCE_LIMIT)?;
+        element_count = element_count
+            .checked_add(item_elements)
+            .filter(|count| *count <= max_elements)
+            .ok_or(ERROR_RESOURCE_LIMIT)?;
+    }
+    Ok(())
+}
+
+fn validate_attribute_set_append_item(item: &Item) -> FfiResult<()> {
+    let mut wrapper = Structure::new();
+    wrapper
+        .try_push(item.try_clone().map_err(model_status)?)
+        .map_err(model_status)?;
+    AttributeSet::try_new([item.try_clone().map_err(model_status)?])
+        .map_err(|_| ERROR_INVALID_INPUT)?;
+    Ok(())
+}
+
+/// Copies and validates the ordered direct Items from a generic Structure.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_attribute_set_create(
+    items: *mut kmipkit_ttlv_structure_t,
+    out_attribute_set: *mut *mut kmipkit_attribute_set_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_attribute_set);
+        let source = try_ffi!(copy_required_structure_handle(items));
+        try_ffi!(check_structure_limits(&source, &CodecLimits::defaults()));
+        let source_view = source.view();
+        let children = source_view.children();
+        try_ffi!(validate_attribute_set_item_limits(children.iter()));
+        let mut owned_items = Vec::new();
+        try_ffi!(
+            owned_items
+                .try_reserve_exact(children.len())
+                .map_err(|_| ERROR_RESOURCE_LIMIT)
+        );
+        for child in children {
+            owned_items.push(try_ffi!(child.try_clone().map_err(model_status)));
+        }
+        let attributes =
+            try_ffi!(AttributeSet::try_new(owned_items).map_err(|_| ERROR_INVALID_INPUT));
+        *out = try_ffi!(try_make_handle(
+            Kind::AttributeSet,
+            HandleValue::AttributeSet(Mutex::new(attributes)),
+        ));
+        SUCCESS
+    })
+}
+
+/// Copies and validates an Item before appending it; validation failures preserve the set.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_attribute_set_try_push(
+    attributes: *mut kmipkit_attribute_set_t,
+    item: *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let handle = try_ffi!(reference_handle(attributes, Kind::AttributeSet));
+        let HandleValue::AttributeSet(source) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let item = try_ffi!(copy_required_item_handle(item));
+        try_ffi!(validate_attribute_set_append_item(&item));
+        let Ok(mut set) = source.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        try_ffi!(validate_attribute_set_item_limits(
+            set.as_items().iter().chain(std::iter::once(&item)),
+        ));
+        if let Err(_error) = set.try_push(item) {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        SUCCESS
+    })
+}
+
+/// Returns an owned generic Structure copy without consuming the `AttributeSet`.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_attribute_set_as_items(
+    attributes: *mut kmipkit_attribute_set_t,
+    out_items: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_items);
+        let handle = try_ffi!(reference_handle(attributes, Kind::AttributeSet));
+        let HandleValue::AttributeSet(source) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(set) = source.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        try_ffi!(validate_attribute_set_item_limits(set.as_items().iter()));
+        let mut structure = Structure::new();
+        for item in set.as_items() {
+            let copy = try_ffi!(item.try_clone().map_err(model_status));
+            if let Err(error) = structure.try_push(copy) {
+                return record_ffi_error(model_status(error));
+            }
+        }
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(structure)
+        ));
+        SUCCESS
+    })
+}
+
+/// Returns the number of direct Items in the `AttributeSet`.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_attribute_set_len(
+    attributes: *mut kmipkit_attribute_set_t,
+    out_count: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_count);
+        let handle = try_ffi!(reference_handle(attributes, Kind::AttributeSet));
+        let HandleValue::AttributeSet(source) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(set) = source.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        *out = try_ffi!(u64::try_from(set.len()).map_err(|_| ERROR_RESOURCE_LIMIT));
+        SUCCESS
+    })
+}
+
+/// Returns whether the `AttributeSet` contains no direct Items.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_attribute_set_is_empty(
+    attributes: *mut kmipkit_attribute_set_t,
+    out_is_empty: *mut u8,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_is_empty);
+        let handle = try_ffi!(reference_handle(attributes, Kind::AttributeSet));
+        let HandleValue::AttributeSet(source) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(set) = source.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        *out = u8::from(set.is_empty());
+        SUCCESS
+    })
+}
+
+/// Consumes the `AttributeSet` and returns its direct Items in original order.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_attribute_set_into_items(
+    attributes: *mut kmipkit_attribute_set_t,
+    out_items: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_items);
+        let owner = try_ffi!(consume_unshared_owner(attributes, Kind::AttributeSet));
+        let payload = try_ffi!(unwrap_payload(owner));
+        let HandleValue::AttributeSet(source) = payload else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(set) = source.into_inner() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let mut structure = Structure::new();
+        for item in set.into_items() {
+            if let Err(error) = structure.try_push(item) {
+                return record_ffi_error(model_status(error));
+            }
+        }
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(structure)
+        ));
+        SUCCESS
+    })
+}

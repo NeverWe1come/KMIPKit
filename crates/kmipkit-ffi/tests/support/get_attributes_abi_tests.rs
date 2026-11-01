@@ -165,9 +165,139 @@ fn standalone_get_attribute_list_request_accepts_an_omitted_identifier() {
     let HandleValue::BatchItem(batch) = &batch_handle.value else {
         panic!("batch item handle contains a request");
     };
-    assert!(matches!(batch.request(), ClientRequest::GetAttributeList(_)));
+    assert!(matches!(
+        batch.request(),
+        ClientRequest::GetAttributeList(_)
+    ));
     kmipkit_client_batch_item_release(batch_item);
     client_abi::kmipkit_get_attribute_list_request_release(request);
+}
+
+#[test]
+fn standalone_get_attributes_request_keeps_reference_order_and_rejects_duplicates() {
+    let references = [
+        kmipkit_attribute_reference_v1_t {
+            struct_size: abi_struct_size::<kmipkit_attribute_reference_v1_t>(),
+            abi_version: 1,
+            kind: 1,
+            reserved: 0,
+            tag_value: 0x0042_002f,
+            reserved2: 0,
+            vendor_identification_data: ptr::null(),
+            vendor_identification_length: 0,
+            attribute_name_data: ptr::null(),
+            attribute_name_length: 0,
+        },
+        kmipkit_attribute_reference_v1_t {
+            struct_size: abi_struct_size::<kmipkit_attribute_reference_v1_t>(),
+            abi_version: 1,
+            kind: 1,
+            reserved: 0,
+            tag_value: 0x0042_0001,
+            reserved2: 0,
+            vendor_identification_data: ptr::null(),
+            vendor_identification_length: 0,
+            attribute_name_data: ptr::null(),
+            attribute_name_length: 0,
+        },
+    ];
+    let mut request: *mut kmipkit_get_attributes_request_t = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_get_attributes_request_create(
+            ptr::null(),
+            references.as_ptr(),
+            references.len() as u64,
+            &raw mut request,
+        ),
+        SUCCESS
+    );
+
+    let mut count = 0;
+    assert_eq!(
+        client_abi::kmipkit_get_attributes_request_attribute_reference_count(
+            request,
+            &raw mut count,
+        ),
+        SUCCESS
+    );
+    assert_eq!(count, 2);
+    let mut output_reference = kmipkit_attribute_reference_v1_t {
+        struct_size: abi_struct_size::<kmipkit_attribute_reference_v1_t>(),
+        abi_version: 1,
+        kind: 0,
+        reserved: 0,
+        tag_value: 0,
+        reserved2: 0,
+        vendor_identification_data: ptr::null(),
+        vendor_identification_length: 0,
+        attribute_name_data: ptr::null(),
+        attribute_name_length: 0,
+    };
+    assert_eq!(
+        client_abi::kmipkit_get_attributes_request_attribute_reference_at(
+            request,
+            1,
+            &raw mut output_reference,
+        ),
+        SUCCESS
+    );
+    assert_eq!(output_reference.tag_value, 0x0042_0001);
+
+    let mut payload = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_get_attributes_request_to_ttlv_payload(request, &raw mut payload),
+        SUCCESS
+    );
+    let payload_handle = reference_handle(payload, Kind::Structure).expect("payload is owned");
+    let HandleValue::Structure(payload_value) = &payload_handle.value else {
+        panic!("payload handle contains a structure");
+    };
+    assert_eq!(payload_value.view().children().len(), 2);
+
+    let mut batch_item = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_get_attributes_from_request(
+            request,
+            &raw mut batch_item,
+        ),
+        SUCCESS
+    );
+    let batch_handle = reference_handle(batch_item, Kind::BatchItem).expect("batch item is owned");
+    let HandleValue::BatchItem(batch) = &batch_handle.value else {
+        panic!("batch item handle contains a request");
+    };
+    assert!(matches!(batch.request(), ClientRequest::GetAttributes(_)));
+    kmipkit_ttlv_structure_release(payload);
+    kmipkit_client_batch_item_release(batch_item);
+    client_abi::kmipkit_get_attributes_request_release(request);
+}
+
+#[test]
+fn standalone_get_attributes_request_rejects_duplicate_references() {
+    let reference = kmipkit_attribute_reference_v1_t {
+        struct_size: abi_struct_size::<kmipkit_attribute_reference_v1_t>(),
+        abi_version: 1,
+        kind: 1,
+        reserved: 0,
+        tag_value: 0x0042_002f,
+        reserved2: 0,
+        vendor_identification_data: ptr::null(),
+        vendor_identification_length: 0,
+        attribute_name_data: ptr::null(),
+        attribute_name_length: 0,
+    };
+    let references = [reference, reference];
+    let mut request = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_get_attributes_request_create(
+            ptr::null(),
+            references.as_ptr(),
+            references.len() as u64,
+            &raw mut request,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(request.is_null());
 }
 
 #[test]

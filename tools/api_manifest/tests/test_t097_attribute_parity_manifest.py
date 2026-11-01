@@ -13,12 +13,12 @@ from tools.api_manifest import generate as api_manifest_generator
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 OWNER_SPEC = "KMIPKIT-0016"
-BASE_CANDIDATE_COUNT = 880
-BASE_CANDIDATE_SHA256 = "4aca129ebaa89b347c0fedfc7453408b0f4222d9737cc6f355ec568178fd00b9"
+BASE_CANDIDATE_COUNT = 909
+BASE_CANDIDATE_SHA256 = "4c2e475ca24b0c6001aa19b4b2bf3149124fd3fd344f44f12a21de710a72463e"
 BASE_TRAIT_COUNT = 524
 BASE_TRAIT_SHA256 = "86e73fe96baf9ee1249010f7cfa8d927e18d22cbf48fb6a86df4a87b8cfe2554"
-MAPPED_COUNT = 219
-EXCLUDED_COUNT = 661
+MAPPED_COUNT = 247
+EXCLUDED_COUNT = 662
 OWNER_SPEC_PATH = "specs/016-attribute-operations/spec.md"
 SHARED_REQUIREMENTS = {
     "KMIPKIT-0043-FR-004",
@@ -117,6 +117,34 @@ def _expected_mapped_exports() -> set[str]:
                 f"{module}{attribute_type}::{method}"
                 for method in ("new", "item")
             )
+    mapped.update(
+        {
+            "kmipkit_attribute_set_t",
+            "kmipkit_attribute_set_release",
+            "kmipkit_attribute_set_create",
+            "kmipkit_attribute_set_try_push",
+            "kmipkit_attribute_set_as_items",
+            "kmipkit_attribute_set_len",
+            "kmipkit_attribute_set_is_empty",
+            "kmipkit_attribute_set_into_items",
+            "org.kmipkit.extensions.AttributeSet",
+            "org.kmipkit.extensions.AttributeSet.close",
+            "org.kmipkit.extensions.AttributeSet.tryNew",
+            "org.kmipkit.extensions.AttributeSet.tryPush",
+            "org.kmipkit.extensions.AttributeSet.asItems",
+            "org.kmipkit.extensions.AttributeSet.len",
+            "org.kmipkit.extensions.AttributeSet.isEmpty",
+            "org.kmipkit.extensions.AttributeSet.intoItems",
+            "kmipkit.attribute_operations.AttributeSet",
+            "kmipkit.attribute_operations.AttributeSet.close",
+            "kmipkit.attribute_operations.AttributeSet.try_new",
+            "kmipkit.attribute_operations.AttributeSet.try_push",
+            "kmipkit.attribute_operations.AttributeSet.as_items",
+            "kmipkit.attribute_operations.AttributeSet.len",
+            "kmipkit.attribute_operations.AttributeSet.is_empty",
+            "kmipkit.attribute_operations.AttributeSet.into_items",
+        }
+    )
     mapped.add("kmipkit_protocol::AdjustmentType")
     mapped.update(
         f"kmipkit_protocol::AdjustmentType::{member}"
@@ -220,7 +248,7 @@ def _expected_owner_requirements(export_name: str) -> set[str]:
                 "KMIPKIT-0016-FR-013",
                 *({"KMIPKIT-0016-FR-015"} if operation in MUTATION_OPERATIONS else set()),
             }
-    if "AttributeSet" in export_name:
+    if "AttributeSet" in export_name or "attribute_set" in export_name:
         return {
             "KMIPKIT-0016-FR-001",
             "KMIPKIT-0016-FR-002",
@@ -636,6 +664,7 @@ class T097AttributeParityManifestTests(unittest.TestCase):
                 "SET_ATTRIBUTE_REQUEST",
                 "GET_ATTRIBUTES_REQUEST",
                 "GET_ATTRIBUTE_LIST_REQUEST",
+                "ATTRIBUTE_SET",
             )
         }
         exclusions = {
@@ -686,6 +715,12 @@ class T097AttributeParityManifestTests(unittest.TestCase):
 
     def test_python_model_plumbing_exports_are_exactly_excluded(self) -> None:
         expected = {"kmipkit.attribute_operations"}
+        attribute_set_prefix = "kmipkit.attribute_operations.AttributeSet"
+        expected.update(
+            f"{attribute_set_prefix}.{member}"
+            for member in ("__init__", "__enter__", "__exit__", "closed")
+        )
+        expected.add(f"{attribute_set_prefix}.__slots__")
         for operation in (*REQUEST_MODEL_METHODS, *READ_REQUEST_MODEL_METHODS):
             class_name = "".join(part.title() for part in operation.split("_")) + "Request"
             prefix = f"kmipkit.attribute_operations.{class_name}"

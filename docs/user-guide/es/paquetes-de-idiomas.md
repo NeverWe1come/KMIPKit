@@ -76,6 +76,15 @@ tabla.
 | `opaque_register_context` | declared | El contexto explícito de Opaque Object y la validación de la forma de solicitud Register están mapeados en cuatro lenguajes; esta capacidad distinta sigue en estado `declared`. La fila de la operación Register está `verified`. |
 | `server_generated_creation` | declared | Los identificadores generados por el servidor, los metadatos del resultado y las representaciones de identificadores únicos están mapeados en cuatro lenguajes; la conformidad completa de las operaciones sigue pendiente. |
 | `usage_allocation_guard` | declared | Un contexto local de Usage Allocation, propiedad del llamador, protege la ejecución de Encrypt, MAC y Sign en cuatro lenguajes; no aplica políticas del servidor. Véase [controles de uso](controles-de-uso.md). |
+| `client_profile_validation` | declared | Los puntos de entrada de validación de perfiles y los errores tipados están mapeados en cuatro lenguajes; este mapeo no afirma que se admita el perfil Baseline. |
+| `credential_type_parity` | declared | Los valores de Credential Type, incluidos los desconocidos, están mapeados en cuatro lenguajes; la verificación completa de paridad sigue pendiente. |
+| `typed_message_model` | declared | Los modelos tipados de petición/respuesta y las vistas de extensiones están mapeados en cuatro lenguajes; la verificación completa de paridad sigue pendiente. |
+| `nonce_ttlv_parity` | declared | La conversión TTLV y las operaciones de ciclo de vida de Nonce están mapeadas en cuatro lenguajes; la verificación completa de paridad sigue pendiente. |
+| `credential_ttlv_parity` | declared | Los modelos TTLV tipados de credenciales y autenticación están mapeados en cuatro lenguajes; la verificación completa de paridad sigue pendiente. |
+| `ffi_shared_owner_status` | declared | C expone el estado `KMIPKIT_ERROR_SHARED_OWNER`; esta capacidad es exclusiva de C. |
+| `credential_validation_error_parity` | declared | Los tipos de error de validación de credenciales están mapeados en cuatro lenguajes; la verificación completa de paridad sigue pendiente. |
+| `credential_validation_error_abi_layout` | declared | C mapea los campos del diseño ABI versionado de error de validación de credenciales; esta capacidad es exclusiva de C. |
+| `credential_secret_parity` | declared | Los wrappers de bytes y texto secretos están mapeados en cuatro lenguajes; la verificación completa de paridad sigue pendiente. |
 
 De las **56** filas de operaciones KMIP `client_1_0`, **0 / 56** siguen en
 estado `blocked`. **12** filas están en estado `declared`: Cancel, Create,

@@ -36,11 +36,30 @@ ffi.cdef(
     typedef struct kmipkit_poll_request_t kmipkit_poll_request_t;
     typedef struct kmipkit_process_request_t kmipkit_process_request_t;
     typedef struct kmipkit_query_async_requests_request_t kmipkit_query_async_requests_request_t;
+    typedef struct kmipkit_add_attribute_request_t kmipkit_add_attribute_request_t;
+    typedef struct kmipkit_adjust_attribute_request_t kmipkit_adjust_attribute_request_t;
+    typedef struct kmipkit_delete_attribute_request_t kmipkit_delete_attribute_request_t;
+    typedef struct kmipkit_modify_attribute_request_t kmipkit_modify_attribute_request_t;
+    typedef struct kmipkit_set_attribute_request_t kmipkit_set_attribute_request_t;
+    typedef struct kmipkit_get_attributes_request_t kmipkit_get_attributes_request_t;
+    typedef struct kmipkit_get_attribute_list_request_t kmipkit_get_attribute_list_request_t;
     typedef struct kmipkit_usage_allocation_context_t kmipkit_usage_allocation_context_t;
     typedef struct kmipkit_split_key_reference_t kmipkit_split_key_reference_t;
     typedef struct kmipkit_register_request_t kmipkit_register_request_t;
+    typedef struct kmipkit_attribute_set_t kmipkit_attribute_set_t;
     typedef struct kmipkit_ttlv_structure_t kmipkit_ttlv_structure_t;
     typedef struct kmipkit_ttlv_item_t kmipkit_ttlv_item_t;
+    int32_t kmipkit_attribute_set_create(
+        kmipkit_ttlv_structure_t *items, kmipkit_attribute_set_t **out_attribute_set);
+    int32_t kmipkit_attribute_set_try_push(
+        kmipkit_attribute_set_t *attributes, kmipkit_ttlv_item_t *item);
+    int32_t kmipkit_attribute_set_as_items(
+        kmipkit_attribute_set_t *attributes, kmipkit_ttlv_structure_t **out_items);
+    int32_t kmipkit_attribute_set_len(kmipkit_attribute_set_t *attributes, uint64_t *out_count);
+    int32_t kmipkit_attribute_set_is_empty(
+        kmipkit_attribute_set_t *attributes, uint8_t *out_is_empty);
+    int32_t kmipkit_attribute_set_into_items(
+        kmipkit_attribute_set_t *attributes, kmipkit_ttlv_structure_t **out_items);
     typedef struct kmipkit_ttlv_value_t kmipkit_ttlv_value_t;
     typedef struct kmipkit_codec_limits_t kmipkit_codec_limits_t;
     typedef struct kmipkit_request_message_t kmipkit_request_message_t;
@@ -1330,6 +1349,154 @@ ffi.cdef(
         kmipkit_process_request_t *request,
         kmipkit_ttlv_structure_t **out_payload);
     void kmipkit_process_request_release(kmipkit_process_request_t *handle);
+
+    int32_t kmipkit_add_attribute_request_create(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        kmipkit_ttlv_item_t *new_attribute,
+        kmipkit_add_attribute_request_t **out_request);
+    int32_t kmipkit_add_attribute_request_unique_identifier(
+        kmipkit_add_attribute_request_t *request,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier);
+    int32_t kmipkit_add_attribute_request_new_attribute(
+        kmipkit_add_attribute_request_t *request,
+        kmipkit_ttlv_item_t **out_new_attribute);
+    int32_t kmipkit_add_attribute_request_to_ttlv_payload(
+        kmipkit_add_attribute_request_t *request,
+        kmipkit_ttlv_structure_t **out_payload);
+    void kmipkit_add_attribute_request_release(kmipkit_add_attribute_request_t *handle);
+    int32_t kmipkit_client_batch_item_add_attribute_from_request(
+        kmipkit_add_attribute_request_t *request,
+        kmipkit_client_batch_item_t **out_item);
+
+    int32_t kmipkit_adjust_attribute_request_create(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        const kmipkit_attribute_reference_v1_t *attribute_reference,
+        uint32_t adjustment_type,
+        kmipkit_ttlv_value_t *adjustment_value,
+        kmipkit_adjust_attribute_request_t **out_request);
+    int32_t kmipkit_adjust_attribute_request_unique_identifier(
+        kmipkit_adjust_attribute_request_t *request,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier);
+    int32_t kmipkit_adjust_attribute_request_attribute_reference(
+        kmipkit_adjust_attribute_request_t *request,
+        kmipkit_attribute_reference_v1_t *out_attribute_reference);
+    int32_t kmipkit_adjust_attribute_request_adjustment_type(
+        kmipkit_adjust_attribute_request_t *request,
+        uint32_t *out_adjustment_type);
+    int32_t kmipkit_adjust_attribute_request_adjustment_value(
+        kmipkit_adjust_attribute_request_t *request,
+        uint8_t *out_present,
+        kmipkit_ttlv_value_t **out_adjustment_value);
+    int32_t kmipkit_adjust_attribute_request_to_ttlv_payload(
+        kmipkit_adjust_attribute_request_t *request,
+        kmipkit_ttlv_structure_t **out_payload);
+    void kmipkit_adjust_attribute_request_release(kmipkit_adjust_attribute_request_t *handle);
+    int32_t kmipkit_client_batch_item_adjust_attribute_from_request(
+        kmipkit_adjust_attribute_request_t *request,
+        kmipkit_client_batch_item_t **out_item);
+
+    int32_t kmipkit_delete_attribute_request_create(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        kmipkit_ttlv_item_t *current_attribute,
+        const kmipkit_attribute_reference_v1_t *attribute_reference,
+        kmipkit_delete_attribute_request_t **out_request);
+    int32_t kmipkit_delete_attribute_request_unique_identifier(
+        kmipkit_delete_attribute_request_t *request,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier);
+    int32_t kmipkit_delete_attribute_request_current_attribute(
+        kmipkit_delete_attribute_request_t *request,
+        uint8_t *out_present,
+        kmipkit_ttlv_item_t **out_current_attribute);
+    int32_t kmipkit_delete_attribute_request_attribute_reference(
+        kmipkit_delete_attribute_request_t *request,
+        uint8_t *out_present,
+        kmipkit_attribute_reference_v1_t *out_attribute_reference);
+    int32_t kmipkit_delete_attribute_request_to_ttlv_payload(
+        kmipkit_delete_attribute_request_t *request,
+        kmipkit_ttlv_structure_t **out_payload);
+    void kmipkit_delete_attribute_request_release(kmipkit_delete_attribute_request_t *handle);
+    int32_t kmipkit_client_batch_item_delete_attribute_from_request(
+        kmipkit_delete_attribute_request_t *request,
+        kmipkit_client_batch_item_t **out_item);
+
+    int32_t kmipkit_modify_attribute_request_create(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        kmipkit_ttlv_item_t *current_attribute,
+        kmipkit_ttlv_item_t *new_attribute,
+        kmipkit_modify_attribute_request_t **out_request);
+    int32_t kmipkit_modify_attribute_request_unique_identifier(
+        kmipkit_modify_attribute_request_t *request,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier);
+    int32_t kmipkit_modify_attribute_request_current_attribute(
+        kmipkit_modify_attribute_request_t *request,
+        uint8_t *out_present,
+        kmipkit_ttlv_item_t **out_current_attribute);
+    int32_t kmipkit_modify_attribute_request_new_attribute(
+        kmipkit_modify_attribute_request_t *request,
+        kmipkit_ttlv_item_t **out_new_attribute);
+    int32_t kmipkit_modify_attribute_request_to_ttlv_payload(
+        kmipkit_modify_attribute_request_t *request,
+        kmipkit_ttlv_structure_t **out_payload);
+    void kmipkit_modify_attribute_request_release(kmipkit_modify_attribute_request_t *handle);
+    int32_t kmipkit_client_batch_item_modify_attribute_from_request(
+        kmipkit_modify_attribute_request_t *request,
+        kmipkit_client_batch_item_t **out_item);
+
+    int32_t kmipkit_set_attribute_request_create(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        kmipkit_ttlv_item_t *new_attribute,
+        kmipkit_set_attribute_request_t **out_request);
+    int32_t kmipkit_set_attribute_request_unique_identifier(
+        kmipkit_set_attribute_request_t *request,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier);
+    int32_t kmipkit_set_attribute_request_new_attribute(
+        kmipkit_set_attribute_request_t *request,
+        kmipkit_ttlv_item_t **out_new_attribute);
+    int32_t kmipkit_set_attribute_request_to_ttlv_payload(
+        kmipkit_set_attribute_request_t *request,
+        kmipkit_ttlv_structure_t **out_payload);
+    void kmipkit_set_attribute_request_release(kmipkit_set_attribute_request_t *handle);
+    int32_t kmipkit_client_batch_item_set_attribute_from_request(
+        kmipkit_set_attribute_request_t *request,
+        kmipkit_client_batch_item_t **out_item);
+
+    int32_t kmipkit_get_attributes_request_create(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        const kmipkit_attribute_reference_v1_t *attribute_references,
+        uint64_t attribute_reference_count,
+        kmipkit_get_attributes_request_t **out_request);
+    int32_t kmipkit_get_attributes_request_unique_identifier(
+        kmipkit_get_attributes_request_t *request,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier);
+    int32_t kmipkit_get_attributes_request_attribute_reference_count(
+        kmipkit_get_attributes_request_t *request,
+        uint64_t *out_count);
+    int32_t kmipkit_get_attributes_request_attribute_reference_at(
+        kmipkit_get_attributes_request_t *request,
+        uint64_t index,
+        kmipkit_attribute_reference_v1_t *out_reference);
+    int32_t kmipkit_get_attributes_request_to_ttlv_payload(
+        kmipkit_get_attributes_request_t *request,
+        kmipkit_ttlv_structure_t **out_payload);
+    void kmipkit_get_attributes_request_release(kmipkit_get_attributes_request_t *handle);
+    int32_t kmipkit_client_batch_item_get_attributes_from_request(
+        kmipkit_get_attributes_request_t *request,
+        kmipkit_client_batch_item_t **out_item);
+
+    int32_t kmipkit_get_attribute_list_request_create(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        kmipkit_get_attribute_list_request_t **out_request);
+    int32_t kmipkit_get_attribute_list_request_unique_identifier(
+        kmipkit_get_attribute_list_request_t *request,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier);
+    int32_t kmipkit_get_attribute_list_request_to_ttlv_payload(
+        kmipkit_get_attribute_list_request_t *request,
+        kmipkit_ttlv_structure_t **out_payload);
+    void kmipkit_get_attribute_list_request_release(
+        kmipkit_get_attribute_list_request_t *handle);
+    int32_t kmipkit_client_batch_item_get_attribute_list_from_request(
+        kmipkit_get_attribute_list_request_t *request,
+        kmipkit_client_batch_item_t **out_item);
 
     int32_t kmipkit_query_async_requests_request_create(
         kmipkit_query_async_requests_request_t **out_request);

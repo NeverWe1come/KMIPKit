@@ -1971,6 +1971,7 @@ def _validate_references(manifest: dict[str, Any]) -> None:
                     "int64_t",
                     "uint64_t",
                     "kmipkit_byte_span_v1_t",
+                    "kmipkit_attribute_reference_v1_t",
                 }
                 if element_type not in supported_elements:
                     raise ManifestError("function input array references an unsupported element type")

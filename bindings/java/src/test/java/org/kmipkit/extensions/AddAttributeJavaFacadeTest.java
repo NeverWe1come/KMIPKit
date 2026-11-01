@@ -28,8 +28,9 @@ final class AddAttributeJavaFacadeTest {
                 AddAttributeRequest request = AddAttributeRequest.create(
                         UniqueIdentifier.textString("object-7"), input)) {
             input.close();
-            assertEquals(java.util.Optional.of(UniqueIdentifier.textString("object-7")),
-                    request.uniqueIdentifier());
+            UniqueIdentifier copiedIdentifier = request.uniqueIdentifier().orElseThrow();
+            assertEquals(UniqueIdentifier.Kind.TEXT_STRING, copiedIdentifier.kind());
+            assertEquals("object-7", copiedIdentifier.text());
             try (TtlvItem copied = request.newAttribute();
                     TtlvStructure payload = request.toTtlvPayload();
                     TtlvStructureView view = payload.view();

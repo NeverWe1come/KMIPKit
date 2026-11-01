@@ -7,7 +7,8 @@ from kmipkit import attribute_operations, errors, extensions, ttlv
 
 def _attribute_item() -> tuple[ttlv.CodecLimits, ttlv.TtlvItem]:
     limits = ttlv.codec_limits_defaults()
-    raw_tag = ttlv.raw_tag_from_raw(0x0042_000A)
+    # KMIP Specification v2.1 §4.12 defines Contact Information as Text String.
+    raw_tag = ttlv.raw_tag_from_raw(0x0042_0022)
     tag = ttlv.raw_tag_try_checked(raw_tag)
     value = ttlv.ttlv_value_text_string(b"Counter", limits)
     item = ttlv.ttlv_item_create(tag, value, limits)
@@ -57,7 +58,7 @@ def test_adjust_attribute_request_preserves_raw_type_and_optional_value():
 def test_delete_modify_and_set_models_remain_separate_from_batch_items():
     limits, current = _attribute_item()
     _, new = _attribute_item()
-    reference = extensions.AttributeReference.tag(0x0042_000A)
+    reference = extensions.AttributeReference.tag(0x0042_0022)
     models = (
         attribute_operations.DeleteAttributeRequest.create(
             extensions.UniqueIdentifier.text_string("object-7"), current, reference
@@ -84,7 +85,7 @@ def test_delete_modify_and_set_models_remain_separate_from_batch_items():
 def test_get_attributes_request_preserves_order_and_supports_all_attributes():
     identifier = extensions.UniqueIdentifier.text_string("object-7")
     references = (
-        extensions.AttributeReference.tag(0x0042_000A),
+        extensions.AttributeReference.tag(0x0042_0022),
         extensions.AttributeReference.name("KMIPKit", "Counter"),
     )
     with attribute_operations.GetAttributesRequest.create(identifier, references) as request:
@@ -99,7 +100,7 @@ def test_get_attributes_request_preserves_order_and_supports_all_attributes():
 
 
 def test_get_attributes_request_rejects_duplicate_references():
-    reference = extensions.AttributeReference.tag(0x0042_000A)
+    reference = extensions.AttributeReference.tag(0x0042_0022)
     with pytest.raises(errors.InvalidInputError):
         attribute_operations.GetAttributesRequest.create(None, (reference, reference))
 
@@ -123,6 +124,7 @@ def test_attribute_set_facade_validates_append_and_preserves_owned_order():
         assert attributes.len() == 1
         assert not attributes.is_empty()
 
+        # KMIP Specification v2.1 §4.13 defines Cryptographic Algorithm as Enumeration.
         second_tag = ttlv.raw_tag_from_raw(0x0042_0028)
         checked_second_tag = ttlv.raw_tag_try_checked(second_tag)
         second_value = ttlv.ttlv_value_enumeration(0xFFFF_FFFF)
@@ -134,7 +136,7 @@ def test_attribute_set_facade_validates_append_and_preserves_owned_order():
         second.close()
         assert attributes.len() == 2
 
-        invalid_tag = ttlv.raw_tag_from_raw(0x0042_000A)
+        invalid_tag = ttlv.raw_tag_from_raw(0x0042_0028)
         checked_invalid_tag = ttlv.raw_tag_try_checked(invalid_tag)
         invalid_value = ttlv.ttlv_value_integer(7)
         invalid = ttlv.ttlv_item_create(checked_invalid_tag, invalid_value, limits)
@@ -154,7 +156,7 @@ def test_attribute_set_facade_validates_append_and_preserves_owned_order():
                     with ttlv.ttlv_structure_view_item_at(view, index) as item_view:
                         with ttlv.ttlv_item_view_tag(item_view) as tag:
                             tags.append(ttlv.tag_value(tag))
-                assert tags == [0x0042_000A, 0x0042_0028]
+                assert tags == [0x0042_0022, 0x0042_0028]
 
         with attributes.into_items() as transferred:
             assert attributes.closed

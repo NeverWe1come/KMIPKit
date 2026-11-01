@@ -359,11 +359,11 @@ class PackageDocumentationContractTests(unittest.TestCase):
             f"{declaration_counts['verified']:,}/{len(declarations):,} verified, "
             f"{declaration_counts['declared']:,} declared, and "
             f"{declaration_counts['blocked']:,} blocked",
-            f"{len(self.manifest['approvedExclusions'])} approved exclusions",
-            "T071 remains open",
+            f"{len(self.manifest['approvedExclusions']):,} approved exclusions",
+            "T071 is complete",
         ):
             self.assertIn(audited_status, checkpoint.group(1))
-        self.assertRegex(tasks, r"(?m)^- \[ \] T071 \[US2\]")
+        self.assertRegex(tasks, r"(?m)^- \[x\] T071 \[US2\]")
 
     def test_recertify_summary_names_every_mapped_request_field(self) -> None:
         request_fields = (

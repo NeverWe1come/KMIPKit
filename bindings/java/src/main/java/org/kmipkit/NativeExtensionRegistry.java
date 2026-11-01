@@ -6,6 +6,9 @@ import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;
 import org.kmipkit.ttlv.CodecLimits;
+import org.kmipkit.ttlv.TtlvItem;
+import org.kmipkit.ttlv.TtlvStructure;
+import org.kmipkit.ttlv.TtlvValue;
 
 /**
  * Internal JNI bridge for the KMIPKit registry API.
@@ -76,6 +79,23 @@ public final class NativeExtensionRegistry {
     public static final int POLL_REQUEST = 57;
     public static final int PROCESS_REQUEST = 58;
     public static final int QUERY_ASYNC_REQUESTS_REQUEST = 59;
+    public static final int ADD_ATTRIBUTE_REQUEST = 60;
+    public static final int ADJUST_ATTRIBUTE_REQUEST = 61;
+    public static final int DELETE_ATTRIBUTE_REQUEST = 62;
+    public static final int MODIFY_ATTRIBUTE_REQUEST = 63;
+    public static final int SET_ATTRIBUTE_REQUEST = 64;
+    public static final int GET_ATTRIBUTES_REQUEST = 65;
+    public static final int GET_ATTRIBUTE_LIST_REQUEST = 66;
+    public static final int ATTRIBUTE_SET = 67;
+
+    public static final int ATTRIBUTE_OPERATION_ADD = 0;
+    public static final int ATTRIBUTE_OPERATION_ADJUST = 1;
+    public static final int ATTRIBUTE_OPERATION_DELETE = 2;
+    public static final int ATTRIBUTE_OPERATION_MODIFY = 3;
+    public static final int ATTRIBUTE_OPERATION_SET = 4;
+
+    public static final int ATTRIBUTE_FIELD_CURRENT = 0;
+    public static final int ATTRIBUTE_FIELD_NEW = 1;
 
     private static volatile boolean loaded;
 
@@ -358,6 +378,22 @@ public final class NativeExtensionRegistry {
     public static native long pollRequestToTtlvPayload(long request);
     public static native long processRequestCreate(byte[] correlationValue);
     public static native long processRequestToTtlvPayload(long request);
+    public static native long attributeRequestCreate(
+            int operation, int identifierKind, @Nullable byte[] identifierText,
+            long identifierNumber, long currentAttribute, long newAttribute,
+            int referenceKind, long referenceTag, @Nullable byte[] vendorIdentification,
+            @Nullable byte[] attributeName, long adjustmentType, long adjustmentValue);
+    public static native TtlvItem attributeRequestTtlvItem(
+            int operation, long request, int field);
+    public static native TtlvValue attributeRequestTtlvValue(int operation, long request);
+    public static native long attributeRequestToTtlvPayload(int operation, long request);
+    public static native long clientBatchItemFromAttributeRequest(int operation, long request);
+    public static native long attributeSetTryNew(long items);
+    public static native void attributeSetTryPush(long attributes, long item);
+    public static native long attributeSetAsItems(long attributes);
+    public static native long attributeSetLen(long attributes);
+    public static native boolean attributeSetIsEmpty(long attributes);
+    public static native long attributeSetIntoItems(long attributes);
     public static native long queryAsyncRequestsRequestCreate();
     public static native long queryAsyncRequestsRequestWithCorrelationValues(
             long request, byte[][] values);

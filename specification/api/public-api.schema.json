@@ -912,7 +912,8 @@
                 "uint32_t",
                 "int64_t",
                 "uint64_t",
-                "kmipkit_byte_span_v1_t"
+                "kmipkit_byte_span_v1_t",
+                "kmipkit_attribute_reference_v1_t"
               ]
             },
             "ownership": {

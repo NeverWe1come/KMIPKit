@@ -19,9 +19,11 @@ import org.kmipkit.ttlv.TtlvValue;
 final class AttributeSetJavaFacadeTest {
     @Test
     void validatesConstructionAndAppendWhilePreservingOrderAndConsumption() {
+        // KMIP Specification v2.1 §§4.12–4.13 define Contact Information as Text String and
+        // Cryptographic Algorithm as Enumeration; the latter is also used for a type mismatch.
         CodecLimits limits = CodecLimits.defaults();
-        TtlvStructure source = append(TtlvStructure.create(), 0x0042_000a,
-                TtlvValue.TextString("Name".getBytes(), limits), limits);
+        TtlvStructure source = append(TtlvStructure.create(), 0x0042_0022,
+                TtlvValue.TextString("support".getBytes(), limits), limits);
 
         try (source; AttributeSet attributes = AttributeSet.tryNew(source)) {
             assertEquals(1, attributes.len());
@@ -33,7 +35,7 @@ final class AttributeSetJavaFacadeTest {
             }
             assertEquals(2, attributes.len());
 
-            TtlvItem invalid = item(0x0042_000a, TtlvValue.Integer(7), limits);
+            TtlvItem invalid = item(0x0042_0028, TtlvValue.Integer(7), limits);
             try (invalid) {
                 assertThrows(InvalidInputException.class, () -> attributes.tryPush(invalid));
             }
@@ -42,7 +44,7 @@ final class AttributeSetJavaFacadeTest {
             try (TtlvStructure copy = attributes.asItems();
                     TtlvStructureView view = copy.view()) {
                 assertEquals(2, view.itemCount());
-                assertEquals(0x0042_000a, tagAt(view, 0));
+                assertEquals(0x0042_0022, tagAt(view, 0));
                 assertEquals(0x0042_0028, tagAt(view, 1));
             }
 

@@ -7536,7 +7536,7 @@ static kmipkit_ttlv_item_t *attribute_set_test_item(
 cleanup:
     kmipkit_ttlv_value_release(value);
     kmipkit_tag_release(tag);
-    kmipkit_ttlv_raw_tag_release(raw);
+    kmipkit_raw_tag_release(raw);
     return item;
 }
 
@@ -7561,7 +7561,10 @@ int kmipkit_client_abi_c_consumer_validates_attribute_set(void) {
         kmipkit_ttlv_structure_create(&source) != 0 || source == 0) {
         goto cleanup;
     }
-    first = attribute_set_test_item(UINT32_C(0x0042000a), 1, limits);
+    /* KMIP Specification v2.1 §§4.12–4.13 define Contact Information as Text String and
+     * Cryptographic Algorithm as Enumeration; the latter is reused with Integer as a negative
+     * type-mismatch case. */
+    first = attribute_set_test_item(UINT32_C(0x00420022), 1, limits);
     kmipkit_ttlv_structure_t *updated = 0;
     if (first == 0 || kmipkit_ttlv_structure_with_item(source, first, limits, &updated) != 0 ||
         updated == 0) {
@@ -7575,7 +7578,6 @@ int kmipkit_client_abi_c_consumer_validates_attribute_set(void) {
         kmipkit_attribute_set_is_empty(attributes, &is_empty) != 0 || is_empty != 0) {
         goto cleanup;
     }
-
     second = attribute_set_test_item(UINT32_C(0x00420028), 2, limits);
     if (second == 0 || kmipkit_attribute_set_try_push(attributes, second) != 0) {
         goto cleanup;
@@ -7583,7 +7585,7 @@ int kmipkit_client_abi_c_consumer_validates_attribute_set(void) {
     kmipkit_ttlv_item_release(second);
     second = 0;
 
-    invalid = attribute_set_test_item(UINT32_C(0x0042000a), 3, limits);
+    invalid = attribute_set_test_item(UINT32_C(0x00420028), 3, limits);
     if (invalid == 0 ||
         kmipkit_attribute_set_try_push(attributes, invalid) != T076_ERROR_INVALID_INPUT ||
         kmipkit_attribute_set_len(attributes, &count) != 0 || count != UINT64_C(2)) {
@@ -7595,7 +7597,7 @@ int kmipkit_client_abi_c_consumer_validates_attribute_set(void) {
         kmipkit_ttlv_structure_view_item_count(view, &count) != 0 || count != UINT64_C(2) ||
         kmipkit_ttlv_structure_view_item_at(view, 0, &item_view) != 0 || item_view == 0 ||
         kmipkit_ttlv_item_view_tag(item_view, &tag) != 0 || tag == 0 ||
-        kmipkit_ttlv_tag_value(tag, &raw_tag) != 0 || raw_tag != UINT32_C(0x0042000a)) {
+        kmipkit_ttlv_tag_value(tag, &raw_tag) != 0 || raw_tag != UINT32_C(0x00420022)) {
         goto cleanup;
     }
     kmipkit_tag_release(tag);
@@ -7607,7 +7609,6 @@ int kmipkit_client_abi_c_consumer_validates_attribute_set(void) {
         kmipkit_ttlv_tag_value(tag, &raw_tag) != 0 || raw_tag != UINT32_C(0x00420028)) {
         goto cleanup;
     }
-
     kmipkit_ttlv_structure_view_release(view);
     view = 0;
     if (kmipkit_attribute_set_into_items(attributes, &consumed) != 0 || consumed == 0) {

@@ -11,7 +11,7 @@ AUDIT_REPORT = (
     / "specs"
     / "043-public-api-bindings"
     / "reports"
-    / "binding-export-report-2026-10-28.json"
+    / "binding-export-report-2026-11-01.json"
 )
 
 
@@ -22,7 +22,7 @@ class CApiDocumentationTests(unittest.TestCase):
         self.assertIn("../../specification/api/public-api.json", documentation)
         self.assertIn("../../bindings/c/include/kmipkit.h", documentation)
         self.assertIn(
-            "../../specs/043-public-api-bindings/reports/binding-export-report-2026-10-28.json",
+            "../../specs/043-public-api-bindings/reports/binding-export-report-2026-11-01.json",
             documentation,
         )
         self.assertIn("audit_binding_exports.py", documentation)
@@ -61,11 +61,17 @@ class CApiDocumentationTests(unittest.TestCase):
             )
         )
         declarations_by_package: dict[str, int] = {}
+        stable_c_error_codes = {
+            category["cCode"]
+            for category in manifest["errorCategories"]
+            if category.get("stableCHeaderCode") is True
+        }
         for declaration in manifest["publicDeclarations"]:
             if (
                 declaration["packageId"] == "c-kmipkit"
                 and declaration["declarationState"] == "blocked"
                 and declaration["kind"] != "c-symbol"
+                and declaration["exportName"] not in stable_c_error_codes
             ):
                 continue
             package_id = declaration["packageId"]
@@ -105,6 +111,11 @@ class CApiDocumentationTests(unittest.TestCase):
             package for package in report["packages"]
             if package["packageId"] == "c-kmipkit"
         )
+        stable_c_error_codes = {
+            category["cCode"]
+            for category in manifest["errorCategories"]
+            if category.get("stableCHeaderCode") is True
+        }
         c_declarations = {
             row["exportName"]
             for row in manifest["publicDeclarations"]
@@ -112,6 +123,7 @@ class CApiDocumentationTests(unittest.TestCase):
             and not (
                 row["declarationState"] == "blocked"
                 and row["kind"] != "c-symbol"
+                and row["exportName"] not in stable_c_error_codes
             )
         }
         expected = {

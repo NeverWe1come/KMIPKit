@@ -319,6 +319,9 @@ def inventory_javap_outputs(outputs: dict[str, str], package: str = "java-kmipki
     """Inventory public and protected declarations from deterministic ``javap`` output."""
     records: list[dict[str, str]] = []
     issues: list[dict[str, str]] = []
+    class_members: dict[str, list[dict[str, Any]]] = {}
+    class_bases: dict[str, str] = {}
+    visible_types: set[str] = set()
     for class_file, output in sorted(outputs.items()):
         header = next((line.strip() for line in output.splitlines()
                        if re.search(r"\b(class|interface|enum|record)\s+[A-Za-z_$][\w.$]*", line)), None)
@@ -329,10 +332,15 @@ def inventory_javap_outputs(outputs: dict[str, str], package: str = "java-kmipki
         if declaration is None:
             issues.append({"packageId": package, "exportName": class_file, "reason": "unparsed-javap-header"})
             continue
-        if not {"public", "protected"}.intersection(declaration.group(1).split()):
-            continue
         owner = declaration.group(2).replace("$", ".")
-        records.append(_record(package, owner, "type", class_file))
+        visible = bool({"public", "protected"}.intersection(declaration.group(1).split()))
+        if visible:
+            visible_types.add(owner)
+            records.append(_record(package, owner, "type", class_file))
+        base = re.search(r"\bextends\s+([A-Za-z_$][\w.$]*)", header)
+        if base is not None:
+            class_bases[owner] = base.group(1).replace("$", ".")
+        members: list[dict[str, Any]] = []
         for line_number, line in enumerate(output.splitlines(), 1):
             text = line.strip()
             if not re.match(r"^(?:public|protected)\b", text) or not text.endswith(";"):
@@ -350,7 +358,47 @@ def inventory_javap_outputs(outputs: dict[str, str], package: str = "java-kmipki
                 member = signature.split()[-1]
             record = _record(package, f"{owner}.{member}", "java-member", f"{class_file}:{line_number}")
             record["signatures"] = [signature]
-            records.append(record)
+            members.append(record)
+            if visible:
+                records.append(record)
+        class_members[owner] = members
+
+    def member_identity(record: dict[str, Any]) -> tuple[str, str] | None:
+        member = record["exportName"].rsplit(".", 1)[-1]
+        if member == "<init>":
+            return None
+        signature = record["signatures"][0]
+        opening = signature.find("(")
+        parameters = signature[opening:] if opening >= 0 else "<field>"
+        return member, parameters
+
+    for owner in sorted(visible_types):
+        known_members = {
+            identity
+            for record in class_members.get(owner, [])
+            if (identity := member_identity(record)) is not None
+        }
+        base = class_bases.get(owner)
+        visited_bases: set[str] = set()
+        while base is not None and base not in visited_bases:
+            if base in visible_types:
+                break
+            visited_bases.add(base)
+            for inherited in class_members.get(base, []):
+                identity = member_identity(inherited)
+                if identity is None or identity in known_members:
+                    continue
+                known_members.add(identity)
+                member = inherited["exportName"].rsplit(".", 1)[-1]
+                record = _record(
+                    package,
+                    f"{owner}.{member}",
+                    "java-member",
+                    f"inherited:{base}:{inherited['location']}",
+                )
+                record["signatures"] = inherited["signatures"]
+                records.append(record)
+            base = class_bases.get(base)
     return _report(records, issues)
 
 
