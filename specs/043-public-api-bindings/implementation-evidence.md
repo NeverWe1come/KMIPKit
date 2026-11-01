@@ -8133,7 +8133,7 @@ The Red baseline pinned 262 candidate identities with SHA-256 `a525c1d1f8af9eb4d
 
 Focused verification:
 
-- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t100_query_ping_declaration_mapping tools.api_manifest.tests.test_ping_query_parity_manifest -v` — 9 passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t100_query_ping_declaration_mapping tools.api_manifest.tests.test_ping_query_parity_manifest -v` — 10 passed after the traceability follow-up.
 - `py -B tools/api_manifest/generate.py --write` — regenerated 12 outputs; `py -B tools/api_manifest/generate.py --check` — all 12 verified.
 - Rust export audit `--check` passed against the refreshed report with no missing, unobserved, kind-mismatched, conditional-mismatched, or issue rows: 10,463 observed = 8,420 direct + 2,043 conditional; 6,851 matched + 3,612 excluded. The prior report predates source commit `a85249b06` (`feat(protocol): expose get-attributes references`), which adds `GetAttributesRequest::attribute_references`; that pre-T100 change explains the additional direct export and 963 rustdoc implementation-ID renumberings. The report refresh records current source output without changing any owner identity.
 - Shared Rust inventory `--check` passed against the refreshed Rust audit report: 10,463 observed, 859 shared mapped declarations, and 3,612 approved exclusions. Its totals reconcile 8,420 direct plus 2,043 conditional observations and the current manifest classification.
@@ -8151,7 +8151,7 @@ Final review found overbroad owner requirement citations in the 12 mapped declar
 | Red — require exact mapped owner requirement sets | `203cf3372` | T100 mapping contract | The focused test failed for all 12 mappings: each Ping row had eight extra owner FRs and each Query row had three extra owner FRs. |
 | Red — require exact owner requirement sets for every exclusion and current Rust inventory counts | `84952ee9a` | T100 exclusion applicability contract; Rust/shared inventory assertions | The new exclusion contract failed for 177 rows against the prior broad citations. The CI Python-contract block now invokes the focused T100 and T041 parity suites after `test_t076_client_mapping`. |
 | Green — narrow all mapped and excluded owner citations | `0bc076c9b` | Manifest and generated parity inventories | The 12 mappings carry only their operation-specific owner FRs, and all 250 exclusions carry exact owner FR sets in both reason and evidence. Generated outputs were refreshed. |
-| Refactor/evidence — record the applicability matrix and focused CI evidence | this commit | Exact T100/T041 contracts, Rust count contracts, generator check | Current Rust and shared inventory assertions match the regenerated report; Java/C/docs aggregate expectations remain unchanged as pre-existing baseline drift. |
+| Refactor/evidence — record the applicability matrix and final verification | `13154869a` | `python -B -m unittest tools.api_manifest.tests.test_t100_query_ping_declaration_mapping tools.api_manifest.tests.test_ping_query_parity_manifest -v` (10 passed); `py -B tools/api_manifest/generate.py --check` (12 outputs); Rust export and shared inventory `--check` | Current Rust and shared inventory assertions match the regenerated report; Java/C/docs aggregate expectations remain unchanged as pre-existing baseline drift. |
 
 Verification for this follow-up:
 
