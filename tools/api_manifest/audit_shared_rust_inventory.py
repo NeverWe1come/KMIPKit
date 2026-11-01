@@ -81,6 +81,7 @@ RUST_ONLY_DECLARATIONS = {
     "kmipkit::TransportError::new",
 }
 DRAFT_SPEC_IDS = {"KMIPKIT-0010"}
+RUST_REPORT_PATH = Path("specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json")
 REPORT_PATH = Path("specs/043-public-api-bindings/reports/shared-rust-inventory-2026-11-01.json")
 _RUST_AUDIT_SPEC = importlib.util.spec_from_file_location(
     "audit_rust_exports", Path(__file__).with_name("audit_rust_exports.py")
@@ -451,7 +452,7 @@ def build_inventory(
     return {
         "formatVersion": 1,
         "scope": "approved-shared-rust-api",
-        "source": "specs/043-public-api-bindings/reports/rust-export-report-2026-10-31.json",
+        "source": RUST_REPORT_PATH.as_posix(),
         "observedRustDeclarationCount": len(observed),
         "directRustDeclarationCount": direct_count,
         "conditionalRustDeclarationCount": conditional_count,
@@ -488,7 +489,7 @@ def main(argv: list[str] | None = None) -> int:
     root = args.repo_root.resolve()
     target = root / args.report
     manifest_path = root / "specification" / "api" / "public-api.json"
-    audit_path = root / "specs" / "043-public-api-bindings" / "reports" / "rust-export-report-2026-10-31.json"
+    audit_path = root / RUST_REPORT_PATH
     try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         rust_report = json.loads(audit_path.read_text(encoding="utf-8"))

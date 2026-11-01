@@ -50,7 +50,7 @@ use crate::{
     kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
     kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
     kmipkit_unique_identifier_v1_t, kmipkit_usage_allocation_context_t,
-    kmipkit_validated_extension_value_t,
+    kmipkit_username_and_password_credential_t, kmipkit_validated_extension_value_t,
 };
 use kmipkit_client::UsageAllocationContext;
 use kmipkit_client::extension_registry as client_extension;
@@ -80,7 +80,7 @@ use kmipkit_protocol::{
 };
 use kmipkit_protocol::{
     AttestationCredential, Authentication, Credential, CredentialType, CredentialValidationError,
-    CredentialValidationErrorKind, DeviceCredential, Nonce,
+    CredentialValidationErrorKind, DeviceCredential, Nonce, UsernameAndPasswordCredential,
 };
 use kmipkit_protocol::{MessageValidationError, MessageValidationErrorKind, RequestMessage};
 use kmipkit_protocol::{
@@ -106,6 +106,9 @@ mod authentication_abi_tests;
 #[cfg(all(test, feature = "coverage-c-consumer"))]
 #[path = "../tests/support/credential_type_abi_tests.rs"]
 mod credential_type_abi_tests;
+#[cfg(test)]
+#[path = "../tests/support/credential_validation_error_code_tests.rs"]
+mod credential_validation_error_code_tests;
 #[cfg(test)]
 #[path = "../tests/support/cryptographic_operation_abi_tests.rs"]
 mod cryptographic_operation_abi_tests;
@@ -375,60 +378,6 @@ fn record_credential_validation_error(error: CredentialValidationError) -> i32 {
     record_credential_validation_error_kind(credential_validation_kind_code(error.kind()))
 }
 
-#[cfg(test)]
-mod credential_validation_error_code_tests {
-    use super::*;
-    use std::cell::Cell;
-
-    #[test]
-    fn validation_kinds_have_stable_open_numeric_codes() {
-        assert_eq!(
-            1,
-            credential_validation_kind_code(CredentialValidationErrorKind::EmptyAuthentication)
-        );
-        assert_eq!(
-            2,
-            credential_validation_kind_code(CredentialValidationErrorKind::DuplicateField)
-        );
-        assert_eq!(
-            3,
-            credential_validation_kind_code(CredentialValidationErrorKind::MissingField)
-        );
-        assert_eq!(
-            4,
-            credential_validation_kind_code(CredentialValidationErrorKind::WrongFieldType)
-        );
-        assert_eq!(
-            5,
-            credential_validation_kind_code(CredentialValidationErrorKind::FieldOutOfOrder)
-        );
-        assert_eq!(
-            6,
-            credential_validation_kind_code(CredentialValidationErrorKind::InvalidTtlvStructure)
-        );
-    }
-
-    #[test]
-    fn validation_error_detail_is_thread_local() {
-        record_credential_validation_error_kind(3);
-        let child = std::thread::spawn(|| {
-            let initial = LAST_ERROR.with(Cell::get);
-            record_credential_validation_error_kind(5);
-            (
-                initial.credential_validation_kind,
-                LAST_ERROR.with(|last_error| last_error.get().credential_validation_kind),
-            )
-        });
-        let (child_initial, child_recorded) = child.join().expect("test thread should complete");
-        assert_eq!(0, child_initial);
-        assert_eq!(5, child_recorded);
-        assert_eq!(
-            3,
-            LAST_ERROR.with(|last_error| last_error.get().credential_validation_kind)
-        );
-    }
-}
-
 trait FfiPanicFallback: Sized {
     fn from_panic() -> Self;
 }
@@ -509,6 +458,7 @@ enum Kind {
     CredentialView,
     AttestationCredential,
     DeviceCredential,
+    UsernameAndPasswordCredential,
 }
 
 enum HandleValue {
@@ -547,6 +497,7 @@ enum HandleValue {
     },
     AttestationCredential(AttestationCredential),
     DeviceCredential(DeviceCredential),
+    UsernameAndPasswordCredential(UsernameAndPasswordCredential),
     ChildRule(Box<extension::ExtensionChildRule>),
     OrderConstraint(extension::ExtensionOrderConstraint),
     Value(Value),
@@ -759,6 +710,9 @@ impl TtlvView {
                     credential.with_ttlv(|view| resolve_structure_path(&view, steps, callback))
                 }
                 HandleValue::DeviceCredential(credential) => {
+                    credential.with_ttlv(|view| resolve_structure_path(&view, steps, callback))
+                }
+                HandleValue::UsernameAndPasswordCredential(credential) => {
                     credential.with_ttlv(|view| resolve_structure_path(&view, steps, callback))
                 }
                 _ => Err(ERROR_INVALID_INPUT),
@@ -8747,6 +8701,86 @@ pub extern "C" fn kmipkit_device_credential_into_ttlv(
 pub extern "C" fn kmipkit_device_credential_release(handle: *mut kmipkit_device_credential_t) {
     ffi_entrypoint(|| {
         release(handle, Kind::DeviceCredential);
+    });
+}
+
+/// Consumes and validates a Username and Password Credential Value, retaining its original TTLV fields.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_username_and_password_credential_from_ttlv(
+    structure: *mut kmipkit_ttlv_structure_t,
+    out_credential: *mut *mut kmipkit_username_and_password_credential_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_credential);
+        let owner = try_ffi!(consume_unshared_ttlv_source(structure));
+        let payload = try_ffi!(unwrap_payload(owner));
+        let HandleValue::Structure(structure) = payload else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let credential = match UsernameAndPasswordCredential::try_from_ttlv(structure) {
+            Ok(credential) => credential,
+            Err(error) => return record_credential_validation_error(error),
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::UsernameAndPasswordCredential,
+            HandleValue::UsernameAndPasswordCredential(credential)
+        ));
+        SUCCESS
+    })
+}
+
+/// Creates a read-only view over the Username and Password Credential's original ordered TTLV.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_username_and_password_credential_ttlv_view(
+    credential: *mut kmipkit_username_and_password_credential_t,
+    out_view: *mut *mut kmipkit_ttlv_structure_view_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_view);
+        let owner = try_ffi!(clone_handle_owner(
+            credential,
+            Kind::UsernameAndPasswordCredential
+        ));
+        let view = TtlvView::new(owner, ViewRoot::Structure, ViewTarget::Structure);
+        *out = try_ffi!(try_make_handle(
+            Kind::StructureView,
+            HandleValue::StructureView(view)
+        ));
+        SUCCESS
+    })
+}
+
+/// Consumes the Username and Password Credential and returns its exact original TTLV Structure.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_username_and_password_credential_into_ttlv(
+    credential: *mut kmipkit_username_and_password_credential_t,
+    out_structure: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_structure);
+        let owner = try_ffi!(consume_unshared_owner(
+            credential,
+            Kind::UsernameAndPasswordCredential
+        ));
+        let payload = try_ffi!(unwrap_payload(owner));
+        let HandleValue::UsernameAndPasswordCredential(credential) = payload else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(credential.into_ttlv())
+        ));
+        SUCCESS
+    })
+}
+
+/// Releases a Username and Password Credential handle.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_username_and_password_credential_release(
+    handle: *mut kmipkit_username_and_password_credential_t,
+) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::UsernameAndPasswordCredential);
     });
 }
 

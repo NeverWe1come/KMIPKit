@@ -113,9 +113,8 @@ fn compiled_c_consumer_rejects_device_credential_without_identifier() {
 fn compiled_c_consumer_preserves_username_password_ttlv_and_scoped_ownership() {
     let mut item_count = 0;
     // SAFETY: The C consumer writes the count and owns all temporary ABI handles.
-    let status = unsafe {
-        kmipkit_username_password_credential_c_consumer_round_trip(&raw mut item_count)
-    };
+    let status =
+        unsafe { kmipkit_username_password_credential_c_consumer_round_trip(&raw mut item_count) };
     assert_eq!(status, 0);
     assert_eq!(item_count, 2);
 }
@@ -123,9 +122,8 @@ fn compiled_c_consumer_preserves_username_password_ttlv_and_scoped_ownership() {
 #[test]
 fn compiled_c_consumer_maps_missing_username_to_typed_error() {
     // SAFETY: The C consumer owns all temporary structures and handles for this negative case.
-    let status = unsafe {
-        kmipkit_username_password_credential_c_consumer_rejects_missing_username()
-    };
+    let status =
+        unsafe { kmipkit_username_password_credential_c_consumer_rejects_missing_username() };
     assert_eq!(status, 0);
 }
 

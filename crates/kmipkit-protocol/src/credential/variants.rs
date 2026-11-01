@@ -157,11 +157,9 @@ impl CredentialValue {
         tree: Structure,
     ) -> Result<Self, CredentialValidationError> {
         match credential_type.raw() {
-            1 => {
-                Ok(Self::UsernameAndPassword(
-                    UsernameAndPasswordCredential::try_from_ttlv(tree)?,
-                ))
-            }
+            1 => Ok(Self::UsernameAndPassword(
+                UsernameAndPasswordCredential::try_from_ttlv(tree)?,
+            )),
             2 => {
                 validate(&tree, DEVICE_RULES, DEVICE_IDENTIFIER_GROUP)?;
                 Ok(Self::Device(DeviceCredential::from_tree(tree)))

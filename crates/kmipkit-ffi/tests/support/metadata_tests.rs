@@ -77,6 +77,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "client_profile_validation",
             "credential_ttlv_parity",
             "credential_type_parity",
+            "credential_validation_error_parity",
             "crypto_response_ttlv",
             "discover_versions_request_item",
             "ffi_runtime_metadata",

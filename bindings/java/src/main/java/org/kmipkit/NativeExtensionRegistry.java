@@ -66,6 +66,7 @@ public final class NativeExtensionRegistry {
     public static final int AUTHENTICATION = 48;
     public static final int CREDENTIAL_VIEW = 49;
     public static final int DEVICE_CREDENTIAL = 50;
+    public static final int USERNAME_AND_PASSWORD_CREDENTIAL = 51;
 
     private static volatile boolean loaded;
 
@@ -125,6 +126,11 @@ public final class NativeExtensionRegistry {
     public static native int deviceCredentialFromTtlv(long structure, long[] outCredential);
     public static native long deviceCredentialTtlvView(long credential);
     public static native long deviceCredentialIntoTtlv(long credential);
+
+    public static native int usernameAndPasswordCredentialFromTtlv(
+            long structure, long[] outCredential);
+    public static native long usernameAndPasswordCredentialTtlvView(long credential);
+    public static native long usernameAndPasswordCredentialIntoTtlv(long credential);
 
     public static native void release(int handleKind, long handle);
 

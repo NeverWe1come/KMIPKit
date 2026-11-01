@@ -1234,6 +1234,21 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::Nonce::into_ttlv",
     ),
     (
+        "rust-observed-cf0c7611bde6020def37",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::UsernameAndPasswordCredential",
+    ),
+    (
+        "rust-observed-5663d884a9f92770307f",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::UsernameAndPasswordCredential::with_ttlv",
+    ),
+    (
+        "rust-observed-d4b7c089da04a7319b44",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::UsernameAndPasswordCredential::into_ttlv",
+    ),
+    (
         "rust-observed-8105d635297cff8dd3f6",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::DecryptResponse",
@@ -8114,5 +8129,10 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-aff71a9a98d457dfcf03",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::ResponseHeaderView::with_ttlv",
+    ),
+    (
+        "rust-observed-3a3570beb3af9b85a56b",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::UsernameAndPasswordCredential::try_from_ttlv",
     ),
 ];
