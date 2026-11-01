@@ -7976,3 +7976,22 @@ Current verification for this closeout:
 - Coverage thresholds remain under the branch's authorized temporary waiver; these results do not claim that the thresholds pass. Hosted CI must rerun on the pushed head.
 
 Independent QA and security re-reviews of the ownership correction found no remaining behavior or security defect. The full current branch remains subject to the open T075/T085/T093–T102 gates and human review; this T092 closeout does not make PR #104 ready to merge.
+
+### T093 KMIPKIT-0009 asynchronous declaration parity (2026-11-01)
+
+T093 now reconciles all 236 KMIPKIT-0009 public declarations across the Rust protocol/client/root crates and the C, Java, and Python facades. Four-language request-model construction and TTLV encoding are represented separately from the one-exchange client send methods. Query Asynchronous Requests responses remain generic TTLV, and raw Cancellation Result values remain representable. No `candidateSpecId: KMIPKIT-0009` declarations remain. The 177 Rust trait implementation artifacts are exact owner-backed exclusions. The C/Java/Python audit also records 33 exact JNI bridge, namespace, or local lifecycle exclusions; the functional model APIs remain individually inventoried.
+
+| Phase | Commits | Evidence | Result |
+|---|---|---|---|
+| Red — require exact owner mapping, standalone request models, callback results, and staging cleanup | `a9232072b`, `334eb7a53`, `971ef8ff5`, `cdcd8af0e`, `ed61d3832`, `57d14de5a`, `b39e179a2`, `8f8855b1a`, `b3b05ad7c`, `44f171b51` | T093 manifest/parity contract; C, Java, and Python consumers; Python failure-injection tests | Tests exposed missing in-memory model parity and an unwipeable Python correlation copy. The final failure-injection test reproduced an unstaged-buffer leak when `ffi.from_buffer` failed. |
+| Green — add typed request APIs and wipeable staging | `2d7739542`, `1176312fb`, `befa7e772`, `9b502d809` | Rust FFI, compiled C consumer, Java/JNI, Python/CFFI, and manifest | C, Java, and Python expose create/accessor/payload APIs without network I/O; execution remains separate. Mutable correlation buffers are wiped on normal return, iterator/allocation errors, and buffer-view creation failures. The final mapping correction is in `9b502d809`. |
+| Refactor/evidence — reconcile the export inventory and record verification | this commit | Manifest generator, Rust/shared inventory, binding audit, docs and independent reviews | 12 generated API outputs are current; all language export audits have zero discrepancies. T093 is complete; PR #104 remains a draft until hosted CI and the remaining PR gates finish. |
+
+Verification for this checkpoint:
+
+- `py -3 -B -m unittest tools.api_manifest.tests.test_t093_async_declaration_parity` — 3 passed; `py -3 -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
+- Binding export audit `--check` — C 685/685, Java 1,073/1,073, Python 1,069/1,069 exact matches; zero missing, unobserved, or kind-mismatched exports. Rust export audit — 8,639/8,639 matched, 1,822 exact exclusions, zero issues. Shared Rust inventory report is current.
+- Python 3.12 full test suite — 893 passed, 1 skipped. Targeted C consumer test — 1/1 passed. Java `AsyncRequestModelsTest` — `BUILD SUCCESSFUL`. Rust formatting and FFI Clippy checks passed.
+- Independent QA confirmed the request mappings are in-memory and separately mapped from execution, all owner candidates are resolved, and the report/exclusion counts match. Independent security review found no actionable findings. Reviewers did not run tests; commands above were run locally.
+- `git diff --check` passed. Windows builds emitted the existing non-fatal AWS-LC compiler-probe/NASM and C linker warnings. Coverage gates remain under the temporary waiver for PR #104 and are not claimed as passing; hosted CI must run on the pushed head.
+- PR #90's merge commit `dccd5821a1197425f002677f68f002e95a12ff76` and the current `release/1.0.0` tip are ancestors of this feature branch. GitHub reports PR #104 `CLEAN` and `MERGEABLE`; no merge-conflict resolution commit is necessary.
