@@ -24,14 +24,14 @@ macro_rules! test_pointer_ffi_call {
 mod ffi_pointer_safety_tests;
 
 use crate::{
-    kmipkit_attestation_credential_t, kmipkit_authentication_t, kmipkit_cancel_request_t,
-    kmipkit_client_async_operation_metadata_v1_t, kmipkit_client_async_operation_outcome_t,
-    kmipkit_client_batch_item_metadata_v1_t, kmipkit_client_batch_item_metadata_v2_t,
-    kmipkit_client_batch_item_response_t, kmipkit_client_batch_item_t,
-    kmipkit_client_batch_response_t, kmipkit_client_batch_t, kmipkit_client_configuration_t,
-    kmipkit_client_extension_registry_t, kmipkit_client_request_message_extension_t,
-    kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_credential_t,
-    kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
+    kmipkit_add_attribute_request_t, kmipkit_attestation_credential_t, kmipkit_authentication_t,
+    kmipkit_cancel_request_t, kmipkit_client_async_operation_metadata_v1_t,
+    kmipkit_client_async_operation_outcome_t, kmipkit_client_batch_item_metadata_v1_t,
+    kmipkit_client_batch_item_metadata_v2_t, kmipkit_client_batch_item_response_t,
+    kmipkit_client_batch_item_t, kmipkit_client_batch_response_t, kmipkit_client_batch_t,
+    kmipkit_client_configuration_t, kmipkit_client_extension_registry_t,
+    kmipkit_client_request_message_extension_t, kmipkit_client_t, kmipkit_codec_limits_t,
+    kmipkit_credential_t, kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
     kmipkit_credential_view_t, kmipkit_device_credential_t, kmipkit_extension_child_rule_t,
     kmipkit_extension_compatibility_t, kmipkit_extension_definition_t,
     kmipkit_extension_discriminator_t, kmipkit_extension_identity_t,
@@ -426,6 +426,7 @@ enum Kind {
     Structure,
     BatchItem,
     RegisterRequest,
+    AddAttributeRequest,
     ChildRule,
     OrderConstraint,
     Value,
@@ -495,6 +496,7 @@ enum HandleValue {
     BatchItem(Box<ClientBatchItem>),
     BatchItemReadback(ClientBatchItemReadback),
     RegisterRequest(Box<RegisterRequest>),
+    AddAttributeRequest(Box<AddAttributeRequest>),
     RevocationReason {
         reason: RevocationReason,
         message: Option<String>,
@@ -1886,6 +1888,15 @@ pub extern "C" fn kmipkit_client_request_message_extension_release(
 pub extern "C" fn kmipkit_register_request_release(handle: *mut kmipkit_register_request_t) {
     ffi_entrypoint(|| {
         release(handle, Kind::RegisterRequest);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_add_attribute_request_release(
+    handle: *mut kmipkit_add_attribute_request_t,
+) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::AddAttributeRequest);
     });
 }
 

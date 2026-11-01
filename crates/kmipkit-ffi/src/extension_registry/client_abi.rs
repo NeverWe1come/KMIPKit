@@ -1254,6 +1254,127 @@ fn copy_async_correlation_spans(
     Ok(values)
 }
 
+/// Creates a standalone KMIP 2.1 §6.1.2 Add Attribute request.
+///
+/// The optional Unique Identifier record and New Attribute Item are borrowed
+/// and copied; the returned model owns its fields and performs no I/O.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_add_attribute_request_create(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    new_attribute: *mut kmipkit_ttlv_item_t,
+    out_request: *mut *mut kmipkit_add_attribute_request_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_request);
+        let unique_identifier = try_ffi!(copy_optional_text_identifier(unique_identifier));
+        let new_attribute = try_ffi!(copy_required_item_handle(new_attribute));
+        let request = AddAttributeRequest::new(unique_identifier, NewAttribute::new(new_attribute));
+        *out = try_ffi!(try_make_handle(
+            Kind::AddAttributeRequest,
+            HandleValue::AddAttributeRequest(Box::new(request)),
+        ));
+        SUCCESS
+    })
+}
+
+/// Copies the optional Unique Identifier from a standalone Add Attribute request.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_add_attribute_request_unique_identifier(
+    request: *mut kmipkit_add_attribute_request_t,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let request = read_handle!(request, AddAttributeRequest);
+        let HandleValue::AddAttributeRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        if let Err(status) =
+            write_unique_identifier_text_v1(out_unique_identifier, request.unique_identifier())
+        {
+            return record_ffi_error(status);
+        }
+        SUCCESS
+    })
+}
+
+/// Returns an owned copy of the direct New Attribute Item.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_add_attribute_request_new_attribute(
+    request: *mut kmipkit_add_attribute_request_t,
+    out_new_attribute: *mut *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_new_attribute);
+        let request = read_handle!(request, AddAttributeRequest);
+        let HandleValue::AddAttributeRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let item = try_ffi!(
+            request
+                .new_attribute()
+                .item()
+                .try_clone()
+                .map_err(model_status)
+        );
+        *out = try_ffi!(try_make_handle(Kind::Item, HandleValue::Item(item),));
+        SUCCESS
+    })
+}
+
+/// Copies the Add Attribute Request Payload into a caller-owned TTLV Structure.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_add_attribute_request_to_ttlv_payload(
+    request: *mut kmipkit_add_attribute_request_t,
+    out_payload: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_payload);
+        let request = read_handle!(request, AddAttributeRequest);
+        let HandleValue::AddAttributeRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let payload = try_ffi!(
+            request
+                .to_ttlv_payload()
+                .map_err(|error| protocol_status(&error))
+        );
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(payload),
+        ));
+        SUCCESS
+    })
+}
+
+/// Creates an Add Attribute batch item from a standalone typed request.
+///
+/// The request remains valid and caller-owned after this call.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_add_attribute_from_request(
+    request: *mut kmipkit_add_attribute_request_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let request = read_handle!(request, AddAttributeRequest);
+        let HandleValue::AddAttributeRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let copied = AddAttributeRequest::new(
+            request.unique_identifier().map(str::to_owned),
+            NewAttribute::new(try_ffi!(
+                request
+                    .new_attribute()
+                    .item()
+                    .try_clone()
+                    .map_err(model_status)
+            )),
+        );
+        *out = try_ffi!(batch_item_handle(ClientRequest::AddAttribute(copied)));
+        SUCCESS
+    })
+}
+
 /// Creates a local KMIP 2.1 Cancel request model without performing I/O.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_cancel_request_create(

@@ -114,7 +114,10 @@ fn standalone_add_attribute_request_serializes_and_builds_a_batch_item() {
         ),
         SUCCESS
     );
-    assert_eq!(copied_identifier.kind, crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING);
+    assert_eq!(
+        copied_identifier.kind,
+        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING
+    );
     assert_eq!(copied_identifier.text_length, 8);
     // SAFETY: the returned identifier bytes are borrowed from the live request handle.
     assert_eq!(
@@ -145,10 +148,7 @@ fn standalone_add_attribute_request_serializes_and_builds_a_batch_item() {
 
     let mut payload_handle = ptr::null_mut();
     assert_eq!(
-        client_abi::kmipkit_add_attribute_request_to_ttlv_payload(
-            request,
-            &raw mut payload_handle,
-        ),
+        client_abi::kmipkit_add_attribute_request_to_ttlv_payload(request, &raw mut payload_handle,),
         SUCCESS
     );
     let payload = reference_handle(payload_handle, Kind::Structure)
@@ -156,7 +156,8 @@ fn standalone_add_attribute_request_serializes_and_builds_a_batch_item() {
     let HandleValue::Structure(payload) = &payload.value else {
         panic!("the standalone request payload is a generic TTLV Structure");
     };
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
     assert_eq!(fields.len(), 2);
     assert_eq!(fields[0].tag().raw(), 0x0042_0094);
     assert!(fields[0].with_value(|value| matches!(
