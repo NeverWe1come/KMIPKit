@@ -178,8 +178,13 @@ class DeviceCredentialTests(unittest.TestCase):
         self.assertIsNotNone(facade)
         if facade is None:
             return
-        with self.assertRaises(errors.InvalidInputError):
+        with self.assertRaises(errors.CredentialValidationError) as raised:
             facade.from_ttlv(device_structure(False))
+        self.assertEqual(
+            errors.CredentialValidationErrorKind.MISSING_FIELD,
+            raised.exception.kind,
+        )
+        self.assertNotIn("sensitive-sentinel", str(raised.exception))
 
 
 if __name__ == "__main__":

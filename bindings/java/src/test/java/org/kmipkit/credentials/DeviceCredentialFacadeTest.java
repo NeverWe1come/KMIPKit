@@ -1,6 +1,7 @@
 package org.kmipkit.credentials;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -59,7 +60,10 @@ final class DeviceCredentialFacadeTest {
     @Test
     void deviceCredentialRequiresOneOfTheFourIdentifierFields() {
         TtlvStructure source = deviceStructure(false);
-        assertThrows(InvalidInputException.class, () -> DeviceCredential.fromTtlv(source));
+        CredentialValidationException error = assertThrows(
+                CredentialValidationException.class, () -> DeviceCredential.fromTtlv(source));
+        assertEquals(CredentialValidationErrorKind.MISSING_FIELD, error.kind());
+        assertFalse(error.getMessage().contains("sensitive-sentinel"));
     }
 
     private static List<Integer> readTags(TtlvStructureView view) {

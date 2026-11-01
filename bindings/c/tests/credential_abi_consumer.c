@@ -583,13 +583,26 @@ int32_t kmipkit_device_credential_c_consumer_round_trip(uint64_t *out_count) {
 int32_t kmipkit_device_credential_c_consumer_rejects_missing_identifier(void) {
     kmipkit_ttlv_structure_t *structure = 0;
     kmipkit_device_credential_t *credential = 0;
+    kmipkit_credential_validation_error_v1_t error = {
+        (uint32_t)sizeof(kmipkit_credential_validation_error_v1_t), 1, 0
+    };
     int32_t status = build_device_structure(0, &structure);
     if (status == 0) {
         status = kmipkit_device_credential_from_ttlv(structure, &credential);
         structure = 0;
-        if (status == 0 || credential != 0) status = 1;
+        if (status != KMIPKIT_ERROR_INVALID_INPUT || credential != 0) status = 1;
         else status = 0;
     }
+    if (status == 0) status = kmipkit_last_credential_validation_error_get_v1(&error);
+    if (status == 0 && error.kind != KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_MISSING_FIELD)
+        status = 1;
+    if (status == 0) status = kmipkit_last_credential_validation_error_get_v1(&error);
+    if (status == 0 && error.kind != KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_MISSING_FIELD)
+        status = 1;
+    if (status == 0) status = kmipkit_last_error_clear();
+    error.kind = KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_MISSING_FIELD;
+    if (status == 0) status = kmipkit_last_credential_validation_error_get_v1(&error);
+    if (status == 0 && error.kind != 0) status = 1;
     kmipkit_ttlv_structure_release(structure);
     kmipkit_device_credential_release(credential);
     return status;

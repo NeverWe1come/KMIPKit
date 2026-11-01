@@ -64,6 +64,17 @@ DEVICE_CREDENTIAL_EXPORTS = {
     "kmipkit_protocol::DeviceCredential::with_ttlv",
     "kmipkit_protocol::DeviceCredential::into_ttlv",
 }
+VALIDATION_ERROR_EXPORTS = {
+    "kmipkit_protocol::CredentialValidationError",
+    "kmipkit_protocol::CredentialValidationError::kind",
+    "kmipkit_protocol::CredentialValidationErrorKind",
+    "kmipkit_protocol::CredentialValidationErrorKind::EmptyAuthentication",
+    "kmipkit_protocol::CredentialValidationErrorKind::DuplicateField",
+    "kmipkit_protocol::CredentialValidationErrorKind::MissingField",
+    "kmipkit_protocol::CredentialValidationErrorKind::WrongFieldType",
+    "kmipkit_protocol::CredentialValidationErrorKind::FieldOutOfOrder",
+    "kmipkit_protocol::CredentialValidationErrorKind::InvalidTtlvStructure",
+}
 EXPECTED_MAPPED_CREDENTIAL_EXPORTS = (
     EXPECTED_CREDENTIAL_TYPE_EXPORTS
     | EXPECTED_NONCE_EXPORTS
@@ -71,6 +82,7 @@ EXPECTED_MAPPED_CREDENTIAL_EXPORTS = (
     | ATTESTATION_CREDENTIAL_EXPORTS
     | DEVICE_CREDENTIAL_EXPORTS
     | AUTHENTICATION_EXPORTS
+    | VALIDATION_ERROR_EXPORTS
 )
 NONCE_REQUIREMENTS = {
     "KMIPKIT-0008-FR-006",
@@ -287,7 +299,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             row for row in meaningful
             if row.get("exportName") not in EXPECTED_MAPPED_CREDENTIAL_EXPORTS
         ]
-        self.assertEqual(55, len(remaining))
+        self.assertEqual(46, len(remaining))
         self.assertTrue(all(row.get("declarationState") == "blocked" for row in remaining))
 
     def test_credential_type_is_mapped_as_an_open_raw_enum(self) -> None:
@@ -336,6 +348,74 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
         self.assertEqual("kmipkit_credential_type_from_raw", function["c"]["symbol"])
         self.assertEqual("from_raw", function["rust"]["name"])
 
+    def test_credential_validation_error_has_raw_preserving_four_language_mapping(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        declarations = {
+            row["exportName"]: row
+            for row in manifest["publicDeclarations"]
+            if row.get("exportName") in VALIDATION_ERROR_EXPORTS
+        }
+        self.assertEqual(VALIDATION_ERROR_EXPORTS, declarations.keys())
+        for export_name, declaration in declarations.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual("declared", declaration.get("declarationState"))
+                self.assertEqual("four-language", declaration.get("parityScope"))
+                mappings = declaration.get("languageMappings")
+                self.assertIsInstance(mappings, dict)
+                self.assertEqual(LANGUAGES, set(mappings))
+                self.assertTrue(
+                    all(
+                        _is_nonblank_string(mappings[language].get("name"))
+                        and _is_nonblank_string(mappings[language].get("packageId"))
+                        for language in LANGUAGES
+                    )
+                )
+
+        types = {row["id"]: row for row in manifest["types"]}
+        kind_type = types.get("CredentialValidationErrorKind")
+        self.assertIsNotNone(kind_type)
+        if kind_type is None:
+            return
+        self.assertEqual("open-numeric", kind_type["enumRepresentation"]["shape"])
+        self.assertEqual("preserve-raw", kind_type["enumRepresentation"]["unknownValuePolicy"])
+        self.assertEqual(
+            [
+                ("EmptyAuthentication", 1),
+                ("DuplicateField", 2),
+                ("MissingField", 3),
+                ("WrongFieldType", 4),
+                ("FieldOutOfOrder", 5),
+                ("InvalidTtlvStructure", 6),
+            ],
+            [(row["name"], row["value"]) for row in kind_type["enumRepresentation"]["values"]],
+        )
+        self.assertEqual("preserve-raw", kind_type["c"]["unknownValuePolicy"])
+
+        error_type = types.get("CredentialValidationErrorV1")
+        self.assertIsNotNone(error_type)
+        if error_type is None:
+            return
+        self.assertTrue(error_type["c"]["versioned"])
+        self.assertEqual(
+            ["struct_size", "abi_version", "kind"],
+            [field["name"] for field in error_type["c"]["fields"]],
+        )
+        getter = next(
+            (
+                row
+                for row in manifest["functions"]
+                if row["id"] == "ffi_last_credential_validation_error_get_v1"
+            ),
+            None,
+        )
+        self.assertIsNotNone(getter)
+        if getter is None:
+            return
+        self.assertEqual(
+            "kmipkit_last_credential_validation_error_get_v1", getter["c"]["symbol"]
+        )
+        self.assertEqual("kmipkit_credential_validation_error_v1_t *", getter["c"]["parameters"][0]["type"])
+
     def test_partial_owner_parity_maps_credential_type_and_keeps_exact_blockers(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         declarations = [
@@ -350,7 +430,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             for declaration in declarations
             if declaration.get("declarationState") == "blocked"
         ]
-        self.assertEqual(55, len(blocked))
+        self.assertEqual(46, len(blocked))
 
         exclusions = {
             (row.get("packageId"), row.get("exportName")): row
