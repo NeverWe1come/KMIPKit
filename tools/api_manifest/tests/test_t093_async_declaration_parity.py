@@ -171,6 +171,10 @@ class T093AsyncDeclarationParityTests(unittest.TestCase):
             for row in self.manifest["capabilities"]
             if row.get("capabilityId") == "client_asynchronous_operations"
         )
+        self.assertEqual(
+            sorted(set(capability["requirementIds"])),
+            capability["requirementIds"],
+        )
         for package, export in sorted(expected):
             row = next(
                 item
