@@ -218,6 +218,7 @@ unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_main(argc: i32, argv: *mut *mut c_char) -> i32;
     fn kmipkit_client_abi_c_consumer_batch_item_readback() -> i32;
     fn kmipkit_client_abi_c_consumer_async_output_errors_clear() -> i32;
+    fn kmipkit_client_abi_c_consumer_async_request_models() -> i32;
     fn shared_ttlv_fixture_preserves_open_values_and_order(
         raw_tags: *const u32,
         enumeration_value: u32,
@@ -261,6 +262,14 @@ unsafe extern "C" {
 fn generated_public_c_consumer_reads_an_owned_batch_item_after_batch_release() {
     // SAFETY: The C helper calls only the public ABI with its own handles and buffers.
     let result = unsafe { kmipkit_client_abi_c_consumer_batch_item_readback() };
+    assert_eq!(result, 1);
+}
+
+#[test]
+fn compiled_c_consumer_builds_typed_async_payloads_without_network_execution() {
+    // SAFETY: The C helper owns its request and TTLV handles and only reads borrowed spans while
+    // their source request handle is alive.
+    let result = unsafe { kmipkit_client_abi_c_consumer_async_request_models() };
     assert_eq!(result, 1);
 }
 

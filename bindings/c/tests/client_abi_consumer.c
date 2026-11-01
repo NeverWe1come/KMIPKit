@@ -5768,7 +5768,9 @@ static int async_item_value_at(
     kmipkit_ttlv_item_view_t **out_item,
     kmipkit_ttlv_value_view_t **out_value) {
     kmipkit_ttlv_item_view_t *item = 0;
+    kmipkit_ttlv_item_view_t *child_item = 0;
     kmipkit_ttlv_value_view_t *value = 0;
+    kmipkit_ttlv_value_view_t *child_value = 0;
     uint32_t actual_tag = 0;
     uint8_t actual_type = 0;
     if (view == 0 || out_item == 0 || out_value == 0 ||
@@ -6962,6 +6964,124 @@ int kmipkit_client_abi_c_consumer_async_output_errors_clear(void) {
 
     kmipkit_client_async_operation_outcome_release(0);
     return 1;
+}
+
+/* KMIP 2.1 §§6.1.5, 6.1.38, 6.1.39, and 6.1.41: typed request models build payloads only. */
+int kmipkit_client_abi_c_consumer_async_request_models(void) {
+    static const uint8_t correlation[] = {0x00, 0xff, 0x80};
+    static const uint8_t second_correlation[] = {0x10, 0x00};
+    const kmipkit_byte_span_v1_t correlation_filters[] = {
+        {correlation, sizeof(correlation)},
+        {second_correlation, sizeof(second_correlation)},
+        {correlation, sizeof(correlation)},
+    };
+    const uint32_t operation_filters[] = {UINT32_C(0x0000001a), UINT32_C(0xf1234567)};
+    kmipkit_cancel_request_t *cancel = 0;
+    kmipkit_poll_request_t *poll = 0;
+    kmipkit_process_request_t *process = 0;
+    kmipkit_query_async_requests_request_t *query = 0;
+    kmipkit_query_async_requests_request_t *next_query = 0;
+    kmipkit_ttlv_structure_t *payload = 0;
+    kmipkit_ttlv_structure_view_t *view = 0;
+    kmipkit_ttlv_item_view_t *item = 0;
+    kmipkit_ttlv_value_view_t *value = 0;
+    kmipkit_ttlv_structure_view_t *nested = 0;
+    kmipkit_tag_t *tag = 0;
+    kmipkit_byte_span_v1_t borrowed = {0};
+    uint64_t count = 0;
+    uint32_t raw_tag = 0;
+    uint32_t raw_operation = 0;
+    int result = 0;
+
+    if (kmipkit_cancel_request_create(correlation, sizeof(correlation), &cancel) != 0 ||
+        kmipkit_cancel_request_asynchronous_correlation_value(cancel, &borrowed) != 0 ||
+        borrowed.length != sizeof(correlation) || borrowed.data == 0 ||
+        memcmp(borrowed.data, correlation, sizeof(correlation)) != 0 ||
+        kmipkit_cancel_request_to_ttlv_payload(cancel, &payload) != 0 ||
+        kmipkit_ttlv_structure_view(payload, &view) != 0 ||
+        kmipkit_ttlv_structure_view_item_count(view, &count) != 0 || count != 1 ||
+        kmipkit_ttlv_structure_view_item_at(view, 0, &item) != 0 ||
+        kmipkit_ttlv_item_view_tag(item, &tag) != 0 ||
+        kmipkit_ttlv_tag_value(tag, &raw_tag) != 0 || raw_tag != UINT32_C(0x00420006)) {
+        goto cleanup;
+    }
+    kmipkit_ttlv_tag_release(tag);
+    tag = 0;
+    kmipkit_ttlv_item_view_release(item);
+    item = 0;
+    kmipkit_ttlv_structure_view_release(view);
+    view = 0;
+    kmipkit_ttlv_structure_release(payload);
+    payload = 0;
+
+    if (kmipkit_poll_request_create(correlation, sizeof(correlation), &poll) != 0 ||
+        kmipkit_poll_request_to_ttlv_payload(poll, &payload) != 0) {
+        goto cleanup;
+    }
+    kmipkit_ttlv_structure_release(payload);
+    payload = 0;
+    if (kmipkit_process_request_create(correlation, sizeof(correlation), &process) != 0 ||
+        kmipkit_process_request_to_ttlv_payload(process, &payload) != 0) {
+        goto cleanup;
+    }
+    kmipkit_ttlv_structure_release(payload);
+    payload = 0;
+
+    if (kmipkit_query_async_requests_request_create(&query) != 0 ||
+        kmipkit_query_async_requests_request_to_ttlv_payload(query, &payload) != 0 ||
+        kmipkit_ttlv_structure_view(payload, &view) != 0 ||
+        kmipkit_ttlv_structure_view_item_count(view, &count) != 0 || count != 0) {
+        goto cleanup;
+    }
+    kmipkit_ttlv_structure_view_release(view);
+    view = 0;
+    kmipkit_ttlv_structure_release(payload);
+    payload = 0;
+
+    if (kmipkit_query_async_requests_request_with_correlation_values(
+            query, correlation_filters, 3, &next_query) != 0) {
+        goto cleanup;
+    }
+    query = 0;
+    query = next_query;
+    next_query = 0;
+    if (kmipkit_query_async_requests_request_with_operations(
+            query, operation_filters, 2, &next_query) != 0) {
+        goto cleanup;
+    }
+    query = 0;
+    query = next_query;
+    next_query = 0;
+    if (kmipkit_query_async_requests_request_to_ttlv_payload(query, &payload) != 0 ||
+        kmipkit_ttlv_structure_view(payload, &view) != 0 ||
+        kmipkit_ttlv_structure_view_item_count(view, &count) != 0 || count != 2 ||
+        kmipkit_ttlv_structure_view_item_at(view, 1, &item) != 0 ||
+        kmipkit_ttlv_item_view_value(item, &value) != 0 ||
+        kmipkit_ttlv_value_view_structure(value, &nested) != 0 ||
+        kmipkit_ttlv_structure_view_item_count(nested, &count) != 0 || count != 2 ||
+        kmipkit_ttlv_structure_view_item_at(nested, 1, &child_item) != 0 ||
+        kmipkit_ttlv_item_view_value(child_item, &child_value) != 0 ||
+        kmipkit_ttlv_value_view_enumeration(child_value, &raw_operation) != 0 ||
+        raw_operation != UINT32_C(0xf1234567)) {
+        goto cleanup;
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_cancel_request_release(cancel);
+    kmipkit_poll_request_release(poll);
+    kmipkit_process_request_release(process);
+    kmipkit_query_async_requests_request_release(query);
+    kmipkit_query_async_requests_request_release(next_query);
+    kmipkit_ttlv_structure_release(payload);
+    kmipkit_ttlv_structure_view_release(view);
+    kmipkit_ttlv_structure_view_release(nested);
+    kmipkit_ttlv_item_view_release(item);
+    kmipkit_ttlv_item_view_release(child_item);
+    kmipkit_ttlv_value_view_release(value);
+    kmipkit_ttlv_value_view_release(child_value);
+    kmipkit_tag_release(tag);
+    return result;
 }
 
 int kmipkit_client_abi_c_consumer_validate_register_response(
