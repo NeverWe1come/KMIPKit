@@ -7954,3 +7954,25 @@ Verification for this checkpoint:
 Local Windows builds emitted non-fatal AWS-LC optional compiler-feature/NASM probe warnings and a C consumer linker warning; the commands above completed successfully. The temporary coverage-gate waiver for PR #104 remains active, so this checkpoint does not claim the branch coverage thresholds or close T092. Hosted CI must rerun on the pushed PR head before the PR can leave draft status.
 
 QA follow-up (2026-11-01): a Username readback assertion gap was closed in tests without changing production code. Rust now asserts the exact Text String `alice` after typed round-trip. C, Java, and Python assert the exact UTF-8 bytes in both scoped views and transferred TTLV; their Timestamp assertions also verify the exact DateTimeExtended value on those paths. Fresh verification: Rust credential contract hashed-password cases passed (8/8), compiled C consumer test passed (1/1), Java facade test passed, Python hashed-password tests passed (4/4), `cargo fmt --all --check` passed, and `git diff --check` passed. Independent QA recheck confirmed the exact Username readback coverage in all four languages and found no remaining material gap in this scope; the reviewer did not run tests.
+
+### T092 CredentialValue and opaque TTLV four-language parity (2026-11-01)
+
+This slice completes T092's CredentialValue family under the approved KMIPKIT-0008 model. Its normative basis is OASIS KMIP v2.1 §9.11, Tables 410–416 and §11.11, Table 442; Authentication and Nonce structures are traced to §9.4/Table 403 and §9.14/Table 419 in `traceability.md`. Rust's `CredentialValue` keeps known values typed while retaining ordered original TTLV, unknown raw Credential Type values, unknown children, Extensions, and unknown value trees. C, Java/JNI, and Python/CFFI map the same 31 Rust CredentialValue/OTP/Ticket/OpaqueTtlv declarations. This remains an in-memory representation: it adds no Authentication selection, request attachment, client execution, credential send path, or profile claim.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red — require CredentialValue discriminator, typed view, and four-language owner mapping | `6552acef1`, `3850746d9`, `027a83e3b` | Rust credential contract; compiled C consumer; Java facade; Python facade; T092 manifest contract | Tests exposed the missing CredentialValue mapping and missing language parity before implementation. |
+| Red — guard retained-view ownership and opaque payload readback | `56a0871b6` | C, Java, and Python consumers retain a nested TTLV child view, reject destructive conversion while shared, verify the original value remains accessible, then close the view and retry | Regression tests exposed shared-owner status/handle-loss differences and now verify exact integer payload readback on both scoped views and transferred TTLV. |
+| Green — add typed CredentialValue model and map it through FFI/JNI/CFFI | `8a3f77ff7`, `83a33e5cc` | Rust, C, Java, Python, manifest, and export audits | C reports the dedicated shared-owner status before consuming; Java transfers only after native conversion succeeds; Python restores the original handle on shared-owner rejection. All 31 owner declarations map through all four languages. |
+| Refactor/evidence — record owner traceability, audit reports, closeout, and results | this commit | T092 contract, generator and export-audit checks; `git diff --check` | The manifest verifies 99/99 functional credential declarations, zero unresolved KMIPKIT-0008 candidates, and 222 exact trait exclusions. T092 is complete; the remaining specification tasks are still open. |
+
+Current verification for this closeout:
+
+- `py -3 -B -m unittest tools.api_manifest.tests.test_t092_credentials_parity_manifest` — 22 passed.
+- `py -3 -B tools/api_manifest/generate.py --check` — all 12 generated API outputs verified.
+- `cargo test -p kmipkit-ffi --test c_api_coverage --all-features` — 32 passed; the complete `cargo test --workspace --all-features`, `cargo fmt --all --check`, and workspace Clippy with `-D warnings` also passed on this worktree after the ownership fix.
+- Java `gradlew.bat test --no-daemon` — build successful; Python full suite — 884 passed, 1 skipped.
+- `binding-export-report-2026-11-01.json` reports C 665/665, Java 1,053/1,053, and Python 1,049/1,049 exact matches, with zero missing, unobserved, or kind-mismatched declarations. The Rust report matches 8,816/8,816 declarations, records 1,645 exact exclusions, and has zero issues; the shared inventory's two blocked namespace records are unrelated to KMIPKIT-0008.
+- Coverage thresholds remain under the branch's authorized temporary waiver; these results do not claim that the thresholds pass. Hosted CI must rerun on the pushed head.
+
+Independent QA and security re-reviews of the ownership correction found no remaining behavior or security defect. The full current branch remains subject to the open T075/T085/T093–T102 gates and human review; this T092 closeout does not make PR #104 ready to merge.
