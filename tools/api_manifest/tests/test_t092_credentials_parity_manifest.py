@@ -78,6 +78,37 @@ HASHED_PASSWORD_CREDENTIAL_EXPORTS = {
     "kmipkit_protocol::HashedPasswordCredential::with_ttlv",
     "kmipkit_protocol::HashedPasswordCredential::into_ttlv",
 }
+CREDENTIAL_VALUE_OWNER_EXPORTS = {
+    "kmipkit_protocol::CredentialValue",
+    "kmipkit_protocol::CredentialValue::UsernameAndPassword",
+    "kmipkit_protocol::CredentialValue::Device",
+    "kmipkit_protocol::CredentialValue::Attestation",
+    "kmipkit_protocol::CredentialValue::OneTimePassword",
+    "kmipkit_protocol::CredentialValue::HashedPassword",
+    "kmipkit_protocol::CredentialValue::Ticket",
+    "kmipkit_protocol::CredentialValue::Extensions",
+    "kmipkit_protocol::CredentialValue::Unknown",
+    "kmipkit_protocol::CredentialValue::Attestation::0",
+    "kmipkit_protocol::CredentialValue::Device::0",
+    "kmipkit_protocol::CredentialValue::Extensions::0",
+    "kmipkit_protocol::CredentialValue::HashedPassword::0",
+    "kmipkit_protocol::CredentialValue::OneTimePassword::0",
+    "kmipkit_protocol::CredentialValue::Ticket::0",
+    "kmipkit_protocol::CredentialValue::UsernameAndPassword::0",
+    "kmipkit_protocol::CredentialValue::Unknown::credential_type",
+    "kmipkit_protocol::CredentialValue::Unknown::value",
+    "kmipkit_protocol::CredentialValue::try_from_ttlv",
+    "kmipkit_protocol::CredentialValue::into_ttlv",
+    "kmipkit_protocol::OneTimePasswordCredential",
+    "kmipkit_protocol::OneTimePasswordCredential::with_ttlv",
+    "kmipkit_protocol::OneTimePasswordCredential::into_ttlv",
+    "kmipkit_protocol::TicketCredential",
+    "kmipkit_protocol::TicketCredential::with_ttlv",
+    "kmipkit_protocol::TicketCredential::into_ttlv",
+    "kmipkit_protocol::OpaqueTtlv",
+    "kmipkit_protocol::OpaqueTtlv::with_ttlv",
+    "kmipkit_protocol::OpaqueTtlv::into_ttlv",
+}
 VALIDATION_ERROR_EXPORTS = {
     "kmipkit_protocol::CredentialValidationError",
     "kmipkit_protocol::CredentialValidationError::kind",
@@ -679,6 +710,30 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             f"unresolved {OWNER_SPEC} declarations ({len(unresolved)} rows): "
             f"{unresolved[:5]}",
         )
+
+    def test_credential_value_owner_surface_has_no_blocked_exports(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        declarations = {
+            row["exportName"]: row
+            for row in manifest["publicDeclarations"]
+            if row.get("candidateSpecId") == OWNER_SPEC
+            and row.get("exportName") in CREDENTIAL_VALUE_OWNER_EXPORTS
+        }
+        self.assertEqual(CREDENTIAL_VALUE_OWNER_EXPORTS, declarations.keys())
+
+        blocked = {
+            export_name: declaration.get("blockedReason")
+            for export_name, declaration in declarations.items()
+            if declaration.get("declarationState") == "blocked"
+        }
+        self.assertEqual({}, blocked)
+
+        for export_name, declaration in declarations.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual("declared", declaration.get("declarationState"))
+                self.assertEqual(
+                    LANGUAGES, set(declaration.get("languageMappings", {}))
+                )
 
     def test_nonce_type_and_lifecycle_map_through_all_four_languages(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))

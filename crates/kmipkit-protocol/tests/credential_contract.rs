@@ -991,3 +991,64 @@ fn attestation_requires_nonce_type_and_one_or_both_evidence_fields() {
         assert!(credential_value(3, invalid).is_err());
     }
 }
+
+
+// KMIP Specification v2.1 §9.11, Tables 414 and 416, and Table 442 require
+// the generic Credential Value facade to retain its discriminator and TTLV.
+#[test]
+fn credential_value_exposes_raw_type_and_scoped_ttlv_without_rebuilding() {
+    let cases = [
+        (
+            4,
+            structure([
+                item(USERNAME, Value::text_string("alice".to_owned())),
+                item(ONE_TIME_PASSWORD, Value::text_string("otp-sentinel".to_owned())),
+            ]),
+            vec![USERNAME, ONE_TIME_PASSWORD],
+        ),
+        (
+            6,
+            structure([item(
+                TICKET,
+                Value::structure(structure([
+                    item(TICKET_TYPE, Value::enumeration(1)),
+                    item(TICKET_VALUE, Value::byte_string(vec![0x00, 0xFE])),
+                ])),
+            )]),
+            vec![TICKET],
+        ),
+        (
+            0x8000_0042,
+            structure([item(EXTENSION_CHILD, Value::integer(7))]),
+            vec![EXTENSION_CHILD],
+        ),
+        (
+            0xF123_4567,
+            structure([item(EXTENSION_CHILD, Value::integer(9))]),
+            vec![EXTENSION_CHILD],
+        ),
+    ];
+
+    for (raw_type, source, expected_tags) in cases {
+        let value = credential_value(raw_type, source)
+            .expect("known, extension, and unknown Credential Value trees are valid");
+        assert_eq!(value.credential_type_raw(), raw_type);
+        assert_eq!(
+            value.with_ttlv(|view| view
+                .children()
+                .iter()
+                .map(|field| field.tag().raw())
+                .collect::<Vec<_>>()),
+            expected_tags
+        );
+        let roundtrip = value.into_ttlv();
+        let view = roundtrip.view();
+        assert_eq!(
+            view.children()
+                .iter()
+                .map(|field| field.tag().raw())
+                .collect::<Vec<_>>(),
+            expected_tags
+        );
+    }
+}
