@@ -1528,7 +1528,7 @@ int32_t kmipkit_credential_view_ttlv_view(kmipkit_credential_view_t * credential
  * Initialize struct_size to sizeof(kmipkit_credential_validation_error_v1_t) and abi_version to 1 before calling.
  * kind is zero when the last error has no credential validation category; nonzero values preserve known and future raw codes.
  */
-/* KMIPKIT-0008-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021 */
+/* KMIPKIT-0008-FR-001, KMIPKIT-0008-FR-002, KMIPKIT-0008-FR-003, KMIPKIT-0008-FR-004, KMIPKIT-0008-FR-005, KMIPKIT-0008-FR-006, KMIPKIT-0008-FR-010, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_last_credential_validation_error_get_v1(kmipkit_credential_validation_error_v1_t * out_error);
 /* KMIPKIT-0006-FR-021, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_message_extension_view_ttlv(kmipkit_message_extension_view_t * extension, kmipkit_ttlv_structure_t ** out_structure);

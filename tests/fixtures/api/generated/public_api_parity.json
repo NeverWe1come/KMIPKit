@@ -69882,7 +69882,13 @@
         "returnType": "int"
       },
       "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
         "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-021"
