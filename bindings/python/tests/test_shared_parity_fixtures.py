@@ -123,6 +123,26 @@ def test_hashed_password_timestamp_sequence_matches_shared_fixture() -> None:
         assert expected["maximumRepeatedRejected"] is True
 
 
+@pytest.mark.parametrize(
+    "invalid_timestamp",
+    [True, 1 << 63, -(1 << 63) - 1, 1.5],
+)
+def test_hashed_password_timestamp_sequence_rejects_invalid_python_integers(
+    invalid_timestamp: object,
+) -> None:
+    # KMIP v2.1 §9.11, Table 415 defines Date Time Extended; OD-003 scopes
+    # this caller-owned helper to signed i64 values supplied by the caller.
+    sequence_type = credentials.HashedPasswordTimestampSequence
+
+    with pytest.raises(errors.InvalidInputError):
+        sequence_type.create(last_timestamp=invalid_timestamp)  # type: ignore[arg-type]
+
+    with sequence_type.create() as sequence:
+        with pytest.raises(errors.InvalidInputError):
+            sequence.record(invalid_timestamp)  # type: ignore[arg-type]
+        assert sequence.last_timestamp is None
+
+
 def test_generic_ttlv_shared_fixture_has_an_executable_python_link() -> None:
     case = _parity_cases()["ttlv.open-values-and-child-order.v1"]
     python_consumer = case["consumerTests"]["python"]
