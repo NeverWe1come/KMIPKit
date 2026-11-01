@@ -114,6 +114,7 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "client_profile_validation"
             | "credential_ttlv_parity"
             | "credential_type_parity"
+            | "credential_validation_error_parity"
             | "crypto_response_ttlv"
             | "ffi_runtime_metadata"
             | "generic_ttlv_model"
