@@ -77,7 +77,7 @@ class SharedRustInventoryTests(unittest.TestCase):
 
     def test_shared_inventory_report_names_the_rust_audit_it_reads(self) -> None:
         expected_source = (
-            "specs/043-public-api-bindings/reports/rust-export-report-2026-10-31.json"
+            "specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json"
         )
         generated = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
         checked_in = json.loads(
@@ -113,8 +113,8 @@ class SharedRustInventoryTests(unittest.TestCase):
     def test_current_inventory_links_every_mapped_rust_declaration_to_approved_owner_requirements(self) -> None:
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
-        self.assertEqual(inventory["observedRustDeclarationCount"], 10458)
-        self.assertEqual(inventory["mappedRustDeclarationCount"], 688)
+        self.assertEqual(inventory["observedRustDeclarationCount"], 10459)
+        self.assertEqual(inventory["mappedRustDeclarationCount"], 692)
         self.assertEqual(len(inventory["blockedUnreconciledDeclarations"]), 2)
         self.assertEqual(set(inventory["draftOwnerGates"]), {"KMIPKIT-0010"})
         self.assertEqual(
