@@ -7,6 +7,7 @@ static const uint32_t CREDENTIAL_VALUE_TAG = 0x00420025;
 static const uint32_t CREDENTIAL_PAYLOAD_TAG = 0x0042002A;
 static const int32_t CREDENTIAL_PAYLOAD_VALUE = 0x13579;
 static const uint32_t DEVICE_SERIAL_NUMBER_TAG = 0x004200B0;
+static const uint32_t USERNAME_TAG = 0x00420099;
 static const uint32_t PASSWORD_TAG = 0x004200A1;
 static const uint32_t DEVICE_IDENTIFIER_TAG = 0x004200A2;
 static const uint32_t NETWORK_IDENTIFIER_TAG = 0x004200AB;
@@ -605,6 +606,81 @@ int32_t kmipkit_device_credential_c_consumer_rejects_missing_identifier(void) {
     if (status == 0 && error.kind != 0) status = 1;
     kmipkit_ttlv_structure_release(structure);
     kmipkit_device_credential_release(credential);
+    return status;
+}
+
+int32_t kmipkit_username_password_credential_c_consumer_round_trip(uint64_t *out_count) {
+    static const uint8_t username[] = "alice";
+    kmipkit_codec_limits_t *limits = 0;
+    kmipkit_ttlv_structure_t *structure = 0;
+    kmipkit_ttlv_structure_view_t *view = 0;
+    kmipkit_ttlv_structure_t *restored = 0;
+    kmipkit_ttlv_structure_view_t *restored_view = 0;
+    kmipkit_username_and_password_credential_t *credential = 0;
+    uint64_t count = 0;
+    int32_t status = out_count == 0 ? 4 : kmipkit_codec_limits_defaults(&limits);
+    if (status == 0) status = kmipkit_ttlv_structure_create(&structure);
+    if (status == 0) status = append_device_text(
+            &structure, limits, USERNAME_TAG, username, sizeof(username) - 1);
+    if (status == 0) status = append_device_text(
+            &structure, limits, PASSWORD_TAG, (const uint8_t *)"", 0);
+    if (status == 0) {
+        status = kmipkit_username_and_password_credential_from_ttlv(structure, &credential);
+        structure = 0;
+    }
+    if (status == 0) status = kmipkit_username_and_password_credential_ttlv_view(
+            credential, &view);
+    if (status == 0) status = kmipkit_ttlv_structure_view_item_count(view, &count);
+    if (status == 0 && count != 2) status = 1;
+    if (status == 0) {
+        int32_t shared_status = kmipkit_username_and_password_credential_into_ttlv(
+                credential, &restored);
+        if (shared_status != 4 || restored != 0) status = 2;
+    }
+    kmipkit_ttlv_structure_view_release(view);
+    view = 0;
+    if (status == 0) status = kmipkit_username_and_password_credential_into_ttlv(
+            credential, &restored);
+    if (status == 0) {
+        credential = 0;
+        status = kmipkit_ttlv_structure_view(restored, &restored_view);
+    }
+    if (status == 0) status = kmipkit_ttlv_structure_view_item_count(restored_view, &count);
+    if (status == 0 && count != 2) status = 3;
+    if (status == 0) *out_count = count;
+    kmipkit_codec_limits_release(limits);
+    kmipkit_ttlv_structure_release(structure);
+    kmipkit_ttlv_structure_view_release(view);
+    kmipkit_ttlv_structure_release(restored);
+    kmipkit_ttlv_structure_view_release(restored_view);
+    kmipkit_username_and_password_credential_release(credential);
+    return status;
+}
+
+int32_t kmipkit_username_password_credential_c_consumer_rejects_missing_username(void) {
+    kmipkit_codec_limits_t *limits = 0;
+    kmipkit_ttlv_structure_t *structure = 0;
+    kmipkit_username_and_password_credential_t *credential = 0;
+    kmipkit_credential_validation_error_v1_t error = {
+        (uint32_t)sizeof(kmipkit_credential_validation_error_v1_t), 1, 0
+    };
+    int32_t status = kmipkit_codec_limits_defaults(&limits);
+    if (status == 0) status = kmipkit_ttlv_structure_create(&structure);
+    if (status == 0) status = append_device_text(
+            &structure, limits, PASSWORD_TAG,
+            (const uint8_t *)"sensitive-sentinel", 18);
+    if (status == 0) {
+        status = kmipkit_username_and_password_credential_from_ttlv(structure, &credential);
+        structure = 0;
+        if (status != 4 || credential != 0) status = 1;
+        else status = 0;
+    }
+    if (status == 0) status = kmipkit_last_credential_validation_error_get_v1(&error);
+    if (status == 0 && error.kind != KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_MISSING_FIELD)
+        status = 2;
+    kmipkit_codec_limits_release(limits);
+    kmipkit_ttlv_structure_release(structure);
+    kmipkit_username_and_password_credential_release(credential);
     return status;
 }
 
