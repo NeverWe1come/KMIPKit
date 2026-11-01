@@ -44,10 +44,11 @@ use crate::{
     kmipkit_registered_extension_value_t, kmipkit_request_batch_item_view_t,
     kmipkit_request_header_view_t, kmipkit_request_message_t, kmipkit_request_options_v1_t,
     kmipkit_response_batch_item_view_t, kmipkit_response_header_view_t, kmipkit_response_message_t,
-    kmipkit_revocation_reason_t, kmipkit_revoke_request_t, kmipkit_split_key_reference_t,
-    kmipkit_tag_t, kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t,
-    kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t, kmipkit_ttlv_decode_error_v1_t,
-    kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
+    kmipkit_revocation_reason_t, kmipkit_revoke_request_t, kmipkit_secret_bytes_t,
+    kmipkit_secret_text_t, kmipkit_split_key_reference_t, kmipkit_tag_t,
+    kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t, kmipkit_transport_config_v1_t,
+    kmipkit_transport_input_v1_t, kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t,
+    kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
     kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
     kmipkit_unique_identifier_v1_t, kmipkit_usage_allocation_context_t,
     kmipkit_username_and_password_credential_t, kmipkit_validated_extension_value_t,
@@ -459,6 +460,8 @@ enum Kind {
     AttestationCredential,
     DeviceCredential,
     UsernameAndPasswordCredential,
+    SecretBytes,
+    SecretText,
 }
 
 enum HandleValue {
@@ -498,6 +501,8 @@ enum HandleValue {
     AttestationCredential(AttestationCredential),
     DeviceCredential(DeviceCredential),
     UsernameAndPasswordCredential(UsernameAndPasswordCredential),
+    SecretBytes(SecretBytes),
+    SecretText(SecretText),
     ChildRule(Box<extension::ExtensionChildRule>),
     OrderConstraint(extension::ExtensionOrderConstraint),
     Value(Value),
@@ -9128,3 +9133,5 @@ pub extern "C" fn kmipkit_ttlv_value_view_byte_at(
         SUCCESS
     })
 }
+
+mod credential_secrets;

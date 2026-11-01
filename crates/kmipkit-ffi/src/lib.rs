@@ -204,6 +204,14 @@ pub struct kmipkit_nonce_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_secret_bytes_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_secret_text_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
 pub struct kmipkit_credential_t {
     _private: [u8; 0],
 }
