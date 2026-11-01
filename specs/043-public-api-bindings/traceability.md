@@ -327,6 +327,10 @@ Approved operation owner: `specs/028-diagnostics-interop/spec.md` (KMIPKIT-0042)
 
 The ready `hashed_password_timestamp_sequence` capability is present in the generated C capability list and must be discoverable from the Rust `kmipkit::capability_is_available` facade as well. The Rust metadata contract test and the C metadata test compare the mapped capability surface; the KMIPKIT-0008-FR-007 traceability row points to discoverable tests for the sequence behavior. This closes a capability-discovery mismatch only and does not change sequence state or timestamp validation.
 
+The Python `HashedPasswordTimestampSequence.__init__` and `__slots__` exports are exact KMIPKIT-0008 exclusions: the inherited constructor requires KMIPKit's private handle token and the slot descriptor reports only wrapper storage. The public factory and sequence operations remain mapped. The T076 export audit requires both exclusion records and rejects unclassified Python exports.
+
+The shared parity fixture `credentials.hashed-password-timestamp-sequence.v1` links the Rust, compiled C, Java, and Python sequence consumers under KMIPKIT-0008-FR-007, KMIPKIT-REQ-SPEC-9.11-010-001, and the applicable KMIPKIT-0043 parity requirements. The parity contract recognizes the `int32_t` return type used by its C consumer.
+
 ### T094 — KMIPKIT-0012 vendor extension registry mapping
 
 Approved owner: `specs/012-vendor-extension-registry/spec.md`, especially FR-005/006/007/009/010, with exact per-declaration requirement IDs in the API manifest. The OASIS sources that define the preserved TTLV structures are KMIP Specification v2.1 §8.3/Table 396 (repeated Message Extension order), §9.13/Table 418 (Message Extension fields), §7.13/Table 365 (Extension Information), and §11.44/Table 476 (Query Extension List/Map). These are API mapping commitments and do not claim remote server support or implement Query.

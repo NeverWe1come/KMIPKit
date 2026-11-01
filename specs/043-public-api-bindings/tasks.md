@@ -231,6 +231,10 @@ T102 Validate request-model helper parity checkpoint (2026-11-01): the four `Val
 
 T102 runtime-capability parity correction (2026-11-01): exact-head CI run `41352370261` exposed that the C manifest advertised `hashed_password_timestamp_sequence` while the Rust runtime metadata query returned false. Red `068c57de8` added the cross-surface expectations and failed with `Ok(false)`; Green `4ecbdf1d3` registers the capability in the Rust facade. Rust and FFI metadata tests now pass; the KMIPKIT-0008-FR-007 row also uses discoverable Rust/Python test references. This changes discovery only, not sequence behavior. T102 remains open with 4,355 other blocked candidate declarations; see `implementation-evidence.md`.
 
+T102 Python timestamp-sequence wrapper exclusions (2026-11-01): the Python export audit now records the inherited `HashedPasswordTimestampSequence.__init__` and storage-only `__slots__` as exact approved KMIPKIT-0008 exclusions; the public factory and sequence operations remain mapped. Red `4fca00e03`; Green `ba613f7e1`; the T076 export audit passes and all 12 generated outputs verify. T102 remains open with 4,355 other blocked KMIPKIT-0043 candidates; see `implementation-evidence.md`.
+
+T102 shared timestamp-sequence fixture contract checkpoint (2026-11-01): the shared parity test now includes the existing hashed-password sequence fixture, KMIPKIT-0008/OASIS §9.11 requirement IDs, and its `int32_t` C consumer signature. The pre-fix test failed on the missing case; `4b610ff34` updates the assertions, and the focused four-language fixture contract passes. No runtime behavior changed. T102 remains open with 4,355 other blocked KMIPKIT-0043 candidates.
+
 ## Phase 13: Convergence
 
 - [x] T103 [US2] Enforce the signed 32-bit `ProtocolVersion` constructor contract in Python so its accepted major/minor values match Rust `i32`, C `int32_t`, and Java `int`; reject non-integers (including booleans) and out-of-range values with documented, safe errors. Add boundary and negative tests using Red, Green, Refactor commits. Cite KMIPKIT-0006-FR-012 and KMIPKIT-0043-FR-010/022.

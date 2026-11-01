@@ -8274,3 +8274,35 @@ Verification:
 - `cargo fmt --all --check` and `git diff --check` — passed.
 
 The correction changes capability discovery only; it does not add timestamp sequencing behavior or claim KMIP conformance.
+
+### T102 HashedPasswordTimestampSequence Python wrapper exclusions (2026-11-01)
+
+The Python export audit found two inherited/internal exports for the already mapped `HashedPasswordTimestampSequence`: `__init__` requires KMIPKit's private native-handle token and callers use the validated `create()` factory; `__slots__` is wrapper storage metadata. Both are exact exclusions under the approved KMIPKIT-0008 owner, not API capabilities or KMIP fields. The class and its functional `create`, `record`, and `last_timestamp` declarations remain mapped. No runtime code changed.
+
+| Phase | Commit | Evidence |
+|---|---|---|
+| Red — require exact owner-backed classification of the two Python artifacts | `4fca00e03` | The T076 Python export audit failed because both exact exports were unclassified. |
+| Green — record the two exclusions and regenerate generated fixtures | `ba613f7e1` | Added exact source-manifest rows tied to approved KMIPKIT-0008 and regenerated the pinned public API outputs. |
+| Refactor/evidence — explain why these are implementation mechanics | This commit | Documents the private constructor boundary and exact storage-layout exclusion while preserving functional sequence mappings. |
+
+Verification:
+
+- `py -B -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_remaining_python_exports_are_mapped_or_exactly_excluded tools.api_manifest.tests.test_t102_validate_request_model_mapping tools.api_manifest.tests.test_validate_parity_manifest -v` — 4 passed.
+- `py -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
+- `git diff --check` — passed.
+
+This clears those two Python export-audit items only. T102 remains open with 4,355 other blocked KMIPKIT-0043 candidates.
+
+### T102 shared timestamp-sequence fixture contract correction (2026-11-01)
+
+The API parity test previously rejected the already checked-in `credentials.hashed-password-timestamp-sequence.v1` fixture because its expected case list omitted the sequence and its accepted requirement prefixes omitted KMIPKIT-0008 and the exact OASIS §9.11 requirement. Once those expectations were added, the C consumer declaration check also exposed that the compiled consumer correctly returns `int32_t`, a fixed-width C status type not accepted by the test's declaration matcher. The test now recognizes the fixture's four-language case and its existing C function signature. No implementation or fixture behavior changed.
+
+| Phase | Commit | Evidence |
+|---|---|---|
+| Red — run the parity contract against the existing shared fixture | Local pre-fix run | The case set lacked `credentials.hashed-password-timestamp-sequence.v1`; subsequent assertions exposed missing KMIPKIT-0008/OASIS requirement prefixes and the valid `int32_t` consumer signature. |
+| Green/refactor — align the test contract with the checked-in fixture and C ABI | `4b610ff34` | Added the exact fixture ID and requirement prefixes and accepted `int32_t` for C consumer declarations; the focused parity contract passes. |
+
+Verification:
+
+- `py -B -m unittest tools.api_manifest.tests.test_parity.PublicApiParityTests.test_shared_capability_fixture_maps_executable_consumer_contracts -v` — passed.
+- The full selected `test_parity`, `test_t076_client_mapping`, and `test_t071_parity_runner` suites are rerun before publication.
