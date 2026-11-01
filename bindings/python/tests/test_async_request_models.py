@@ -176,3 +176,31 @@ def test_query_filter_wipes_staged_values_when_span_allocation_fails(
 
     assert source == b"correlation"
     assert wiped == [bytes(len(source))]
+
+
+def test_request_wipes_staged_value_when_buffer_view_creation_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = bytearray(b"correlation")
+    staged_values: list[bytearray] = []
+    original_staging = async_operations._correlation_staging
+
+    def capture_staging(value: bytes | bytearray | memoryview) -> bytearray:
+        staging = original_staging(value)
+        staged_values.append(staging)
+        return staging
+
+    def fail_buffer_view(*_arguments: object) -> object:
+        raise MemoryError("buffer view allocation failed")
+
+    monkeypatch.setattr(async_operations, "_correlation_staging", capture_staging)
+    monkeypatch.setattr(
+        async_operations,
+        "ffi",
+        SimpleNamespace(from_buffer=fail_buffer_view, NULL=None),
+    )
+    with pytest.raises(MemoryError, match="buffer view allocation failed"):
+        CancelRequest.create(source)
+
+    assert source == b"correlation"
+    assert staged_values == [bytearray(len(source))]
