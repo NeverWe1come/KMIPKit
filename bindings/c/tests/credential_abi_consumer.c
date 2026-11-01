@@ -944,6 +944,44 @@ static int32_t hashed_password_tags_match(
     return 0;
 }
 
+static int32_t hashed_password_timestamp_matches(kmipkit_ttlv_structure_view_t *view) {
+    kmipkit_ttlv_item_view_t *item = 0;
+    kmipkit_ttlv_value_view_t *value = 0;
+    uint32_t item_type = 0;
+    int64_t timestamp = 0;
+    int32_t status = kmipkit_ttlv_structure_view_item_at(view, 1, &item);
+    if (status == 0) status = kmipkit_ttlv_item_view_value(item, &value);
+    if (status == 0) status = kmipkit_ttlv_value_view_type(value, &item_type);
+    if (status == 0 && item_type != KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME_EXTENDED) status = 1;
+    if (status == 0) status = kmipkit_ttlv_value_view_date_time_extended(value, &timestamp);
+    if (status == 0 && timestamp != 1800000000) status = 1;
+    kmipkit_ttlv_value_view_release(value);
+    kmipkit_ttlv_item_view_release(item);
+    return status;
+}
+
+static int32_t hashed_password_username_matches(kmipkit_ttlv_structure_view_t *view) {
+    const uint8_t expected[] = {'a', 'l', 'i', 'c', 'e'};
+    kmipkit_ttlv_item_view_t *item = 0;
+    kmipkit_ttlv_value_view_t *value = 0;
+    uint32_t item_type = 0;
+    uint64_t length = 0;
+    int32_t status = kmipkit_ttlv_structure_view_item_at(view, 0, &item);
+    if (status == 0) status = kmipkit_ttlv_item_view_value(item, &value);
+    if (status == 0) status = kmipkit_ttlv_value_view_type(value, &item_type);
+    if (status == 0 && item_type != KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING) status = 1;
+    if (status == 0) status = kmipkit_ttlv_value_view_byte_length(value, &length);
+    if (status == 0 && length != sizeof(expected)) status = 1;
+    for (uint64_t offset = 0; status == 0 && offset < length; offset++) {
+        uint8_t actual = 0;
+        status = kmipkit_ttlv_value_view_byte_at(value, offset, &actual);
+        if (status == 0 && actual != expected[offset]) status = 1;
+    }
+    kmipkit_ttlv_value_view_release(value);
+    kmipkit_ttlv_item_view_release(item);
+    return status;
+}
+
 static int32_t hashed_password_bytes_match(
         kmipkit_ttlv_structure_view_t *view, int include_algorithm) {
     uint64_t index = include_algorithm ? 3 : 2;
@@ -1016,6 +1054,8 @@ static int32_t hashed_password_credential_case(int include_algorithm) {
         status = 1;
     if (status == 0) status = kmipkit_hashed_password_credential_ttlv_view(credential, &view);
     if (status == 0) status = hashed_password_tags_match(view, include_algorithm);
+    if (status == 0) status = hashed_password_username_matches(view);
+    if (status == 0) status = hashed_password_timestamp_matches(view);
     if (status == 0) status = hashed_password_bytes_match(view, include_algorithm);
     kmipkit_ttlv_structure_view_release(view);
     view = 0;
@@ -1025,6 +1065,8 @@ static int32_t hashed_password_credential_case(int include_algorithm) {
         status = kmipkit_ttlv_structure_view(restored, &restored_view);
     }
     if (status == 0) status = hashed_password_tags_match(restored_view, include_algorithm);
+    if (status == 0) status = hashed_password_username_matches(restored_view);
+    if (status == 0) status = hashed_password_timestamp_matches(restored_view);
     if (status == 0) status = hashed_password_bytes_match(restored_view, include_algorithm);
     kmipkit_codec_limits_release(limits);
     kmipkit_ttlv_value_release(value);

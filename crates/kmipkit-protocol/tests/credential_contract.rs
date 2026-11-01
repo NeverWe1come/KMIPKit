@@ -658,6 +658,10 @@ fn hashed_password_omission_exposes_sha256_default_without_materializing_field()
             .collect::<Vec<_>>(),
         [USERNAME, TIME_STAMP, HASHED_PASSWORD]
     );
+    let roundtrip_username = fields[0].with_value(|value| match value {
+        ValueView::TextString(text) => Some(text.to_owned()),
+        _ => None,
+    });
     let roundtrip_timestamp = fields[1].with_value(|value| match value {
         ValueView::DateTimeExtended(value) => Some(*value),
         _ => None,
@@ -666,6 +670,7 @@ fn hashed_password_omission_exposes_sha256_default_without_materializing_field()
         ValueView::ByteString(bytes) => Some(bytes.to_vec()),
         _ => None,
     });
+    assert_eq!(roundtrip_username.as_deref(), Some("alice"));
     assert_eq!(roundtrip_timestamp, Some(timestamp));
     assert_eq!(roundtrip_hash, Some(secret_bytes));
 }
@@ -703,6 +708,11 @@ fn hashed_password_preserves_explicit_and_unknown_algorithm_values() {
                 .collect::<Vec<_>>(),
             [USERNAME, TIME_STAMP, HASHING_ALGORITHM, HASHED_PASSWORD]
         );
+        let roundtrip_username = fields[0].with_value(|value| match value {
+            ValueView::TextString(text) => Some(text.to_owned()),
+            _ => None,
+        });
+        assert_eq!(roundtrip_username.as_deref(), Some("alice"));
         assert_eq!(
             fields[2].with_value(|value| match value {
                 ValueView::Enumeration(raw) => Some(*raw),

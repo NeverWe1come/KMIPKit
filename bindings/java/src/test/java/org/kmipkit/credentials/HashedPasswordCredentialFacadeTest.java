@@ -27,6 +27,7 @@ final class HashedPasswordCredentialFacadeTest {
     private static final int HASHING_ALGORITHM_TAG = 0x0042_0038;
     private static final int HASHED_PASSWORD_TAG = 0x0042_0157;
     private static final long UNKNOWN_HASHING_ALGORITHM = 0xe123_4567L;
+    private static final byte[] USERNAME_BYTES = "alice".getBytes(StandardCharsets.UTF_8);
     private static final byte[] HASHED_PASSWORD_BYTES =
             "hashed-password-sentinel".getBytes(StandardCharsets.UTF_8);
 
@@ -46,7 +47,9 @@ final class HashedPasswordCredentialFacadeTest {
                     credential.withTtlv(view -> {
                         borrowed.set(view);
                         assertThrows(InvalidInputException.class, credential::intoTtlv);
+                        assertTrue(hashedPasswordUsernameMatches(view));
                         assertTrue(hashedPasswordMatches(view));
+                        assertTrue(hashedPasswordTimestampMatches(view));
                         return readTags(view);
                     }));
             assertThrows(InvalidInputException.class, borrowed.get()::itemCount);
@@ -55,7 +58,9 @@ final class HashedPasswordCredentialFacadeTest {
             try (TtlvStructureView view = restored.view()) {
                 assertEquals(List.of(USERNAME_TAG, TIMESTAMP_TAG,
                                 HASHING_ALGORITHM_TAG, HASHED_PASSWORD_TAG), readTags(view));
+                assertTrue(hashedPasswordUsernameMatches(view));
                 assertTrue(hashedPasswordMatches(view));
+                assertTrue(hashedPasswordTimestampMatches(view));
             }
             restored.close();
         }
@@ -71,6 +76,8 @@ final class HashedPasswordCredentialFacadeTest {
             try (TtlvStructureView view = restored.view()) {
                 assertEquals(List.of(USERNAME_TAG, TIMESTAMP_TAG, HASHED_PASSWORD_TAG),
                         readTags(view));
+                assertTrue(hashedPasswordUsernameMatches(view));
+                assertTrue(hashedPasswordTimestampMatches(view));
             }
             restored.close();
         }
@@ -121,6 +128,24 @@ final class HashedPasswordCredentialFacadeTest {
                 if ((byte) value.byteAt(offset) != HASHED_PASSWORD_BYTES[offset]) return false;
             }
             return true;
+        }
+    }
+
+    private static boolean hashedPasswordUsernameMatches(TtlvStructureView view) {
+        try (TtlvItemView item = view.itemAt(0); TtlvValueView value = item.value()) {
+            if (value.itemType() != org.kmipkit.ttlv.TtlvItemType.TextString
+                    || value.byteLength() != USERNAME_BYTES.length) return false;
+            for (int offset = 0; offset < USERNAME_BYTES.length; offset++) {
+                if ((byte) value.byteAt(offset) != USERNAME_BYTES[offset]) return false;
+            }
+            return true;
+        }
+    }
+
+    private static boolean hashedPasswordTimestampMatches(TtlvStructureView view) {
+        try (TtlvItemView item = view.itemAt(1); TtlvValueView value = item.value()) {
+            return value.itemType() == org.kmipkit.ttlv.TtlvItemType.DateTimeExtended
+                    && value.dateTimeExtended() == 1_800_000_000L;
         }
     }
 

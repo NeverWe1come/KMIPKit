@@ -128,6 +128,31 @@ def hashed_password_bytes(view: ttlv.TtlvStructureView) -> bytes:
         item.close()
 
 
+def hashed_password_timestamp(view: ttlv.TtlvStructureView) -> int:
+    item = ttlv.ttlv_structure_view_item_at(view, 1)
+    try:
+        with ttlv.ttlv_item_view_value(item) as value:
+            if ttlv.ttlv_value_view_type(value) is not ttlv.ItemType.DateTimeExtended:
+                return 0
+            return ttlv.ttlv_value_view_date_time_extended(value)
+    finally:
+        item.close()
+
+
+def hashed_password_username(view: ttlv.TtlvStructureView) -> bytes:
+    item = ttlv.ttlv_structure_view_item_at(view, 0)
+    try:
+        with ttlv.ttlv_item_view_value(item) as value:
+            if ttlv.ttlv_value_view_type(value) is not ttlv.ItemType.TextString:
+                return b""
+            return bytes(
+                ttlv.ttlv_value_view_byte_at(value, index)
+                for index in range(ttlv.ttlv_value_view_byte_length(value))
+            )
+    finally:
+        item.close()
+
+
 class HashedPasswordCredentialTests(unittest.TestCase):
     def test_wrapper_preserves_unknown_algorithm_and_secret_ttlv(self) -> None:
         facade = getattr(kmipkit.credentials, "HashedPasswordCredential", None)
@@ -150,7 +175,9 @@ class HashedPasswordCredentialTests(unittest.TestCase):
             borrowed.append(view)
             with self.assertRaises(errors.InvalidInputError):
                 credential.into_ttlv()
+            self.assertEqual(b"alice", hashed_password_username(view))
             self.assertEqual(HASHED_PASSWORD_BYTES, hashed_password_bytes(view))
+            self.assertEqual(1_800_000_000, hashed_password_timestamp(view))
             return tags(view)
 
         self.assertEqual(
@@ -167,7 +194,9 @@ class HashedPasswordCredentialTests(unittest.TestCase):
                 (USERNAME_TAG, TIMESTAMP_TAG, HASHING_ALGORITHM_TAG, HASHED_PASSWORD_TAG),
                 tags(view),
             )
+            self.assertEqual(b"alice", hashed_password_username(view))
             self.assertEqual(HASHED_PASSWORD_BYTES, hashed_password_bytes(view))
+            self.assertEqual(1_800_000_000, hashed_password_timestamp(view))
         finally:
             view.close()
             restored.close()
@@ -185,6 +214,8 @@ class HashedPasswordCredentialTests(unittest.TestCase):
         view = ttlv.ttlv_structure_view(restored)
         try:
             self.assertEqual((USERNAME_TAG, TIMESTAMP_TAG, HASHED_PASSWORD_TAG), tags(view))
+            self.assertEqual(b"alice", hashed_password_username(view))
+            self.assertEqual(1_800_000_000, hashed_password_timestamp(view))
         finally:
             view.close()
             restored.close()
