@@ -57,6 +57,8 @@ mod modify_attribute_abi_tests;
 mod query_ping_abi_tests;
 #[path = "set_attribute_abi_tests.rs"]
 mod set_attribute_abi_tests;
+#[path = "typed_attribute_request_abi_tests.rs"]
+mod typed_attribute_request_abi_tests;
 #[path = "set_constraints_abi_tests.rs"]
 mod set_constraints_abi_tests;
 #[path = "set_defaults_abi_tests.rs"]
