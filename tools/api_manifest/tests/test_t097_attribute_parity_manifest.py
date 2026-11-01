@@ -43,6 +43,29 @@ MUTATION_OPERATIONS = {
     "modify_attribute",
     "set_attribute",
 }
+REQUEST_MODEL_METHODS = {
+    "add_attribute": ("unique_identifier", "new_attribute", "to_ttlv_payload"),
+    "adjust_attribute": (
+        "unique_identifier",
+        "attribute_reference",
+        "adjustment_type",
+        "adjustment_value",
+        "to_ttlv_payload",
+    ),
+    "delete_attribute": (
+        "unique_identifier",
+        "current_attribute",
+        "attribute_reference",
+        "to_ttlv_payload",
+    ),
+    "modify_attribute": (
+        "unique_identifier",
+        "current_attribute",
+        "new_attribute",
+        "to_ttlv_payload",
+    ),
+    "set_attribute": ("unique_identifier", "new_attribute", "to_ttlv_payload"),
+}
 
 
 def _identity_hash(rows: list[dict[str, object]]) -> str:
@@ -240,6 +263,64 @@ class T097AttributeParityManifestTests(unittest.TestCase):
                 self.assertTrue(row["evidence"].strip())
                 self.assertEqual("Approved", row["approvalSource"]["status"])
                 self.assertIn("KMIPKIT-0043-FR-021", row["evidence"])
+
+    def test_request_model_declarations_map_to_standalone_typed_models(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+        }
+        for operation, methods in REQUEST_MODEL_METHODS.items():
+            class_name = "".join(part.title() for part in operation.split("_")) + "Request"
+            rust_type = f"kmipkit_protocol::{class_name}"
+            targets = {
+                "c": f"kmipkit_{operation}_request_t",
+                "java": f"org.kmipkit.extensions.{class_name}",
+                "python": f"kmipkit.attribute_operations.{class_name}",
+            }
+            with self.subTest(declaration=rust_type):
+                self.assertTrue(rust_type in declarations, f"missing declaration {rust_type}")
+                if rust_type in declarations:
+                    self.assertEqual(
+                        targets,
+                        {
+                            language: declarations[rust_type]["languageMappings"][language]["name"]
+                            for language in targets
+                        },
+                        "the Rust request type must map to a standalone request model, "
+                        "not a high-level batch constructor",
+                    )
+
+            method_targets = {
+                "new": (
+                    f"kmipkit_{operation}_request_create",
+                    f"org.kmipkit.extensions.{class_name}.create",
+                    f"kmipkit.attribute_operations.{class_name}.create",
+                ),
+                **{
+                    method: (
+                        f"kmipkit_{operation}_request_{method}",
+                        f"org.kmipkit.extensions.{class_name}.{''.join(part.title() if index else part for index, part in enumerate(method.split('_')))}",
+                        f"kmipkit.attribute_operations.{class_name}.{method}",
+                    )
+                    for method in methods
+                },
+            }
+            for method, expected_targets in method_targets.items():
+                rust_export = f"{rust_type}::{method}"
+                with self.subTest(declaration=rust_export):
+                    self.assertTrue(
+                        rust_export in declarations,
+                        f"missing standalone mapping for {rust_export}",
+                    )
+                    if rust_export in declarations:
+                        self.assertEqual(
+                            expected_targets,
+                            tuple(
+                                declarations[rust_export]["languageMappings"][language]["name"]
+                                for language in ("c", "java", "python")
+                            ),
+                            "typed request methods must map to standalone C, Java, and Python APIs",
+                        )
 
     def test_get_attributes_facade_mappings_use_the_get_attributes_requirement(self) -> None:
         expected_ids = {
