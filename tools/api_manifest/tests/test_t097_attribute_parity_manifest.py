@@ -15,11 +15,131 @@ BASE_CANDIDATE_COUNT = 708
 BASE_CANDIDATE_SHA256 = "fe521c532063ca63bf89a70930e1880ab0b5cddcaecf95a04e6e10bb71acbcce"
 BASE_TRAIT_COUNT = 524
 BASE_TRAIT_SHA256 = "86e73fe96baf9ee1249010f7cfa8d927e18d22cbf48fb6a86df4a87b8cfe2554"
+MAPPED_COUNT = 57
+EXCLUDED_COUNT = 651
+OWNER_SPEC_PATH = "specs/016-attribute-operations/spec.md"
+SHARED_REQUIREMENTS = {
+    "KMIPKIT-0043-FR-004",
+    "KMIPKIT-0043-FR-005",
+    "KMIPKIT-0043-FR-010",
+    "KMIPKIT-0043-FR-017",
+    "KMIPKIT-0043-FR-021",
+    "KMIPKIT-0043-FR-022",
+}
+LANGUAGES = {"rust", "c", "java", "python"}
+OPERATION_REQUIREMENTS = {
+    "add_attribute": "KMIPKIT-0016-FR-003",
+    "adjust_attribute": "KMIPKIT-0016-FR-004",
+    "delete_attribute": "KMIPKIT-0016-FR-005",
+    "get_attributes": "KMIPKIT-0016-FR-006",
+    "get_attribute_list": "KMIPKIT-0016-FR-007",
+    "modify_attribute": "KMIPKIT-0016-FR-008",
+    "set_attribute": "KMIPKIT-0016-FR-009",
+}
+MUTATION_OPERATIONS = {
+    "add_attribute",
+    "adjust_attribute",
+    "delete_attribute",
+    "modify_attribute",
+    "set_attribute",
+}
 
 
 def _identity_hash(rows: list[dict[str, object]]) -> str:
     identities = sorted(f"{row['packageId']}|{row['exportName']}" for row in rows)
     return hashlib.sha256("\n".join(identities).encode("utf-8")).hexdigest()
+
+
+def _expected_mapped_exports() -> set[str]:
+    operations = tuple(OPERATION_REQUIREMENTS)
+    mapped = {
+        f"kmipkit::ClientRequest::{operation}"
+        for operation in operations
+    } | {
+        f"kmipkit_client::ClientResponseView::{operation}"
+        for operation in operations
+    }
+    for module in ("kmipkit_protocol::attribute::", "kmipkit_protocol::"):
+        mapped.add(f"{module}AttributeSet")
+        mapped.update(
+            f"{module}AttributeSet::{method}"
+            for method in ("as_items", "len", "is_empty", "into_items")
+        )
+        for attribute_type in ("CurrentAttribute", "NewAttribute"):
+            mapped.add(f"{module}{attribute_type}")
+            mapped.update(
+                f"{module}{attribute_type}::{method}"
+                for method in ("new", "item")
+            )
+    mapped.add("kmipkit_protocol::AdjustmentType")
+    mapped.update(
+        f"kmipkit_protocol::AdjustmentType::{member}"
+        for member in ("INCREMENT", "DECREMENT", "NEGATE", "from_raw", "raw")
+    )
+    request_types = {
+        "add_attribute": "AddAttributeRequest",
+        "adjust_attribute": "AdjustAttributeRequest",
+        "delete_attribute": "DeleteAttributeRequest",
+        "modify_attribute": "ModifyAttributeRequest",
+        "set_attribute": "SetAttributeRequest",
+    }
+    for operation, request_type in request_types.items():
+        mapped.add(f"kmipkit_protocol::{request_type}")
+        mapped.add(f"kmipkit_protocol::{request_type}::new")
+        response_type = request_type.replace("Request", "Response")
+        mapped.add(f"kmipkit_protocol::{response_type}::result")
+    return mapped
+
+
+def _expected_owner_requirements(export_name: str) -> set[str]:
+    for operation, requirement in OPERATION_REQUIREMENTS.items():
+        if f"::{operation}" in export_name:
+            return {
+                "KMIPKIT-0016-FR-001",
+                "KMIPKIT-0016-FR-002",
+                requirement,
+                "KMIPKIT-0016-FR-010",
+                "KMIPKIT-0016-FR-011",
+                "KMIPKIT-0016-FR-012",
+                "KMIPKIT-0016-FR-013",
+                *({"KMIPKIT-0016-FR-015"} if operation in MUTATION_OPERATIONS else set()),
+            }
+    if "AttributeSet" in export_name:
+        return {
+            "KMIPKIT-0016-FR-001",
+            "KMIPKIT-0016-FR-002",
+            "KMIPKIT-0016-FR-006",
+            "KMIPKIT-0016-FR-011",
+            "KMIPKIT-0016-FR-013",
+        }
+    if "CurrentAttribute" in export_name or "NewAttribute" in export_name:
+        return {"KMIPKIT-0016-FR-001", "KMIPKIT-0016-FR-002", "KMIPKIT-0016-FR-011"}
+    if "AdjustmentType" in export_name:
+        return {
+            "KMIPKIT-0016-FR-001",
+            "KMIPKIT-0016-FR-002",
+            "KMIPKIT-0016-FR-004",
+            "KMIPKIT-0016-FR-011",
+        }
+    for operation, request_type in {
+        "add_attribute": "AddAttribute",
+        "adjust_attribute": "AdjustAttribute",
+        "delete_attribute": "DeleteAttribute",
+        "modify_attribute": "ModifyAttribute",
+        "set_attribute": "SetAttribute",
+    }.items():
+        if request_type in export_name:
+            return {
+                "KMIPKIT-0016-FR-001",
+                "KMIPKIT-0016-FR-002",
+                OPERATION_REQUIREMENTS[operation],
+                "KMIPKIT-0016-FR-010",
+                "KMIPKIT-0016-FR-011",
+                "KMIPKIT-0016-FR-012",
+                "KMIPKIT-0016-FR-013",
+                *({"KMIPKIT-0016-FR-015"} if operation in MUTATION_OPERATIONS else set()),
+            }
+    return set()
 
 
 class T097AttributeParityManifestTests(unittest.TestCase):
@@ -55,6 +175,60 @@ class T097AttributeParityManifestTests(unittest.TestCase):
             "all exact KMIPKIT-0016 exports must be mapped or specifically excluded; "
             f"unresolved={[(row['packageId'], row['exportName']) for row in unresolved[:8]]}",
         )
+
+    def test_attribute_candidates_are_exactly_mapped_or_excluded(self) -> None:
+        mapped = [
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("approvalSource", {}).get("path") == OWNER_SPEC_PATH
+        ]
+        excluded = [
+            row
+            for row in self.manifest["approvedExclusions"]
+            if row.get("approvalSource", {}).get("path") == OWNER_SPEC_PATH
+        ]
+        resolved = mapped + excluded
+        self.assertEqual(MAPPED_COUNT, len(mapped))
+        self.assertEqual(EXCLUDED_COUNT, len(excluded))
+        self.assertEqual(BASE_CANDIDATE_COUNT, len(resolved))
+        self.assertEqual(BASE_CANDIDATE_SHA256, _identity_hash(resolved))
+        self.assertEqual(
+            _expected_mapped_exports(),
+            {row["exportName"] for row in mapped},
+        )
+
+        available_targets = {
+            (row["packageId"], row["exportName"])
+            for row in self.manifest["publicDeclarations"]
+        }
+        for row in mapped:
+            with self.subTest(export=row["exportName"]):
+                self.assertEqual("declared", row["declarationState"])
+                self.assertEqual("four-language", row["parityScope"])
+                self.assertEqual(LANGUAGES, set(row["languageMappings"]))
+                self.assertTrue(SHARED_REQUIREMENTS <= set(row["requirementIds"]))
+                self.assertEqual(
+                    _expected_owner_requirements(row["exportName"]),
+                    {
+                        requirement
+                        for requirement in row["requirementIds"]
+                        if requirement.startswith(f"{OWNER_SPEC}-FR-")
+                    },
+                )
+                for language, target in row["languageMappings"].items():
+                    self.assertIn((target["packageId"], target["name"]), available_targets)
+
+        trait_exclusions = [
+            row for row in excluded if row["exportName"].startswith("<")
+        ]
+        self.assertEqual(BASE_TRAIT_COUNT, len(trait_exclusions))
+        self.assertEqual(BASE_TRAIT_SHA256, _identity_hash(trait_exclusions))
+        for row in excluded:
+            with self.subTest(exclusion=row["exportName"]):
+                self.assertTrue(row["reason"].strip())
+                self.assertTrue(row["evidence"].strip())
+                self.assertEqual("Approved", row["approvalSource"]["status"])
+                self.assertIn("KMIPKIT-0043-FR-021", row["evidence"])
 
     def test_get_attributes_facade_mappings_use_the_get_attributes_requirement(self) -> None:
         expected_ids = {
