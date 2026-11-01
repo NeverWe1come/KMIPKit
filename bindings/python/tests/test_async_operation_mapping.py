@@ -11,6 +11,28 @@ from kmipkit import client, errors, ttlv
 from kmipkit._client_ffi import ffi
 
 
+@pytest.mark.parametrize(
+    "source",
+    [
+        b"\x00\xffcorrelation",
+        bytearray(b"\x00\xffcorrelation"),
+        memoryview(b"\x00\xffcorrelation"),
+        memoryview(b"a-b-c-d")[::2],
+    ],
+    ids=("bytes", "bytearray", "memoryview", "strided-memoryview"),
+)
+def test_correlation_staging_is_wipeable_for_all_buffer_inputs(source) -> None:
+    expected = memoryview(source).tobytes()
+    raw, staged = client._stage_correlation_value(source)
+    try:
+        assert bytes(ffi.buffer(staged, len(expected))) == expected
+    finally:
+        client._wipe_staging_buffer(staged)
+
+    assert isinstance(raw, bytearray)
+    assert raw == bytearray(len(expected))
+
+
 def test_poll_preserves_binary_correlation_and_exposes_pending_outcome(
     monkeypatch,
 ) -> None:
