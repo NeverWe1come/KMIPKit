@@ -138,6 +138,8 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                         "kmipkit_protocol::DeviceCredential",
                         "kmipkit_protocol::Authentication",
                         "kmipkit_protocol::CredentialView",
+                        "kmipkit_protocol::CredentialValidationError",
+                        "kmipkit_protocol::CredentialValidationErrorKind",
                     }
                     and row.get("approvalSource", {}).get("path")
                     == "specs/008-credentials-attestation/spec.md"
@@ -415,6 +417,26 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             "kmipkit_last_credential_validation_error_get_v1", getter["c"]["symbol"]
         )
         self.assertEqual("kmipkit_credential_validation_error_v1_t *", getter["c"]["parameters"][0]["type"])
+
+        python_exclusions = {
+            row["exportName"]: row
+            for row in manifest["approvedExclusions"]
+            if row.get("packageId") == "python-kmipkit"
+        }
+        for export_name in (
+            "kmipkit.errors.CredentialValidationError.__init__",
+            "kmipkit.errors.CredentialValidationError.category",
+        ):
+            with self.subTest(export_name=export_name):
+                exclusion = python_exclusions.get(export_name)
+                self.assertIsNotNone(exclusion)
+                if exclusion is not None:
+                    self.assertEqual(
+                        "specs/008-credentials-attestation/spec.md",
+                        exclusion["approvalSource"]["path"],
+                    )
+                    self.assertTrue(exclusion.get("reason"))
+                    self.assertTrue(exclusion.get("evidence"))
 
     def test_partial_owner_parity_maps_credential_type_and_keeps_exact_blockers(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
