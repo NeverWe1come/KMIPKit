@@ -113,3 +113,51 @@ def test_get_attribute_list_request_has_only_its_optional_identifier():
     with attribute_operations.GetAttributeListRequest.create(None) as request:
         assert request.unique_identifier is None
         _assert_standalone_request(request, 0)
+
+
+def test_attribute_set_facade_validates_append_and_preserves_owned_order():
+    limits, first = _attribute_item()
+    source = ttlv.ttlv_structure_create()
+    source = ttlv.ttlv_structure_with_item(source, first, limits)
+    with source, attribute_operations.AttributeSet.try_new(source) as attributes:
+        assert attributes.len() == 1
+        assert not attributes.is_empty()
+
+        second_tag = ttlv.raw_tag_from_raw(0x0042_0028)
+        checked_second_tag = ttlv.raw_tag_try_checked(second_tag)
+        second_value = ttlv.ttlv_value_enumeration(0xFFFF_FFFF)
+        second = ttlv.ttlv_item_create(checked_second_tag, second_value, limits)
+        second_tag.close()
+        checked_second_tag.close()
+        second_value.close()
+        attributes.try_push(second)
+        second.close()
+        assert attributes.len() == 2
+
+        invalid_tag = ttlv.raw_tag_from_raw(0x0042_000A)
+        checked_invalid_tag = ttlv.raw_tag_try_checked(invalid_tag)
+        invalid_value = ttlv.ttlv_value_integer(7)
+        invalid = ttlv.ttlv_item_create(checked_invalid_tag, invalid_value, limits)
+        invalid_tag.close()
+        checked_invalid_tag.close()
+        invalid_value.close()
+        with pytest.raises(errors.InvalidInputError):
+            attributes.try_push(invalid)
+        invalid.close()
+        assert attributes.len() == 2, "failed validation must leave the set unchanged"
+
+        with attributes.as_items() as copied:
+            with ttlv.ttlv_structure_view(copied) as view:
+                assert ttlv.ttlv_structure_view_item_count(view) == 2
+                tags = []
+                for index in range(2):
+                    with ttlv.ttlv_structure_view_item_at(view, index) as item_view:
+                        with ttlv.ttlv_item_view_tag(item_view) as tag:
+                            tags.append(ttlv.tag_value(tag))
+                assert tags == [0x0042_000A, 0x0042_0028]
+
+        with attributes.into_items() as transferred:
+            assert attributes.closed
+            with ttlv.ttlv_structure_view(transferred) as view:
+                assert ttlv.ttlv_structure_view_item_count(view) == 2
+    limits.close()

@@ -16,6 +16,11 @@ unsafe extern "C" {
     fn kmipkit_nonce_c_consumer_round_trip(out_item_count: *mut u64) -> i32;
 }
 
+#[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
+unsafe extern "C" {
+    fn kmipkit_client_abi_c_consumer_validates_attribute_set() -> i32;
+}
+
 #[link(name = "kmipkit_credential_secret_abi_c_consumer", kind = "static")]
 unsafe extern "C" {
     fn kmipkit_secret_c_consumer_contract() -> i32;
@@ -63,6 +68,13 @@ fn compiled_c_consumer_preserves_nonce_bytes_and_ttlv_structure() {
     let status = unsafe { kmipkit_nonce_c_consumer_round_trip(&raw mut item_count) };
     assert_eq!(status, 0);
     assert_eq!(item_count, 2);
+}
+
+#[test]
+fn compiled_c_consumer_validates_and_consumes_ordered_attribute_sets() {
+    // SAFETY: The C consumer owns and releases every temporary handle it creates.
+    let status = unsafe { kmipkit_client_abi_c_consumer_validates_attribute_set() };
+    assert_eq!(status, 1);
 }
 
 #[test]
