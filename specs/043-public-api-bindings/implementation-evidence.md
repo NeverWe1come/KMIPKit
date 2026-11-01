@@ -8334,3 +8334,26 @@ Verification:
 - The refreshed broad `test_manifest_v2` run after correcting the Java inventory expectation completed 150 tests with 17 failures. The focused Java inventory test passes. Remaining failures concern Rust/Python inventory snapshots and existing API metadata or requirement assertions outside this slice; the broader suite is not claimed green by this checkpoint.
 
 The manifest has zero KMIPKIT-0043 candidates for these 49 paths and 4,310 other blocked KMIPKIT-0043 candidate declarations. T102 remains unchecked; this slice does not claim the PR, branch, coverage thresholds, profile conformance, or release complete.
+
+### T102 Java TtlvPath JNI bridge exclusions (2026-11-02)
+
+This slice classifies exactly two `NativeExtensionRegistry` declarations, `ttlvPathCreate` and `ttlvPathWithChildTag`, as internal JNI bridge entries used by the already mapped Java `TtlvPath.create` and `TtlvPath.withChildTag` facade. Their semantic owner is approved KMIPKIT-0012-FR-002/006/010/012; the exact exclusion is owned by approved KMIPKIT-0043-FR-008/021 and the documented minimal JNI boundary. Equivalent typed TtlvPath APIs remain mapped in Rust, C, Java, and Python. The adjacent `NativeExtensionRegistry.codecLimitsCreate` remains blocked because Java `CodecLimits.create` is a pure value facade and does not call a corresponding native constructor.
+
+| Phase | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red — require exact owner-backed TtlvPath bridge exclusions | `457c07de5` | `py -B -m unittest tools.api_manifest.tests.test_t102_java_ttlv_bridge_exclusions.JavaTtlvBridgeExclusionTests.test_ttlv_path_jni_bridge_is_excluded_under_approved_extension_owner -v` | Expected failure: neither exact path was yet an approved exclusion. |
+| Green — record the two bridge exclusions, update exact inventories, and regenerate | `bd0a83feb` | `py -B tools/api_manifest/generate.py --write` | The two declarations moved to exact approved exclusions and the pinned generator updated its checked-in outputs. |
+| Refactor/evidence — record the owner split, preserved boundaries, and verification | This commit | Refresh T102 task and traceability records | T102 remains open; no protocol conformance or release claim is made. |
+
+Verification:
+
+- `py -B -m unittest tools.api_manifest.tests.test_t102_java_ttlv_bridge_exclusions -v` — 4 passed.
+- `py -B -m unittest tools.api_manifest.tests.test_binding_exports -v` — 50 passed, including exact namespace-wide Java bridge exclusion reconciliation.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_checked_in_manifest_inventories_all_java_public_access_paths -v` — 1 passed with 1,078 Java public declarations.
+- `py -B tools/api_manifest/generate.py --check` — all 12 outputs verified.
+- Full `audit_binding_exports.py --check` — C observed 801/matched 757, Java 1,535/matched 1,078, and Python 1,921/matched 1,140; zero missing exports, kind mismatches, or audit issues; all inventories match the manifest.
+- `git diff --check` — passed.
+
+The generated Java parity fixture stores the serialized manifest in fixed 12,000-character chunks. Moving the two declarations from the blocked list to the exclusions shifts chunk boundaries and causes broad mechanical line churn in `PublicApiParityFixtures.java`; the generated JSON fixture contains only the two additional exclusion records, and `generate.py --check` verifies the Java output is deterministic.
+
+The manifest has zero KMIPKIT-0043 candidates for these two paths and 4,308 other blocked candidates. T102 remains unchecked; this slice does not claim the PR, branch, coverage thresholds, profile conformance, or release complete.

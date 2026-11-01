@@ -331,6 +331,8 @@ The Python `HashedPasswordTimestampSequence.__init__` and `__slots__` exports ar
 
 The four Java `NativeExtensionRegistry` exports for the sequence handle kind, construction, recording, and last-timestamp readback are exact exclusions from the public facade inventory. Their owner evidence cites KMIPKIT-0008-FR-007/010 and the KMIPKIT-0043 minimal JNI bridge boundary; applications use the typed `HashedPasswordTimestampSequence` facade. The full binding export audit confirms that these paths and all other C, Java, and Python public exports reconcile exactly. The generic TTLV bridge slice adds 45 more exact Java exclusions under KMIPKIT-0004/KMIPKIT-0005 ownership; the exact namespace-wide exclusion set is pinned by the binding-export test, which CI now runs alongside the T102-specific contract.
 
+The `NativeExtensionRegistry.ttlvPathCreate` and `ttlvPathWithChildTag` members are likewise exact implementation-bridge exclusions. The typed `org.kmipkit.extensions.TtlvPath.create` and `withChildTag` methods remain mapped across Rust, C, Java, and Python under approved KMIPKIT-0012-FR-002/006/010/012; only their raw JNI entry points are excluded under the approved KMIPKIT-0043 minimal bridge boundary. `NativeExtensionRegistry.codecLimitsCreate` remains unresolved because it has no matching native-handle facade operation.
+
 The shared parity fixture `credentials.hashed-password-timestamp-sequence.v1` links the Rust, compiled C, Java, and Python sequence consumers under KMIPKIT-0008-FR-007, KMIPKIT-REQ-SPEC-9.11-010-001, and the applicable KMIPKIT-0043 parity requirements. The parity contract recognizes the `int32_t` return type used by its C consumer.
 
 ### T094 — KMIPKIT-0012 vendor extension registry mapping
