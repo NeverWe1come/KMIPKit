@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import unittest
 from pathlib import Path
 
@@ -37,6 +38,51 @@ EVIDENCE = {
     "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
     "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs",
 }
+
+
+def _owner_frs(*numbers: int) -> set[str]:
+    return {f"KMIPKIT-0020-FR-{number:03}" for number in numbers}
+
+
+TRAIT_OWNER_REQUIREMENTS = {
+    "kmipkit_protocol::PingError": _owner_frs(8, 12),
+    "kmipkit_protocol::PingRequest": _owner_frs(1, 2),
+    "kmipkit_protocol::PingResponse": _owner_frs(2, 8, 12),
+    "kmipkit_protocol::QueryError": _owner_frs(8, 12),
+    "kmipkit_protocol::QueryFunction": _owner_frs(3, 5),
+    "kmipkit_protocol::QueryRequest": _owner_frs(3, 4, 5),
+    "kmipkit_protocol::QueryResponse": _owner_frs(6, 7, 11, 12),
+    "kmipkit_protocol::QueryResponseField": _owner_frs(6, 11),
+}
+
+
+def _expected_exclusion_owner_requirements(export_name: str) -> set[str]:
+    if export_name.startswith("<"):
+        owner_type = export_name[1:].split(" as ", maxsplit=1)[0]
+        return TRAIT_OWNER_REQUIREMENTS[owner_type]
+    if "::ClientBatchOutcome::Ping" in export_name:
+        return _owner_frs(2, 8, 12)
+    if "::ClientBatchOutcome::Query" in export_name:
+        return _owner_frs(6, 7, 8, 11, 12)
+    if "::QueryResponseField" in export_name:
+        return _owner_frs(6, 11, 12) if export_name.endswith("::with_ttlv") else _owner_frs(6, 11)
+    if "::PingResponse" in export_name:
+        return _owner_frs(2, 8, 12)
+    if "::PingRequest" in export_name:
+        return _owner_frs(1, 2)
+    if "::PingError" in export_name or "::QueryError" in export_name:
+        return _owner_frs(8, 12)
+    if "::QueryFunction" in export_name:
+        return _owner_frs(3, 5)
+    if "::QueryRequest" in export_name:
+        return _owner_frs(3, 4, 5)
+    if "::QueryResponse" in export_name or "::ClientResponseView::query" in export_name:
+        return _owner_frs(6, 7, 11, 12)
+    if "::ClientOperation::" in export_name:
+        return _owner_frs(1, 8)
+    if export_name.endswith("::Client::ping") or export_name.endswith("::Client::query"):
+        return _owner_frs(1, 9)
+    raise AssertionError(f"T100 exclusion lacks an owner-requirement classification: {export_name}")
 
 
 def _expected_mappings() -> dict[str, tuple[str, dict[str, str], set[str]]]:
@@ -178,6 +224,26 @@ class T100QueryPingDeclarationMappingTests(unittest.TestCase):
                 self.assertIn("KMIPKIT-0020-FR-", row["reason"])
                 self.assertIn("KMIPKIT-0020-FR-", row["evidence"])
                 self.assertTrue(all(requirement in row["evidence"] for requirement in SHARED_REQUIREMENTS))
+
+    def test_every_t100_exclusion_cites_only_applicable_owner_requirements(self) -> None:
+        excluded = [
+            row
+            for row in self.manifest["approvedExclusions"]
+            if row.get("approvalSource", {}).get("path") == OWNER_SPEC
+            and "T100" in row.get("evidence", "")
+        ]
+        self.assertEqual(T100_EXCLUSION_COUNT, len(excluded))
+        self.assertEqual(133, sum(row["exportName"].startswith("<") for row in excluded))
+        self.assertEqual(4, sum("::ClientBatchOutcome::Ping" in row["exportName"] for row in excluded))
+        self.assertEqual(4, sum("::ClientBatchOutcome::Query" in row["exportName"] for row in excluded))
+        concrete = [row for row in excluded if not row["exportName"].startswith("<")]
+        self.assertEqual(33, sum("::QueryResponseField" in row["exportName"] for row in concrete))
+        self.assertEqual(3, sum("::PingResponse" in row["exportName"] for row in concrete))
+        for row in excluded:
+            with self.subTest(export=row["exportName"]):
+                expected = _expected_exclusion_owner_requirements(row["exportName"])
+                self.assertEqual(expected, set(re.findall(r"KMIPKIT-0020-FR-\d{3}", row["reason"])))
+                self.assertEqual(expected, set(re.findall(r"KMIPKIT-0020-FR-\d{3}", row["evidence"])))
 
     def test_client_convenience_methods_are_not_mapped_to_batch_item_construction(self) -> None:
         expected = {
