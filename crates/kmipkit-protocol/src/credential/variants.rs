@@ -99,6 +99,23 @@ impl_tree_value!(OneTimePasswordCredential, "OneTimePasswordCredential");
 impl_tree_value!(TicketCredential, "TicketCredential");
 impl_tree_value!(OpaqueTtlv, "OpaqueTtlv");
 
+impl UsernameAndPasswordCredential {
+    /// Validates and retains a Username and Password Credential Value.
+    ///
+    /// A Username is required and a Password is optional under KMIP 2.1
+    /// §9.11, Table 411. The original TTLV order and unknown fields are
+    /// retained, and validation errors never include field contents.
+    ///
+    /// # Errors
+    ///
+    /// Returns a payload-free error when the Username or optional Password
+    /// has an invalid type, order, or multiplicity.
+    pub fn try_from_ttlv(tree: Structure) -> Result<Self, CredentialValidationError> {
+        validate(&tree, USERNAME_PASSWORD_RULES, &[])?;
+        Ok(Self { tree })
+    }
+}
+
 /// A known or opaque KMIP Credential Value with its original ordered TTLV tree.
 #[non_exhaustive]
 pub enum CredentialValue {
@@ -141,9 +158,8 @@ impl CredentialValue {
     ) -> Result<Self, CredentialValidationError> {
         match credential_type.raw() {
             1 => {
-                validate(&tree, USERNAME_PASSWORD_RULES, &[])?;
                 Ok(Self::UsernameAndPassword(
-                    UsernameAndPasswordCredential::from_tree(tree),
+                    UsernameAndPasswordCredential::try_from_ttlv(tree)?,
                 ))
             }
             2 => {
