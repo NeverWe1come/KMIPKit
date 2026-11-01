@@ -64502,6 +64502,30 @@
       "exportName": "org.kmipkit.NativeExtensionRegistry.hashedPasswordTimestampSequenceRecord",
       "packageId": "java-kmipkit",
       "reason": "This public static member is internal hashed-password timestamp-sequence JNI plumbing. Java applications use the typed HashedPasswordTimestampSequence facade; this bridge declaration has no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-002/006/010/012, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The mapped TtlvPath facade invokes this exact internal NativeExtensionRegistry bridge; Rust, C, Java, and Python expose the equivalent typed path capability. docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvPathCreate",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is an internal JNI bridge invoked by the mapped TtlvPath facade and has no independent product capability. Java applications use the typed TtlvPath facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-002/006/010/012, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The mapped TtlvPath facade invokes this exact internal NativeExtensionRegistry bridge; Rust, C, Java, and Python expose the equivalent typed path capability. docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvPathWithChildTag",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is an internal JNI bridge invoked by the mapped TtlvPath facade and has no independent product capability. Java applications use the typed TtlvPath facade."
     }
   ],
   "capabilities": [

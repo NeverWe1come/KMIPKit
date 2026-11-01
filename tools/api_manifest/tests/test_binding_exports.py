@@ -956,6 +956,8 @@ class BindingExportAuditTests(unittest.TestCase):
                 "hashedPasswordTimestampSequenceNew",
                 "hashedPasswordTimestampSequenceRecord",
                 "hashedPasswordTimestampSequenceLastTimestamp",
+                "ttlvPathCreate",
+                "ttlvPathWithChildTag",
             }
         )
         expected_native = {

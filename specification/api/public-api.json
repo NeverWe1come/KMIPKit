@@ -66968,34 +66968,6 @@
       "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
     },
     {
-      "declarationId": "java-observed-a7ee183cd2ae99fcbb02",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvPathCreate",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-8d5c6a882a4e224da6e0",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvPathWithChildTag",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
       "declarationId": "java-observed-620167d859ceabd2d407",
       "packageId": "java-kmipkit",
       "kind": "java-member",
@@ -449180,6 +449152,30 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed against KMIPKIT-0008-FR-007/010 and KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The typed HashedPasswordTimestampSequence facade uses this handle kind or native entry point for its caller-managed create, record, and lastTimestamp behavior; applications use the typed facade without raw JNI handles. docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvPathCreate",
+      "reason": "This public static member is an internal JNI bridge invoked by the mapped TtlvPath facade and has no independent product capability. Java applications use the typed TtlvPath facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-002/006/010/012, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The mapped TtlvPath facade invokes this exact internal NativeExtensionRegistry bridge; Rust, C, Java, and Python expose the equivalent typed path capability. docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvPathWithChildTag",
+      "reason": "This public static member is an internal JNI bridge invoked by the mapped TtlvPath facade and has no independent product capability. Java applications use the typed TtlvPath facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0012-FR-002/006/010/012, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The mapped TtlvPath facade invokes this exact internal NativeExtensionRegistry bridge; Rust, C, Java, and Python expose the equivalent typed path capability. docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C boundary."
     }
   ],
   "apiLevels": [

@@ -115,12 +115,8 @@ class JavaTtlvBridgeExclusionTests(unittest.TestCase):
                     self.assertIn("KMIPKIT-0004-FR-", exclusion["evidence"])
                 self.assertNotIn((PACKAGE, export_name), self.declarations)
 
-    def test_neighboring_extension_and_codec_bridge_exports_stay_unresolved(self) -> None:
-        for export_name in (
-            "org.kmipkit.NativeExtensionRegistry.codecLimitsCreate",
-            "org.kmipkit.NativeExtensionRegistry.ttlvPathCreate",
-            "org.kmipkit.NativeExtensionRegistry.ttlvPathWithChildTag",
-        ):
+    def test_neighboring_codec_bridge_export_stays_unresolved(self) -> None:
+        for export_name in ("org.kmipkit.NativeExtensionRegistry.codecLimitsCreate",):
             with self.subTest(export_name=export_name):
                 declaration = self.declarations[(PACKAGE, export_name)]
                 self.assertEqual("blocked", declaration["declarationState"])
