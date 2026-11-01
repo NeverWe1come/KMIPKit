@@ -3105,6 +3105,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for row in self.checked_in_manifest["approvedExclusions"]
             if row["packageId"] == "rust-kmipkit-transport"
             and row["exportName"].startswith("<kmipkit_transport::")
+            and row["approvalSource"]["path"]
+            == "docs/adr/0014-public-transport-exchange-contract.md"
         ]
         self.assertEqual(71, len(exclusions))
         for exclusion in exclusions:
@@ -5479,7 +5481,6 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "COMPATIBILITY_MISMATCH",
                 "DUPLICATE_KEY",
                 "INVALID_IDENTITY",
-                "INVALID_INPUT",
                 "INVALID_SCHEMA",
             )
         }
@@ -5514,6 +5515,18 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual(declaration["capabilityId"], "public_binding_surface")
                 self.assertEqual(declaration["requirementIds"], ["KMIPKIT-0043-FR-021"])
                 self.assertNotIn("languageMappings", declaration)
+
+        transport_invalid_input = declarations[("c-kmipkit", "KMIPKIT_ERROR_INVALID_INPUT")]
+        self.assertEqual(transport_invalid_input["declarationState"], "declared")
+        self.assertEqual(transport_invalid_input["capabilityId"], "production_transport")
+        self.assertEqual(
+            transport_invalid_input["approvalSource"]["path"],
+            "specs/013-production-transport/spec.md",
+        )
+        self.assertEqual(
+            transport_invalid_input["languageMappings"]["c"],
+            {"packageId": "c-kmipkit", "name": "KMIPKIT_ERROR_INVALID_INPUT"},
+        )
 
         for key in (
             ("java-kmipkit", "org.kmipkit.RuntimeMetadata.Version.abiVersion"),
@@ -5831,8 +5844,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for exclusion in self.checked_in_manifest["approvedExclusions"]
             if exclusion["packageId"] in rust_packages
         ]
-        self.assertEqual(len(declarations), 8344)
-        self.assertEqual(len(exclusions), 2118)
+        self.assertEqual(len(declarations), 8114)
+        self.assertEqual(len(exclusions), 2348)
         report = json.loads(RUST_EXPORT_REPORT_PATH.read_text(encoding="utf-8"))
         observed_keys = {
             (row["packageId"], _canonical_export_name(row["exportName"]), row["kind"])
