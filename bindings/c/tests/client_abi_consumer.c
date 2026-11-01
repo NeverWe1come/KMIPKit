@@ -1351,6 +1351,82 @@ static int check_view_tags(
     return 1;
 }
 
+int kmipkit_client_abi_c_consumer_validate_crypto_response_ttlv(
+    kmipkit_client_batch_item_response_t *item, uint32_t operation_index) {
+    static const uint32_t hash_tags[] = {UINT32_C(0x4200c2), UINT32_C(0x540001)};
+    static const uint32_t mac_tags[] = {
+        UINT32_C(0x420094), UINT32_C(0x4200c4), UINT32_C(0x540001)};
+    static const uint32_t mac_verify_tags[] = {
+        UINT32_C(0x420094), UINT32_C(0x420128), UINT32_C(0x540001)};
+    static const uint32_t sign_tags[] = {
+        UINT32_C(0x420094), UINT32_C(0x4200c3), UINT32_C(0x540001)};
+    static const uint32_t signature_verify_tags[] = {
+        UINT32_C(0x420094), UINT32_C(0x420128), UINT32_C(0x4200c2),
+        UINT32_C(0x540001)};
+    typedef int32_t (*response_ttlv_getter)(
+        kmipkit_client_batch_item_response_t *, uint8_t *, kmipkit_ttlv_structure_t **);
+    static const response_ttlv_getter getters[] = {
+        kmipkit_client_batch_item_response_hash_ttlv,
+        kmipkit_client_batch_item_response_mac_ttlv,
+        kmipkit_client_batch_item_response_mac_verify_ttlv,
+        kmipkit_client_batch_item_response_sign_ttlv,
+        kmipkit_client_batch_item_response_signature_verify_ttlv,
+    };
+    static const uint32_t *const expected_tags[] = {
+        hash_tags, mac_tags, mac_verify_tags, sign_tags, signature_verify_tags};
+    static const uint64_t expected_tag_counts[] = {
+        (uint64_t)(sizeof(hash_tags) / sizeof(hash_tags[0])),
+        (uint64_t)(sizeof(mac_tags) / sizeof(mac_tags[0])),
+        (uint64_t)(sizeof(mac_verify_tags) / sizeof(mac_verify_tags[0])),
+        (uint64_t)(sizeof(sign_tags) / sizeof(sign_tags[0])),
+        (uint64_t)(sizeof(signature_verify_tags) / sizeof(signature_verify_tags[0])),
+    };
+    uint8_t present = 0;
+    kmipkit_ttlv_structure_t *response_ttlv = 0;
+    kmipkit_ttlv_structure_view_t *view = 0;
+    kmipkit_ttlv_item_view_t *payload_item = 0;
+    kmipkit_ttlv_value_view_t *payload_value = 0;
+    kmipkit_ttlv_structure_view_t *payload_view = 0;
+    static const uint32_t response_tags[] = {
+        UINT32_C(0x42005c), UINT32_C(0x420093), UINT32_C(0x42007f), UINT32_C(0x42007c)};
+    int result = 0;
+
+    if (item == 0 || operation_index >=
+            (uint32_t)(sizeof(getters) / sizeof(getters[0]))) {
+        goto cleanup;
+    }
+    if (getters[operation_index](item, &present, &response_ttlv) != 0 ||
+        present != 1 || response_ttlv == 0) {
+        goto cleanup;
+    }
+
+    /* The C-owned TTLV copy remains readable after its source response is released. */
+    kmipkit_client_batch_item_response_release(item);
+    item = 0;
+    if (kmipkit_ttlv_structure_view(response_ttlv, &view) != 0 ||
+        !check_view_tags(view, response_tags,
+                         (uint64_t)(sizeof(response_tags) / sizeof(response_tags[0]))) ||
+        kmipkit_ttlv_structure_view_item_at(view, 3, &payload_item) != 0 ||
+        payload_item == 0 || kmipkit_ttlv_item_view_value(payload_item, &payload_value) != 0 ||
+        payload_value == 0 ||
+        kmipkit_ttlv_value_view_structure(payload_value, &payload_view) != 0 ||
+        payload_view == 0 ||
+        !check_view_tags(payload_view, expected_tags[operation_index],
+                         expected_tag_counts[operation_index])) {
+        goto cleanup;
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_ttlv_structure_view_release(payload_view);
+    kmipkit_ttlv_value_view_release(payload_value);
+    kmipkit_ttlv_item_view_release(payload_item);
+    kmipkit_ttlv_structure_view_release(view);
+    kmipkit_ttlv_structure_release(response_ttlv);
+    kmipkit_client_batch_item_response_release(item);
+    return result;
+}
+
 static int response_identifier_matches(
     const kmipkit_unique_identifier_v1_t *identifier,
     const uint8_t *expected,

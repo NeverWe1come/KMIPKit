@@ -44,6 +44,9 @@ mod add_attribute_abi_tests;
 mod adjust_attribute_abi_tests;
 #[path = "async_operation_abi_tests.rs"]
 mod async_operation_abi_tests;
+#[cfg(feature = "coverage-c-consumer")]
+#[path = "crypto_response_ttlv_c_consumer_tests.rs"]
+mod crypto_response_ttlv_c_consumer_tests;
 #[path = "delete_attribute_abi_tests.rs"]
 mod delete_attribute_abi_tests;
 #[path = "get_attribute_list_abi_tests.rs"]
