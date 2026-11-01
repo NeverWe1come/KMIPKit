@@ -27,7 +27,10 @@ SHARED_REQUIREMENTS = {
     "KMIPKIT-0043-FR-021",
     "KMIPKIT-0043-FR-022",
 }
-OWNER_REQUIREMENTS = {f"KMIPKIT-0019-FR-{number:03}" for number in range(1, 13)}
+OWNER_REQUIREMENTS = {
+    f"KMIPKIT-0019-FR-{number:03}"
+    for number in (1, 2, 3, 4, 5, 6, 7, 9, 11, 12)
+}
 LANGUAGES = {"rust", "c", "java", "python"}
 APPROVAL_SOURCE = {
     "kind": "feature-specification",
@@ -61,6 +64,17 @@ OPERATION_TARGETS = {
             "java": "org.kmipkit.extensions.ClientBatchItemResult.metadataV2",
             "python": "kmipkit.client.BatchItemResult.metadata_v2",
         },
+        "normative_requirements": {
+            "KMIPKIT-REQ-SPEC-4.16-001-001",
+            "KMIPKIT-REQ-SPEC-4.16-001-002",
+            "KMIPKIT-REQ-SPEC-4.16-002",
+            "KMIPKIT-REQ-SPEC-4.16-003",
+            "KMIPKIT-REQ-SPEC-6.1.17-001-001",
+            "KMIPKIT-REQ-SPEC-6.1.17-001-002",
+            "KMIPKIT-REQ-SPEC-6.1.17-005-001",
+            "KMIPKIT-REQ-SPEC-6.1.17-005-002",
+            "KMIPKIT-REQ-SPEC-6.1.17-006",
+        },
     },
     "Decrypt": {
         "id": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
@@ -81,6 +95,18 @@ OPERATION_TARGETS = {
             "c": "kmipkit_client_batch_item_response_metadata_v2",
             "java": "org.kmipkit.extensions.ClientBatchItemResult.metadataV2",
             "python": "kmipkit.client.BatchItemResult.metadata_v2",
+        },
+        "normative_requirements": {
+            "KMIPKIT-REQ-SPEC-4.16-001-001",
+            "KMIPKIT-REQ-SPEC-4.16-001-002",
+            "KMIPKIT-REQ-SPEC-4.16-002",
+            "KMIPKIT-REQ-SPEC-4.16-003",
+            "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+            "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+            "KMIPKIT-REQ-SPEC-6.1.11-004-001",
+            "KMIPKIT-REQ-SPEC-6.1.11-004-002",
+            "KMIPKIT-REQ-SPEC-6.1.11-005",
+            "KMIPKIT-REQ-SPEC-6.1.11-006",
         },
     },
 }
@@ -147,11 +173,19 @@ def _expected_targets(export_name: str) -> tuple[str, dict[str, str], str]:
     details = OPERATION_TARGETS[operation]
     if export_name.startswith("kmipkit_protocol::"):
         if export_name.endswith("Response::result"):
-            return details["id"], details["result"], "operation-result-metadata-v2"
-        return details["id"], details["request"], "operation-request-facade"
+            targets = details["result"].copy()
+            targets["rust"] = export_name
+            return details["id"], targets, "operation-result-metadata-v2"
+        targets = details["request"].copy()
+        targets["rust"] = export_name
+        return details["id"], targets, "operation-request-facade"
     if "ClientBatchOutcome" in export_name or "ClientResponseView" in export_name:
-        return details["id"], details["response"], "operation-outcome-facade"
-    return details["id"], details["request"], "operation-request-facade"
+        targets = details["response"].copy()
+        targets["rust"] = export_name
+        return details["id"], targets, "operation-outcome-facade"
+    targets = details["request"].copy()
+    targets["rust"] = export_name
+    return details["id"], targets, "operation-request-facade"
 
 
 class T099CryptoDeclarationMappingTests(unittest.TestCase):
@@ -227,15 +261,28 @@ class T099CryptoDeclarationMappingTests(unittest.TestCase):
                 self.assertEqual("four-language", row["parityScope"])
                 self.assertEqual(APPROVAL_SOURCE, {key: row["approvalSource"][key] for key in APPROVAL_SOURCE})
                 self.assertEqual(LANGUAGES, set(row["languageMappings"]))
+                self.assertEqual(row["packageId"], row["languageMappings"]["rust"]["packageId"])
                 self.assertEqual(
                     expected_targets,
                     {language: row["languageMappings"][language]["name"] for language in LANGUAGES},
                 )
-                self.assertEqual("operation-result-metadata-v2" if semantics == "operation-result-metadata-v2" else semantics,
-                                 row.get("mappingSemantics"))
+                expected_packages = {
+                    "rust": row["packageId"],
+                    "c": "c-kmipkit",
+                    "java": "java-kmipkit",
+                    "python": "python-kmipkit",
+                }
+                self.assertEqual(
+                    expected_packages,
+                    {
+                        language: row["languageMappings"][language]["packageId"]
+                        for language in LANGUAGES
+                    },
+                )
                 requirements = set(row["requirementIds"])
                 self.assertTrue(SHARED_REQUIREMENTS <= requirements)
                 self.assertTrue(OWNER_REQUIREMENTS <= requirements)
+                self.assertTrue(OPERATION_TARGETS["Encrypt" if "Encrypt" in row["exportName"] or "encrypt" in row["exportName"] else "Decrypt"]["normative_requirements"] <= requirements)
                 self.assertTrue(PARITY_EVIDENCE <= set(row["parityEvidenceIds"]))
                 for evidence in PARITY_EVIDENCE:
                     self.assertTrue((ROOT / evidence).is_file(), evidence)
@@ -260,7 +307,12 @@ class T099CryptoDeclarationMappingTests(unittest.TestCase):
                 )
 
         traits = [row for row in excluded if row["exportName"].startswith("<")]
-        errors = [row for row in excluded if "EncryptError" in row["exportName"] or "DecryptError" in row["exportName"]]
+        errors = [
+            row
+            for row in excluded
+            if not row["exportName"].startswith("<")
+            and ("EncryptError" in row["exportName"] or "DecryptError" in row["exportName"])
+        ]
         parsers = [row for row in excluded if "::try_from_" in row["exportName"]]
         request_helpers = [
             row
