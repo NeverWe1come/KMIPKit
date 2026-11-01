@@ -2,33 +2,6 @@
 
 #include "kmipkit.h"
 
-typedef struct kmipkit_secret_bytes_t kmipkit_secret_bytes_t;
-typedef struct kmipkit_secret_text_t kmipkit_secret_text_t;
-
-typedef void (*kmipkit_secret_bytes_callback_t)(
-        const uint8_t *data, uint64_t length, void *context);
-typedef void (*kmipkit_secret_text_callback_t)(
-        const uint8_t *utf8, uint64_t length, void *context);
-
-int32_t kmipkit_secret_bytes_create(
-        const uint8_t *data, uint64_t length, kmipkit_secret_bytes_t **out_secret);
-int32_t kmipkit_secret_bytes_with_bytes(
-        kmipkit_secret_bytes_t *secret,
-        kmipkit_secret_bytes_callback_t callback,
-        void *context);
-int32_t kmipkit_secret_bytes_into_ttlv_value(
-        kmipkit_secret_bytes_t *secret, kmipkit_ttlv_value_t **out_value);
-void kmipkit_secret_bytes_release(kmipkit_secret_bytes_t *secret);
-int32_t kmipkit_secret_text_create(
-        const uint8_t *utf8, uint64_t length, kmipkit_secret_text_t **out_secret);
-int32_t kmipkit_secret_text_with_str(
-        kmipkit_secret_text_t *secret,
-        kmipkit_secret_text_callback_t callback,
-        void *context);
-int32_t kmipkit_secret_text_into_ttlv_value(
-        kmipkit_secret_text_t *secret, kmipkit_ttlv_value_t **out_value);
-void kmipkit_secret_text_release(kmipkit_secret_text_t *secret);
-
 typedef struct {
     kmipkit_secret_bytes_t *handle;
     const uint8_t *expected;

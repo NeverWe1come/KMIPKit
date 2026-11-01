@@ -9022,9 +9022,9 @@
     "runtimeCopies": {
       "c": "C input spans are borrowed for the call. KMIPKit-owned extension handles follow the zeroization contract; caller-owned copies remain outside it.",
       "java": "Java byte arrays and objects are runtime-owned copies and may outlive native handles; they are outside KMIPKit zeroization guarantees.",
-      "python": "Python bytes and objects are runtime-owned copies and may outlive native handles; they are outside KMIPKit zeroization guarantees."
+      "python": "SecretBytes.with_bytes copies the native span to a temporary bytearray, supplies a read-only memoryview, and wipes the bytearray after the synchronous callback. Access through memoryview.obj can mutate only that temporary copy. SecretText.with_str creates an immutable Python str that cannot be reliably erased. Caller-created and runtime-owned copies remain outside KMIPKit zeroization guarantees."
     },
-    "zeroization": "KMIPKit-owned secret-bearing TTLV values follow the existing TTLV zeroization contract. Secret-bearing encoded request bytes remain in the existing zeroizing owner through transport completion and are zeroized on drop. Registry declarations and diagnostics never contain extension payload bytes."
+    "zeroization": "KMIPKit-owned SecretBytes and SecretText allocations are zeroized on drop; moving them into TTLV transfers that allocation to the existing zeroizing TTLV owner. Secret-bearing encoded request bytes remain in the existing zeroizing owner through transport completion and are zeroized on drop. Registry declarations and diagnostics never contain extension payload bytes."
   },
   "types": [
     {

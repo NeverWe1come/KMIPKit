@@ -7,6 +7,7 @@ pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
     "client_batch_model",
     "client_execution",
     "client_profile_validation",
+    "credential_secret_parity",
     "credential_ttlv_parity",
     "credential_type_parity",
     "credential_validation_error_parity",
@@ -1232,6 +1233,46 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-89b15abea06d0c739a2b",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::Nonce::into_ttlv",
+    ),
+    (
+        "rust-observed-63d3ca6826f6fd5a5933",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::SecretBytes",
+    ),
+    (
+        "rust-observed-3375904ea95f25cd3160",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::SecretBytes::new",
+    ),
+    (
+        "rust-observed-c717a746aa593e809a58",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::SecretBytes::with_bytes",
+    ),
+    (
+        "rust-observed-917dfceedff7e01a8c2d",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::SecretBytes::into_ttlv_value",
+    ),
+    (
+        "rust-observed-efef22092fe3c84b1e24",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::SecretText",
+    ),
+    (
+        "rust-observed-e6794b3ae54c90a3fc55",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::SecretText::new",
+    ),
+    (
+        "rust-observed-8ac669f1db9b2d00df8e",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::SecretText::with_str",
+    ),
+    (
+        "rust-observed-041098e8c308c48f52a8",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::SecretText::into_ttlv_value",
     ),
     (
         "rust-observed-cf0c7611bde6020def37",
@@ -5298,6 +5339,26 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-ac6bfe0a5b7ff3e02a9a",
         "rust-kmipkit",
         "kmipkit::GetUsageAllocationResponse::with_ttlv",
+    ),
+    (
+        "rust-observed-3021412e9f9772c57c6e",
+        "rust-kmipkit",
+        "kmipkit::SecretBytes",
+    ),
+    (
+        "rust-observed-b7d6676fb20e205c968a",
+        "rust-kmipkit",
+        "kmipkit::SecretBytes::into_ttlv_value",
+    ),
+    (
+        "rust-observed-8af75987ccfef1c9ccfb",
+        "rust-kmipkit",
+        "kmipkit::SecretBytes::new",
+    ),
+    (
+        "rust-observed-7ba024ba6ae1c7e2efe9",
+        "rust-kmipkit",
+        "kmipkit::SecretBytes::with_bytes",
     ),
     (
         "rust-observed-1275c564bdeda0bcbaf2",

@@ -10,6 +10,7 @@ from kmipkit._native import (
     find_bundled_native_library,
     load_cffi_library,
     load_native_library,
+    resolve_native_library_path,
 )
 
 
@@ -146,6 +147,48 @@ def test_load_uses_only_the_explicit_administrator_path_when_configured(
 
     assert result is library
     assert loaded == [str(admin_library)]
+
+
+def test_selected_native_library_resolves_relative_administrator_override(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    package_library = tmp_path / "package" / "native.dll"
+    package_library.parent.mkdir(parents=True)
+    package_library.touch()
+    admin_library = tmp_path / "admin" / "native.dll"
+    admin_library.parent.mkdir()
+    admin_library.touch()
+    monkeypatch.chdir(tmp_path)
+
+    selected = resolve_native_library_path(
+        bundled_path=package_library,
+        environ={"KMIPKIT_NATIVE_LIBRARY": "admin/native.dll"},
+    )
+
+    assert selected == admin_library.resolve()
+
+
+def test_selected_native_library_resolves_administrator_symlink(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    package_library = tmp_path / "package" / "native.dll"
+    package_library.parent.mkdir(parents=True)
+    package_library.touch()
+    admin_library = tmp_path / "admin" / "native.dll"
+    admin_library.parent.mkdir()
+    admin_library.touch()
+    alias = tmp_path / "admin-link.dll"
+    try:
+        alias.symlink_to(admin_library)
+    except OSError:
+        pytest.skip("the current host cannot create file symlinks")
+
+    selected = resolve_native_library_path(
+        bundled_path=package_library,
+        environ={"KMIPKIT_NATIVE_LIBRARY": str(alias)},
+    )
+
+    assert selected == admin_library.resolve()
 
 
 def test_missing_administrator_path_fails_without_bundled_fallback(

@@ -2072,10 +2072,16 @@
           "pattern": "^impl for<'a> FnOnce\\(StructureView<'a>\\) -> [A-Za-z_][A-Za-z0-9_]*$"
         },
         {
+          "pattern": "^impl for<'a> FnOnce\\(&'a \\[u8\\]\\) -> [A-Za-z_][A-Za-z0-9_]*$"
+        },
+        {
+          "pattern": "^impl for<'a> FnOnce\\(&'a str\\) -> [A-Za-z_][A-Za-z0-9_]*$"
+        },
+        {
           "pattern": "^impl ExactSizeIterator\\s*<\\s*Item\\s*=\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*'_\\s*>)?\\s*>\\s*\\+\\s*'_\\s*$"
         }
       ],
-      "description": "Rust type subset: identifier paths, one- or two-level generic applications with non-empty path arguments, Result<(), E> including a qualified Result path, unit and tuple types, fixed arrays, references, borrowed slices, raw pointers, mutable pointer-to-pointer output slots for reviewed C ABI declarations, higher-ranked StructureView callbacks used for explicit TTLV inspection, and ExactSizeIterator views over borrowed credential views."
+      "description": "Rust type subset: identifier paths, one- or two-level generic applications with non-empty path arguments, Result<(), E> including a qualified Result path, unit and tuple types, fixed arrays, references, borrowed slices, raw pointers, mutable pointer-to-pointer output slots for reviewed C ABI declarations, higher-ranked StructureView and secret-byte/text callbacks, and ExactSizeIterator views over borrowed credential views."
     },
     "javaType": {
       "type": "string",
@@ -2479,6 +2485,15 @@
         },
         "approvalSource": {
           "$ref": "#/$defs/approvalSource"
+        },
+        "ownerSpecId": {
+          "type": "string",
+          "pattern": "^KMIPKIT-[0-9]{4}$",
+          "description": "Semantic owner specification for a delegated public API capability."
+        },
+        "approvalEvidence": {
+          "$ref": "#/$defs/approvalSource",
+          "description": "Approval record for the semantic owner specification."
         },
         "implementationAuthorization": {
           "$ref": "#/$defs/implementationAuthorization"

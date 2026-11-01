@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import ctypes
 from collections.abc import Callable, Sequence
-from typing import TypeVar
+from functools import lru_cache
+from typing import Any, TypeVar
 from weakref import WeakKeyDictionary
 
 from . import errors
-from ._ffi import ffi, lib
+from ._ffi import ffi, lib, secret_callback_library
 from ._handles import (
     NativeHandle,
     _integer_range,
@@ -16,7 +18,7 @@ from ._handles import (
     _wrap_owned_handle,
     synchronized_native_call,
 )
-from .ttlv import Structure, TtlvStructureView
+from .ttlv import Structure, TtlvStructureView, Value
 
 _T = TypeVar("_T")
 _ACTIVE_NONCE_VIEWS: WeakKeyDictionary[object, int] = WeakKeyDictionary()
@@ -26,6 +28,38 @@ _ACTIVE_DEVICE_CREDENTIAL_VIEWS: WeakKeyDictionary[object, int] = WeakKeyDiction
 _ACTIVE_USERNAME_PASSWORD_CREDENTIAL_VIEWS: WeakKeyDictionary[object, int] = WeakKeyDictionary()
 _ACTIVE_AUTHENTICATION_VIEWS: WeakKeyDictionary[object, int] = WeakKeyDictionary()
 _MAX_AUTHENTICATION_CREDENTIALS = 100_000
+_SECRET_SPAN_CALLBACK = ctypes.CFUNCTYPE(
+    None,
+    ctypes.POINTER(ctypes.c_uint8),
+    ctypes.c_uint64,
+    ctypes.c_void_p,
+)
+
+
+@lru_cache(maxsize=2)
+def _secret_callback_entrypoint(symbol: str) -> Any:
+    """Configure a synchronous C callback entrypoint from the selected library."""
+    function = getattr(secret_callback_library(), symbol)
+    function.argtypes = [
+        ctypes.c_void_p,
+        _SECRET_SPAN_CALLBACK,
+        ctypes.c_void_p,
+    ]
+    function.restype = ctypes.c_int32
+    return function
+
+
+def _copy_secret_span(
+    data: ctypes.POINTER(ctypes.c_uint8) | None, length: int
+) -> bytearray:
+    """Copy a borrowed native span directly into mutable Python-owned storage."""
+    if length < 0 or (length > 0 and data is None):
+        errors.raise_for_status(4)
+    staging = bytearray(length)
+    if length:
+        destination = (ctypes.c_uint8 * length).from_buffer(staging)
+        ctypes.memmove(destination, data, length)
+    return staging
 
 
 class CredentialType:
@@ -69,6 +103,194 @@ class CredentialType:
         if 0x8000_0000 <= self._value <= 0x8FFF_FFFF:
             return "Extensions"
         return "Unknown"
+
+
+class SecretBytes(NativeHandle):
+    """Own caller-provided secret bytes in native zeroizing memory."""
+
+    __slots__ = ()
+    _release_name = "kmipkit_secret_bytes_release"
+
+    @classmethod
+    def from_bytes(cls, value: bytes | bytearray | memoryview) -> SecretBytes:
+        """Copy a bytes-like value into a native zeroizing owner."""
+        if not isinstance(value, (bytes, bytearray, memoryview)):
+            errors.raise_for_status(4)
+        try:
+            staging = bytearray(value)
+        except (TypeError, ValueError, BufferError):
+            errors.raise_for_status(4)
+        try:
+            if staging:
+                source = ffi.from_buffer("const uint8_t[]", staging)
+            else:
+                source = ffi.NULL
+            handle = _new_handle(
+                "kmipkit_secret_bytes_t",
+                lib.kmipkit_secret_bytes_create,
+                source,
+                len(staging),
+            )
+            return _wrap_owned_handle(cls, handle)
+        finally:
+            for index in range(len(staging)):
+                staging[index] = 0
+
+    @synchronized_native_call
+    def with_bytes(self, callback: Callable[[memoryview], _T]) -> _T:
+        """Lend a read-only view of a temporary copy, then clear and release it.
+
+        The view's ``obj`` exposes the mutable temporary bytearray; changing it
+        never changes the native secret. The bytearray is zeroed before return.
+        Copies deliberately made by the callback are caller-owned.
+        """
+        if not callable(callback):
+            errors.raise_for_status(4)
+        result: list[_T] = []
+        failures: list[BaseException] = []
+
+        def invoke(
+            data: ctypes.POINTER(ctypes.c_uint8) | None,
+            length: int,
+            _context: ctypes.c_void_p | None,
+        ) -> None:
+            staging = bytearray()
+            view: memoryview | None = None
+            try:
+                staging = _copy_secret_span(data, int(length))
+                view = memoryview(staging).toreadonly()
+                result.append(callback(view))
+            except BaseException as exception:
+                failures.append(exception)
+            finally:
+                if view is not None:
+                    try:
+                        view.release()
+                    except ValueError:
+                        pass
+                for index in range(len(staging)):
+                    staging[index] = 0
+                data = None
+                length = 0
+                _context = None
+
+        native_callback = _SECRET_SPAN_CALLBACK(invoke)
+        status = _secret_callback_entrypoint("kmipkit_secret_bytes_with_bytes")(
+            ctypes.c_void_p(int(ffi.cast("uintptr_t", self._pointer()))),
+            native_callback,
+            None,
+        )
+        errors.raise_for_status(status)
+        if failures:
+            raise failures[0]
+        if not result:
+            errors.raise_for_status(4)
+        return result[0]
+
+    @synchronized_native_call
+    def into_ttlv_value(self) -> Value:
+        """Move the native secret allocation into a zeroizing TTLV Byte String."""
+        handle = _new_handle(
+            "kmipkit_ttlv_value_t",
+            lib.kmipkit_secret_bytes_into_ttlv_value,
+            self,
+            consumed=(0,),
+            restore_on_statuses=(errors._SHARED_OWNER_STATUS,),
+        )
+        return _wrap_owned_handle(Value, handle)
+
+    def __repr__(self) -> str:
+        return "SecretBytes([REDACTED])"
+
+
+class SecretText(NativeHandle):
+    """Own caller-provided UTF-8 text in native zeroizing memory."""
+
+    __slots__ = ()
+    _release_name = "kmipkit_secret_text_release"
+
+    @classmethod
+    def from_text(cls, value: str) -> SecretText:
+        """Strictly encode text and copy it into a native zeroizing owner."""
+        if not isinstance(value, str):
+            errors.raise_for_status(4)
+        try:
+            staging = bytearray(value, "utf-8", "strict")
+        except UnicodeEncodeError:
+            errors.raise_for_status(4)
+        try:
+            if staging:
+                source = ffi.from_buffer("const uint8_t[]", staging)
+            else:
+                source = ffi.NULL
+            handle = _new_handle(
+                "kmipkit_secret_text_t",
+                lib.kmipkit_secret_text_create,
+                source,
+                len(staging),
+            )
+            return _wrap_owned_handle(cls, handle)
+        finally:
+            for index in range(len(staging)):
+                staging[index] = 0
+
+    @synchronized_native_call
+    def with_str(self, callback: Callable[[str], _T]) -> _T:
+        """Lend strict-decoded text, then clear the temporary UTF-8 byte copy.
+
+        The callback receives an immutable Python ``str`` copy that cannot be
+        reliably erased. Any further copies remain caller-owned.
+        """
+        if not callable(callback):
+            errors.raise_for_status(4)
+        result: list[_T] = []
+        failures: list[BaseException] = []
+
+        def invoke(
+            utf8: ctypes.POINTER(ctypes.c_uint8) | None,
+            length: int,
+            _context: ctypes.c_void_p | None,
+        ) -> None:
+            staging = bytearray()
+            try:
+                staging = _copy_secret_span(utf8, int(length))
+                result.append(callback(staging.decode("utf-8", "strict")))
+            except BaseException as exception:
+                failures.append(exception)
+            finally:
+                for index in range(len(staging)):
+                    staging[index] = 0
+                utf8 = None
+                length = 0
+                _context = None
+
+        native_callback = _SECRET_SPAN_CALLBACK(invoke)
+        status = _secret_callback_entrypoint("kmipkit_secret_text_with_str")(
+            ctypes.c_void_p(int(ffi.cast("uintptr_t", self._pointer()))),
+            native_callback,
+            None,
+        )
+        errors.raise_for_status(status)
+        if failures:
+            raise failures[0]
+        if not result:
+            errors.raise_for_status(4)
+        return result[0]
+
+    @synchronized_native_call
+    def into_ttlv_value(self) -> Value:
+        """Move the native secret allocation into a zeroizing TTLV Text String."""
+        handle = _new_handle(
+            "kmipkit_ttlv_value_t",
+            lib.kmipkit_secret_text_into_ttlv_value,
+            self,
+            consumed=(0,),
+            restore_on_statuses=(errors._SHARED_OWNER_STATUS,),
+        )
+        return _wrap_owned_handle(Value, handle)
+
+    def __repr__(self) -> str:
+        return "SecretText([REDACTED])"
 
 
 class Nonce(NativeHandle):
@@ -551,5 +773,7 @@ __all__ = [
     "CredentialView",
     "DeviceCredential",
     "Nonce",
+    "SecretBytes",
+    "SecretText",
     "UsernameAndPasswordCredential",
 ]

@@ -81,16 +81,6 @@ VALIDATION_ERROR_EXPORTS = {
     "kmipkit_protocol::CredentialValidationErrorKind::FieldOutOfOrder",
     "kmipkit_protocol::CredentialValidationErrorKind::InvalidTtlvStructure",
 }
-EXPECTED_MAPPED_CREDENTIAL_EXPORTS = (
-    EXPECTED_CREDENTIAL_TYPE_EXPORTS
-    | EXPECTED_NONCE_EXPORTS
-    | CREDENTIAL_EXPORTS
-    | ATTESTATION_CREDENTIAL_EXPORTS
-    | DEVICE_CREDENTIAL_EXPORTS
-    | USERNAME_PASSWORD_CREDENTIAL_EXPORTS
-    | AUTHENTICATION_EXPORTS
-    | VALIDATION_ERROR_EXPORTS
-)
 NONCE_REQUIREMENTS = {
     "KMIPKIT-0008-FR-006",
     "KMIPKIT-REQ-SPEC-9.11-006",
@@ -115,6 +105,23 @@ SECRET_WRAPPER_EXPORTS = {
     "kmipkit::SecretBytes::with_bytes",
     "kmipkit::SecretBytes::into_ttlv_value",
 }
+SECRET_ROOT_ALIAS_EXPORTS = {
+    "kmipkit::SecretBytes",
+    "kmipkit::SecretBytes::new",
+    "kmipkit::SecretBytes::with_bytes",
+    "kmipkit::SecretBytes::into_ttlv_value",
+}
+EXPECTED_MAPPED_CREDENTIAL_EXPORTS = (
+    EXPECTED_CREDENTIAL_TYPE_EXPORTS
+    | EXPECTED_NONCE_EXPORTS
+    | CREDENTIAL_EXPORTS
+    | ATTESTATION_CREDENTIAL_EXPORTS
+    | DEVICE_CREDENTIAL_EXPORTS
+    | USERNAME_PASSWORD_CREDENTIAL_EXPORTS
+    | AUTHENTICATION_EXPORTS
+    | VALIDATION_ERROR_EXPORTS
+    | (SECRET_WRAPPER_EXPORTS - SECRET_ROOT_ALIAS_EXPORTS)
+)
 SECRET_WRAPPER_REQUIREMENTS = {
     "KMIPKIT-0008-FR-010",
     "KMIPKIT-0043-FR-004",
@@ -267,6 +274,8 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                         "kmipkit_protocol::CredentialView",
                         "kmipkit_protocol::CredentialValidationError",
                         "kmipkit_protocol::CredentialValidationErrorKind",
+                        "kmipkit_protocol::SecretBytes",
+                        "kmipkit_protocol::SecretText",
                     }
                     and row.get("approvalSource", {}).get("path")
                     == "specs/008-credentials-attestation/spec.md"
@@ -428,7 +437,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             row for row in meaningful
             if row.get("exportName") not in EXPECTED_MAPPED_CREDENTIAL_EXPORTS
         ]
-        self.assertEqual(43, len(remaining))
+        self.assertEqual(35, len(remaining))
         self.assertTrue(all(row.get("declarationState") == "blocked" for row in remaining))
 
     def test_credential_type_is_mapped_as_an_open_raw_enum(self) -> None:
@@ -565,7 +574,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                     self.assertTrue(exclusion.get("reason"))
                     self.assertTrue(exclusion.get("evidence"))
 
-    def test_partial_owner_parity_maps_credential_type_and_keeps_exact_blockers(self) -> None:
+    def test_partial_owner_parity_keeps_exact_blockers(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         declarations = [
             row
@@ -579,7 +588,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             for declaration in declarations
             if declaration.get("declarationState") == "blocked"
         ]
-        self.assertEqual(43, len(blocked))
+        self.assertEqual(35, len(blocked))
 
         exclusions = {
             (row.get("packageId"), row.get("exportName")): row
@@ -712,6 +721,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
         }
         self.assertEqual(SECRET_WRAPPER_EXPORTS, declarations.keys())
 
+        root_alias_names = SECRET_ROOT_ALIAS_EXPORTS
         expected_names = {
             "kmipkit_protocol::SecretBytes": {
                 "rust": "kmipkit_protocol::SecretBytes",
@@ -762,6 +772,17 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                 "python": "kmipkit.credentials.SecretText.into_ttlv_value",
             },
         }
+        for export_name in root_alias_names:
+            protocol_export = export_name.replace(
+                "kmipkit::SecretBytes", "kmipkit_protocol::SecretBytes", 1
+            )
+            expected_names[export_name] = {
+                "rust": export_name,
+                **{
+                    language: expected_names[protocol_export][language]
+                    for language in ("c", "java", "python")
+                },
+            }
         for export_name, declaration in declarations.items():
             with self.subTest(export_name=export_name):
                 self.assertEqual("declared", declaration.get("declarationState"))
@@ -787,21 +808,66 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                 for language, expected_name in expected_names[export_name].items():
                     self.assertEqual(expected_name, mappings[language]["name"])
 
-        root_alias_names = {
-            "kmipkit::SecretBytes",
-            "kmipkit::SecretBytes::new",
-            "kmipkit::SecretBytes::with_bytes",
-            "kmipkit::SecretBytes::into_ttlv_value",
-        }
         for export_name in root_alias_names:
             with self.subTest(root_alias=export_name):
                 protocol_export = export_name.replace(
                     "kmipkit::SecretBytes", "kmipkit_protocol::SecretBytes", 1
                 )
-                self.assertEqual(
-                    declarations[protocol_export].get("languageMappings"),
-                    declarations[export_name].get("languageMappings"),
+                protocol_mappings = declarations[protocol_export]["languageMappings"]
+                alias_mappings = declarations[export_name]["languageMappings"]
+                for language in ("c", "java", "python"):
+                    self.assertEqual(protocol_mappings[language], alias_mappings[language])
+
+    def test_secret_binding_glue_has_exact_owner_exclusions(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        expected = {
+            (
+                "java-kmipkit",
+                "org.kmipkit.NativeExtensionRegistry.SECRET_BYTES",
+            ),
+            (
+                "java-kmipkit",
+                "org.kmipkit.NativeExtensionRegistry.SECRET_TEXT",
+            ),
+            *{
+                ("java-kmipkit", f"org.kmipkit.NativeExtensionRegistry.{method}")
+                for method in (
+                    "secretBytesCreate",
+                    "secretBytesWithBytes",
+                    "secretBytesIntoTtlvValue",
+                    "secretTextCreate",
+                    "secretTextWithStr",
+                    "secretTextIntoTtlvValue",
                 )
+            },
+            *{
+                ("python-kmipkit", f"kmipkit.credentials.{name}.{member}")
+                for name in ("SecretBytes", "SecretText")
+                for member in ("__init__", "__slots__")
+            },
+        }
+        exclusions = {
+            (row.get("packageId"), row.get("exportName")): row
+            for row in manifest.get("approvedExclusions", [])
+        }
+        self.assertTrue(expected <= exclusions.keys())
+
+        for package_id, export_name in expected:
+            with self.subTest(export_name=export_name):
+                exclusion = exclusions[(package_id, export_name)]
+                self.assertTrue(exclusion.get("reason"))
+                self.assertTrue(exclusion.get("evidence"))
+                if package_id == "python-kmipkit":
+                    self.assertEqual("KMIPKIT-0008", exclusion.get("candidateSpecId"))
+                    self.assertEqual(
+                        "specs/008-credentials-attestation/spec.md",
+                        exclusion["approvalSource"]["path"],
+                    )
+                else:
+                    self.assertEqual(
+                        "specs/043-public-api-bindings/spec.md",
+                        exclusion["approvalSource"]["path"],
+                    )
 
     def test_credential_and_nonce_jni_converters_declare_status_and_output_handle(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))

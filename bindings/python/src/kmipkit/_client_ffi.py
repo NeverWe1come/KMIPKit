@@ -7,8 +7,6 @@ the reviewed versioned C records and do not add a public C header surface.
 
 from __future__ import annotations
 
-import os
-
 from cffi import FFI
 
 from ._ffi import _bundled_path
@@ -1298,7 +1296,7 @@ ffi.cdef(
     """
 )
 
-_native_path = os.environ.get("KMIPKIT_NATIVE_LIBRARY", str(_bundled_path))
+_native_path = str(_bundled_path)
 try:
     lib = ffi.dlopen(_native_path)
 except OSError:

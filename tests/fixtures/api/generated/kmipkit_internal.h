@@ -131,6 +131,8 @@ typedef struct kmipkit_authentication_t kmipkit_authentication_t;
 typedef struct kmipkit_credential_view_t kmipkit_credential_view_t;
 typedef struct kmipkit_credential_validation_error_v1_t kmipkit_credential_validation_error_v1_t;
 typedef struct kmipkit_username_and_password_credential_t kmipkit_username_and_password_credential_t;
+typedef struct kmipkit_secret_bytes_t kmipkit_secret_bytes_t;
+typedef struct kmipkit_secret_text_t kmipkit_secret_text_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -403,6 +405,8 @@ void kmipkit_device_credential_release(kmipkit_device_credential_t *handle);
 void kmipkit_authentication_release(kmipkit_authentication_t *handle);
 void kmipkit_credential_view_release(kmipkit_credential_view_t *handle);
 void kmipkit_username_and_password_credential_release(kmipkit_username_and_password_credential_t *handle);
+void kmipkit_secret_bytes_release(kmipkit_secret_bytes_t *handle);
+void kmipkit_secret_text_release(kmipkit_secret_text_t *handle);
 #define KMIPKIT_ERROR_COMPATIBILITY_MISMATCH ((int32_t)1)
 #define KMIPKIT_ERROR_DUPLICATE_KEY ((int32_t)2)
 #define KMIPKIT_ERROR_INVALID_IDENTITY ((int32_t)3)
@@ -1564,6 +1568,30 @@ int32_t kmipkit_username_and_password_credential_into_ttlv(kmipkit_username_and_
  */
 /* KMIPKIT-0008-FR-003, KMIPKIT-0008-FR-004, KMIPKIT-0008-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.11-001 */
 int32_t kmipkit_username_and_password_credential_ttlv_view(kmipkit_username_and_password_credential_t * credential, kmipkit_ttlv_structure_view_t ** out_view);
+/* Creates a zeroizing secret owner by copying the input span without modifying caller-owned memory.
+ */
+/* KMIPKIT-0008-FR-010, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_secret_bytes_create(const uint8_t * data, uint64_t length, kmipkit_secret_bytes_t ** out_secret);
+/* Calls a synchronous callback with a borrowed span that expires on return; copies made by the callback are outside KMIPKit zeroization guarantees.
+ */
+/* KMIPKIT-0008-FR-010, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_secret_bytes_with_bytes(kmipkit_secret_bytes_t * secret, void (*callback)(const uint8_t *, uint64_t, void *), void * context);
+/* Consumes the unique secret owner and moves its allocation into a zeroizing TTLV value.
+ */
+/* KMIPKIT-0008-FR-010, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_secret_bytes_into_ttlv_value(kmipkit_secret_bytes_t * secret, kmipkit_ttlv_value_t ** out_value);
+/* Creates a zeroizing secret owner by copying the input span without modifying caller-owned memory.
+ */
+/* KMIPKIT-0008-FR-010, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_secret_text_create(const uint8_t * utf8, uint64_t length, kmipkit_secret_text_t ** out_secret);
+/* Calls a synchronous callback with a borrowed span that expires on return; copies made by the callback are outside KMIPKit zeroization guarantees.
+ */
+/* KMIPKIT-0008-FR-010, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_secret_text_with_str(kmipkit_secret_text_t * secret, void (*callback)(const uint8_t *, uint64_t, void *), void * context);
+/* Consumes the unique secret owner and moves its allocation into a zeroizing TTLV value.
+ */
+/* KMIPKIT-0008-FR-010, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_secret_text_into_ttlv_value(kmipkit_secret_text_t * secret, kmipkit_ttlv_value_t ** out_value);
 /* KMIPKIT-0006-FR-021, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_message_extension_view_ttlv(kmipkit_message_extension_view_t * extension, kmipkit_ttlv_structure_t ** out_structure);
 /* KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */

@@ -1703,6 +1703,114 @@ kmipkit::jni::ResponseBridgeOperations response_bridge_operations(
             &response_bridge_delete_local};
 }
 
+struct JavaSecretCallbackContext {
+    JNIEnv* env;
+    jobject callback;
+    jmethodID apply;
+    jobject result = nullptr;
+};
+
+void clear_java_byte_array(JNIEnv* env, jbyteArray array) noexcept {
+    if (array == nullptr) return;
+    const jsize length = env->GetArrayLength(array);
+    if (env->ExceptionCheck()) return;
+    jbyte* bytes = env->GetByteArrayElements(array, nullptr);
+    if (bytes == nullptr) return;
+    volatile jbyte* wipe = bytes;
+    for (jsize index = 0; index < length; ++index) wipe[index] = 0;
+    env->ReleaseByteArrayElements(array, bytes, 0);
+}
+
+void java_secret_callback(const uint8_t* data, uint64_t length, void* raw_context) noexcept {
+    auto* context = static_cast<JavaSecretCallbackContext*>(raw_context);
+    if (context == nullptr || context->env == nullptr || context->callback == nullptr
+            || context->apply == nullptr || (length != 0 && data == nullptr)) return;
+    if (length > static_cast<uint64_t>(std::numeric_limits<jsize>::max())) {
+        throw_java(context->env, "org/kmipkit/ResourceLimitException",
+                   "secret copy exceeds Java array limits");
+        return;
+    }
+    auto copy = context->env->NewByteArray(static_cast<jsize>(length));
+    if (copy == nullptr) return;
+    if (length != 0) {
+        context->env->SetByteArrayRegion(copy, 0, static_cast<jsize>(length),
+                reinterpret_cast<const jbyte*>(data));
+    }
+    if (!context->env->ExceptionCheck()) {
+        context->result = context->env->CallObjectMethod(context->callback, context->apply, copy);
+    }
+    jthrowable callback_exception = nullptr;
+    if (context->env->ExceptionCheck()) {
+        callback_exception = context->env->ExceptionOccurred();
+        context->env->ExceptionClear();
+    }
+    clear_java_byte_array(context->env, copy);
+    if (callback_exception != nullptr) {
+        if (context->env->ExceptionCheck()) context->env->ExceptionClear();
+        context->env->Throw(callback_exception);
+        context->env->DeleteLocalRef(callback_exception);
+    }
+    context->env->DeleteLocalRef(copy);
+}
+
+template <typename Handle, typename CreateFunction>
+jint create_java_secret(JNIEnv* env, jbyteArray input, jlongArray output,
+        CreateFunction&& create, void (*release_secret)(Handle*)) {
+    if (output == nullptr || env->GetArrayLength(output) != 1 || env->ExceptionCheck()) {
+        if (!env->ExceptionCheck()) throw_invalid_input(env);
+        return KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    std::vector<uint8_t> bytes;
+    if (!read_bytes(env, input, std::numeric_limits<uint64_t>::max(), bytes)) {
+        return KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    kmipkit::secure::VectorWiper wipe(bytes);
+    Handle* secret = nullptr;
+    const int32_t status = create(bytes.empty() ? nullptr : bytes.data(),
+            static_cast<uint64_t>(bytes.size()), &secret);
+    if (status != 0) return status;
+    if (secret == nullptr) {
+        throw_invalid_input(env);
+        return KMIPKIT_ERROR_INTERNAL;
+    }
+    const jlong raw_secret = to_java_handle(secret);
+    env->SetLongArrayRegion(output, 0, 1, &raw_secret);
+    if (env->ExceptionCheck()) {
+        release_secret(secret);
+        return KMIPKIT_ERROR_RESOURCE_LIMIT;
+    }
+    return 0;
+}
+
+template <typename SecretHandle, typename ValueHandle, typename ConvertFunction>
+jobject secret_to_java_ttlv_value(JNIEnv* env, jlong raw_secret,
+        ConvertFunction&& convert, void (*release_value)(ValueHandle*)) {
+    ValueHandle* value = nullptr;
+    const int32_t status = convert(from_java_handle<SecretHandle>(raw_secret), &value);
+    if (status != 0) {
+        throw_status(env, status);
+        return nullptr;
+    }
+    if (value == nullptr) {
+        throw_java(env, "org/kmipkit/KmipException", "native secret conversion returned no value");
+        return nullptr;
+    }
+    jclass value_class = env->FindClass("org/kmipkit/ttlv/TtlvValue");
+    if (value_class == nullptr) {
+        release_value(value);
+        return nullptr;
+    }
+    const jmethodID constructor = env->GetMethodID(value_class, "<init>", "(J)V");
+    jobject result = constructor == nullptr ? nullptr
+            : env->NewObject(value_class, constructor, to_java_handle(value));
+    env->DeleteLocalRef(value_class);
+    if (result == nullptr || env->ExceptionCheck()) {
+        release_value(value);
+        return nullptr;
+    }
+    return result;
+}
+
 } // namespace
 
 extern "C" {
@@ -1722,6 +1830,92 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_credentialTypeF
             return static_cast<jlong>(0);
         }
         return static_cast<jlong>(out_raw);
+    });
+}
+
+JNIEXPORT jint JNICALL Java_org_kmipkit_NativeExtensionRegistry_secretBytesCreate(
+        JNIEnv* env, jclass, jbyteArray data, jlongArray out_secret) {
+    return guarded<jint>(env, KMIPKIT_ERROR_INTERNAL, [&] {
+        return create_java_secret<kmipkit_secret_bytes_t>(env, data, out_secret,
+                kmipkit_secret_bytes_create, kmipkit_secret_bytes_release);
+    });
+}
+
+JNIEXPORT jobject JNICALL Java_org_kmipkit_NativeExtensionRegistry_secretBytesWithBytes(
+        JNIEnv* env, jclass, jlong raw_secret, jobject callback) {
+    return guarded<jobject>(env, nullptr, [&]() -> jobject {
+        if (raw_secret == 0 || callback == nullptr) {
+            throw_invalid_input(env);
+            return nullptr;
+        }
+        jclass function_class = env->FindClass("java/util/function/Function");
+        if (function_class == nullptr) return nullptr;
+        const jmethodID apply = env->GetMethodID(function_class, "apply",
+                "(Ljava/lang/Object;)Ljava/lang/Object;");
+        env->DeleteLocalRef(function_class);
+        if (apply == nullptr) return nullptr;
+        JavaSecretCallbackContext context{env, callback, apply};
+        const int32_t status = kmipkit_secret_bytes_with_bytes(
+                from_java_handle<kmipkit_secret_bytes_t>(raw_secret),
+                java_secret_callback, &context);
+        if (status != 0) {
+            if (context.result != nullptr) env->DeleteLocalRef(context.result);
+            throw_status(env, status);
+            return nullptr;
+        }
+        return context.result;
+    });
+}
+
+JNIEXPORT jobject JNICALL Java_org_kmipkit_NativeExtensionRegistry_secretBytesIntoTtlvValue(
+        JNIEnv* env, jclass, jlong raw_secret) {
+    return guarded<jobject>(env, nullptr, [&] {
+        return secret_to_java_ttlv_value<kmipkit_secret_bytes_t, kmipkit_ttlv_value_t>(
+                env, raw_secret, kmipkit_secret_bytes_into_ttlv_value,
+                kmipkit_ttlv_value_release);
+    });
+}
+
+JNIEXPORT jint JNICALL Java_org_kmipkit_NativeExtensionRegistry_secretTextCreate(
+        JNIEnv* env, jclass, jbyteArray utf8, jlongArray out_secret) {
+    return guarded<jint>(env, KMIPKIT_ERROR_INTERNAL, [&] {
+        return create_java_secret<kmipkit_secret_text_t>(env, utf8, out_secret,
+                kmipkit_secret_text_create, kmipkit_secret_text_release);
+    });
+}
+
+JNIEXPORT jobject JNICALL Java_org_kmipkit_NativeExtensionRegistry_secretTextWithStr(
+        JNIEnv* env, jclass, jlong raw_secret, jobject callback) {
+    return guarded<jobject>(env, nullptr, [&]() -> jobject {
+        if (raw_secret == 0 || callback == nullptr) {
+            throw_invalid_input(env);
+            return nullptr;
+        }
+        jclass function_class = env->FindClass("java/util/function/Function");
+        if (function_class == nullptr) return nullptr;
+        const jmethodID apply = env->GetMethodID(function_class, "apply",
+                "(Ljava/lang/Object;)Ljava/lang/Object;");
+        env->DeleteLocalRef(function_class);
+        if (apply == nullptr) return nullptr;
+        JavaSecretCallbackContext context{env, callback, apply};
+        const int32_t status = kmipkit_secret_text_with_str(
+                from_java_handle<kmipkit_secret_text_t>(raw_secret),
+                java_secret_callback, &context);
+        if (status != 0) {
+            if (context.result != nullptr) env->DeleteLocalRef(context.result);
+            throw_status(env, status);
+            return nullptr;
+        }
+        return context.result;
+    });
+}
+
+JNIEXPORT jobject JNICALL Java_org_kmipkit_NativeExtensionRegistry_secretTextIntoTtlvValue(
+        JNIEnv* env, jclass, jlong raw_secret) {
+    return guarded<jobject>(env, nullptr, [&] {
+        return secret_to_java_ttlv_value<kmipkit_secret_text_t, kmipkit_ttlv_value_t>(
+                env, raw_secret, kmipkit_secret_text_into_ttlv_value,
+                kmipkit_ttlv_value_release);
     });
 }
 
@@ -4239,6 +4433,10 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_release(
                 from_java_handle<kmipkit_device_credential_t>(raw_handle)); break;
         case 51: kmipkit_username_and_password_credential_release(
                 from_java_handle<kmipkit_username_and_password_credential_t>(raw_handle)); break;
+        case 52: kmipkit_secret_bytes_release(
+                from_java_handle<kmipkit_secret_bytes_t>(raw_handle)); break;
+        case 53: kmipkit_secret_text_release(
+                from_java_handle<kmipkit_secret_text_t>(raw_handle)); break;
         default: throw_invalid_input(env); break;
         }
         return 0;

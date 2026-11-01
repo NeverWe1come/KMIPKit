@@ -19,7 +19,7 @@ from typing import get_type_hints
 
 import pytest
 
-from kmipkit import _handles, client, errors, extensions, ttlv
+from kmipkit import _ffi, _handles, client, errors, extensions, ttlv
 from kmipkit._handles import _wipe_staging_buffer, _wrap_owned_handle
 
 
@@ -4456,7 +4456,7 @@ def test_private_python_client_loader_redacts_native_path_failure(
         raise OSError(path_marker)
 
     with monkeypatch.context() as patch:
-        patch.setenv("KMIPKIT_NATIVE_LIBRARY", path_marker)
+        patch.setattr(_ffi, "_bundled_path", Path(path_marker))
         patch.setattr(FFI, "dlopen", fail_dlopen)
         with pytest.raises(ImportError, match="KMIPKit native client ABI is unavailable") as caught:
             importlib.reload(_client_ffi)

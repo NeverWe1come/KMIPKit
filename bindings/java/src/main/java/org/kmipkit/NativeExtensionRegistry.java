@@ -2,6 +2,7 @@ package org.kmipkit;
 
 import java.nio.ByteBuffer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;
 import org.kmipkit.ttlv.CodecLimits;
@@ -67,6 +68,8 @@ public final class NativeExtensionRegistry {
     public static final int CREDENTIAL_VIEW = 49;
     public static final int DEVICE_CREDENTIAL = 50;
     public static final int USERNAME_AND_PASSWORD_CREDENTIAL = 51;
+    public static final int SECRET_BYTES = 52;
+    public static final int SECRET_TEXT = 53;
 
     private static volatile boolean loaded;
 
@@ -131,6 +134,13 @@ public final class NativeExtensionRegistry {
             long structure, long[] outCredential);
     public static native long usernameAndPasswordCredentialTtlvView(long credential);
     public static native long usernameAndPasswordCredentialIntoTtlv(long credential);
+
+    public static native int secretBytesCreate(byte[] data, long[] outSecret);
+    public static native Object secretBytesWithBytes(long secret, Function<byte[], Object> callback);
+    public static native org.kmipkit.ttlv.TtlvValue secretBytesIntoTtlvValue(long secret);
+    public static native int secretTextCreate(byte[] utf8, long[] outSecret);
+    public static native Object secretTextWithStr(long secret, Function<byte[], Object> callback);
+    public static native org.kmipkit.ttlv.TtlvValue secretTextIntoTtlvValue(long secret);
 
     public static native void release(int handleKind, long handle);
 

@@ -33308,6 +33308,154 @@
       "exportName": "kmipkit.credentials.UsernameAndPasswordCredential.__slots__",
       "packageId": "python-kmipkit",
       "reason": "Exact Python slot layout used for internal UsernameAndPasswordCredential wrapper state; it is not a KMIP credential field or product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is an internal JNI bridge; SecretBytes is the supported Java facade.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.SECRET_BYTES",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is an internal JNI handle-kind constant; Java applications use the typed SecretBytes facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is an internal JNI bridge; SecretText is the supported Java facade.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.SECRET_TEXT",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is an internal JNI handle-kind constant; Java applications use the typed SecretText facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. The NativeExtensionRegistry bridge has no independent product capability.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.secretBytesCreate",
+      "packageId": "java-kmipkit",
+      "reason": "Internal JNI bridge entry point; Java applications construct secret bytes with SecretBytes.fromBytes."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. The NativeExtensionRegistry bridge has no independent product capability.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.secretBytesWithBytes",
+      "packageId": "java-kmipkit",
+      "reason": "Internal JNI bridge entry point; Java applications use SecretBytes.withBytes."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. The NativeExtensionRegistry bridge has no independent product capability.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.secretBytesIntoTtlvValue",
+      "packageId": "java-kmipkit",
+      "reason": "Internal JNI bridge entry point; Java applications use SecretBytes.intoTtlvValue."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. The NativeExtensionRegistry bridge has no independent product capability.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.secretTextCreate",
+      "packageId": "java-kmipkit",
+      "reason": "Internal JNI bridge entry point; Java applications construct secret text with SecretText.fromString."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. The NativeExtensionRegistry bridge has no independent product capability.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.secretTextWithStr",
+      "packageId": "java-kmipkit",
+      "reason": "Internal JNI bridge entry point; Java applications use SecretText.withStr."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. The NativeExtensionRegistry bridge has no independent product capability.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.secretTextIntoTtlvValue",
+      "packageId": "java-kmipkit",
+      "reason": "Internal JNI bridge entry point; Java applications use SecretText.intoTtlvValue."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "The SecretBytes facade exposes controlled construction, scoped access, and TTLV ownership transfer; it does not expose arbitrary native-handle construction.",
+      "exportName": "kmipkit.credentials.SecretBytes.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "Inherited native-handle initialization requires KMIPKit's private ownership token; callers construct SecretBytes with from_bytes."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "SecretBytes exposes its documented secret operations; its Python storage layout supports native-handle ownership only.",
+      "exportName": "kmipkit.credentials.SecretBytes.__slots__",
+      "packageId": "python-kmipkit",
+      "reason": "Exact Python slot layout is internal wrapper storage, not a KMIP value or product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "The SecretText facade exposes controlled construction, scoped access, and TTLV ownership transfer; it does not expose arbitrary native-handle construction.",
+      "exportName": "kmipkit.credentials.SecretText.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "Inherited native-handle initialization requires KMIPKit's private ownership token; callers construct SecretText with from_text."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "SecretText exposes its documented secret operations; its Python storage layout supports native-handle ownership only.",
+      "exportName": "kmipkit.credentials.SecretText.__slots__",
+      "packageId": "python-kmipkit",
+      "reason": "Exact Python slot layout is internal wrapper storage, not a KMIP value or product-level capability."
     }
   ],
   "capabilities": [
@@ -36369,6 +36517,90 @@
       "parityScope": "c-only",
       "requirementIds": [
         "KMIPKIT-0043-FR-007"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "capabilityState": "declared",
+      "mappings": {
+        "c": [
+          "kmipkit_secret_bytes_create",
+          "kmipkit_secret_bytes_into_ttlv_value",
+          "kmipkit_secret_bytes_release",
+          "kmipkit_secret_bytes_t",
+          "kmipkit_secret_bytes_with_bytes",
+          "kmipkit_secret_text_create",
+          "kmipkit_secret_text_into_ttlv_value",
+          "kmipkit_secret_text_release",
+          "kmipkit_secret_text_t",
+          "kmipkit_secret_text_with_str"
+        ],
+        "java": [
+          "org.kmipkit.credentials.SecretBytes",
+          "org.kmipkit.credentials.SecretBytes.close",
+          "org.kmipkit.credentials.SecretBytes.fromBytes",
+          "org.kmipkit.credentials.SecretBytes.intoTtlvValue",
+          "org.kmipkit.credentials.SecretBytes.toString",
+          "org.kmipkit.credentials.SecretBytes.withBytes",
+          "org.kmipkit.credentials.SecretText",
+          "org.kmipkit.credentials.SecretText.close",
+          "org.kmipkit.credentials.SecretText.fromString",
+          "org.kmipkit.credentials.SecretText.intoTtlvValue",
+          "org.kmipkit.credentials.SecretText.toString",
+          "org.kmipkit.credentials.SecretText.withStr"
+        ],
+        "python": [
+          "kmipkit.credentials.SecretBytes",
+          "kmipkit.credentials.SecretBytes.__enter__",
+          "kmipkit.credentials.SecretBytes.__exit__",
+          "kmipkit.credentials.SecretBytes.__repr__",
+          "kmipkit.credentials.SecretBytes.close",
+          "kmipkit.credentials.SecretBytes.closed",
+          "kmipkit.credentials.SecretBytes.from_bytes",
+          "kmipkit.credentials.SecretBytes.into_ttlv_value",
+          "kmipkit.credentials.SecretBytes.with_bytes",
+          "kmipkit.credentials.SecretText",
+          "kmipkit.credentials.SecretText.__enter__",
+          "kmipkit.credentials.SecretText.__exit__",
+          "kmipkit.credentials.SecretText.__repr__",
+          "kmipkit.credentials.SecretText.close",
+          "kmipkit.credentials.SecretText.closed",
+          "kmipkit.credentials.SecretText.from_text",
+          "kmipkit.credentials.SecretText.into_ttlv_value",
+          "kmipkit.credentials.SecretText.with_str"
+        ],
+        "rust": [
+          "kmipkit::SecretBytes",
+          "kmipkit::SecretBytes::into_ttlv_value",
+          "kmipkit::SecretBytes::new",
+          "kmipkit::SecretBytes::with_bytes",
+          "kmipkit_protocol::SecretBytes",
+          "kmipkit_protocol::SecretBytes::into_ttlv_value",
+          "kmipkit_protocol::SecretBytes::new",
+          "kmipkit_protocol::SecretBytes::with_bytes",
+          "kmipkit_protocol::SecretText",
+          "kmipkit_protocol::SecretText::into_ttlv_value",
+          "kmipkit_protocol::SecretText::new",
+          "kmipkit_protocol::SecretText::with_str"
+        ]
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ]
     }
   ],
@@ -70253,6 +70485,562 @@
         ],
         "requestBoundary": "not-applicable",
         "returnType": "R"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Creates a zeroizing secret owner by copying the input span without modifying caller-owned memory."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "parameters": [
+          {
+            "byteLengthParameter": "length",
+            "byteLengthType": "uint64_t",
+            "encoding": "octets",
+            "kind": "byte-span",
+            "lengthUnit": "bytes",
+            "limitCheck": "before-dereference",
+            "name": "data",
+            "nulTerminatedScan": false,
+            "type": "const uint8_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "length",
+            "type": "uint64_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_secret",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_secret_bytes_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_secret_bytes_create"
+      },
+      "id": "secret_bytes_create",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_secretBytesCreate",
+        "method": "secretBytesCreate",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "byte[]"
+          },
+          {
+            "name": "outSecret",
+            "type": "long[]"
+          }
+        ],
+        "returnType": "int"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_secret_bytes_create",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "function": "SecretBytes.from_bytes",
+        "module": "kmipkit.credentials",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "bytes | bytearray | memoryview"
+          }
+        ],
+        "returnType": "SecretBytes"
+      },
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::SecretBytes",
+        "name": "new",
+        "owner": "protocol",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "Vec<u8>"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "SecretBytes"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Calls a synchronous callback with a borrowed span that expires on return; copies made by the callback are outside KMIPKit zeroization guarantees."
+        ],
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "secret",
+            "ownership": "borrowed",
+            "type": "kmipkit_secret_bytes_t *"
+          },
+          {
+            "kind": "callback",
+            "lifetime": "synchronous-call",
+            "name": "callback",
+            "ownership": "borrowed",
+            "type": "void (*)(const uint8_t *, uint64_t, void *)"
+          },
+          {
+            "kind": "callback-context",
+            "lifetime": "synchronous-call",
+            "name": "context",
+            "ownership": "borrowed",
+            "type": "void *"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_secret_bytes_with_bytes"
+      },
+      "id": "secret_bytes_with_bytes",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_secretBytesWithBytes",
+        "method": "secretBytesWithBytes",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "secret",
+            "type": "long"
+          },
+          {
+            "name": "callback",
+            "type": "Function<byte[], Object>"
+          }
+        ],
+        "returnType": "Object"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_secret_bytes_with_bytes",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "function": "SecretBytes.with_bytes",
+        "module": "kmipkit.credentials",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "Callable"
+          }
+        ],
+        "returnType": "T"
+      },
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::SecretBytes",
+        "name": "with_bytes",
+        "owner": "protocol",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "impl for<'a> FnOnce(&'a [u8]) -> R"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "R"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Consumes the unique secret owner and moves its allocation into a zeroizing TTLV value."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "shared_owner",
+          "resource_limit"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "secret",
+            "ownership": "consumed",
+            "type": "kmipkit_secret_bytes_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_value",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_ttlv_value_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_secret_bytes_into_ttlv_value"
+      },
+      "id": "secret_bytes_into_ttlv_value",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input",
+          "shared_owner",
+          "resource_limit"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_secretBytesIntoTtlvValue",
+        "method": "secretBytesIntoTtlvValue",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "secret",
+            "type": "long"
+          }
+        ],
+        "returnType": "org.kmipkit.ttlv.TtlvValue"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_secret_bytes_into_ttlv_value",
+        "errorCategories": [
+          "invalid_input",
+          "shared_owner",
+          "resource_limit"
+        ],
+        "function": "SecretBytes.into_ttlv_value",
+        "module": "kmipkit.credentials",
+        "parameters": [
+          {
+            "name": "secret",
+            "type": "SecretBytes"
+          }
+        ],
+        "returnType": "TtlvValue"
+      },
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::SecretBytes",
+        "name": "into_ttlv_value",
+        "owner": "protocol",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "Value"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Creates a zeroizing secret owner by copying the input span without modifying caller-owned memory."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "parameters": [
+          {
+            "byteLengthParameter": "length",
+            "byteLengthType": "uint64_t",
+            "encoding": "utf-8",
+            "kind": "byte-span",
+            "lengthUnit": "bytes",
+            "limitCheck": "before-dereference",
+            "name": "utf8",
+            "nulTerminatedScan": false,
+            "type": "const uint8_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "length",
+            "type": "uint64_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_secret",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_secret_text_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_secret_text_create"
+      },
+      "id": "secret_text_create",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_secretTextCreate",
+        "method": "secretTextCreate",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "byte[]"
+          },
+          {
+            "name": "outSecret",
+            "type": "long[]"
+          }
+        ],
+        "returnType": "int"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_secret_text_create",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "function": "SecretText.from_text",
+        "module": "kmipkit.credentials",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "str"
+          }
+        ],
+        "returnType": "SecretText"
+      },
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::SecretText",
+        "name": "new",
+        "owner": "protocol",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "String"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "SecretText"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Calls a synchronous callback with a borrowed span that expires on return; copies made by the callback are outside KMIPKit zeroization guarantees."
+        ],
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "secret",
+            "ownership": "borrowed",
+            "type": "kmipkit_secret_text_t *"
+          },
+          {
+            "kind": "callback",
+            "lifetime": "synchronous-call",
+            "name": "callback",
+            "ownership": "borrowed",
+            "type": "void (*)(const uint8_t *, uint64_t, void *)"
+          },
+          {
+            "kind": "callback-context",
+            "lifetime": "synchronous-call",
+            "name": "context",
+            "ownership": "borrowed",
+            "type": "void *"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_secret_text_with_str"
+      },
+      "id": "secret_text_with_str",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_secretTextWithStr",
+        "method": "secretTextWithStr",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "secret",
+            "type": "long"
+          },
+          {
+            "name": "callback",
+            "type": "Function<byte[], Object>"
+          }
+        ],
+        "returnType": "Object"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_secret_text_with_str",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "function": "SecretText.with_str",
+        "module": "kmipkit.credentials",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "Callable"
+          }
+        ],
+        "returnType": "T"
+      },
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::SecretText",
+        "name": "with_str",
+        "owner": "protocol",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "impl for<'a> FnOnce(&'a str) -> R"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "R"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Consumes the unique secret owner and moves its allocation into a zeroizing TTLV value."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "shared_owner",
+          "resource_limit"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "secret",
+            "ownership": "consumed",
+            "type": "kmipkit_secret_text_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_value",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_ttlv_value_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_secret_text_into_ttlv_value"
+      },
+      "id": "secret_text_into_ttlv_value",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input",
+          "shared_owner",
+          "resource_limit"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_secretTextIntoTtlvValue",
+        "method": "secretTextIntoTtlvValue",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "secret",
+            "type": "long"
+          }
+        ],
+        "returnType": "org.kmipkit.ttlv.TtlvValue"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_secret_text_into_ttlv_value",
+        "errorCategories": [
+          "invalid_input",
+          "shared_owner",
+          "resource_limit"
+        ],
+        "function": "SecretText.into_ttlv_value",
+        "module": "kmipkit.credentials",
+        "parameters": [
+          {
+            "name": "secret",
+            "type": "SecretText"
+          }
+        ],
+        "returnType": "TtlvValue"
+      },
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::SecretText",
+        "name": "into_ttlv_value",
+        "owner": "protocol",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "Value"
       }
     }
   ],
@@ -104424,6 +105212,462 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-9.11-006"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "rust-observed-63d3ca6826f6fd5a5933",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::SecretBytes",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretBytes",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "rust-observed-3375904ea95f25cd3160",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::SecretBytes::new",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_create",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes.fromBytes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes.from_bytes",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretBytes::new",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "rust-observed-c717a746aa593e809a58",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::SecretBytes::with_bytes",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_with_bytes",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes.withBytes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes.with_bytes",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretBytes::with_bytes",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "rust-observed-917dfceedff7e01a8c2d",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::SecretBytes::into_ttlv_value",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_into_ttlv_value",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes.intoTtlvValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes.into_ttlv_value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretBytes::into_ttlv_value",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "rust-observed-efef22092fe3c84b1e24",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::SecretText",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_text_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretText",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretText",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretText",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "rust-observed-e6794b3ae54c90a3fc55",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::SecretText::new",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_text_create",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretText.fromString",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretText.from_text",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretText::new",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "rust-observed-8ac669f1db9b2d00df8e",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::SecretText::with_str",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_text_with_str",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretText.withStr",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretText.with_str",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretText::with_str",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "rust-observed-041098e8c308c48f52a8",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::SecretText::into_ttlv_value",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_text_into_ttlv_value",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretText.intoTtlvValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretText.into_ttlv_value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretText::into_ttlv_value",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ]
     },
     {
@@ -149132,6 +150376,234 @@
         "KMIPKIT-0043-FR-009",
         "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "rust-observed-3021412e9f9772c57c6e",
+      "declarationState": "declared",
+      "exportName": "kmipkit::SecretBytes",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::SecretBytes",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "rust-observed-b7d6676fb20e205c968a",
+      "declarationState": "declared",
+      "exportName": "kmipkit::SecretBytes::into_ttlv_value",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_into_ttlv_value",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes.intoTtlvValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes.into_ttlv_value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::SecretBytes::into_ttlv_value",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "rust-observed-8af75987ccfef1c9ccfb",
+      "declarationState": "declared",
+      "exportName": "kmipkit::SecretBytes::new",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_create",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes.fromBytes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes.from_bytes",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::SecretBytes::new",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "rust-observed-7ba024ba6ae1c7e2efe9",
+      "declarationState": "declared",
+      "exportName": "kmipkit::SecretBytes::with_bytes",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_with_bytes",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes.withBytes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes.with_bytes",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::SecretBytes::with_bytes",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
       ]
@@ -283613,6 +285085,2292 @@
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-9.11-001"
       ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-kmipkit-secret-bytes-t-c-0",
+      "declarationState": "declared",
+      "exportName": "kmipkit_secret_bytes_t",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretBytes",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-secretbytes-java-1",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.SecretBytes",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretBytes",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-secretbytes-python-2",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.SecretBytes",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretBytes",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-kmipkit-secret-bytes-create-c-3",
+      "declarationState": "declared",
+      "exportName": "kmipkit_secret_bytes_create",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_create",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes.fromBytes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes.from_bytes",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretBytes::new",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-frombytes-java-4",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.SecretBytes.fromBytes",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_create",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes.fromBytes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes.from_bytes",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretBytes::new",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-from-bytes-python-5",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.SecretBytes.from_bytes",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_create",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes.fromBytes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes.from_bytes",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretBytes::new",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-kmipkit-secret-bytes-with-bytes-c-6",
+      "declarationState": "declared",
+      "exportName": "kmipkit_secret_bytes_with_bytes",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_with_bytes",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes.withBytes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes.with_bytes",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretBytes::with_bytes",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-withbytes-java-7",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.SecretBytes.withBytes",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_with_bytes",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes.withBytes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes.with_bytes",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretBytes::with_bytes",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-with-bytes-python-8",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.SecretBytes.with_bytes",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_with_bytes",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes.withBytes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes.with_bytes",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretBytes::with_bytes",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-kmipkit-secret-bytes-into-ttlv-value-c-9",
+      "declarationState": "declared",
+      "exportName": "kmipkit_secret_bytes_into_ttlv_value",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_into_ttlv_value",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes.intoTtlvValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes.into_ttlv_value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretBytes::into_ttlv_value",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-intottlvvalue-java-10",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.SecretBytes.intoTtlvValue",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_into_ttlv_value",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes.intoTtlvValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes.into_ttlv_value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretBytes::into_ttlv_value",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-into-ttlv-value-python-11",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.SecretBytes.into_ttlv_value",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_into_ttlv_value",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes.intoTtlvValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes.into_ttlv_value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretBytes::into_ttlv_value",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-kmipkit-secret-bytes-release-c-12",
+      "declarationState": "declared",
+      "exportName": "kmipkit_secret_bytes_release",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretBytes",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-close-java-13",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.SecretBytes.close",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretBytes",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-close-python-14",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.SecretBytes.close",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretBytes",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-tostring-java-15",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.SecretBytes.toString",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes.toString",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretBytes",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-closed-python-16",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.SecretBytes.closed",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes.closed",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretBytes",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret---enter---python-17",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.SecretBytes.__enter__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes.__enter__",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretBytes",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret---exit---python-18",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.SecretBytes.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes.__exit__",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretBytes",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret---repr---python-19",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.SecretBytes.__repr__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_bytes_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretBytes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretBytes.__repr__",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretBytes",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-kmipkit-secret-text-t-c-20",
+      "declarationState": "declared",
+      "exportName": "kmipkit_secret_text_t",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_text_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretText",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretText",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretText",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-secrettext-java-21",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.SecretText",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_text_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretText",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretText",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretText",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-secrettext-python-22",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.SecretText",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_text_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretText",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretText",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretText",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-kmipkit-secret-text-create-c-23",
+      "declarationState": "declared",
+      "exportName": "kmipkit_secret_text_create",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_text_create",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretText.fromString",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretText.from_text",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretText::new",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-fromstring-java-24",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.SecretText.fromString",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_text_create",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretText.fromString",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretText.from_text",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretText::new",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-from-text-python-25",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.SecretText.from_text",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_text_create",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretText.fromString",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretText.from_text",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretText::new",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-kmipkit-secret-text-with-str-c-26",
+      "declarationState": "declared",
+      "exportName": "kmipkit_secret_text_with_str",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_text_with_str",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretText.withStr",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretText.with_str",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretText::with_str",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-withstr-java-27",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.SecretText.withStr",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_text_with_str",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretText.withStr",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretText.with_str",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretText::with_str",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-with-str-python-28",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.SecretText.with_str",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_text_with_str",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretText.withStr",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretText.with_str",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretText::with_str",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-kmipkit-secret-text-into-ttlv-value-c-29",
+      "declarationState": "declared",
+      "exportName": "kmipkit_secret_text_into_ttlv_value",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_text_into_ttlv_value",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretText.intoTtlvValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretText.into_ttlv_value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretText::into_ttlv_value",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-intottlvvalue-java-30",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.SecretText.intoTtlvValue",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_text_into_ttlv_value",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretText.intoTtlvValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretText.into_ttlv_value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretText::into_ttlv_value",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-into-ttlv-value-python-31",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.SecretText.into_ttlv_value",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_text_into_ttlv_value",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretText.intoTtlvValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretText.into_ttlv_value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretText::into_ttlv_value",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-kmipkit-secret-text-release-c-32",
+      "declarationState": "declared",
+      "exportName": "kmipkit_secret_text_release",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_text_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretText.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretText.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretText",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-close-java-33",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.SecretText.close",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_text_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretText.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretText.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretText",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-close-python-34",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.SecretText.close",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_text_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretText.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretText.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretText",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-tostring-java-35",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.SecretText.toString",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_text_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretText.toString",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretText",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretText",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret-closed-python-36",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.SecretText.closed",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_text_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretText",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretText.closed",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretText",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret---enter---python-37",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.SecretText.__enter__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_text_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretText",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretText.__enter__",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretText",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret---exit---python-38",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.SecretText.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_text_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretText",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretText.__exit__",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretText",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_secret_parity",
+      "declarationId": "t092-secret---repr---python-39",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.SecretText.__repr__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_secret_text_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.SecretText",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.SecretText.__repr__",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::SecretText",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/credential_secret_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
+        "bindings/python/tests/test_credential_secrets.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
     }
   ],
   "publicPackages": [
@@ -283735,9 +287493,9 @@
     "runtimeCopies": {
       "c": "C input spans are borrowed for the call. KMIPKit-owned extension handles follow the zeroization contract; caller-owned copies remain outside it.",
       "java": "Java byte arrays and objects are runtime-owned copies and may outlive native handles; they are outside KMIPKit zeroization guarantees.",
-      "python": "Python bytes and objects are runtime-owned copies and may outlive native handles; they are outside KMIPKit zeroization guarantees."
+      "python": "SecretBytes.with_bytes copies the native span to a temporary bytearray, supplies a read-only memoryview, and wipes the bytearray after the synchronous callback. Access through memoryview.obj can mutate only that temporary copy. SecretText.with_str creates an immutable Python str that cannot be reliably erased. Caller-created and runtime-owned copies remain outside KMIPKit zeroization guarantees."
     },
-    "zeroization": "KMIPKit-owned secret-bearing TTLV values follow the existing TTLV zeroization contract. Secret-bearing encoded request bytes remain in the existing zeroizing owner through transport completion and are zeroized on drop. Registry declarations and diagnostics never contain extension payload bytes."
+    "zeroization": "KMIPKit-owned SecretBytes and SecretText allocations are zeroized on drop; moving them into TTLV transfers that allocation to the existing zeroizing TTLV owner. Secret-bearing encoded request bytes remain in the existing zeroizing owner through transport completion and are zeroized on drop. Registry declarations and diagnostics never contain extension payload bytes."
   },
   "types": [
     {
@@ -286697,6 +290455,74 @@
       "rust": {
         "module": "kmipkit_protocol",
         "name": "UsernameAndPasswordCredential",
+        "owner": "protocol"
+      }
+    },
+    {
+      "c": {
+        "handleKind": "secret_bytes",
+        "kind": "opaque-handle",
+        "name": "kmipkit_secret_bytes_t",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_secret_bytes_release"
+      },
+      "id": "SecretBytes",
+      "java": {
+        "name": "SecretBytes",
+        "package": "org.kmipkit.credentials"
+      },
+      "kind": "opaque-handle",
+      "python": {
+        "module": "kmipkit.credentials",
+        "name": "SecretBytes"
+      },
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol",
+        "name": "SecretBytes",
+        "owner": "protocol"
+      }
+    },
+    {
+      "c": {
+        "handleKind": "secret_text",
+        "kind": "opaque-handle",
+        "name": "kmipkit_secret_text_t",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_secret_text_release"
+      },
+      "id": "SecretText",
+      "java": {
+        "name": "SecretText",
+        "package": "org.kmipkit.credentials"
+      },
+      "kind": "opaque-handle",
+      "python": {
+        "module": "kmipkit.credentials",
+        "name": "SecretText"
+      },
+      "requirementIds": [
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol",
+        "name": "SecretText",
         "owner": "protocol"
       }
     }

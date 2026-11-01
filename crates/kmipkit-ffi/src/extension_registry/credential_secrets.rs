@@ -3,8 +3,8 @@
 use std::ffi::c_void;
 
 use super::{
-    ERROR_INVALID_INPUT, ERROR_RESOURCE_LIMIT, FfiResult, HandleValue, Kind, SecretBytes, SecretText,
-    SUCCESS, consume_unshared_owner, ffi_entrypoint, input_span, kmipkit_secret_bytes_t,
+    ERROR_INVALID_INPUT, ERROR_RESOURCE_LIMIT, FfiResult, HandleValue, Kind, SUCCESS, SecretBytes,
+    SecretText, consume_unshared_owner, ffi_entrypoint, input_span, kmipkit_secret_bytes_t,
     kmipkit_secret_text_t, kmipkit_ttlv_value_t, ptr, record_ffi_error, reference_handle, release,
     try_make_handle, unwrap_payload,
 };
