@@ -159,11 +159,22 @@ class HashMacSignatureParityManifestTests(unittest.TestCase):
                     self.assertTrue(declaration_ids, f"{name} has no {language} declarations")
                     for declaration_id in declaration_ids:
                         declaration = self.declarations[declaration_id]
+                        expected_declaration_state = (
+                            "verified"
+                            if declaration_id.startswith("T101:")
+                            or declaration["exportName"].endswith("Response::with_ttlv")
+                            or declaration["exportName"]
+                            in {
+                                "kmipkit_protocol::MacVerifyResponse::validity_indicator",
+                                "kmipkit_protocol::SignatureVerifyResponse::validity_indicator",
+                            }
+                            else "declared"
+                        )
                         self.assertIn(
                             declaration["capabilityId"],
                             {operation_id, "client_execution"},
                         )
-                        self.assertEqual("declared", declaration["declarationState"])
+                        self.assertEqual(expected_declaration_state, declaration["declarationState"])
                         self.assertEqual("four-language", declaration["parityScope"])
                         self.assertEqual(LANGUAGES, set(declaration["languageMappings"]))
                         self.assertIn(language, declaration["languageMappings"])
@@ -189,7 +200,7 @@ class HashMacSignatureParityManifestTests(unittest.TestCase):
                 self.assertEqual("declared", generated_operations[operation_id]["apiState"])
                 self.assertEqual(LANGUAGES, set(generated_operations[operation_id]["declarations"]))
 
-    def test_generated_parity_inventory_contains_t033_request_and_response_functions(self) -> None:
+    def test_generated_parity_inventory_contains_t033_and_t101_functions(self) -> None:
         generated = json.loads(GENERATED_PARITY.read_text(encoding="utf-8"))
         generated_functions = {
             row["id"]: row

@@ -97,6 +97,11 @@ def _request_member_frs(operation: str, member: str) -> set[str]:
     }[operation]
     if member in {"type", "new", "ClientRequest", "ClientOperation"}:
         return set(REQUEST_SURFACE_REQUIREMENTS[operation])
+    if member in {"response_context", "verification_response_context"}:
+        requirements = _owner_frs(9, 10, 11)
+        if operation in {"MacVerify", "SignatureVerify"}:
+            requirements |= _owner_frs(8)
+        return requirements
     if member in {"unique_identifier", "with_unique_identifier"}:
         return base | _owner_frs(5)
     if member == "with_cryptographic_parameters":
@@ -349,6 +354,53 @@ class T101HashMacSignatureDeclarationMappingTests(unittest.TestCase):
                 self.assertTrue(EVIDENCE <= set(row["parityEvidenceIds"]))
         self.assertEqual(expected_rows, observed)
 
+    def test_success_response_ttlv_functions_generate_owned_c_and_cffi_accessors(self) -> None:
+        functions = {row["id"]: row for row in self.manifest["functions"]}
+        header = (ROOT / "bindings" / "c" / "include" / "kmipkit.h").read_text(encoding="utf-8")
+        cffi = (ROOT / "bindings" / "python" / "src" / "kmipkit" / "_client_ffi.py").read_text(encoding="utf-8")
+        expected = {
+            "Hash": ("hash", "HashResponse"),
+            "Mac": ("mac", "MacResponse"),
+            "MacVerify": ("mac_verify", "MacVerifyResponse"),
+            "Sign": ("sign", "SignResponse"),
+            "SignatureVerify": ("signature_verify", "SignatureVerifyResponse"),
+        }
+        for operation, (snake_name, response_type) in expected.items():
+            function_id = f"client_batch_item_response_{snake_name}_ttlv"
+            symbol = f"kmipkit_{function_id}"
+            with self.subTest(operation=operation):
+                if function_id not in functions:
+                    self.fail(f"missing T101 function record: {function_id}")
+                function = functions[function_id]
+                self.assertEqual(SUCCESS_TTLV_REQUIREMENTS, set(function["requirementIds"]))
+                self.assertEqual(symbol, function["rust"]["name"])
+                self.assertEqual(
+                    [
+                        {"name": "item", "kind": "handle", "type": "kmipkit_client_batch_item_response_t *", "ownership": "borrowed"},
+                        {"name": "out_present", "kind": "output-scalar-pointer", "type": "uint8_t *", "valueType": "uint8_t", "ownership": "none"},
+                        {"name": "out_response_ttlv", "kind": "output", "type": "kmipkit_ttlv_structure_t **", "ownership": "library-owned", "nullable": True},
+                    ],
+                    function["c"]["parameters"],
+                )
+                self.assertEqual(
+                    f"org.kmipkit.extensions.ClientBatchItemResult.{response_type}",
+                    function["java"]["class"],
+                )
+                self.assertEqual("responseTtlv", function["java"]["method"])
+                self.assertEqual(
+                    f"kmipkit.client.{response_type}.response_ttlv",
+                    function["python"]["function"],
+                )
+                self.assertEqual(symbol, function["python"]["cffiSymbol"])
+                self.assertIn(symbol, header)
+                self.assertIn(symbol, cffi)
+                docs = " ".join(function["c"]["documentation"])
+                self.assertIn("successful", docs)
+                self.assertIn("ordered", docs)
+                self.assertIn("Unknown fields", docs)
+                self.assertIn("caller-owned", docs)
+                self.assertIn("non-success", docs)
+
     def test_validity_indicator_mappings_keep_raw_unknown_values(self) -> None:
         rows = {r["exportName"]: r for r in self.manifest["publicDeclarations"]}
         expected = {
@@ -363,6 +415,7 @@ class T101HashMacSignatureDeclarationMappingTests(unittest.TestCase):
                 self.assertEqual(f"org.kmipkit.extensions.ClientBatchItemResult.{response_type}.validityIndicatorRaw", row["languageMappings"]["java"]["name"])
                 self.assertEqual(f"kmipkit.client.{response_type}.validity_indicator_raw", row["languageMappings"]["python"]["name"])
                 self.assertIn("KMIPKIT-0021-FR-008", row["requirementIds"])
+                self.assertTrue(EVIDENCE <= set(row["parityEvidenceIds"]))
 
 
 if __name__ == "__main__":
