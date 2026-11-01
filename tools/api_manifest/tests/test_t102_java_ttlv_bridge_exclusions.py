@@ -75,6 +75,89 @@ EXPECTED_TTLV_PATH_BRIDGE_EXPORTS = frozenset(
         "org.kmipkit.NativeExtensionRegistry.ttlvPathWithChildTag",
     }
 )
+EXPECTED_VENDOR_EXTENSION_BRIDGE_MEMBERS = frozenset(
+    {
+        "compatibilityCreate",
+        "discriminatorCreate",
+        "extensionChildRuleOptional",
+        "extensionChildRuleRepeated",
+        "extensionChildRuleRequired",
+        "extensionDefinitionCreate",
+        "extensionDefinitionValidate",
+        "extensionDefinitionWithInformation",
+        "extensionIdentityCreate",
+        "extensionIdentityName",
+        "extensionIdentityVendorIdentifier",
+        "extensionIdentityVersion",
+        "extensionInformationCreate",
+        "extensionInformationToTtlv",
+        "extensionInformationWithAttribute",
+        "extensionInformationWithDescription",
+        "extensionInformationWithEnumeration",
+        "extensionInformationWithParentStructureTag",
+        "extensionInformationWithTag",
+        "extensionInformationWithType",
+        "extensionOrderConstraintCreate",
+        "extensionRecognitionGenericValue",
+        "extensionRecognitionValidatedValue",
+        "extensionSchemaAllowedBitMask",
+        "extensionSchemaAllowedEnumeration",
+        "extensionSchemaMaximumLength",
+        "extensionSchemaMinimumLength",
+        "extensionSchemaRequiredBitMask",
+        "extensionSchemaScalar",
+        "extensionSchemaSignedRange",
+        "extensionSchemaStructure",
+        "extensionSchemaUnsignedRange",
+        "validatedExtensionValueGenericValue",
+        "validatedExtensionValueIdentity",
+        "validatedExtensionValueValueAt",
+        "clientConfigurationCreate",
+        "clientConfigurationExtensionRegistry",
+        "clientExtensionRegistryCreate",
+        "clientExtensionRegistryDefinitionCount",
+        "clientExtensionRegistryInspect",
+        "clientExtensionRegistryValidate",
+        "clientRequestMessageExtensionCreate",
+        "clientBatchItemWithExtension",
+        "clientBatchItemExtensionCriticalityIndicatorAt",
+        "clientBatchItemExtensionIdentityAt",
+        "CHILD_RULE",
+        "COMPATIBILITY",
+        "CONFIGURATION",
+        "DEFINITION",
+        "DISCRIMINATOR",
+        "IDENTITY",
+        "INFORMATION",
+        "ORDER_CONSTRAINT",
+        "RECOGNITION",
+        "REGISTERED_VALUE",
+        "REGISTRY",
+        "REQUEST_EXTENSION",
+        "SCHEMA",
+        "TTLV_PATH",
+        "VALIDATED_VALUE",
+    }
+)
+EXPECTED_REMAINING_VENDOR_EXTENSION_BRIDGE_MEMBERS = frozenset(
+    {
+        "BATCH_ITEM",
+        "PATH",
+        "REGISTER_REQUEST",
+        "clientBatchItemDiscoverVersions",
+        "clientBatchItemExtensionCount",
+        "clientBatchItemRegister",
+        "clientExtensionRegistryDefinitionAt",
+        "clientExtensionRegistryDefinitionForIdentity",
+        "codecLimitsCreate",
+        "ensureLoaded",
+        "extensionDefinitionInformation",
+        "extensionRecognitionIsRecognized",
+        "registerRequestCreate",
+        "registerRequestWithOpaqueObjectContext",
+        "release",
+    }
+)
 
 
 class JavaTtlvBridgeExclusionTests(unittest.TestCase):
@@ -166,6 +249,61 @@ class JavaTtlvBridgeExclusionTests(unittest.TestCase):
                 self.assertIn("KMIPKIT-0043-FR-008", exclusion["evidence"])
                 self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
                 self.assertNotIn((PACKAGE, export_name), self.declarations)
+
+    def test_live_vendor_extension_bridge_exports_have_exact_owner_exclusions(self) -> None:
+        expected_exports = frozenset(
+            f"org.kmipkit.NativeExtensionRegistry.{member}"
+            for member in EXPECTED_VENDOR_EXTENSION_BRIDGE_MEMBERS
+        )
+        self.assertEqual(60, len(expected_exports))
+        actual_exclusions = {
+            name
+            for package, name in self.exclusions
+            if package == PACKAGE and name in expected_exports
+        }
+        self.assertEqual(expected_exports, actual_exclusions)
+
+        capability = next(
+            row
+            for row in self.manifest["capabilities"]
+            if row["capabilityId"] == "vendor_extension_registry"
+        )
+        self.assertEqual("KMIPKIT-0012", capability["ownerSpecId"])
+        self.assertEqual("declared", capability["capabilityState"])
+        self.assertEqual("four-language", capability["parityScope"])
+        self.assertEqual({"rust", "c", "java", "python"}, set(capability["mappings"]))
+
+        java_sources = [
+            path
+            for path in (ROOT / "bindings" / "java" / "src" / "main" / "java").rglob("*.java")
+            if path.name != "NativeExtensionRegistry.java"
+        ]
+        source_text = "\n".join(path.read_text(encoding="utf-8") for path in java_sources)
+        for export_name in sorted(expected_exports):
+            with self.subTest(export_name=export_name):
+                member = export_name.rsplit(".", maxsplit=1)[-1]
+                exclusion = self.exclusions[(PACKAGE, export_name)]
+                self.assertEqual(OWNER_SPEC, exclusion["approvalSource"]["path"])
+                self.assertEqual("Approved", exclusion["approvalSource"]["status"])
+                self.assertIn("internal vendor-extension JNI plumbing", exclusion["reason"])
+                self.assertIn("KMIPKIT-0012-FR-010", exclusion["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-008", exclusion["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+                self.assertIn(f"NativeExtensionRegistry.{member}", source_text)
+                self.assertNotIn((PACKAGE, export_name), self.declarations)
+
+    def test_non_facade_vendor_extension_bridge_exports_remain_blocked(self) -> None:
+        prefix = "org.kmipkit.NativeExtensionRegistry."
+        actual_blocked_members = {
+            name.removeprefix(prefix)
+            for package, name in self.declarations
+            if package == PACKAGE
+            and name.startswith(prefix)
+            and self.declarations[(package, name)]["declarationState"] == "blocked"
+            and self.declarations[(package, name)].get("candidateSpecId") == "KMIPKIT-0043"
+        }
+        self.assertEqual(EXPECTED_REMAINING_VENDOR_EXTENSION_BRIDGE_MEMBERS, actual_blocked_members)
+        self.assertNotIn((PACKAGE, "org.kmipkit.NativeExtensionRegistry"), self.exclusions)
 
 
 if __name__ == "__main__":
