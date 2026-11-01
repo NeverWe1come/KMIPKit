@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 
 from kmipkit import async_operations, ttlv
@@ -147,6 +149,30 @@ def test_query_filter_wipes_staged_values_when_iteration_fails(monkeypatch: pyte
     with QueryAsyncRequestsRequest.create() as request:
         with pytest.raises(RuntimeError, match="filter source failed"):
             request.with_correlation_values(values())
+
+    assert source == b"correlation"
+    assert wiped == [bytes(len(source))]
+
+
+def test_query_filter_wipes_staged_values_when_span_allocation_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = bytearray(b"correlation")
+    wiped: list[bytes] = []
+    original_wipe = async_operations._wipe
+
+    def record_wipe(staging: bytearray) -> None:
+        original_wipe(staging)
+        wiped.append(bytes(staging))
+
+    def fail_allocation(*_arguments: object) -> object:
+        raise MemoryError("span allocation failed")
+
+    monkeypatch.setattr(async_operations, "_wipe", record_wipe)
+    with QueryAsyncRequestsRequest.create() as request:
+        monkeypatch.setattr(async_operations, "ffi", SimpleNamespace(new=fail_allocation))
+        with pytest.raises(MemoryError, match="span allocation failed"):
+            request.with_correlation_values([source])
 
     assert source == b"correlation"
     assert wiped == [bytes(len(source))]
