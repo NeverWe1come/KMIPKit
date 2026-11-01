@@ -83,6 +83,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "discover_versions_request_item",
             "ffi_runtime_metadata",
             "generic_ttlv_model",
+            "hashed_password_timestamp_sequence",
             "nonce_ttlv_parity",
             "opaque_register_context",
             "production_transport",

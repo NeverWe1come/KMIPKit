@@ -66,6 +66,10 @@ fn capability_query_matches_manifest_ready_capabilities() {
         Ok(true)
     );
     assert_eq!(
+        kmipkit::capability_is_available("hashed_password_timestamp_sequence"),
+        Ok(true)
+    );
+    assert_eq!(
         kmipkit::capability_is_available("public_binding_surface"),
         Ok(false)
     );
