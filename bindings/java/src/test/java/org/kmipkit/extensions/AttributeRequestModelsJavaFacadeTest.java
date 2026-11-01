@@ -4,9 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
+import org.kmipkit.InvalidInputException;
 import org.junit.jupiter.api.Test;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.RawTag;
@@ -98,6 +101,42 @@ final class AttributeRequestModelsJavaFacadeTest {
             }
             assertPayloadAndBatch(request, 2);
         }
+    }
+
+    @Test
+    void getAttributeListRequestPreservesItsOptionalIdentifier() {
+        UniqueIdentifier identifier = UniqueIdentifier.textString("object-7");
+        try (GetAttributeListRequest request = GetAttributeListRequest.create(identifier);
+                TtlvStructure payload = request.toTtlvPayload();
+                TtlvStructureView view = payload.view();
+                ClientBatchItem batchItem = request.toBatchItem()) {
+            assertEquals(identifier, request.uniqueIdentifier().orElseThrow());
+            assertEquals(1, view.itemCount());
+            assertNotNull(batchItem);
+        }
+    }
+
+    @Test
+    void getAttributesRequestPreservesOrderedUniqueReferences() {
+        List<AttributeReference> references = List.of(
+                AttributeReference.tag(0x0042_000a),
+                AttributeReference.name("KMIPKit", "Counter"));
+        try (GetAttributesRequest request = GetAttributesRequest.create(
+                UniqueIdentifier.textString("object-7"), references);
+                TtlvStructure payload = request.toTtlvPayload();
+                TtlvStructureView view = payload.view();
+                ClientBatchItem batchItem = request.toBatchItem()) {
+            assertEquals(references, request.attributeReferences());
+            assertEquals(3, view.itemCount());
+            assertNotNull(batchItem);
+        }
+    }
+
+    @Test
+    void getAttributesRequestRejectsDuplicateReferences() {
+        AttributeReference reference = AttributeReference.tag(0x0042_000a);
+        assertThrows(InvalidInputException.class, () -> GetAttributesRequest.create(
+                UniqueIdentifier.textString("object-7"), List.of(reference, reference)));
     }
 
     private static void assertPayloadAndBatch(AttributeRequest request, long expectedItems) {
