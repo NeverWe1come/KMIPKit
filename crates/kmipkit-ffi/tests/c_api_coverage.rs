@@ -16,6 +16,11 @@ unsafe extern "C" {
     fn kmipkit_nonce_c_consumer_round_trip(out_item_count: *mut u64) -> i32;
 }
 
+#[link(name = "kmipkit_credential_secret_abi_c_consumer", kind = "static")]
+unsafe extern "C" {
+    fn kmipkit_secret_c_consumer_contract() -> i32;
+}
+
 #[link(name = "kmipkit_credential_abi_c_consumer", kind = "static")]
 unsafe extern "C" {
     fn kmipkit_credential_c_consumer_round_trip(
@@ -56,6 +61,14 @@ fn compiled_c_consumer_preserves_nonce_bytes_and_ttlv_structure() {
     let status = unsafe { kmipkit_nonce_c_consumer_round_trip(&raw mut item_count) };
     assert_eq!(status, 0);
     assert_eq!(item_count, 2);
+}
+
+#[test]
+fn compiled_c_consumer_checks_secret_ownership_callbacks_and_ttlv_conversion() {
+    // SAFETY: The C consumer owns every temporary secret/value handle and compares callback data
+    // only while the native callback is active.
+    let status = unsafe { kmipkit_secret_c_consumer_contract() };
+    assert_eq!(status, 0);
 }
 
 #[test]

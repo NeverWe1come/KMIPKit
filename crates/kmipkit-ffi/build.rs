@@ -90,4 +90,14 @@ fn main() {
         .flag_if_supported("/std:c11")
         .flag_if_supported("-std=c11")
         .compile("kmipkit_credential_abi_c_consumer");
+
+    let credential_secret_consumer =
+        workspace_root.join("bindings/c/tests/credential_secret_abi_consumer.c");
+    println!("cargo:rerun-if-changed={}", credential_secret_consumer.display());
+    cc::Build::new()
+        .file(credential_secret_consumer)
+        .include(&consumer_header)
+        .flag_if_supported("/std:c11")
+        .flag_if_supported("-std=c11")
+        .compile("kmipkit_credential_secret_abi_c_consumer");
 }
