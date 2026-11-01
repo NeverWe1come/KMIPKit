@@ -106624,15 +106624,15 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_response_encrypt"
+          "name": "kmipkit_client_batch_item_response_t"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.encryptResponse"
+          "name": "org.kmipkit.extensions.ClientBatchItemResult"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.BatchItemResult.encrypt_response"
+          "name": "kmipkit.client.BatchItemResult"
         }
       },
       "parityEvidenceIds": [
@@ -106691,15 +106691,15 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_response_decrypt"
+          "name": "kmipkit_client_batch_item_response_t"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.decryptResponse"
+          "name": "org.kmipkit.extensions.ClientBatchItemResult"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.BatchItemResult.decrypt_response"
+          "name": "kmipkit.client.BatchItemResult"
         }
       },
       "parityEvidenceIds": [
@@ -108013,15 +108013,15 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_response_encrypt"
+          "name": "kmipkit_client_batch_item_response_t"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.encryptResponse"
+          "name": "org.kmipkit.extensions.ClientBatchItemResult"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.BatchItemResult.encrypt_response"
+          "name": "kmipkit.client.BatchItemResult"
         }
       },
       "parityEvidenceIds": [
@@ -108079,15 +108079,15 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_response_decrypt"
+          "name": "kmipkit_client_batch_item_response_t"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.decryptResponse"
+          "name": "org.kmipkit.extensions.ClientBatchItemResult"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.BatchItemResult.decrypt_response"
+          "name": "kmipkit.client.BatchItemResult"
         }
       },
       "parityEvidenceIds": [
@@ -112434,15 +112434,15 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_response_encrypt"
+          "name": "kmipkit_client_batch_item_response_t"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.encryptResponse"
+          "name": "org.kmipkit.extensions.ClientBatchItemResult"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.BatchItemResult.encrypt_response"
+          "name": "kmipkit.client.BatchItemResult"
         }
       },
       "parityEvidenceIds": [
@@ -112501,15 +112501,15 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_response_decrypt"
+          "name": "kmipkit_client_batch_item_response_t"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.decryptResponse"
+          "name": "org.kmipkit.extensions.ClientBatchItemResult"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.BatchItemResult.decrypt_response"
+          "name": "kmipkit.client.BatchItemResult"
         }
       },
       "parityEvidenceIds": [
@@ -117076,15 +117076,15 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_response_encrypt"
+          "name": "kmipkit_client_batch_item_response_t"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.encryptResponse"
+          "name": "org.kmipkit.extensions.ClientBatchItemResult"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.BatchItemResult.encrypt_response"
+          "name": "kmipkit.client.BatchItemResult"
         }
       },
       "parityEvidenceIds": [
@@ -117143,15 +117143,15 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_response_decrypt"
+          "name": "kmipkit_client_batch_item_response_t"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.decryptResponse"
+          "name": "org.kmipkit.extensions.ClientBatchItemResult"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.BatchItemResult.decrypt_response"
+          "name": "kmipkit.client.BatchItemResult"
         }
       },
       "parityEvidenceIds": [
@@ -118588,15 +118588,15 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_response_encrypt"
+          "name": "kmipkit_client_batch_item_response_t"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.encryptResponse"
+          "name": "org.kmipkit.extensions.ClientBatchItemResult"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.BatchItemResult.encrypt_response"
+          "name": "kmipkit.client.BatchItemResult"
         }
       },
       "parityEvidenceIds": [
@@ -118654,15 +118654,15 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_response_decrypt"
+          "name": "kmipkit_client_batch_item_response_t"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.decryptResponse"
+          "name": "org.kmipkit.extensions.ClientBatchItemResult"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.BatchItemResult.decrypt_response"
+          "name": "kmipkit.client.BatchItemResult"
         }
       },
       "parityEvidenceIds": [
@@ -140952,15 +140952,15 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_response_decrypt"
+          "name": "kmipkit_client_batch_item_response_t"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.decryptResponse"
+          "name": "org.kmipkit.extensions.ClientBatchItemResult"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.BatchItemResult.decrypt_response"
+          "name": "kmipkit.client.BatchItemResult"
         }
       },
       "parityEvidenceIds": [
@@ -141347,15 +141347,15 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_response_encrypt"
+          "name": "kmipkit_client_batch_item_response_t"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.encryptResponse"
+          "name": "org.kmipkit.extensions.ClientBatchItemResult"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.BatchItemResult.encrypt_response"
+          "name": "kmipkit.client.BatchItemResult"
         }
       },
       "parityEvidenceIds": [
@@ -163301,15 +163301,15 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_response_decrypt"
+          "name": "kmipkit_client_batch_item_response_t"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.decryptResponse"
+          "name": "org.kmipkit.extensions.ClientBatchItemResult"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.BatchItemResult.decrypt_response"
+          "name": "kmipkit.client.BatchItemResult"
         }
       },
       "parityEvidenceIds": [
@@ -163696,15 +163696,15 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_response_encrypt"
+          "name": "kmipkit_client_batch_item_response_t"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.encryptResponse"
+          "name": "org.kmipkit.extensions.ClientBatchItemResult"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.BatchItemResult.encrypt_response"
+          "name": "kmipkit.client.BatchItemResult"
         }
       },
       "parityEvidenceIds": [
