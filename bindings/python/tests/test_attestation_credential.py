@@ -203,8 +203,12 @@ class AttestationCredentialTests(unittest.TestCase):
         if facade is None:
             return
         source = attestation_structure(False, False)
-        with self.assertRaises(errors.InvalidInputError):
+        with self.assertRaises(errors.CredentialValidationError) as raised:
             facade.from_ttlv(source)
+        self.assertEqual(
+            errors.CredentialValidationErrorKind.MISSING_FIELD,
+            raised.exception.kind,
+        )
         self.assertTrue(source.closed)
 
     def test_attestation_credential_accepts_either_evidence_field_alone(self) -> None:

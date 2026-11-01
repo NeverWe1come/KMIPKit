@@ -63,8 +63,10 @@ final class AttestationCredentialFacadeTest {
     @Test
     void attestationCredentialRequiresAtLeastOneEvidenceField() {
         TtlvStructure source = attestationStructure(false, false);
-        assertThrows(InvalidInputException.class,
+        CredentialValidationException error = assertThrows(
+                CredentialValidationException.class,
                 () -> AttestationCredential.fromTtlv(source));
+        assertEquals(CredentialValidationErrorKind.MISSING_FIELD, error.kind());
     }
 
     @Test

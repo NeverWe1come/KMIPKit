@@ -70,7 +70,9 @@ final class AuthenticationFacadeTest {
 
     @Test
     void authenticationRejectsEmptyCredentials() {
-        assertThrows(InvalidInputException.class, () -> Authentication.create(List.of()));
+        CredentialValidationException error = assertThrows(
+                CredentialValidationException.class, () -> Authentication.create(List.of()));
+        assertEquals(CredentialValidationErrorKind.EMPTY_AUTHENTICATION, error.kind());
     }
 
     @Test

@@ -118,6 +118,38 @@ def _has_approved_source(record: dict[str, object]) -> bool:
 
 
 class T092CredentialsParityManifestTests(unittest.TestCase):
+    def test_validation_error_mapping_traces_all_credential_model_owners(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        owner_requirements = {
+            "KMIPKIT-0008-FR-001",
+            "KMIPKIT-0008-FR-002",
+            "KMIPKIT-0008-FR-003",
+            "KMIPKIT-0008-FR-004",
+            "KMIPKIT-0008-FR-005",
+            "KMIPKIT-0008-FR-006",
+            "KMIPKIT-0008-FR-010",
+        }
+        records = [
+            row
+            for row in manifest["publicDeclarations"]
+            if row.get("exportName") in VALIDATION_ERROR_EXPORTS
+        ]
+        self.assertEqual(VALIDATION_ERROR_EXPORTS, {row["exportName"] for row in records})
+        for record in records:
+            with self.subTest(export=record["exportName"]):
+                self.assertTrue(
+                    owner_requirements <= set(record.get("requirementIds", [])),
+                    "shared validation errors must trace Authentication, Credential, "
+                    "Device, Attestation, and redaction requirements",
+                )
+
+        capability = next(
+            row
+            for row in manifest["capabilities"]
+            if row.get("capabilityId") == "credential_validation_error_parity"
+        )
+        self.assertTrue(owner_requirements <= set(capability.get("requirementIds", [])))
+
     def test_exact_trait_implementation_artifacts_have_owner_backed_exclusions(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         inventory = json.loads(RUST_EXPORT_INVENTORY.read_text(encoding="utf-8"))

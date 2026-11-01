@@ -590,7 +590,7 @@ int32_t kmipkit_device_credential_c_consumer_rejects_missing_identifier(void) {
     if (status == 0) {
         status = kmipkit_device_credential_from_ttlv(structure, &credential);
         structure = 0;
-        if (status != KMIPKIT_ERROR_INVALID_INPUT || credential != 0) status = 1;
+        if (status != 4 || credential != 0) status = 1;
         else status = 0;
     }
     if (status == 0) status = kmipkit_last_credential_validation_error_get_v1(&error);
@@ -660,6 +660,9 @@ int32_t kmipkit_attestation_credential_c_consumer_round_trip(uint64_t *out_count
 int32_t kmipkit_attestation_credential_c_consumer_rejects_missing_evidence(void) {
     kmipkit_ttlv_structure_t *structure = 0;
     kmipkit_attestation_credential_t *credential = 0;
+    kmipkit_credential_validation_error_v1_t error = {
+        (uint32_t)sizeof(kmipkit_credential_validation_error_v1_t), 1, 0
+    };
     int32_t status = build_attestation_structure(0, &structure);
     if (status == 0) {
         status = kmipkit_attestation_credential_from_ttlv(structure, &credential);
@@ -667,6 +670,9 @@ int32_t kmipkit_attestation_credential_c_consumer_rejects_missing_evidence(void)
         if (status == 0 || credential != 0) status = 1;
         else status = 0;
     }
+    if (status == 0) status = kmipkit_last_credential_validation_error_get_v1(&error);
+    if (status == 0 && error.kind != KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_MISSING_FIELD)
+        status = 1;
     kmipkit_ttlv_structure_release(structure);
     kmipkit_attestation_credential_release(credential);
     return status;
@@ -742,10 +748,16 @@ int32_t kmipkit_authentication_c_consumer_round_trip(
 
 int32_t kmipkit_authentication_c_consumer_rejects_empty_credentials(void) {
     kmipkit_authentication_t *authentication = 0;
+    kmipkit_credential_validation_error_v1_t error = {
+        (uint32_t)sizeof(kmipkit_credential_validation_error_v1_t), 1, 0
+    };
     int32_t status = kmipkit_authentication_create(0, 0, &authentication);
     if (status != 4 || authentication != 0) {
         kmipkit_authentication_release(authentication);
         return 1;
     }
-    return 0;
+    status = kmipkit_last_credential_validation_error_get_v1(&error);
+    if (status == 0 && error.kind != KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_EMPTY_AUTHENTICATION)
+        status = 1;
+    return status;
 }

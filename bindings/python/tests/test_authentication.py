@@ -133,8 +133,12 @@ class AuthenticationTests(unittest.TestCase):
         self.assertIsNotNone(facade, "the Python facade must expose Authentication")
         if facade is None:
             return
-        with self.assertRaises(errors.InvalidInputError):
+        with self.assertRaises(errors.CredentialValidationError) as raised:
             facade.create([])
+        self.assertEqual(
+            errors.CredentialValidationErrorKind.EMPTY_AUTHENTICATION,
+            raised.exception.kind,
+        )
 
     def test_create_preserves_credentials_rejected_for_a_live_scoped_view(self) -> None:
         facade = getattr(kmipkit.credentials, "Authentication", None)
