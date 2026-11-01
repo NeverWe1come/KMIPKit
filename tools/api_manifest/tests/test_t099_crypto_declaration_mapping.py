@@ -112,6 +112,11 @@ OPERATION_NORMATIVE_REQUIREMENTS = {
         "KMIPKIT-REQ-SPEC-6.1.11-006",
     },
 }
+RESULT_CONTAINER_TARGETS = {
+    "c": "kmipkit_client_batch_item_response_t",
+    "java": "org.kmipkit.extensions.ClientBatchItemResult",
+    "python": "kmipkit.client.BatchItemResult",
+}
 REQUEST_METHODS = {
     "Encrypt": (
         "with_authenticated_encryption_additional_data",
@@ -182,7 +187,7 @@ def _expected_targets(export_name: str) -> tuple[str, dict[str, str], str]:
         targets["rust"] = export_name
         return details["id"], targets, "operation-request-facade"
     if "ClientBatchOutcome" in export_name or "ClientResponseView" in export_name:
-        targets = details["response"].copy()
+        targets = {**RESULT_CONTAINER_TARGETS}
         targets["rust"] = export_name
         return details["id"], targets, "operation-outcome-facade"
     targets = details["request"].copy()
@@ -289,6 +294,40 @@ class T099CryptoDeclarationMappingTests(unittest.TestCase):
                 self.assertTrue(PARITY_EVIDENCE <= set(row["parityEvidenceIds"]))
                 for evidence in PARITY_EVIDENCE:
                     self.assertTrue((ROOT / evidence).is_file(), evidence)
+
+    def test_outcome_declarations_map_to_complete_result_containers(self) -> None:
+        expected_exports = set()
+        for operation in OPERATION_TARGETS:
+            lower = operation.lower()
+            for package_prefix in ("kmipkit", "kmipkit_client"):
+                expected_exports.update(
+                    {
+                        f"{package_prefix}::ClientBatchOutcome::{operation}",
+                        f"{package_prefix}::ClientBatchOutcome::{operation}::0",
+                        f"{package_prefix}::ClientBatchOutcome::{lower}_response",
+                    }
+                )
+            expected_exports.add(f"kmipkit_client::ClientResponseView::{lower}")
+
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+        }
+        self.assertTrue(expected_exports <= declarations.keys())
+        for export_name in expected_exports:
+            with self.subTest(export=export_name):
+                row = declarations[export_name]
+                expected_targets = {
+                    "rust": export_name,
+                    **RESULT_CONTAINER_TARGETS,
+                }
+                self.assertEqual(
+                    expected_targets,
+                    {
+                        language: row["languageMappings"][language]["name"]
+                        for language in LANGUAGES
+                    },
+                )
 
     def test_each_t099_exclusion_is_exact_and_owner_backed(self) -> None:
         excluded = [
