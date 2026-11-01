@@ -1404,6 +1404,8 @@ class T076ClientMappingTests(unittest.TestCase):
         credential_internal_exports = {
             "kmipkit.credentials.Credential.__init__",
             "kmipkit.credentials.Credential.__slots__",
+            "kmipkit.credentials.HashedPasswordTimestampSequence.__init__",
+            "kmipkit.credentials.HashedPasswordTimestampSequence.__slots__",
             "kmipkit.credentials.Nonce.__slots__",
         }
         for export_name in credential_internal_exports:
@@ -1413,6 +1415,21 @@ class T076ClientMappingTests(unittest.TestCase):
                 if exclusion is not None:
                     self.assertTrue(exclusion.get("reason"))
                     self.assertTrue(exclusion.get("evidence"))
+
+        timestamp_sequence_internal_exports = {
+            "kmipkit.credentials.HashedPasswordTimestampSequence.__init__",
+            "kmipkit.credentials.HashedPasswordTimestampSequence.__slots__",
+        }
+        for export_name in timestamp_sequence_internal_exports:
+            with self.subTest(timestamp_sequence_internal_export=export_name):
+                exclusion = exclusions.get(export_name)
+                self.assertIsNotNone(exclusion)
+                if exclusion is not None:
+                    self.assertEqual("KMIPKIT-0008", exclusion["candidateSpecId"])
+                    self.assertEqual(
+                        "specs/008-credentials-attestation/spec.md",
+                        exclusion["approvalSource"]["path"],
+                    )
 
         context_manager_exclusions = {
             f"kmipkit.client.{wrapper}.{member}"
