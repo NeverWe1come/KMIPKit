@@ -86,14 +86,18 @@ class JavaTtlvBridgeExclusionTests(unittest.TestCase):
         for export_name in sorted(EXPECTED_BRIDGE_EXPORTS):
             with self.subTest(export_name=export_name):
                 exclusion = self.exclusions[(PACKAGE, export_name)]
-                self.assertEqual("KMIPKIT-0043", exclusion["candidateSpecId"])
+                self.assertEqual(PACKAGE, exclusion["packageId"])
+                self.assertEqual(export_name, exclusion["exportName"])
                 self.assertEqual(OWNER_SPEC, exclusion["approvalSource"]["path"])
                 self.assertEqual("Approved", exclusion["approvalSource"]["status"])
                 self.assertIn("JNI bridge", exclusion["reason"])
                 self.assertIn("typed facade", exclusion["reason"])
                 self.assertIn("KMIPKIT-0043-FR-008", exclusion["evidence"])
                 self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
-                self.assertIn("KMIPKIT-0004", exclusion["evidence"])
+                if export_name.endswith(".codecLimitValues"):
+                    self.assertIn("KMIPKIT-0005-FR-007", exclusion["evidence"])
+                else:
+                    self.assertIn("KMIPKIT-0004-FR-", exclusion["evidence"])
                 self.assertNotIn((PACKAGE, export_name), self.declarations)
 
     def test_neighboring_extension_and_codec_bridge_exports_stay_unresolved(self) -> None:

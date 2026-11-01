@@ -66156,20 +66156,6 @@
       "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
     },
     {
-      "declarationId": "java-observed-1562d1eb5f236a02f2cb",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.RAW_TAG",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
       "declarationId": "java-observed-be757267752109565fdc",
       "packageId": "java-kmipkit",
       "kind": "java-member",
@@ -66240,108 +66226,10 @@
       "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
     },
     {
-      "declarationId": "java-observed-41844298609287acb9ad",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.TAG",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-057e90f75f51159b9c01",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_ITEM",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-aaefd7d60f42c95341e8",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_ITEM_VIEW",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
       "declarationId": "java-observed-8e7eb779b907b2c2acb1",
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_PATH",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-227548014085e9b58ff9",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_STRUCTURE",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-5d47c6906e78c9c87377",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_STRUCTURE_VIEW",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-b39ebcf2187306da8e7a",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_VALUE",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-05323d005cff20f6ee78",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_VALUE_VIEW",
       "capabilityId": "public_binding_surface",
       "requirementIds": [
         "KMIPKIT-0043-FR-021"
@@ -66552,20 +66440,6 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientRequestMessageExtensionCreate",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-305cd308448ba328f586",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.codecLimitValues",
       "capabilityId": "public_binding_surface",
       "requirementIds": [
         "KMIPKIT-0043-FR-021"
@@ -67080,122 +66954,10 @@
       "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
     },
     {
-      "declarationId": "java-observed-da8ae7bdb49c67c31c75",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.rawTagChecked",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-cc2f3d239a6c4ca017bd",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.rawTagCreate",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-a13eb29950557737bba3",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.rawTagValue",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
       "declarationId": "java-observed-790a062cacace07ad05d",
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.NativeExtensionRegistry.release",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-5c89a8ab5c316dce45bf",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.tagValue",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-513ae4f1f799b23169f3",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvItemCreate",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-e1739fb46cc79e05acd4",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvItemViewTag",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-898e6902eb7c8ec10da6",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvItemViewType",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-787424090336c190ede6",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvItemViewValue",
       "capabilityId": "public_binding_surface",
       "requirementIds": [
         "KMIPKIT-0043-FR-021"
@@ -67224,398 +66986,6 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvPathWithChildTag",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-87400e6114baa22eeee0",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvStructureCreate",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-0ef6026a9557a89e8f99",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvStructureView",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-3220c4f66131a9806603",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvStructureViewItemAt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-c62f58b07285157f4105",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvStructureViewItemCount",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-fec9674448ec0c0d23ba",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvStructureWithItem",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-cbb8f02638114cc70477",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueBigInteger",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-e1f4d1ffae4a202bfc33",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueBoolean",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-7768b6c95cc525abfc09",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueByteString",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-2f95514cf980d5c84c9a",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueDateTime",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-5513989cf9b9fd9cc12a",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueDateTimeExtended",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-338044d07fcacf1e1a88",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueEnumeration",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-02a8a22c89352218f5b9",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueInteger",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-b571d35f19579e80460f",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueInterval",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-936ba0eb20caf3472095",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueLongInteger",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-f3b4a34c4832f7e1c467",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueStructure",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-f6857d22a6219587279c",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueTextString",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-36252de68d57e314fcb2",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueView",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-9c7cb69e947f6aa0e961",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewBoolean",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-3a6d8ec310479c8da754",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewByteAt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-e40a5aeed9329ea05764",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewByteLength",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-7e27c18d6969d168c845",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewDateTime",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-81b91ab30926fb779463",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewDateTimeExtended",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-ceeee52af4ef75248d90",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewEnumeration",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-e480908162f77792c167",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewInteger",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-8e983e384d65493eac44",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewInterval",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-7b5a75dc684873b97d8b",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewLongInteger",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-d2669f94bec0edc86ac1",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewStructure",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
-    },
-    {
-      "declarationId": "java-observed-9b0923578931c78ec474",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewType",
       "capabilityId": "public_binding_surface",
       "requirementIds": [
         "KMIPKIT-0043-FR-021"
@@ -449222,6 +448592,546 @@
       },
       "candidateSpecId": "KMIPKIT-0008",
       "evidence": "The HashedPasswordTimestampSequence facade exposes caller-managed sequence behavior; its Python slot layout is implementation metadata."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.RAW_TAG",
+      "reason": "This public static member is an internal dispatch constant for the generic TTLV JNI bridge and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.TAG",
+      "reason": "This public static member is an internal dispatch constant for the generic TTLV JNI bridge and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_ITEM",
+      "reason": "This public static member is an internal dispatch constant for the generic TTLV JNI bridge and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_ITEM_VIEW",
+      "reason": "This public static member is an internal dispatch constant for the generic TTLV JNI bridge and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_STRUCTURE",
+      "reason": "This public static member is an internal dispatch constant for the generic TTLV JNI bridge and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_STRUCTURE_VIEW",
+      "reason": "This public static member is an internal dispatch constant for the generic TTLV JNI bridge and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_VALUE",
+      "reason": "This public static member is an internal dispatch constant for the generic TTLV JNI bridge and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_VALUE_VIEW",
+      "reason": "This public static member is an internal dispatch constant for the generic TTLV JNI bridge and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.codecLimitValues",
+      "reason": "This public static member adapts native codec-limit values for the typed facade and is internal generic TTLV JNI bridge plumbing. Java applications use the CodecLimits typed facade; this adapter has no independent product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0005-FR-007, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge; the immutable CodecLimits API is the supported typed facade for configured limits. docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.rawTagChecked",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.rawTagCreate",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.rawTagValue",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.tagValue",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvItemCreate",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvItemViewTag",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvItemViewType",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvItemViewValue",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvStructureCreate",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvStructureView",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvStructureViewItemAt",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvStructureViewItemCount",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvStructureWithItem",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueBigInteger",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueBoolean",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueByteString",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueDateTime",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueDateTimeExtended",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueEnumeration",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueInteger",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueInterval",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueLongInteger",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueStructure",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueTextString",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueView",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewBoolean",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewByteAt",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewByteLength",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewDateTime",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewDateTimeExtended",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewEnumeration",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewInteger",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewInterval",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewLongInteger",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewStructure",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewType",
+      "reason": "This public static member is an internal generic TTLV JNI bridge entry point used by the typed facade and has no independent product capability. Java applications use the typed facade classes.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0004-FR-001 through KMIPKIT-0004-FR-014, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. NativeExtensionRegistry is documented as an internal JNI bridge and directs applications to org.kmipkit.ttlv typed facades; docs/architecture/ffi-and-bindings.md documents the supported minimal Java-to-C bridge."
     }
   ],
   "apiLevels": [
