@@ -768,9 +768,9 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                 self.assertEqual("four-language", declaration.get("parityScope"))
                 self.assertNotIn("candidateSpecId", declaration)
                 self.assertIn("secret", declaration.get("capabilityId", ""))
-                self.assertEqual("KMIPKIT-0043", declaration.get("ownerSpecId"))
+                self.assertEqual("KMIPKIT-0008", declaration.get("ownerSpecId"))
                 self.assertEqual(
-                    "specs/043-public-api-bindings/spec.md",
+                    "specs/008-credentials-attestation/spec.md",
                     declaration.get("approvalEvidence", {}).get("path"),
                 )
                 self.assertEqual(

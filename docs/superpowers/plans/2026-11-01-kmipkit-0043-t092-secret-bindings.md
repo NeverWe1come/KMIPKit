@@ -10,7 +10,7 @@
 
 **Spec:** `specs/043-public-api-bindings/spec.md` FR-004/005/010/013/017/021/022 owns and approves this binding work. `specs/008-credentials-attestation/spec.md` FR-010 and its secret ownership model provide the behavior contract; KMIPKIT-0008 explicitly excludes language bindings. OASIS KMIP 2.1 §9.11 Tables 410–416 and §11.11 Table 442 provide the credential context, while the Secret wrapper lifecycle itself is the approved KMIPKit owner contract.
 
-**Manifest ownership:** Secret wrapper declarations, including the `kmipkit::SecretBytes` root re-export, use `ownerSpecId: KMIPKIT-0043` and approval evidence from this specification. They also trace `KMIPKIT-0008-FR-010` for redaction and zeroization semantics. The root re-export maps to the same foreign API as its `kmipkit_protocol` source declaration.
+**Manifest ownership:** T092 in KMIPKIT-0043 owns the cross-language mapping requirements and implementation. The semantic capability remains owned by KMIPKIT-0008, following the existing credential manifest pattern, so secret wrapper declarations use `ownerSpecId: KMIPKIT-0008` and approval evidence from `specs/008-credentials-attestation/spec.md`. They trace KMIPKIT-0043's parity requirements as well. The root re-export maps to the same foreign API as its `kmipkit_protocol` source declaration.
 
 ## Global Constraints
 
