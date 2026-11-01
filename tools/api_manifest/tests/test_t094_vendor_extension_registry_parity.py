@@ -436,4 +436,3 @@ class T094VendorExtensionRegistryParityTests(unittest.TestCase):
                     },
                     row.get("approvalSource"),
                 )
-
