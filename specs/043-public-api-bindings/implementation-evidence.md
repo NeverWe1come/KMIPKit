@@ -8237,3 +8237,21 @@ Verification:
 - `git diff --check` — passed.
 
 The manifest now has zero KMIPKIT-0043 candidates for the nine declarations in this slice and 4,360 other blocked candidates. T102 remains unchecked; this checkpoint does not claim the PR, branch, coverage thresholds, or KMIP conformance complete.
+
+### T102 Validate request-model helper parity checkpoint (2026-11-01)
+
+This manifest-only slice reconciles four `ValidateRequest` helpers (`chain_len`, `validity_date`, `with_extension`, and `into_ttlv_payload`) and `ValidateResponse::result` with the existing four-language Validate capability. It is owned by approved KMIPKIT-0042 / T069 and cites OASIS KMIP Specification v2.1 §6.1.57 Tables 340–342. The request helpers map to the same-input C, Java, and Python Validate constructors already used by T069; `ValidateResponse::result` maps to common response metadata in all three bindings so Status, optional Reason, and optional Message remain available for each response status. No runtime code or operation behavior changed.
+
+| Phase | Commit | Evidence |
+|---|---|---|
+| Red — require four-language mappings and operation evidence for the five exact declarations | `c2a33d5ed` | The focused test failed against the baseline manifest because the request helpers and common result accessor remained blocked. |
+| Green — map the exact declarations and regenerate the API outputs | `441783037` | Updated the source manifest and generated all 12 pinned outputs; no generated file was edited by hand. |
+| Refactor/evidence — document the capability-level mapping and its limits | This commit | Adds the approved operation ownership, normative reference, semantic mapping, and no-conformance boundary to traceability. |
+
+Verification:
+
+- `py -B -m unittest tools.api_manifest.tests.test_t102_validate_request_model_mapping tools.api_manifest.tests.test_validate_parity_manifest -v` — 3 passed.
+- `py -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
+- `git diff --check` — passed.
+
+The manifest now has zero KMIPKIT-0043 candidates for these five declarations. T102 remains unchecked; the rest of its blocked declaration inventory is recorded in the task checkpoint. This slice does not claim the PR, branch, coverage thresholds, OASIS conformance, or interoperability complete.
