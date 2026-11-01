@@ -564,7 +564,7 @@ class T097AttributeParityManifestTests(unittest.TestCase):
 
     def test_python_model_plumbing_exports_are_exactly_excluded(self) -> None:
         expected = {"kmipkit.attribute_operations"}
-        for operation in REQUEST_MODEL_METHODS:
+        for operation in (*REQUEST_MODEL_METHODS, *READ_REQUEST_MODEL_METHODS):
             class_name = "".join(part.title() for part in operation.split("_")) + "Request"
             prefix = f"kmipkit.attribute_operations.{class_name}"
             expected.update(
@@ -575,6 +575,7 @@ class T097AttributeParityManifestTests(unittest.TestCase):
                     f"{prefix}.__exit__",
                 }
             )
+        expected.add("kmipkit.attribute_operations.GetAttributesRequest.__slots__")
         excluded = {
             row["exportName"]: row
             for row in self.manifest["approvedExclusions"]
