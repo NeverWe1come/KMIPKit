@@ -168,6 +168,16 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
         )
         self.assertTrue(owner_requirements <= set(capability.get("requirementIds", [])))
 
+        getter = next(
+            row
+            for row in manifest["functions"]
+            if row.get("id") == "ffi_last_credential_validation_error_get_v1"
+        )
+        self.assertTrue(
+            owner_requirements <= set(getter.get("requirementIds", [])),
+            "the shared error getter must trace every credential validator owner",
+        )
+
     def test_exact_trait_implementation_artifacts_have_owner_backed_exclusions(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         inventory = json.loads(RUST_EXPORT_INVENTORY.read_text(encoding="utf-8"))

@@ -761,3 +761,45 @@ int32_t kmipkit_authentication_c_consumer_rejects_empty_credentials(void) {
         status = 1;
     return status;
 }
+
+int32_t kmipkit_credential_c_consumer_rejects_missing_required_field(void) {
+    kmipkit_ttlv_structure_t *structure = 0;
+    kmipkit_credential_t *credential = 0;
+    kmipkit_credential_validation_error_v1_t error = {
+        (uint32_t)sizeof(kmipkit_credential_validation_error_v1_t), 1, 0
+    };
+    int32_t status = kmipkit_ttlv_structure_create(&structure);
+    if (status == 0) {
+        status = kmipkit_credential_from_ttlv(structure, &credential);
+        structure = 0;
+        if (status != 4 || credential != 0) status = 1;
+        else status = 0;
+    }
+    if (status == 0) status = kmipkit_last_credential_validation_error_get_v1(&error);
+    if (status == 0 && error.kind != KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_MISSING_FIELD)
+        status = 1;
+    kmipkit_ttlv_structure_release(structure);
+    kmipkit_credential_release(credential);
+    return status;
+}
+
+int32_t kmipkit_nonce_c_consumer_rejects_missing_required_value(void) {
+    kmipkit_ttlv_structure_t *structure = 0;
+    kmipkit_nonce_t *nonce = 0;
+    kmipkit_credential_validation_error_v1_t error = {
+        (uint32_t)sizeof(kmipkit_credential_validation_error_v1_t), 1, 0
+    };
+    int32_t status = kmipkit_ttlv_structure_create(&structure);
+    if (status == 0) {
+        status = kmipkit_nonce_from_ttlv(structure, &nonce);
+        structure = 0;
+        if (status != 4 || nonce != 0) status = 1;
+        else status = 0;
+    }
+    if (status == 0) status = kmipkit_last_credential_validation_error_get_v1(&error);
+    if (status == 0 && error.kind != KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_MISSING_FIELD)
+        status = 1;
+    kmipkit_ttlv_structure_release(structure);
+    kmipkit_nonce_release(nonce);
+    return status;
+}

@@ -33,6 +33,8 @@ unsafe extern "C" {
         out_count: *mut u64,
     ) -> i32;
     fn kmipkit_authentication_c_consumer_rejects_empty_credentials() -> i32;
+    fn kmipkit_credential_c_consumer_rejects_missing_required_field() -> i32;
+    fn kmipkit_nonce_c_consumer_rejects_missing_required_value() -> i32;
 }
 
 use kmipkit_ffi::kmipkit_codec_limits_t;
@@ -124,6 +126,20 @@ fn compiled_c_consumer_preserves_authentication_order_and_owner_backed_views() {
 fn compiled_c_consumer_rejects_empty_authentication_credentials() {
     // SAFETY: The C consumer owns all handles created by this negative case.
     let status = unsafe { kmipkit_authentication_c_consumer_rejects_empty_credentials() };
+    assert_eq!(status, 0);
+}
+
+#[test]
+fn compiled_c_consumer_maps_missing_credential_fields_to_typed_validation_error() {
+    // SAFETY: The C consumer owns all temporary structures and handles for this negative case.
+    let status = unsafe { kmipkit_credential_c_consumer_rejects_missing_required_field() };
+    assert_eq!(status, 0);
+}
+
+#[test]
+fn compiled_c_consumer_maps_missing_nonce_fields_to_typed_validation_error() {
+    // SAFETY: The C consumer owns all temporary structures and handles for this negative case.
+    let status = unsafe { kmipkit_nonce_c_consumer_rejects_missing_required_value() };
     assert_eq!(status, 0);
 }
 

@@ -97,6 +97,15 @@ final class CredentialFacadeTest {
         }
     }
 
+    @Test
+    void credentialValidationErrorExposesMissingFieldKind() {
+        TtlvStructure malformed = TtlvStructure.create();
+        CredentialValidationException error = assertThrows(
+                CredentialValidationException.class, () -> Credential.fromTtlv(malformed));
+        assertEquals(CredentialValidationErrorKind.MISSING_FIELD, error.kind());
+        assertTrue(!error.getMessage().contains("sensitive-sentinel"));
+    }
+
     private static boolean throwsInvalidInput(ThrowingSupplier action) {
         try {
             action.get();

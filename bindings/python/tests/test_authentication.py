@@ -140,6 +140,15 @@ class AuthenticationTests(unittest.TestCase):
             raised.exception.kind,
         )
 
+    def test_credential_conversion_exposes_missing_field_kind(self) -> None:
+        malformed = ttlv.ttlv_structure_create()
+        with self.assertRaises(errors.CredentialValidationError) as raised:
+            kmipkit.credentials.Credential.from_ttlv(malformed)
+        self.assertEqual(
+            errors.CredentialValidationErrorKind.MISSING_FIELD,
+            raised.exception.kind,
+        )
+
     def test_create_preserves_credentials_rejected_for_a_live_scoped_view(self) -> None:
         facade = getattr(kmipkit.credentials, "Authentication", None)
         self.assertIsNotNone(facade, "the Python facade must expose Authentication")

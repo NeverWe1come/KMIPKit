@@ -112,8 +112,12 @@ class NonceTests(unittest.TestCase):
             return
 
         structure = ttlv.ttlv_structure_create()
-        with self.assertRaises(errors.InvalidInputError) as raised:
+        with self.assertRaises(errors.CredentialValidationError) as raised:
             facade.from_ttlv(structure)
+        self.assertEqual(
+            errors.CredentialValidationErrorKind.MISSING_FIELD,
+            raised.exception.kind,
+        )
         self.assertNotIn(NONCE_VALUE.hex(), str(raised.exception))
         self.assertTrue(structure.closed)
 

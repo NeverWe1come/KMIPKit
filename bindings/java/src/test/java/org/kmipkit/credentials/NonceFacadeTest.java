@@ -72,7 +72,9 @@ final class NonceFacadeTest {
         TtlvStructure malformed = TtlvStructure.create();
         InvocationTargetException error = assertThrows(
                 InvocationTargetException.class, () -> fromTtlv.invoke(null, malformed));
-        assertInstanceOf(InvalidInputException.class, error.getCause());
+        CredentialValidationException validationError = assertInstanceOf(
+                CredentialValidationException.class, error.getCause());
+        assertEquals(CredentialValidationErrorKind.MISSING_FIELD, validationError.kind());
         assertTrue(!error.getCause().getMessage().contains(hex(NONCE_VALUE)));
     }
 
