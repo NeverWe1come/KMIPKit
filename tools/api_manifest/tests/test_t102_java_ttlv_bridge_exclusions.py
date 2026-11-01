@@ -60,6 +60,15 @@ EXPECTED_BRIDGE_EXPORTS = frozenset(
         "codecLimitValues",
     )
 )
+EXPECTED_TIMESTAMP_SEQUENCE_BRIDGE_EXPORTS = frozenset(
+    f"org.kmipkit.NativeExtensionRegistry.{name}"
+    for name in (
+        "HASHED_PASSWORD_TIMESTAMP_SEQUENCE",
+        "hashedPasswordTimestampSequenceNew",
+        "hashedPasswordTimestampSequenceRecord",
+        "hashedPasswordTimestampSequenceLastTimestamp",
+    )
+)
 
 
 class JavaTtlvBridgeExclusionTests(unittest.TestCase):
@@ -111,6 +120,28 @@ class JavaTtlvBridgeExclusionTests(unittest.TestCase):
                 self.assertEqual("blocked", declaration["declarationState"])
                 self.assertEqual("KMIPKIT-0043", declaration["candidateSpecId"])
                 self.assertNotIn((PACKAGE, export_name), self.exclusions)
+
+    def test_timestamp_sequence_jni_bridge_is_excluded_under_approved_owner(self) -> None:
+        actual_exclusions = {
+            export_name
+            for package, export_name in self.exclusions
+            if package == PACKAGE and export_name in EXPECTED_TIMESTAMP_SEQUENCE_BRIDGE_EXPORTS
+        }
+        self.assertEqual(EXPECTED_TIMESTAMP_SEQUENCE_BRIDGE_EXPORTS, actual_exclusions)
+
+        for export_name in sorted(EXPECTED_TIMESTAMP_SEQUENCE_BRIDGE_EXPORTS):
+            with self.subTest(export_name=export_name):
+                exclusion = self.exclusions[(PACKAGE, export_name)]
+                self.assertEqual(PACKAGE, exclusion["packageId"])
+                self.assertEqual(export_name, exclusion["exportName"])
+                self.assertEqual(OWNER_SPEC, exclusion["approvalSource"]["path"])
+                self.assertEqual("Approved", exclusion["approvalSource"]["status"])
+                self.assertIn("timestamp-sequence JNI plumbing", exclusion["reason"])
+                self.assertIn("KMIPKIT-0008-FR-007/010", exclusion["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-008", exclusion["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+                self.assertIn("HashedPasswordTimestampSequence", exclusion["evidence"])
+                self.assertNotIn((PACKAGE, export_name), self.declarations)
 
 
 if __name__ == "__main__":

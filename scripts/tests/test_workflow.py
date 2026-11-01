@@ -260,6 +260,11 @@ class WorkflowContractTests(unittest.TestCase):
             python_contracts,
             "The exact T102 JNI bridge exclusion contract must run on each supported platform.",
         )
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_binding_exports -v",
+            python_contracts,
+            "The complete binding namespace exclusion contract must run on each supported platform.",
+        )
     def test_script_contract_job_installs_pinned_fixture_test_dependencies(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "script-contracts")

@@ -952,6 +952,10 @@ class BindingExportAuditTests(unittest.TestCase):
                 "ttlvValueViewByteLength",
                 "ttlvValueViewByteAt",
                 "codecLimitValues",
+                "HASHED_PASSWORD_TIMESTAMP_SEQUENCE",
+                "hashedPasswordTimestampSequenceNew",
+                "hashedPasswordTimestampSequenceRecord",
+                "hashedPasswordTimestampSequenceLastTimestamp",
             }
         )
         expected_native = {
