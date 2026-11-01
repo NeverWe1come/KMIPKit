@@ -124,6 +124,53 @@ fn get_attributes_constructor_preserves_reference_order_and_optional_identifier(
 }
 
 #[test]
+fn standalone_get_attribute_list_request_accepts_an_omitted_identifier() {
+    let mut request: *mut kmipkit_get_attribute_list_request_t = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_get_attribute_list_request_create(ptr::null(), &raw mut request),
+        SUCCESS
+    );
+    assert!(!request.is_null());
+
+    let mut identifier = kmipkit_unique_identifier_v1_t {
+        struct_size: abi_struct_size::<kmipkit_unique_identifier_v1_t>(),
+        abi_version: 1,
+        kind: 9,
+        reserved: 0,
+        text_data: ptr::null(),
+        text_length: 9,
+        enumeration_value: 99,
+        integer_value: 99,
+    };
+    assert_eq!(
+        client_abi::kmipkit_get_attribute_list_request_unique_identifier(
+            request,
+            &raw mut identifier,
+        ),
+        SUCCESS
+    );
+    assert_eq!(identifier.kind, 0);
+    assert!(identifier.text_data.is_null());
+    assert_eq!(identifier.text_length, 0);
+
+    let mut batch_item = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_get_attribute_list_from_request(
+            request,
+            &raw mut batch_item,
+        ),
+        SUCCESS
+    );
+    let batch_handle = reference_handle(batch_item, Kind::BatchItem).expect("batch item is owned");
+    let HandleValue::BatchItem(batch) = &batch_handle.value else {
+        panic!("batch item handle contains a request");
+    };
+    assert!(matches!(batch.request(), ClientRequest::GetAttributeList(_)));
+    kmipkit_client_batch_item_release(batch_item);
+    client_abi::kmipkit_get_attribute_list_request_release(request);
+}
+
+#[test]
 fn get_attributes_response_returns_owned_attributes_and_hides_failure_fields() {
     let success = successful_cryptographic_item(
         response_fixture_request(),
