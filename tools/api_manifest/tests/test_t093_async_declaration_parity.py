@@ -246,6 +246,38 @@ class T093AsyncDeclarationParityTests(unittest.TestCase):
                     row.get("approvalSource"),
                 )
 
+    def test_async_request_models_do_not_map_to_network_execution(self) -> None:
+        request_types = (
+            "CancelRequest",
+            "PollRequest",
+            "ProcessRequest",
+            "QueryAsyncRequestsRequest",
+        )
+        request_rows = [
+            row
+            for row in self.manifest["publicDeclarations"]
+            if any(
+                row.get("exportName", "") == f"{namespace}::{request_type}"
+                or row.get("exportName", "").startswith(
+                    f"{namespace}::{request_type}::"
+                )
+                for namespace in ("kmipkit_protocol", "kmipkit")
+                for request_type in request_types
+            )
+            and row.get("capabilityId") == "client_asynchronous_operations"
+        ]
+        self.assertTrue(request_rows, "typed asynchronous request rows are missing")
+
+        for row in request_rows:
+            for language in ("c", "java", "python"):
+                name = row["languageMappings"][language]["name"]
+                with self.subTest(export=row["exportName"], language=language):
+                    self.assertNotIn(
+                        "execute",
+                        name.lower(),
+                        "a pure request model must not map to a one-exchange network call",
+                    )
+
 
 if __name__ == "__main__":
     unittest.main()
