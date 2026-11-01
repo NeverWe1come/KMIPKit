@@ -7869,3 +7869,31 @@ The shared `CredentialValidationError` taxonomy maps the existing Rust type, `ki
 | Refactor/evidence — record traceability, current owner totals, integration state, and verification | this commit | Full manifest-v2 suite; full Python suite; Rust formatting/Clippy; binding export audit; `git diff --check`; GitHub PR state and release ancestry | T092 maps 50/96 functional declarations; 46 remain blocked. The branch remains partial. The merged release tip `f46de941c` is an ancestor of both the local and published #104 heads; GitHub reports #104 `CLEAN`, with no merge conflict or conflict-resolution commit required. Hosted CI must rerun after these commits are pushed. |
 
 The 2026-11-01 binding export report reconciles C 637/637, Java 1,020/1,020, and Python 1,002/1,002 with zero missing, unobserved, or kind-mismatched declarations. The shared Rust inventory observes 10,458 declarations, maps 688, and records 1,645 approved exact exclusions; its two blocked namespace records are unrelated to this T092 slice. These results do not establish KMIP profile conformance, interoperability, certification, or release readiness. T092 remains open.
+
+### T092 UsernameAndPasswordCredential four-language parity (2026-11-01)
+
+The Rust `UsernameAndPasswordCredential` model now validates the required Username and optional Password fields from OASIS KMIP Specification v2.1 §9.11 Table 411 (`KMIPKIT-REQ-SPEC-9.11-001`), retaining the exact ordered TTLV Structure and unknown children. The approved owner requirements are KMIPKIT-0008-FR-003/004/010 and KMIPKIT-0043-FR-004/005/010/021/022. C exposes an opaque handle with validated construction, callback-scoped generic TTLV view, lossless transfer, and release; Java JNI and Python CFFI expose equivalent scoped typed facades. Invalid structures return payload-free typed validation errors. Typed wrappers redact formatting and do not add per-field credential getters, Authentication selection, credential attachment, client execution, transport, or a send path.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red — require the Rust model validation and preservation contract | `941c6a25e` | Focused Rust credential contract | The constructor and Table 411 validation were absent; the new contract failed as expected. |
+| Green — implement the validated Rust constructor | `9ddd5b934` | Focused Rust credential tests | Username is required, Password is optional, ordering/unknown fields remain lossless, and errors are payload-free. |
+| Refactor — share the validated tree constructor | `560a847a2` | Rust credential tests and formatter | The new model reuses the common redacted, exact-tree wrapper implementation. |
+| Red — require C, Java, and Python consumer parity | `34a1deab3` | Compiled C, JNI, and Python wrapper tests | The consumers failed while their typed facade operations were not implemented. |
+| Green — add C/JNI/CFFI facades, manifest mappings, and generated outputs | `1988455f4` | Full local verification listed below | The compiled consumers now verify ordered TTLV round-trip, view lifetime, rejected transfer while borrowed, typed errors, and redacted formatting. The same commit moves credential error tests out of the production source file so the CI coverage scanner recognizes them as test-only. |
+| Red/Green — synchronize the Rust availability query with the ready capability manifest | `951f732fe` / `19b4c33f6` | `cargo test -p kmipkit --test runtime_metadata capability_query_matches_manifest_ready_capabilities` | The new assertion failed with `Ok(false)` before the allowlist entry and passed after it. |
+| Red/Green — refresh the Rust inventory report source and classify exact binding glue | `bb22bbc1c`, `ff1ed466b` / `1988455f4` | Shared-inventory and T092 manifest tests | The stale 2026-10-31 input omitted the new Rust export; the exact Java JNI bridge entries and Python inherited constructor/slot entries are now owner-backed exclusions. All 17 inventory tests and 16 T092 manifest tests pass. |
+| Refactor/evidence — record current counts, traces, and verification | this commit | Documentation contract, generator, export audits, Rust/FFI, C, Java, Python, Clippy, and formatting checks | T092 maps 54/97 functional declarations; 43 remain blocked. No conformance or release-readiness claim is made. |
+
+Verification on the current local worktree:
+
+- `cargo test -p kmipkit-ffi --lib --all-features` — 334 passed.
+- `cargo test -p kmipkit-ffi --test c_api_coverage --all-features` — 29 passed, including the compiled C credential consumer.
+- `cargo test -p kmipkit --test runtime_metadata capability_query_matches_manifest_ready_capabilities` — passed after the expected Red failure.
+- `cargo clippy --workspace --all-targets --all-features -- -D warnings`, `cargo fmt --all --check`, and `git diff --check` — passed.
+- From `bindings/java`, `.\gradlew.bat test --no-daemon` — passed, including JNI native-library rebuild and facade tests.
+- Python 3.12 with the pinned CFFI 1.17.1 and `python -m pytest -q bindings/python/tests` — 873 passed.
+- T092 manifest tests — 16 passed; shared Rust inventory tests — 17 passed; coverage-gate contract tests — 68 passed with 3 Windows symlink-privilege skips.
+- `tools/api_manifest/generate.py --check` — all 12 outputs current. Rust audit — 10,459 observed, 8,814/8,814 manifest matches, 0 discrepancies. Shared Rust inventory — 692 mapped declarations and 1,645 approved exact exclusions. Binding audit — C 642/642, Java 1,026/1,026, and Python 1,010/1,010, with zero missing or kind-mismatched exports.
+
+The agreed temporary coverage-gate waiver for the active KMIPKIT-0043 branch remains in effect; this checkpoint does not report a full coverage-threshold run. Hosted CI must rerun on the pushed PR head. Independent security and QA reviews are still required before the PR can leave draft status.
