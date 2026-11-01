@@ -64,11 +64,12 @@ def test_cancel_poll_and_process_build_payloads_without_executing_operations() -
             if request_type in (CancelRequest, PollRequest):
                 observed: list[bytes] = []
 
-                def inspect(value: memoryview) -> None:
+                def inspect(value: memoryview) -> bytes:
                     assert value.readonly
                     observed.append(value.tobytes())
+                    return value.tobytes()
 
-                assert request.with_asynchronous_correlation_value(inspect)
+                assert request.with_asynchronous_correlation_value(inspect) == correlation
                 assert observed == [correlation]
 
             with request.to_ttlv_payload() as payload:
