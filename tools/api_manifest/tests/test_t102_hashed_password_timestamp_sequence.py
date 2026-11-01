@@ -131,6 +131,49 @@ class T102HashedPasswordTimestampSequenceTests(unittest.TestCase):
         self.assertIn("KMIPKIT-REQ-SPEC-9.11-010-001", row["statement"])
         self.assertNotIn("do not calculate hashes or claim monotonicity behavior", row["statement"])
 
+    def test_exact_sequence_trait_artifacts_are_excluded_by_the_credential_owner(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        report_path = (
+            ROOT
+            / "specs"
+            / "043-public-api-bindings"
+            / "reports"
+            / "rust-export-report-2026-11-01.json"
+        )
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+        expected = {
+            row["exportName"]
+            for row in report["matched"]
+            if "HashedPasswordTimestampSequence" in row["exportName"]
+            and " as " in row["exportName"]
+        }
+        self.assertEqual(36, len(expected))
+
+        unresolved = {
+            row["exportName"]
+            for row in manifest["publicDeclarations"]
+            if row.get("candidateSpecId") == "KMIPKIT-0043"
+            and row["exportName"] in expected
+        }
+        self.assertEqual(set(), unresolved)
+
+        exclusions = {
+            row["exportName"]: row
+            for row in manifest["approvedExclusions"]
+            if row["exportName"] in expected
+        }
+        self.assertEqual(expected, set(exclusions))
+        for export_name, exclusion in exclusions.items():
+            with self.subTest(export=export_name):
+                self.assertEqual("KMIPKIT-0008", exclusion["candidateSpecId"])
+                self.assertIn("standard-trait implementation artifact", exclusion["reason"])
+                self.assertEqual(
+                    "specs/008-credentials-attestation/spec.md",
+                    exclusion["approvalSource"]["path"],
+                )
+                self.assertEqual("Approved", exclusion["approvalSource"]["status"])
+                self.assertIn(export_name, exclusion["evidence"])
+
 
 if __name__ == "__main__":
     unittest.main()
