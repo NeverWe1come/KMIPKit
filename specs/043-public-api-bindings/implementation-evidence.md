@@ -8063,3 +8063,32 @@ Verification:
 - Rust export audit `--check` passed: 10,462 observed declarations, 7,849 exact manifest matches, 2,613 exact exclusions, and zero missing, unobserved, kind-mismatched, or issue rows.
 - Binding export audit `--check` passed for C, Java, and Python with complete inventories and no discrepancies. The shared Rust inventory `--check` passed with 10,462 observed declarations, 859 mapped declarations, 2,613 approved exclusions, and the same two unrelated blocked namespace entries.
 - `git diff --check` passed. The Windows Rust audit emitted non-fatal AWS-LC compiler-feature and missing-NASM probe warnings; the audit completed successfully.
+### T097 — KMIPKIT-0016 Attribute operations and AttributeSet four-language mapping (2026-11-01)
+
+T097 resolves the exact KMIPKIT-0016 public declaration inventory across Rust, C, Java/JNI, and Python/CFFI. It adds standalone typed request models and client-batch adapters for Add Attribute, Adjust Attribute, Delete Attribute, Get Attribute List, Get Attributes, Modify Attribute, and Set Attribute (OASIS KMIP v2.1 §§6.1.2–6.1.3, 6.1.13, 6.1.20–6.1.21, 6.1.34, and 6.1.51). The shared AttributeSet facade validates bounded ordered direct Items and provides matching create, append, copy-out, length, empty, and consuming operations across all four languages. This records API/model parity only; it does not claim formal KMIP conformance.
+
+The owner inventory contains 909 exact declarations: 247 four-language mappings and 662 owner-approved exact exclusions. No declaration remains with candidate owner KMIPKIT-0016. The contract pins SHA-256 4c2e475ca24b0c6001aa19b4b2bf3149124fd3fd344f44f12a21de710a72463e and checks exact owner requirements, language mappings, and exclusion identities.
+
+| Phase | Commit | Evidence | Result |
+|---|---|---|---|
+| Red — require validated AttributeSet mappings, ownership, and consumers | 4baae8dbd, 15b224291, db95362ac | FFI/Rust, C, Java, Python, and manifest contracts | The tests exposed missing ownership validation and language consumer mappings before the facade was complete. |
+| Red — enforce aggregate depth including the containing Structure | e72a6e4aa | attribute_set_item_limit_includes_enclosing_structure_depth | Before Green, the new unit test returned Ok(()) where Err(ERROR_RESOURCE_LIMIT) was required: validating an Item at root depth alone accepted an AttributeSet whose enclosing Structure exceeded the configured depth limit. |
+| Green — implement AttributeSet and standalone attribute-operation parity | d7ddd7e33 | Focused Rust, C, Java, Python, and manifest verification below | The four language surfaces now share the validated model behavior, and the candidate declarations are mapped or explicitly excluded. |
+| Red — require compiled-C consumers for both standalone attribute request handles | 6e3083d | Focused c_api_coverage test | Linking failed on the missing kmipkit_client_abi_c_consumer_validates_standalone_attribute_requests symbol, proving the C consumer scenario was not implemented. |
+| Green — exercise both standalone request ABIs from compiled C | 088b15e52 | Focused compiled-C consumer test | The C consumer now checks identifier/reference views, payload conversion, batch conversion, and handle release for both request models. |
+| Refactor/evidence — record conformance traceability, current inventories, independent review, and verification | this commit | Formatting, Clippy, generated-output checks, binding export audit, and focused consumers | T097 is complete; later KMIPKIT-0043 tasks and the PR-wide coverage waiver remain separate. |
+
+Verification for this checkpoint:
+
+- cargo test --locked --offline -p kmipkit-ffi --lib --features coverage-c-consumer attribute_set_item_limit_includes_enclosing_structure_depth — 1 test passed.
+- cargo test --locked --offline -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage compiled_c_consumer_validates_and_consumes_ordered_attribute_sets -- --nocapture — compiled C consumer passed.
+- cargo test --locked --offline -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage compiled_c_consumer_validates_standalone_attribute_request_models -- --nocapture — passed 1/1; both standalone C request handles were exercised through the linked C consumer. The preceding Red run failed to link because the consumer symbol was absent.
+- From bindings/java, gradlew.bat test --tests org.kmipkit.extensions.AttributeSetJavaFacadeTest — BUILD SUCCESSFUL.
+- With KMIPKIT_NATIVE_LIBRARY set to the current target/release/kmipkit_ffi.dll, Python pytest -q bindings/python/tests/test_attribute_request_models.py — 7 passed.
+- bindings/python/.venv-codex/Scripts/python.exe -B -m pytest -q tools/api_manifest/tests/test_t097_attribute_parity_manifest.py — 12 passed.
+- cargo test --locked --offline -p kmipkit-ffi --features coverage-c-consumer — full FFI crate passed: 343 unit tests and 35 integration/compiled-C tests; doc tests passed.
+- python -B tools/api_manifest/generate.py --check — all 12 generated outputs verified.
+- python -B tools/api_manifest/audit_binding_exports.py --check — zero discrepancies: C 747/747, Java 1,114/1,114, Python 1,127/1,127; no missing, unobserved, or kind-mismatched declarations.
+- cargo fmt --all --check, cargo clippy --locked --offline -p kmipkit-ffi --all-targets --features coverage-c-consumer -- -D warnings, and git diff --check — passed.
+
+Independent security review confirmed that the enclosing-Structure depth check closes the earlier depth-limit concern and reported no new actionable issue. Final QA confirmed the compiled-C test covers both standalone request handles, their borrowed views, TTLV payloads, batch conversions, and releases, with no remaining T097 gap. A separate security review of the C consumer found no actionable memory-safety issue. The temporary coverage-gate waiver for PR #104 remains active, so this checkpoint does not claim PR-wide coverage thresholds. Hosted CI must rerun on the updated PR head before the branch can leave Draft.

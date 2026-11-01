@@ -81,9 +81,7 @@ fn compiled_c_consumer_validates_and_consumes_ordered_attribute_sets() {
 #[test]
 fn compiled_c_consumer_validates_standalone_attribute_request_models() {
     // SAFETY: The C consumer owns and releases every temporary handle it creates.
-    let status = unsafe {
-        kmipkit_client_abi_c_consumer_validates_standalone_attribute_requests()
-    };
+    let status = unsafe { kmipkit_client_abi_c_consumer_validates_standalone_attribute_requests() };
     assert_eq!(status, 1);
 }
 
