@@ -350,19 +350,26 @@ class T096CreationParityManifestTests(unittest.TestCase):
         cls.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
 
     def test_base_candidate_inventory_is_pinned(self) -> None:
-        candidates = [
+        mapped = [
             row
             for row in self.manifest["publicDeclarations"]
-            if row.get("candidateSpecId") == OWNER_SPEC
+            if row.get("exportName") in MAPPED_FUNCTIONAL_EXPORTS
         ]
+        excluded = [
+            row
+            for row in self.manifest["approvedExclusions"]
+            if row["approvalSource"].get("path") == OWNER_SPEC_PATH
+            and (row["exportName"] in EXCLUDED_FUNCTIONAL_EXPORTS or row["exportName"].startswith("<"))
+        ]
+        candidates = mapped + excluded
         self.assertEqual(BASE_CANDIDATE_COUNT, len(candidates))
         self.assertEqual(BASE_CANDIDATE_SHA256, _identity_hash(candidates))
-        trait_rows = [row for row in candidates if "<" in row["exportName"] and " as " in row["exportName"]]
+        trait_rows = [row for row in candidates if row["exportName"].startswith("<")]
         self.assertEqual(BASE_TRAIT_COUNT, len(trait_rows))
         self.assertEqual(BASE_TRAIT_SHA256, _identity_hash(trait_rows))
         self.assertEqual(
             FUNCTIONAL_EXPORTS,
-            {row["exportName"] for row in candidates if row not in trait_rows},
+            {row["exportName"] for row in candidates if not row["exportName"].startswith("<")},
         )
 
     def test_creation_candidates_are_mapped_or_exactly_excluded(self) -> None:
@@ -462,11 +469,41 @@ class T096CreationParityManifestTests(unittest.TestCase):
         self.assertEqual(BASE_TRAIT_SHA256, _identity_hash(trait_exclusions))
         for row in trait_exclusions:
             with self.subTest(exclusion=row["exportName"]):
-                self.assertIn("Rust trait implementation path", row["reason"])
-                self.assertIn("concrete declaration remains separately inventoried", row["reason"])
+                if " as core::convert::From<" in row["exportName"]:
+                    self.assertIn("From implementation", row["reason"])
+                    self.assertIn("private `", row["reason"])
+                    self.assertIn("internal Rust conversion", row["reason"])
+                else:
+                    self.assertIn("Rust trait implementation path", row["reason"])
+                    self.assertIn("not a separate KMIPKit capability", row["reason"])
+                    self.assertIn("independently mapped or exactly excluded", row["evidence"])
                 self.assertIn("KMIPKIT-0043-FR-021", row["evidence"])
                 self.assertIn("KMIPKIT-0014-FR-011", row["evidence"])
                 self.assertEqual("Accepted", row["approvalSource"]["status"])
+
+    def test_creation_capability_mapping_includes_new_ready_exports(self) -> None:
+        capability = next(
+            row
+            for row in self.manifest["capabilities"]
+            if row["capabilityId"] == "server_generated_creation"
+        )
+        declarations = [
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row["exportName"] in MAPPED_FUNCTIONAL_EXPORTS
+            and row["capabilityId"] == "server_generated_creation"
+        ]
+        for language in LANGUAGES:
+            expected = {
+                row["languageMappings"][language]["name"]
+                for row in declarations
+            }
+            with self.subTest(language=language):
+                self.assertTrue(
+                    expected <= set(capability["mappings"][language]),
+                    f"missing {language} capability exports: "
+                    f"{sorted(expected - set(capability['mappings'][language]))}",
+                )
 
 
 if __name__ == "__main__":
