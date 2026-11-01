@@ -8306,3 +8306,31 @@ Verification:
 
 - `py -B -m unittest tools.api_manifest.tests.test_parity.PublicApiParityTests.test_shared_capability_fixture_maps_executable_consumer_contracts -v` — passed.
 - The full selected `test_parity`, `test_t076_client_mapping`, and `test_t071_parity_runner` suites are rerun before publication.
+
+### T102 Java JNI bridge export reconciliation (2026-11-01)
+
+This manifest-only slice classifies 49 public `NativeExtensionRegistry` exports as internal JNI plumbing for already mapped typed facades. Forty-five generic TTLV paths comprise eight handle-kind constants, four RawTag/Tag entry points, nine item/Structure entry points, 23 value/view entry points, and the `codecLimitValues` adapter. They cite the approved KMIPKIT-0004 model requirements (and KMIPKIT-0005-FR-007 for codec limits) plus KMIPKIT-0043-FR-008/021 and the minimal JNI boundary in `docs/architecture/ffi-and-bindings.md`. Four sequence paths (`HASHED_PASSWORD_TIMESTAMP_SEQUENCE`, construction, recording, and last-timestamp readback) cite approved KMIPKIT-0008-FR-007/010 and KMIPKIT-0043-FR-008/021; applications use the typed `HashedPasswordTimestampSequence` facade. These exclusions add no KMIP wire behavior or product capability.
+
+The slice intentionally leaves `NativeExtensionRegistry.codecLimitsCreate`, `ttlvPathCreate`, and `ttlvPathWithChildTag` blocked. It makes no assertion about package-private codec bridge exports, JNI lifecycle helpers, or KMIP conformance. The binding-export test compares the complete `NativeExtensionRegistry` exclusion namespace to an exact expected set and is now part of the CI script-contract job.
+
+| Phase | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red — require ownership for the 45 generic TTLV paths | `5191983da` | `py -B -m unittest tools.api_manifest.tests.test_t102_java_ttlv_bridge_exclusions -v` | Expected failure: the exact bridge exclusions were absent; neighboring declarations remained blocked. |
+| Red — require CI to execute the T102 contract | `8d737d873` | `py -B -m unittest scripts.tests.test_workflow.WorkflowContractTests.test_script_contract_job_runs_t102_java_ttlv_bridge_exclusion_contract -v` | Expected failure: the script-contract workflow did not invoke the new test. |
+| Green — classify generic TTLV bridge, regenerate, and wire the focused T102 contract into CI | `fe29815f4` | `py -B tools/api_manifest/generate.py --write` | The pinned generator updated the checked-in outputs; no generated file was edited by hand. |
+| Red — require ownership for four sequence JNI paths found by the full binding audit | `d91b69689` | `py -B -m unittest tools.api_manifest.tests.test_t102_java_ttlv_bridge_exclusions -v` | Expected failure: four observed sequence bridge exports were not classified. |
+| Green — add the four approved sequence bridge exclusions, update exact export inventories, and wire the namespace-wide binding audit into CI | `953d7cf15` | `py -B tools/api_manifest/generate.py --write` | The pinned generator updated the checked-in outputs; the full binding audit now reconciles all observed C, Java, and Python exports. |
+| Refactor/evidence — record ownership, boundaries, review response, and verification | This commit | Refresh this evidence and task/traceability checkpoints | T102 remains open; no broad conformance or release claim is made. |
+
+Verification:
+
+- `py -B -m unittest tools.api_manifest.tests.test_t102_java_ttlv_bridge_exclusions -v` — 3 passed.
+- `py -B -m unittest tools.api_manifest.tests.test_binding_exports -v` — 50 passed, including exact namespace-wide Java bridge exclusion reconciliation.
+- `py -B -m unittest scripts.tests.test_workflow.WorkflowContractTests.test_script_contract_job_runs_t102_java_ttlv_bridge_exclusion_contract -v` — 1 passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_checked_in_manifest_inventories_all_java_public_access_paths -v` — 1 passed with the Java inventory count set to 1,080.
+- `py -B tools/api_manifest/generate.py --check` — all 12 outputs verified.
+- Full `audit_binding_exports.py --check` — C observed 801/matched 757, Java 1,535/matched 1,080, and Python 1,921/matched 1,140; zero missing exports, kind mismatches, or audit issues; all three inventories match the manifest.
+- `git diff --check` — passed.
+- The refreshed broad `test_manifest_v2` run after correcting the Java inventory expectation completed 150 tests with 17 failures. The focused Java inventory test passes. Remaining failures concern Rust/Python inventory snapshots and existing API metadata or requirement assertions outside this slice; the broader suite is not claimed green by this checkpoint.
+
+The manifest has zero KMIPKIT-0043 candidates for these 49 paths and 4,310 other blocked KMIPKIT-0043 candidate declarations. T102 remains unchecked; this slice does not claim the PR, branch, coverage thresholds, profile conformance, or release complete.
