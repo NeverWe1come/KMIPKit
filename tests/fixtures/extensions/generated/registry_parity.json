@@ -5577,21 +5577,25 @@
         "KMIPKIT-0012-FR-010"
       ],
       "rust": {
-        "module": "kmipkit_ffi::ttlv",
-        "name": "validated_extension_value_value_at",
-        "owner": "ffi",
+        "module": "kmipkit_protocol::extension::ValidatedExtensionValue",
+        "name": "with_value_at",
+        "owner": "protocol",
         "parameters": [
           {
             "name": "value",
-            "type": "ValidatedExtensionValue"
+            "type": "&ValidatedExtensionValue"
           },
           {
             "name": "path",
-            "type": "TtlvPath"
+            "type": "&TtlvPath"
+          },
+          {
+            "name": "callback",
+            "type": "impl for<'a> FnOnce(ValueView<'a>) -> R"
           }
         ],
         "requestBoundary": "not-applicable",
-        "returnType": "Result<TtlvValueViewHandle, ProtocolError>"
+        "returnType": "Result<R, ProtocolError>"
       }
     },
     {

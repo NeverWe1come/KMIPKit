@@ -2072,6 +2072,9 @@
           "pattern": "^impl for<'a> FnOnce\\(StructureView<'a>\\) -> [A-Za-z_][A-Za-z0-9_]*$"
         },
         {
+          "pattern": "^impl for<'a> FnOnce\\(ValueView<'a>\\) -> [A-Za-z_][A-Za-z0-9_]*$"
+        },
+        {
           "pattern": "^impl for<'a> FnOnce\\(&'a \\[u8\\]\\) -> [A-Za-z_][A-Za-z0-9_]*$"
         },
         {
@@ -2081,7 +2084,7 @@
           "pattern": "^impl ExactSizeIterator\\s*<\\s*Item\\s*=\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*'_\\s*>)?\\s*>\\s*\\+\\s*'_\\s*$"
         }
       ],
-      "description": "Rust type subset: identifier paths, one- or two-level generic applications with non-empty path arguments, Result<(), E> including a qualified Result path, unit and tuple types, fixed arrays, references, borrowed slices, raw pointers, mutable pointer-to-pointer output slots for reviewed C ABI declarations, higher-ranked StructureView and secret-byte/text callbacks, and ExactSizeIterator views over borrowed credential views."
+      "description": "Rust type subset: identifier paths, one- or two-level generic applications with non-empty path arguments, Result<(), E> including a qualified Result path, unit and tuple types, fixed arrays, references, borrowed slices, raw pointers, mutable pointer-to-pointer output slots for reviewed C ABI declarations, higher-ranked StructureView and ValueView callbacks plus secret-byte/text callbacks, and ExactSizeIterator views over borrowed credential views."
     },
     "javaType": {
       "type": "string",

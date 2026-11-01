@@ -26,6 +26,11 @@ pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
 ];
 pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
     (
+        "ClientBatchItem:rust",
+        "rust-kmipkit",
+        "kmipkit::ClientBatchItem",
+    ),
+    (
         "ClientConfiguration:rust",
         "rust-kmipkit-client",
         "kmipkit_client::extension_registry::ClientConfiguration",
@@ -2678,6 +2683,16 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-adr0014-ae2cbe64b1134333",
         "rust-kmipkit-transport",
         "kmipkit_transport::TransportResponse::as_bytes",
+    ),
+    (
+        "rust-observed-bfeba021b67e4bbe0605",
+        "rust-kmipkit-client",
+        "kmipkit_client::extension_registry::ExtensionRecognition::is_recognized",
+    ),
+    (
+        "rust-observed-0f1f114df6c698d3a349",
+        "rust-kmipkit-client",
+        "kmipkit_client::extension_registry::ExtensionRecognition::validated_value",
     ),
     (
         "rust-observed-5b73e45a58d3bc781ba7",
@@ -8780,5 +8795,10 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-548c69cb98adda048e27",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::CredentialValue::with_ttlv",
+    ),
+    (
+        "validated_extension_value_value_at:rust",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::extension::ValidatedExtensionValue::with_value_at",
     ),
 ];

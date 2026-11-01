@@ -264,6 +264,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             )
         )
 
+    def test_rust_type_schema_accepts_borrow_scoped_ttlv_value_callback(self) -> None:
+        validator = Draft202012Validator(self.schema["$defs"]["rustType"])
+
+        self.assertTrue(
+            validator.is_valid("impl for<'a> FnOnce(ValueView<'a>) -> R")
+        )
+
     def test_python_function_name_schema_accepts_private_class_helpers(self) -> None:
         validator = Draft202012Validator(self.schema["$defs"]["pythonFunctionName"])
 
@@ -840,6 +847,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                         "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemDiscoverVersions"
                     )
                     self.assertEqual(manifest_functions[function["id"]], expected_function)
+                elif function["id"] == "validated_extension_value_value_at":
+                    expected_function = json.loads(json.dumps(function))
+                    expected_function["rust"] = manifest_functions[function["id"]]["rust"]
+                    self.assertEqual(manifest_functions[function["id"]], expected_function)
                 elif function["id"] in {
                     "client_batch_item_response_extension_count",
                     "client_batch_item_response_extension_ttlv_at",
@@ -1095,9 +1106,6 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for declaration in self.checked_in_manifest["publicDeclarations"]
         }
         for export_name in (
-            "kmipkit.errors",
-            "kmipkit.extensions",
-            "kmipkit.extensions.with_extension",
             "org.kmipkit.NativeExtensionRegistry",
             "org.kmipkit.generated.ExtensionRegistryApi",
             "kmipkit.errors.raise_for_status",
@@ -1108,6 +1116,21 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertIn("candidateSpecId", declaration)
                 self.assertIn("blockedReason", declaration)
                 self.assertNotIn("languageMappings", declaration)
+        exclusions = self._approved_exclusions_by_key()
+        for export_name in ("kmipkit.errors", "kmipkit.extensions"):
+            with self.subTest(excluded_namespace=export_name):
+                exclusion = exclusions[("python-kmipkit", export_name)]
+                self.assertEqual(
+                    exclusion["approvalSource"]["path"],
+                    "specs/012-vendor-extension-registry/spec.md",
+                )
+                self.assertEqual(exclusion["candidateSpecId"], "KMIPKIT-0012")
+        extension_helper = declarations["kmipkit.extensions.with_extension"]
+        self.assertEqual(extension_helper["declarationState"], "declared")
+        self.assertEqual(
+            extension_helper["approvalSource"]["path"],
+            "specs/012-vendor-extension-registry/spec.md",
+        )
         ttlv_namespace = self._approved_exclusions_by_key()[
             ("python-kmipkit", "kmipkit.ttlv")
         ]
@@ -5766,7 +5789,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
         declaration["languageMappings"]["python"] = {
             "packageId": "python-kmipkit",
-            "name": "kmipkit.extensions.with_extension",
+            "name": "kmipkit.errors.raise_for_status",
         }
 
         with self.assertRaisesRegex(ManifestError, "blocked|mapping target"):
@@ -5808,8 +5831,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for exclusion in self.checked_in_manifest["approvedExclusions"]
             if exclusion["packageId"] in rust_packages
         ]
-        self.assertEqual(len(declarations), 8813)
-        self.assertEqual(len(exclusions), 1645)
+        self.assertEqual(len(declarations), 8344)
+        self.assertEqual(len(exclusions), 2118)
         report = json.loads(RUST_EXPORT_REPORT_PATH.read_text(encoding="utf-8"))
         observed_keys = {
             (row["packageId"], _canonical_export_name(row["exportName"]), row["kind"])
@@ -5917,9 +5940,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         facade_item = by_package_and_name[
             ("rust-kmipkit", "kmipkit::ClientBatchItem")
         ]
-        self.assertEqual(facade_item["declarationState"], "blocked")
-        self.assertEqual(facade_item["candidateSpecId"], "KMIPKIT-0012")
-        self.assertNotIn("languageMappings", facade_item)
+        self.assertEqual(facade_item["declarationState"], "declared")
+        self.assertEqual(
+            facade_item["approvalSource"]["path"],
+            "specs/012-vendor-extension-registry/spec.md",
+        )
+        self.assertIn("languageMappings", facade_item)
         unknown_owner = by_package_and_name[
             (
                 "rust-kmipkit-protocol",
@@ -6092,8 +6118,21 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             item for item in rust_exclusions
             if item["approvalSource"]["path"] == "specs/003-core-types-errors/spec.md"
         ]
+        t091_exclusions = [
+            item for item in rust_exclusions
+            if item["approvalSource"]["path"] == "specs/009-asynchronous-operations/spec.md"
+        ]
+        t094_exclusions = [
+            item for item in rust_exclusions
+            if item["approvalSource"]["path"] == "specs/012-vendor-extension-registry/spec.md"
+        ]
         self.assertEqual(len(t087_exclusions), 217)
-        self.assertEqual(len(rust_exclusions), 202 + len(t087_exclusions) + 222)
+        self.assertEqual(len(t091_exclusions), 112)
+        self.assertEqual(len(t094_exclusions), 230)
+        self.assertEqual(
+            len(rust_exclusions),
+            202 + len(t087_exclusions) + 222 + len(t091_exclusions) + len(t094_exclusions),
+        )
         self.assertTrue(
             any(
                 item["exportName"] == "kmipkit_protocol::RegisterRequest::validate_local_shape"
@@ -6112,6 +6151,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "specs/003-core-types-errors/spec.md",
                 "specs/006-message-batch-model/spec.md",
                 "specs/007-client-execution/spec.md",
+                "specs/009-asynchronous-operations/spec.md",
+                "specs/012-vendor-extension-registry/spec.md",
                 "specs/043-public-api-bindings/spec.md",
                 "specs/008-credentials-attestation/spec.md",
             },
@@ -6277,7 +6318,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
-        self.assertEqual(len(declarations), 1020)
+        self.assertEqual(len(declarations), 1054)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         batch_item = by_name["org.kmipkit.extensions.ClientBatchItem"]
         self.assertEqual(batch_item["kind"], "type")
@@ -6657,7 +6698,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_python_exports_and_lifecycle(self) -> None:
         declarations = self.declarations_for_package("python-kmipkit")
-        self.assertEqual(len(declarations), 1002)
+        self.assertEqual(len(declarations), 1067)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         close_method = by_name["kmipkit.extensions.ClientBatchItem.close"]
         self.assertEqual(close_method["kind"], "python-export")

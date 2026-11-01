@@ -7995,3 +7995,26 @@ Verification for this checkpoint:
 - Independent QA confirmed the request mappings are in-memory and separately mapped from execution, all owner candidates are resolved, and the report/exclusion counts match. Independent security review found no actionable findings. Reviewers did not run tests; commands above were run locally.
 - `git diff --check` passed. Windows builds emitted the existing non-fatal AWS-LC compiler-probe/NASM and C linker warnings. Coverage gates remain under the temporary waiver for PR #104 and are not claimed as passing; hosted CI must run on the pushed head.
 - PR #90's merge commit `dccd5821a1197425f002677f68f002e95a12ff76` and the current `release/1.0.0` tip are ancestors of this feature branch. GitHub reports PR #104 `CLEAN` and `MERGEABLE`; no merge-conflict resolution commit is necessary.
+
+### T094 — KMIPKIT-0012 vendor extension registry parity (2026-11-01)
+
+T094 resolves the 324 manifest declarations previously carrying `candidateSpecId: KMIPKIT-0012`. Seven candidate exports now have reviewed four-language mappings. The other 317 exact paths are owner-backed exclusions: 254 Rust trait implementation artifacts and 63 non-trait exports. The Rust, C, Java, and Python capability inventories retain the functional `ClientBatchItem`, Python `with_extension`, and value-path access surfaces. No KMIPKIT-0012 candidate declaration remains.
+
+Rust now exposes `ValidatedExtensionValue::with_value_at(&TtlvPath, callback)`. It walks the validated original Structure in tag order, selects the first matching child at each path step, and lends the leaf as `ValueView` to a higher-ranked callback so the borrowed value cannot escape or require a payload copy. Missing steps and non-Structure intermediate nodes return the redacted `InvalidValue` category. The regression tests cover repeated matching tags, exact leaf access, missing paths, and scalar intermediates. The C, Java/JNI, and Python/CFFI value-path APIs remain mapped to their existing implementations.
+
+The full manifest suite exposed stale cross-task assertions for public paths now mapped or excluded, out-of-date audit counts, and missing KMIPKIT-0006-FR-008 links on asynchronous correlation surfaces. The test expectations now reflect the current manifest, and the five applicable function rows and fourteen declared export rows carry the approved requirement alongside their KMIPKIT-0009 owner requirements. No asynchronous runtime behavior changed.
+
+| Phase | Commit | Evidence | Result |
+|---|---|---|---|
+| Red — require T094 owner resolution, exact API mappings/exclusions, borrowed callback type, and path behavior | `f68147dae` | T094 manifest contract and Rust extension-preservation tests | The manifest contract failed while 324 KMIPKIT-0012 candidates remained, and Rust tests exposed the missing `with_value_at` method. |
+| Green — implement the Rust borrowed path accessor | `59da12f35` | Focused Rust tests, Clippy, formatting | `with_value_at` borrows the original TTLV leaf; both positive and negative tests pass without copying payload bytes. |
+| Refactor/evidence — reconcile the owner inventory, source evidence encoding, stale assertions, reports, and traceability | this commit | Full manifest suite, generator, three export audits, Rust tests/Clippy, formatting, whitespace | No candidate remains; report and test evidence below. |
+
+Verification for this checkpoint:
+
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest -q tools.api_manifest.tests.test_manifest_v2 tools.api_manifest.tests.test_t094_vendor_extension_registry_parity` — 155 passed.
+- `cargo test -p kmipkit-protocol --test extension_preservation validated_extension_value_with_value_at` — 2 passed. `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`, `cargo fmt --all --check`, and `git diff --check` passed.
+- `python -B tools/api_manifest/generate.py --check` — all 12 outputs verified.
+- Rust export audit — 10,462 observed; 8,344 exact manifest matches and 2,118 exact exclusions; zero missing, unobserved, kind-mismatched, or issue rows. Shared Rust inventory — 825 mapped, 2,118 approved exclusions, and two previously blocked namespace entries still outside T094. C/Java/Python audits — C 685/685, Java 1,054/1,054, and Python 1,067/1,067, all complete with zero discrepancies.
+- The generated reports are `reports/rust-export-report-2026-11-01.json`, `reports/shared-rust-inventory-2026-11-01.json`, and `reports/binding-export-report-2026-11-01.json`; each audit's `--check` confirms the report is current.
+- Windows builds emitted non-fatal AWS-LC compiler-feature and NASM probe warnings. The temporary coverage waiver for PR #104 remains active; these results do not claim that its coverage thresholds pass. GitHub currently reports PR #104 `CLEAN`/`MERGEABLE`; hosted CI must rerun on the pushed head, and the PR remains Draft while later tasks are open.

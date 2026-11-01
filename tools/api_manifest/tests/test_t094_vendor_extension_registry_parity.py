@@ -19,7 +19,7 @@ RUST_REPORT = (
 OWNER_SPEC = "KMIPKIT-0012"
 OWNER_PATH = "specs/012-vendor-extension-registry/spec.md"
 OWNER_APPROVAL = (
-    "Approved for implementation under the maintainer's standing direct "
+    "**Status**: Approved for implementation under the maintainer's standing direct "
     "authorization to execute the complete KMIPKit plan without further "
     "approval requests."
 )
@@ -284,6 +284,31 @@ class T094VendorExtensionRegistryParityTests(unittest.TestCase):
         ]
         self.assertEqual([], unresolved, "KMIPKIT-0012 declarations remain unresolved")
 
+    def test_published_rust_value_path_uses_a_borrowed_ttlv_callback(self) -> None:
+        function = next(
+            row
+            for row in self.manifest["functions"]
+            if row["id"] == "validated_extension_value_value_at"
+        )
+        self.assertEqual(
+            {
+                "module": "kmipkit_protocol::extension::ValidatedExtensionValue",
+                "name": "with_value_at",
+                "owner": "protocol",
+                "requestBoundary": "not-applicable",
+                "parameters": [
+                    {"name": "value", "type": "&ValidatedExtensionValue"},
+                    {"name": "path", "type": "&TtlvPath"},
+                    {
+                        "name": "callback",
+                        "type": "impl for<'a> FnOnce(ValueView<'a>) -> R",
+                    },
+                ],
+                "returnType": "Result<R, ProtocolError>",
+            },
+            function["rust"],
+        )
+
     def test_all_functional_registry_exports_have_reviewed_four_language_mappings(self) -> None:
         declarations = self.manifest["publicDeclarations"]
         actual = {
@@ -325,8 +350,16 @@ class T094VendorExtensionRegistryParityTests(unittest.TestCase):
                     row.get("approvalSource"),
                 )
                 self.assertEqual(LANGUAGES, set(row.get("languageMappings", {})))
-                self.assertEqual(export, row["languageMappings"]["rust"]["name"])
-                self.assertEqual(package, row["languageMappings"]["rust"]["packageId"])
+                observed_language = {
+                    "c-kmipkit": "c",
+                    "java-kmipkit": "java",
+                    "python-kmipkit": "python",
+                }.get(package, "rust")
+                self.assertEqual(export, row["languageMappings"][observed_language]["name"])
+                self.assertEqual(
+                    package,
+                    row["languageMappings"][observed_language]["packageId"],
+                )
                 self.assertTrue(
                     PROJECT_REQUIREMENTS <= set(row.get("requirementIds", [])),
                     "the mapping must cite every public-surface parity requirement",
