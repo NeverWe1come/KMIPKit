@@ -11,12 +11,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 OWNER_SPEC = "KMIPKIT-0016"
-BASE_CANDIDATE_COUNT = 708
-BASE_CANDIDATE_SHA256 = "fe521c532063ca63bf89a70930e1880ab0b5cddcaecf95a04e6e10bb71acbcce"
+BASE_CANDIDATE_COUNT = 846
+BASE_CANDIDATE_SHA256 = "5cc153ae5f04d8c0a1fd2d34b9b46fc230acaf16bb0f4ce3969a04fa7ade1c66"
 BASE_TRAIT_COUNT = 524
 BASE_TRAIT_SHA256 = "86e73fe96baf9ee1249010f7cfa8d927e18d22cbf48fb6a86df4a87b8cfe2554"
-MAPPED_COUNT = 57
-EXCLUDED_COUNT = 651
+MAPPED_COUNT = 193
+EXCLUDED_COUNT = 653
 OWNER_SPEC_PATH = "specs/016-attribute-operations/spec.md"
 SHARED_REQUIREMENTS = {
     "KMIPKIT-0043-FR-004",
@@ -111,12 +111,55 @@ def _expected_mapped_exports() -> set[str]:
         mapped.add(f"kmipkit_protocol::{request_type}::new")
         response_type = request_type.replace("Request", "Response")
         mapped.add(f"kmipkit_protocol::{response_type}::result")
+        class_name = request_type
+        c_model = f"kmipkit_{operation}_request_t"
+        java_model = f"org.kmipkit.extensions.{class_name}"
+        python_model = f"kmipkit.attribute_operations.{class_name}"
+        mapped.update({c_model, java_model, python_model})
+        for method in ("new", *REQUEST_MODEL_METHODS[operation]):
+            if method == "new":
+                mapped.update(
+                    {
+                        f"kmipkit_{operation}_request_create",
+                        f"{java_model}.create",
+                        f"{python_model}.create",
+                    }
+                )
+                continue
+            java_method = "".join(
+                part.title() if index else part
+                for index, part in enumerate(method.split("_"))
+            )
+            mapped.update(
+                {
+                    f"kmipkit_protocol::{request_type}::{method}",
+                    f"kmipkit_{operation}_request_{method}",
+                    f"{java_model}.{java_method}",
+                    f"{python_model}.{method}",
+                }
+            )
+        mapped.update(
+            {
+                f"kmipkit_{operation}_request_release",
+                f"{java_model}.close",
+                f"{python_model}.close",
+                f"kmipkit_client_batch_item_{operation}_from_request",
+                f"{java_model}.toBatchItem",
+                f"{python_model}.to_batch_item",
+            }
+        )
     return mapped
 
 
 def _expected_owner_requirements(export_name: str) -> set[str]:
     for operation, requirement in OPERATION_REQUIREMENTS.items():
-        if f"::{operation}" in export_name:
+        class_name = "".join(part.title() for part in operation.split("_")) + "Request"
+        if (
+            f"::{operation}" in export_name
+            or class_name in export_name
+            or f"_{operation}_request" in export_name
+            or f"_{operation}_from_request" in export_name
+        ):
             return {
                 "KMIPKIT-0016-FR-001",
                 "KMIPKIT-0016-FR-002",
@@ -321,6 +364,135 @@ class T097AttributeParityManifestTests(unittest.TestCase):
                             ),
                             "typed request methods must map to standalone C, Java, and Python APIs",
                         )
+
+    def test_read_request_models_map_to_standalone_typed_models(self) -> None:
+        declarations = {
+            row["exportName"]: row for row in self.manifest["publicDeclarations"]
+        }
+        models = {
+            "GetAttributesRequest": {
+                "constructor": "try_new",
+                "c_prefix": "kmipkit_get_attributes_request",
+                "methods": {
+                    "unique_identifier": "unique_identifier",
+                    "attribute_references": "attribute_reference_count",
+                    "to_ttlv_payload": "to_ttlv_payload",
+                },
+            },
+            "GetAttributeListRequest": {
+                "constructor": "new",
+                "c_prefix": "kmipkit_get_attribute_list_request",
+                "methods": {
+                    "unique_identifier": "unique_identifier",
+                    "to_ttlv_payload": "to_ttlv_payload",
+                },
+            },
+        }
+        for class_name, contract in models.items():
+            rust_type = f"kmipkit_protocol::{class_name}"
+            java_model = f"org.kmipkit.extensions.{class_name}"
+            python_model = f"kmipkit.attribute_operations.{class_name}"
+            with self.subTest(model=class_name):
+                self.assertEqual(
+                    {
+                        "c": f"{contract['c_prefix']}_t",
+                        "java": java_model,
+                        "python": python_model,
+                    },
+                    {
+                        language: declarations[rust_type]["languageMappings"][language]["name"]
+                        for language in ("c", "java", "python")
+                    },
+                    "read requests must map to standalone typed models",
+                )
+                constructor = f"{rust_type}::{contract['constructor']}"
+                self.assertEqual(
+                    (
+                        f"{contract['c_prefix']}_create",
+                        f"{java_model}.create",
+                        f"{python_model}.create",
+                    ),
+                    tuple(
+                        declarations.get(constructor, {})
+                        .get("languageMappings", {})
+                        .get(language, {})
+                        .get("name")
+                        for language in ("c", "java", "python")
+                    ),
+                )
+                for method, c_suffix in contract["methods"].items():
+                    export = f"{rust_type}::{method}"
+                    java_method = "".join(
+                        part.title() if index else part
+                        for index, part in enumerate(method.split("_"))
+                    )
+                    with self.subTest(export=export):
+                        self.assertEqual(
+                            (
+                                f"{contract['c_prefix']}_{c_suffix}",
+                                f"{java_model}.{java_method}",
+                                f"{python_model}.{method}",
+                            ),
+                            tuple(
+                                declarations.get(export, {})
+                                .get("languageMappings", {})
+                                .get(language, {})
+                                .get("name")
+                                for language in ("c", "java", "python")
+                            ),
+                        )
+
+    def test_typed_request_lifecycle_batch_conversion_and_abi_are_mapped(self) -> None:
+        declarations = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.manifest["publicDeclarations"]
+        }
+        types = {row["id"]: row for row in self.manifest["types"]}
+        function_ids = {row["id"] for row in self.manifest["functions"]}
+        for operation, methods in REQUEST_MODEL_METHODS.items():
+            class_name = "".join(part.title() for part in operation.split("_")) + "Request"
+            java_model = f"org.kmipkit.extensions.{class_name}"
+            python_model = f"kmipkit.attribute_operations.{class_name}"
+            release_symbol = f"kmipkit_{operation}_request_release"
+            batch_symbol = f"kmipkit_client_batch_item_{operation}_from_request"
+            with self.subTest(model=class_name):
+                self.assertIn(class_name, types)
+                self.assertEqual(release_symbol, types[class_name]["c"]["releaseFunction"])
+                release = declarations[("c-kmipkit", release_symbol)]
+                self.assertEqual("native-handle-release", release["mappingSemantics"])
+                self.assertEqual(java_model + ".close", release["languageMappings"]["java"]["name"])
+                self.assertEqual(python_model + ".close", release["languageMappings"]["python"]["name"])
+                self.assertIn(("c-kmipkit", batch_symbol), declarations)
+                self.assertEqual(java_model + ".toBatchItem", declarations[("c-kmipkit", batch_symbol)]["languageMappings"]["java"]["name"])
+                self.assertEqual(python_model + ".to_batch_item", declarations[("c-kmipkit", batch_symbol)]["languageMappings"]["python"]["name"])
+                for method in (*methods, "create", "to_batch_item"):
+                    self.assertIn(f"attribute_request_{operation}_{method}", function_ids)
+
+    def test_python_model_plumbing_exports_are_exactly_excluded(self) -> None:
+        expected = {"kmipkit.attribute_operations"}
+        for operation in REQUEST_MODEL_METHODS:
+            class_name = "".join(part.title() for part in operation.split("_")) + "Request"
+            prefix = f"kmipkit.attribute_operations.{class_name}"
+            expected.update(
+                {
+                    f"{prefix}.__init__",
+                    f"{prefix}.closed",
+                    f"{prefix}.__enter__",
+                    f"{prefix}.__exit__",
+                }
+            )
+        excluded = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row.get("approvalSource", {}).get("path") == OWNER_SPEC_PATH
+            and row["packageId"] == "python-kmipkit"
+            and row["exportName"].startswith("kmipkit.attribute_operations")
+        }
+        self.assertEqual(expected, set(excluded))
+        for export_name, row in excluded.items():
+            with self.subTest(export=export_name):
+                self.assertTrue(row["reason"].strip())
+                self.assertIn("KMIPKIT-0043-FR-021", row["evidence"])
 
     def test_get_attributes_facade_mappings_use_the_get_attributes_requirement(self) -> None:
         expected_ids = {
