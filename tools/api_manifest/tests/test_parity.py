@@ -847,6 +847,11 @@ class PublicApiParityTests(unittest.TestCase):
                             java["jniAggregateSymbol"].startswith("Java_org_kmipkit_")
                         )
                     if function["id"] in {
+                        "client_batch_item_response_hash_ttlv",
+                        "client_batch_item_response_mac_ttlv",
+                        "client_batch_item_response_mac_verify_ttlv",
+                        "client_batch_item_response_sign_ttlv",
+                        "client_batch_item_response_signature_verify_ttlv",
                         "client_batch_item_response_recertify_ttlv",
                         "client_batch_item_response_rekey_ttlv",
                         "client_batch_item_response_rekey_key_pair_ttlv",
