@@ -81,17 +81,7 @@ fn compiled_c_consumer_builds_add_attribute_and_preserves_the_borrowed_item() {
 #[test]
 fn standalone_add_attribute_request_serializes_and_builds_a_batch_item() {
     let identifier = b"object-7";
-    let identifier_record = kmipkit_unique_identifier_v1_t {
-        struct_size: u32::try_from(std::mem::size_of::<kmipkit_unique_identifier_v1_t>())
-            .expect("identifier record size fits the ABI"),
-        abi_version: 1,
-        kind: crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
-        reserved: 0,
-        text_data: identifier.as_ptr(),
-        text_length: u64::try_from(identifier.len()).expect("fixture length fits the ABI"),
-        enumeration_value: 0,
-        integer_value: 0,
-    };
+    let identifier_record = text_identifier_record(identifier);
     let input_item = make_handle(Kind::Item, HandleValue::Item(add_attribute_name_item()));
     let mut request = ptr::null_mut();
 
@@ -297,6 +287,20 @@ fn empty_identifier_record() -> kmipkit_unique_identifier_v1_t {
         reserved: 0,
         text_data: ptr::null(),
         text_length: 0,
+        enumeration_value: 0,
+        integer_value: 0,
+    }
+}
+
+fn text_identifier_record(identifier: &'static [u8]) -> kmipkit_unique_identifier_v1_t {
+    kmipkit_unique_identifier_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_unique_identifier_v1_t>())
+            .expect("identifier record size fits the ABI"),
+        abi_version: 1,
+        kind: crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+        reserved: 0,
+        text_data: identifier.as_ptr(),
+        text_length: u64::try_from(identifier.len()).expect("fixture length fits the ABI"),
         enumeration_value: 0,
         integer_value: 0,
     }

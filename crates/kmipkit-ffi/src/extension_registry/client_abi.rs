@@ -1375,6 +1375,647 @@ pub extern "C" fn kmipkit_client_batch_item_add_attribute_from_request(
     })
 }
 
+/// Creates a standalone KMIP 2.1 §6.1.3 Adjust Attribute request.
+///
+/// The optional Text String Unique Identifier, versioned Attribute Reference,
+/// raw Adjustment Type, and optional Value are copied and owned by the model.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_adjust_attribute_request_create(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    attribute_reference: *const crate::kmipkit_attribute_reference_v1_t,
+    adjustment_type: u32,
+    adjustment_value: *mut kmipkit_ttlv_value_t,
+    out_request: *mut *mut kmipkit_adjust_attribute_request_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_request);
+        let unique_identifier = try_ffi!(copy_optional_text_identifier(unique_identifier));
+        let attribute_reference = try_ffi!(copy_attribute_reference(attribute_reference));
+        let adjustment_value = try_ffi!(copy_optional_value_handle(adjustment_value));
+        let request = AdjustAttributeRequest::new(
+            unique_identifier,
+            attribute_reference,
+            AdjustmentType::from_raw(adjustment_type),
+            adjustment_value,
+        );
+        *out = try_ffi!(try_make_handle(
+            Kind::AdjustAttributeRequest,
+            HandleValue::AdjustAttributeRequest(Box::new(request)),
+        ));
+        SUCCESS
+    })
+}
+
+/// Copies the optional Text String Unique Identifier from an Adjust request.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_adjust_attribute_request_unique_identifier(
+    request: *mut kmipkit_adjust_attribute_request_t,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let request = read_handle!(request, AdjustAttributeRequest);
+        let HandleValue::AdjustAttributeRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        if let Err(status) =
+            write_unique_identifier_text_v1(out_unique_identifier, request.unique_identifier())
+        {
+            return record_ffi_error(status);
+        }
+        SUCCESS
+    })
+}
+
+/// Copies the Adjust request's Attribute Reference into a versioned record.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_adjust_attribute_request_attribute_reference(
+    request: *mut kmipkit_adjust_attribute_request_t,
+    out_attribute_reference: *mut crate::kmipkit_attribute_reference_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let request = read_handle!(request, AdjustAttributeRequest);
+        let HandleValue::AdjustAttributeRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        if let Err(status) = write_attribute_reference_v1(
+            out_attribute_reference,
+            Some(request.attribute_reference()),
+        ) {
+            return record_ffi_error(status);
+        }
+        SUCCESS
+    })
+}
+
+/// Returns the raw-preserving Adjustment Type value.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_adjust_attribute_request_adjustment_type(
+    request: *mut kmipkit_adjust_attribute_request_t,
+    out_adjustment_type: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_adjustment_type);
+        let request = read_handle!(request, AdjustAttributeRequest);
+        let HandleValue::AdjustAttributeRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = request.adjustment_type().raw();
+        SUCCESS
+    })
+}
+
+/// Copies the optional generic Adjustment Value into a caller-owned handle.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_adjust_attribute_request_adjustment_value(
+    request: *mut kmipkit_adjust_attribute_request_t,
+    out_present: *mut u8,
+    out_adjustment_value: *mut *mut kmipkit_ttlv_value_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_adjustment_value.is_null()
+            || ffi_output_ranges_overlap(out_present, out_adjustment_value)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present = scalar_out!(out_present);
+        let out = out_slot!(out_adjustment_value);
+        *present = 0;
+        let request = read_handle!(request, AdjustAttributeRequest);
+        let HandleValue::AdjustAttributeRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(value) = request.adjustment_value() else {
+            return SUCCESS;
+        };
+        let value = try_ffi!(kmipkit_ttlv::try_clone_value(value).map_err(model_status));
+        *out = try_ffi!(try_make_handle(Kind::Value, HandleValue::Value(value)));
+        *present = 1;
+        SUCCESS
+    })
+}
+
+/// Copies the Adjust Attribute Request Payload into a caller-owned TTLV Structure.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_adjust_attribute_request_to_ttlv_payload(
+    request: *mut kmipkit_adjust_attribute_request_t,
+    out_payload: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_payload);
+        let request = read_handle!(request, AdjustAttributeRequest);
+        let HandleValue::AdjustAttributeRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let payload = try_ffi!(
+            request
+                .to_ttlv_payload()
+                .map_err(|error| protocol_status(&error))
+        );
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(payload)
+        ));
+        SUCCESS
+    })
+}
+
+/// Creates an Adjust Attribute batch item while leaving its typed request open.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_adjust_attribute_from_request(
+    request: *mut kmipkit_adjust_attribute_request_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let request = read_handle!(request, AdjustAttributeRequest);
+        let HandleValue::AdjustAttributeRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let adjustment_value = try_ffi!(
+            request
+                .adjustment_value()
+                .map(kmipkit_ttlv::try_clone_value)
+                .transpose()
+                .map_err(model_status)
+        );
+        let copied = AdjustAttributeRequest::new(
+            request.unique_identifier().map(str::to_owned),
+            request.attribute_reference().clone(),
+            request.adjustment_type(),
+            adjustment_value,
+        );
+        *out = try_ffi!(batch_item_handle(ClientRequest::AdjustAttribute(copied)));
+        SUCCESS
+    })
+}
+
+/// Creates a standalone KMIP 2.1 §6.1.13 Delete Attribute request.
+///
+/// The Unique Identifier, Current Attribute Item, and Attribute Reference are
+/// independently optional; every supplied input is copied.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_delete_attribute_request_create(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    current_attribute: *mut kmipkit_ttlv_item_t,
+    attribute_reference: *const crate::kmipkit_attribute_reference_v1_t,
+    out_request: *mut *mut kmipkit_delete_attribute_request_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_request);
+        let unique_identifier = try_ffi!(copy_optional_text_identifier(unique_identifier));
+        let current_attribute = if current_attribute.is_null() {
+            None
+        } else {
+            Some(try_ffi!(copy_required_item_handle(current_attribute)))
+        };
+        let attribute_reference = if attribute_reference.is_null() {
+            None
+        } else {
+            Some(try_ffi!(copy_attribute_reference(attribute_reference)))
+        };
+        let request = DeleteAttributeRequest::new(
+            unique_identifier,
+            current_attribute.map(CurrentAttribute::new),
+            attribute_reference,
+        );
+        *out = try_ffi!(try_make_handle(
+            Kind::DeleteAttributeRequest,
+            HandleValue::DeleteAttributeRequest(Box::new(request)),
+        ));
+        SUCCESS
+    })
+}
+
+/// Copies the optional Text String Unique Identifier from a Delete request.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_delete_attribute_request_unique_identifier(
+    request: *mut kmipkit_delete_attribute_request_t,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let request = read_handle!(request, DeleteAttributeRequest);
+        let HandleValue::DeleteAttributeRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        if let Err(status) =
+            write_unique_identifier_text_v1(out_unique_identifier, request.unique_identifier())
+        {
+            return record_ffi_error(status);
+        }
+        SUCCESS
+    })
+}
+
+/// Copies the optional Current Attribute Item from a Delete request.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_delete_attribute_request_current_attribute(
+    request: *mut kmipkit_delete_attribute_request_t,
+    out_present: *mut u8,
+    out_current_attribute: *mut *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_current_attribute.is_null()
+            || ffi_output_ranges_overlap(out_present, out_current_attribute)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present = scalar_out!(out_present);
+        let out = out_slot!(out_current_attribute);
+        *present = 0;
+        let request = read_handle!(request, DeleteAttributeRequest);
+        let HandleValue::DeleteAttributeRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(attribute) = request.current_attribute() else {
+            return SUCCESS;
+        };
+        let item = try_ffi!(attribute.item().try_clone().map_err(model_status));
+        *out = try_ffi!(try_make_handle(Kind::Item, HandleValue::Item(item)));
+        *present = 1;
+        SUCCESS
+    })
+}
+
+/// Copies the optional Attribute Reference from a Delete request.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_delete_attribute_request_attribute_reference(
+    request: *mut kmipkit_delete_attribute_request_t,
+    out_present: *mut u8,
+    out_attribute_reference: *mut crate::kmipkit_attribute_reference_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_attribute_reference.is_null()
+            || ffi_output_ranges_overlap(out_present, out_attribute_reference)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present = scalar_out!(out_present);
+        *present = 0;
+        if let Err(status) = write_attribute_reference_v1(out_attribute_reference, None) {
+            return record_ffi_error(status);
+        }
+        let request = read_handle!(request, DeleteAttributeRequest);
+        let HandleValue::DeleteAttributeRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        if let Some(reference) = request.attribute_reference() {
+            if let Err(status) =
+                write_attribute_reference_v1(out_attribute_reference, Some(reference))
+            {
+                return record_ffi_error(status);
+            }
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
+/// Copies the Delete Attribute Request Payload into a caller-owned TTLV Structure.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_delete_attribute_request_to_ttlv_payload(
+    request: *mut kmipkit_delete_attribute_request_t,
+    out_payload: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_payload);
+        let request = read_handle!(request, DeleteAttributeRequest);
+        let HandleValue::DeleteAttributeRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let payload = try_ffi!(
+            request
+                .to_ttlv_payload()
+                .map_err(|error| protocol_status(&error))
+        );
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(payload)
+        ));
+        SUCCESS
+    })
+}
+
+/// Creates a Delete Attribute batch item while leaving its typed request open.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_delete_attribute_from_request(
+    request: *mut kmipkit_delete_attribute_request_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let request = read_handle!(request, DeleteAttributeRequest);
+        let HandleValue::DeleteAttributeRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let current_attribute = try_ffi!(
+            request
+                .current_attribute()
+                .map(|attribute| attribute.item().try_clone().map(CurrentAttribute::new))
+                .transpose()
+                .map_err(model_status)
+        );
+        let copied = DeleteAttributeRequest::new(
+            request.unique_identifier().map(str::to_owned),
+            current_attribute,
+            request.attribute_reference().cloned(),
+        );
+        *out = try_ffi!(batch_item_handle(ClientRequest::DeleteAttribute(copied)));
+        SUCCESS
+    })
+}
+
+/// Creates a standalone KMIP 2.1 §6.1.34 Modify Attribute request.
+///
+/// Current Attribute is optional and New Attribute is required. All supplied
+/// identifiers and Items are copied into the owned request model.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_modify_attribute_request_create(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    current_attribute: *mut kmipkit_ttlv_item_t,
+    new_attribute: *mut kmipkit_ttlv_item_t,
+    out_request: *mut *mut kmipkit_modify_attribute_request_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_request);
+        let unique_identifier = try_ffi!(copy_optional_text_identifier(unique_identifier));
+        let current_attribute = if current_attribute.is_null() {
+            None
+        } else {
+            Some(try_ffi!(copy_required_item_handle(current_attribute)))
+        };
+        let new_attribute = try_ffi!(copy_required_item_handle(new_attribute));
+        let request = ModifyAttributeRequest::new(
+            unique_identifier,
+            current_attribute.map(CurrentAttribute::new),
+            NewAttribute::new(new_attribute),
+        );
+        *out = try_ffi!(try_make_handle(
+            Kind::ModifyAttributeRequest,
+            HandleValue::ModifyAttributeRequest(Box::new(request)),
+        ));
+        SUCCESS
+    })
+}
+
+/// Copies the optional Text String Unique Identifier from a Modify request.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_modify_attribute_request_unique_identifier(
+    request: *mut kmipkit_modify_attribute_request_t,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let request = read_handle!(request, ModifyAttributeRequest);
+        let HandleValue::ModifyAttributeRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        if let Err(status) =
+            write_unique_identifier_text_v1(out_unique_identifier, request.unique_identifier())
+        {
+            return record_ffi_error(status);
+        }
+        SUCCESS
+    })
+}
+
+/// Copies the optional Current Attribute Item from a Modify request.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_modify_attribute_request_current_attribute(
+    request: *mut kmipkit_modify_attribute_request_t,
+    out_present: *mut u8,
+    out_current_attribute: *mut *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_current_attribute.is_null()
+            || ffi_output_ranges_overlap(out_present, out_current_attribute)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present = scalar_out!(out_present);
+        let out = out_slot!(out_current_attribute);
+        *present = 0;
+        let request = read_handle!(request, ModifyAttributeRequest);
+        let HandleValue::ModifyAttributeRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(attribute) = request.current_attribute() else {
+            return SUCCESS;
+        };
+        let item = try_ffi!(attribute.item().try_clone().map_err(model_status));
+        *out = try_ffi!(try_make_handle(Kind::Item, HandleValue::Item(item)));
+        *present = 1;
+        SUCCESS
+    })
+}
+
+/// Returns an owned copy of the required direct New Attribute Item.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_modify_attribute_request_new_attribute(
+    request: *mut kmipkit_modify_attribute_request_t,
+    out_new_attribute: *mut *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_new_attribute);
+        let request = read_handle!(request, ModifyAttributeRequest);
+        let HandleValue::ModifyAttributeRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let item = try_ffi!(
+            request
+                .new_attribute()
+                .item()
+                .try_clone()
+                .map_err(model_status)
+        );
+        *out = try_ffi!(try_make_handle(Kind::Item, HandleValue::Item(item)));
+        SUCCESS
+    })
+}
+
+/// Copies the Modify Attribute Request Payload into a caller-owned TTLV Structure.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_modify_attribute_request_to_ttlv_payload(
+    request: *mut kmipkit_modify_attribute_request_t,
+    out_payload: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_payload);
+        let request = read_handle!(request, ModifyAttributeRequest);
+        let HandleValue::ModifyAttributeRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let payload = try_ffi!(
+            request
+                .to_ttlv_payload()
+                .map_err(|error| protocol_status(&error))
+        );
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(payload)
+        ));
+        SUCCESS
+    })
+}
+
+/// Creates a Modify Attribute batch item while leaving its typed request open.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_modify_attribute_from_request(
+    request: *mut kmipkit_modify_attribute_request_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let request = read_handle!(request, ModifyAttributeRequest);
+        let HandleValue::ModifyAttributeRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let current_attribute = try_ffi!(
+            request
+                .current_attribute()
+                .map(|attribute| attribute.item().try_clone().map(CurrentAttribute::new))
+                .transpose()
+                .map_err(model_status)
+        );
+        let new_attribute = try_ffi!(
+            request
+                .new_attribute()
+                .item()
+                .try_clone()
+                .map_err(model_status)
+        );
+        let copied = ModifyAttributeRequest::new(
+            request.unique_identifier().map(str::to_owned),
+            current_attribute,
+            NewAttribute::new(new_attribute),
+        );
+        *out = try_ffi!(batch_item_handle(ClientRequest::ModifyAttribute(copied)));
+        SUCCESS
+    })
+}
+
+/// Creates a standalone KMIP 2.1 §6.1.51 Set Attribute request.
+///
+/// The optional Text String Unique Identifier and required New Attribute Item
+/// are borrowed and copied into the owned model.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_set_attribute_request_create(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    new_attribute: *mut kmipkit_ttlv_item_t,
+    out_request: *mut *mut kmipkit_set_attribute_request_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_request);
+        let unique_identifier = try_ffi!(copy_optional_text_identifier(unique_identifier));
+        let new_attribute = try_ffi!(copy_required_item_handle(new_attribute));
+        let request = SetAttributeRequest::new(unique_identifier, NewAttribute::new(new_attribute));
+        *out = try_ffi!(try_make_handle(
+            Kind::SetAttributeRequest,
+            HandleValue::SetAttributeRequest(Box::new(request)),
+        ));
+        SUCCESS
+    })
+}
+
+/// Copies the optional Text String Unique Identifier from a Set request.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_set_attribute_request_unique_identifier(
+    request: *mut kmipkit_set_attribute_request_t,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let request = read_handle!(request, SetAttributeRequest);
+        let HandleValue::SetAttributeRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        if let Err(status) =
+            write_unique_identifier_text_v1(out_unique_identifier, request.unique_identifier())
+        {
+            return record_ffi_error(status);
+        }
+        SUCCESS
+    })
+}
+
+/// Returns an owned copy of the required direct New Attribute Item.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_set_attribute_request_new_attribute(
+    request: *mut kmipkit_set_attribute_request_t,
+    out_new_attribute: *mut *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_new_attribute);
+        let request = read_handle!(request, SetAttributeRequest);
+        let HandleValue::SetAttributeRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let item = try_ffi!(
+            request
+                .new_attribute()
+                .item()
+                .try_clone()
+                .map_err(model_status)
+        );
+        *out = try_ffi!(try_make_handle(Kind::Item, HandleValue::Item(item)));
+        SUCCESS
+    })
+}
+
+/// Copies the Set Attribute Request Payload into a caller-owned TTLV Structure.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_set_attribute_request_to_ttlv_payload(
+    request: *mut kmipkit_set_attribute_request_t,
+    out_payload: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_payload);
+        let request = read_handle!(request, SetAttributeRequest);
+        let HandleValue::SetAttributeRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let payload = try_ffi!(
+            request
+                .to_ttlv_payload()
+                .map_err(|error| protocol_status(&error))
+        );
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(payload)
+        ));
+        SUCCESS
+    })
+}
+
+/// Creates a Set Attribute batch item while leaving its typed request open.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_set_attribute_from_request(
+    request: *mut kmipkit_set_attribute_request_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let request = read_handle!(request, SetAttributeRequest);
+        let HandleValue::SetAttributeRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let new_attribute = try_ffi!(
+            request
+                .new_attribute()
+                .item()
+                .try_clone()
+                .map_err(model_status)
+        );
+        let copied = SetAttributeRequest::new(
+            request.unique_identifier().map(str::to_owned),
+            NewAttribute::new(new_attribute),
+        );
+        *out = try_ffi!(batch_item_handle(ClientRequest::SetAttribute(copied)));
+        SUCCESS
+    })
+}
+
 /// Creates a local KMIP 2.1 Cancel request model without performing I/O.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_cancel_request_create(

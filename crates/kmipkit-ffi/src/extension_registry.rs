@@ -24,21 +24,23 @@ macro_rules! test_pointer_ffi_call {
 mod ffi_pointer_safety_tests;
 
 use crate::{
-    kmipkit_add_attribute_request_t, kmipkit_attestation_credential_t, kmipkit_authentication_t,
-    kmipkit_cancel_request_t, kmipkit_client_async_operation_metadata_v1_t,
-    kmipkit_client_async_operation_outcome_t, kmipkit_client_batch_item_metadata_v1_t,
-    kmipkit_client_batch_item_metadata_v2_t, kmipkit_client_batch_item_response_t,
-    kmipkit_client_batch_item_t, kmipkit_client_batch_response_t, kmipkit_client_batch_t,
-    kmipkit_client_configuration_t, kmipkit_client_extension_registry_t,
-    kmipkit_client_request_message_extension_t, kmipkit_client_t, kmipkit_codec_limits_t,
-    kmipkit_credential_t, kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
-    kmipkit_credential_view_t, kmipkit_device_credential_t, kmipkit_extension_child_rule_t,
-    kmipkit_extension_compatibility_t, kmipkit_extension_definition_t,
-    kmipkit_extension_discriminator_t, kmipkit_extension_identity_t,
-    kmipkit_extension_information_t, kmipkit_extension_order_constraint_t,
-    kmipkit_extension_recognition_t, kmipkit_extension_registry_limits_v1_t,
-    kmipkit_extension_schema_t, kmipkit_hashed_password_credential_t,
-    kmipkit_message_extension_view_t, kmipkit_message_validation_error_t, kmipkit_nonce_t,
+    kmipkit_add_attribute_request_t, kmipkit_adjust_attribute_request_t,
+    kmipkit_attestation_credential_t, kmipkit_authentication_t, kmipkit_cancel_request_t,
+    kmipkit_client_async_operation_metadata_v1_t, kmipkit_client_async_operation_outcome_t,
+    kmipkit_client_batch_item_metadata_v1_t, kmipkit_client_batch_item_metadata_v2_t,
+    kmipkit_client_batch_item_response_t, kmipkit_client_batch_item_t,
+    kmipkit_client_batch_response_t, kmipkit_client_batch_t, kmipkit_client_configuration_t,
+    kmipkit_client_extension_registry_t, kmipkit_client_request_message_extension_t,
+    kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_credential_t,
+    kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
+    kmipkit_credential_view_t, kmipkit_delete_attribute_request_t, kmipkit_device_credential_t,
+    kmipkit_extension_child_rule_t, kmipkit_extension_compatibility_t,
+    kmipkit_extension_definition_t, kmipkit_extension_discriminator_t,
+    kmipkit_extension_identity_t, kmipkit_extension_information_t,
+    kmipkit_extension_order_constraint_t, kmipkit_extension_recognition_t,
+    kmipkit_extension_registry_limits_v1_t, kmipkit_extension_schema_t,
+    kmipkit_hashed_password_credential_t, kmipkit_message_extension_view_t,
+    kmipkit_message_validation_error_t, kmipkit_modify_attribute_request_t, kmipkit_nonce_t,
     kmipkit_poll_request_t, kmipkit_process_request_t, kmipkit_profile_object_state_v1_t,
     kmipkit_profile_validation_context_v1_t, kmipkit_profile_validation_error_t,
     kmipkit_profile_validation_error_view_v1_t, kmipkit_profile_validation_selection_v1_t,
@@ -47,10 +49,10 @@ use crate::{
     kmipkit_request_header_view_t, kmipkit_request_message_t, kmipkit_request_options_v1_t,
     kmipkit_response_batch_item_view_t, kmipkit_response_header_view_t, kmipkit_response_message_t,
     kmipkit_revocation_reason_t, kmipkit_revoke_request_t, kmipkit_secret_bytes_t,
-    kmipkit_secret_text_t, kmipkit_split_key_reference_t, kmipkit_tag_t,
-    kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t, kmipkit_transport_config_v1_t,
-    kmipkit_transport_input_v1_t, kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t,
-    kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
+    kmipkit_secret_text_t, kmipkit_set_attribute_request_t, kmipkit_split_key_reference_t,
+    kmipkit_tag_t, kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t,
+    kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t, kmipkit_ttlv_decode_error_v1_t,
+    kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
     kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
     kmipkit_unique_identifier_v1_t, kmipkit_usage_allocation_context_t,
     kmipkit_username_and_password_credential_t, kmipkit_validated_extension_value_t,
@@ -427,6 +429,10 @@ enum Kind {
     BatchItem,
     RegisterRequest,
     AddAttributeRequest,
+    AdjustAttributeRequest,
+    DeleteAttributeRequest,
+    ModifyAttributeRequest,
+    SetAttributeRequest,
     ChildRule,
     OrderConstraint,
     Value,
@@ -497,6 +503,10 @@ enum HandleValue {
     BatchItemReadback(ClientBatchItemReadback),
     RegisterRequest(Box<RegisterRequest>),
     AddAttributeRequest(Box<AddAttributeRequest>),
+    AdjustAttributeRequest(Box<AdjustAttributeRequest>),
+    DeleteAttributeRequest(Box<DeleteAttributeRequest>),
+    ModifyAttributeRequest(Box<ModifyAttributeRequest>),
+    SetAttributeRequest(Box<SetAttributeRequest>),
     RevocationReason {
         reason: RevocationReason,
         message: Option<String>,
@@ -1897,6 +1907,42 @@ pub extern "C" fn kmipkit_add_attribute_request_release(
 ) {
     ffi_entrypoint(|| {
         release(handle, Kind::AddAttributeRequest);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_adjust_attribute_request_release(
+    handle: *mut kmipkit_adjust_attribute_request_t,
+) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::AdjustAttributeRequest);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_delete_attribute_request_release(
+    handle: *mut kmipkit_delete_attribute_request_t,
+) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::DeleteAttributeRequest);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_modify_attribute_request_release(
+    handle: *mut kmipkit_modify_attribute_request_t,
+) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::ModifyAttributeRequest);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_set_attribute_request_release(
+    handle: *mut kmipkit_set_attribute_request_t,
+) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::SetAttributeRequest);
     });
 }
 

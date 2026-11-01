@@ -196,6 +196,22 @@ pub struct kmipkit_add_attribute_request_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_adjust_attribute_request_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_delete_attribute_request_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_modify_attribute_request_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_set_attribute_request_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
 pub struct kmipkit_cancel_request_t {
     _private: [u8; 0],
 }
