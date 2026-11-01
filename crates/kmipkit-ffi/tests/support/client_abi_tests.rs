@@ -1381,6 +1381,13 @@ fn ffi_crypto_response_ttlv_returns_ordered_owned_success_copy_only() {
     ];
 
     for (getter, item, expected_payload_tags) in cases {
+        let mut overlapping_response_ttlv: *mut kmipkit_ttlv_structure_t = ptr::dangling_mut();
+        let response_ttlv_output = &raw mut overlapping_response_ttlv;
+        assert_eq!(
+            ERROR_INVALID_INPUT,
+            getter(item, response_ttlv_output.cast(), response_ttlv_output),
+        );
+        assert_eq!(ptr::dangling_mut(), overlapping_response_ttlv);
         assert_success_response_ttlv_copy(getter, item, expected_payload_tags);
     }
 
