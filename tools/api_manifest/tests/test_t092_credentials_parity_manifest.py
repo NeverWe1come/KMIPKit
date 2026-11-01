@@ -98,6 +98,8 @@ CREDENTIAL_VALUE_OWNER_EXPORTS = {
     "kmipkit_protocol::CredentialValue::Unknown::credential_type",
     "kmipkit_protocol::CredentialValue::Unknown::value",
     "kmipkit_protocol::CredentialValue::try_from_ttlv",
+    "kmipkit_protocol::CredentialValue::credential_type_raw",
+    "kmipkit_protocol::CredentialValue::with_ttlv",
     "kmipkit_protocol::CredentialValue::into_ttlv",
     "kmipkit_protocol::OneTimePasswordCredential",
     "kmipkit_protocol::OneTimePasswordCredential::with_ttlv",
@@ -159,6 +161,7 @@ EXPECTED_MAPPED_CREDENTIAL_EXPORTS = (
     | USERNAME_PASSWORD_CREDENTIAL_EXPORTS
     | HASHED_PASSWORD_CREDENTIAL_EXPORTS
     | AUTHENTICATION_EXPORTS
+    | CREDENTIAL_VALUE_OWNER_EXPORTS
     | VALIDATION_ERROR_EXPORTS
     | (SECRET_WRAPPER_EXPORTS - SECRET_ROOT_ALIAS_EXPORTS)
 )
@@ -348,6 +351,10 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                         "kmipkit_protocol::HashedPasswordCredential",
                         "kmipkit_protocol::Authentication",
                         "kmipkit_protocol::CredentialView",
+                        "kmipkit_protocol::CredentialValue",
+                        "kmipkit_protocol::OneTimePasswordCredential",
+                        "kmipkit_protocol::TicketCredential",
+                        "kmipkit_protocol::OpaqueTtlv",
                         "kmipkit_protocol::CredentialValidationError",
                         "kmipkit_protocol::CredentialValidationErrorKind",
                         "kmipkit_protocol::SecretBytes",
@@ -496,7 +503,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                 == "specs/008-credentials-attestation/spec.md"
             )
         ]
-        self.assertEqual(97, len(meaningful))
+        self.assertEqual(99, len(meaningful))
         credential_type_rows = {
             row["exportName"]: row
             for row in meaningful
@@ -513,8 +520,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             row for row in meaningful
             if row.get("exportName") not in EXPECTED_MAPPED_CREDENTIAL_EXPORTS
         ]
-        self.assertEqual(29, len(remaining))
-        self.assertTrue(all(row.get("declarationState") == "blocked" for row in remaining))
+        self.assertEqual([], remaining)
 
     def test_credential_type_is_mapped_as_an_open_raw_enum(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
@@ -650,90 +656,105 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                     self.assertTrue(exclusion.get("reason"))
                     self.assertTrue(exclusion.get("evidence"))
 
-    def test_partial_owner_parity_keeps_exact_blockers(self) -> None:
+    def test_owner_parity_maps_every_credential_value_declaration(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         declarations = [
             row
             for row in manifest["publicDeclarations"]
-            if row.get("candidateSpecId") == OWNER_SPEC
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName") in CREDENTIAL_VALUE_OWNER_EXPORTS
         ]
-        self.assertTrue(declarations, f"no declarations found for {OWNER_SPEC}")
-
-        blocked = [
-            declaration
-            for declaration in declarations
-            if declaration.get("declarationState") == "blocked"
-        ]
-        self.assertEqual(29, len(blocked))
-
-        exclusions = {
-            (row.get("packageId"), row.get("exportName")): row
-            for row in manifest.get("approvedExclusions", [])
-        }
-        unresolved: list[str] = []
+        self.assertEqual(
+            CREDENTIAL_VALUE_OWNER_EXPORTS,
+            {row.get("exportName") for row in declarations},
+        )
 
         for declaration in declarations:
-            if declaration.get("declarationState") == "blocked":
-                continue
+            with self.subTest(export=declaration.get("exportName")):
+                mappings = declaration.get("languageMappings")
+                self.assertEqual("declared", declaration.get("declarationState"))
+                self.assertEqual(LANGUAGES, set(mappings or {}))
+                self.assertTrue(_has_approved_source(declaration))
+                for target in mappings.values():
+                    self.assertTrue(_is_nonblank_string(target.get("packageId")))
+                    self.assertTrue(_is_nonblank_string(target.get("name")))
 
-            key = (declaration.get("packageId"), declaration.get("exportName"))
-            mappings = declaration.get("languageMappings")
-            complete_mapping = (
-                isinstance(mappings, dict)
-                and set(mappings) == LANGUAGES
-                and all(
-                    isinstance(mappings[language], dict)
-                    and _is_nonblank_string(mappings[language].get("packageId"))
-                    and _is_nonblank_string(mappings[language].get("name"))
-                    for language in LANGUAGES
-                )
-                and _has_approved_source(declaration)
-            )
+    def test_credential_value_mapping_targets_are_exact_listed_exports(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        listed = {
+            (row.get("packageId"), row.get("exportName"))
+            for row in manifest["publicDeclarations"]
+        }
+        declarations = [
+            row
+            for row in manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName") in CREDENTIAL_VALUE_OWNER_EXPORTS
+        ]
+        for declaration in declarations:
+            for language, target in declaration["languageMappings"].items():
+                with self.subTest(export=declaration["exportName"], language=language):
+                    self.assertTrue(
+                        (target["packageId"], target["name"]) in listed,
+                        f"unlisted {language} target {target['packageId']}:{target['name']}",
+                    )
 
-            exclusion = exclusions.get(key)
-            reviewed_exclusion = (
-                isinstance(exclusion, dict)
-                and exclusion.get("candidateSpecId") == OWNER_SPEC
-                and _is_nonblank_string(exclusion.get("reason"))
-                and _is_nonblank_string(exclusion.get("evidence"))
-                and _has_approved_source(exclusion)
-            )
+    def test_credential_value_facade_and_internal_exports_are_accounted_for(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        declarations = {
+            row.get("exportName"): row
+            for row in manifest["publicDeclarations"]
+        }
+        for export_name in (
+            "kmipkit.CredentialValue",
+            "kmipkit.credentials.CredentialValue.__repr__",
+        ):
+            with self.subTest(export=export_name):
+                declaration = declarations.get(export_name)
+                self.assertIsNotNone(declaration)
+                if declaration is not None:
+                    self.assertEqual("declared", declaration.get("declarationState"))
+                    self.assertTrue(_has_approved_source(declaration))
 
-            if not (complete_mapping or reviewed_exclusion):
-                unresolved.append(
-                    f"{declaration.get('packageId')}:{declaration.get('exportName')}"
-                )
-
-        self.assertEqual(
-            0,
-            len(unresolved),
-            f"unresolved {OWNER_SPEC} declarations ({len(unresolved)} rows): "
-            f"{unresolved[:5]}",
-        )
+        exclusions = {
+            row.get("exportName"): row
+            for row in manifest["approvedExclusions"]
+        }
+        expected_exclusions = {
+            "org.kmipkit.NativeExtensionRegistry.CREDENTIAL_VALUE",
+            "org.kmipkit.NativeExtensionRegistry.credentialValueFromTtlv",
+            "org.kmipkit.NativeExtensionRegistry.credentialValueIntoTtlv",
+            "org.kmipkit.NativeExtensionRegistry.credentialValueTtlvView",
+            "org.kmipkit.NativeExtensionRegistry.credentialValueTypeRaw",
+            "kmipkit.credentials.CredentialValue.__init__",
+            "kmipkit.credentials.CredentialValue.__slots__",
+        }
+        for export_name in expected_exclusions:
+            with self.subTest(exclusion=export_name):
+                exclusion = exclusions.get(export_name)
+                self.assertIsNotNone(exclusion)
+                if exclusion is not None:
+                    self.assertTrue(_is_nonblank_string(exclusion.get("reason")))
+                    self.assertTrue(_is_nonblank_string(exclusion.get("evidence")))
+                    self.assertTrue(_has_approved_source(exclusion))
 
     def test_credential_value_owner_surface_has_no_blocked_exports(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         declarations = {
             row["exportName"]: row
             for row in manifest["publicDeclarations"]
-            if row.get("candidateSpecId") == OWNER_SPEC
+            if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName") in CREDENTIAL_VALUE_OWNER_EXPORTS
         }
         self.assertEqual(CREDENTIAL_VALUE_OWNER_EXPORTS, declarations.keys())
-
-        blocked = {
-            export_name: declaration.get("blockedReason")
-            for export_name, declaration in declarations.items()
-            if declaration.get("declarationState") == "blocked"
-        }
-        self.assertEqual({}, blocked)
-
-        for export_name, declaration in declarations.items():
-            with self.subTest(export_name=export_name):
-                self.assertEqual("declared", declaration.get("declarationState"))
-                self.assertEqual(
-                    LANGUAGES, set(declaration.get("languageMappings", {}))
-                )
+        self.assertEqual(
+            {},
+            {
+                name: row.get("blockedReason")
+                for name, row in declarations.items()
+                if row.get("declarationState") == "blocked"
+            },
+        )
 
     def test_nonce_type_and_lifecycle_map_through_all_four_languages(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))

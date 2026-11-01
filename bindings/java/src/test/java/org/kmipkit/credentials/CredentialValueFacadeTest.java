@@ -12,10 +12,12 @@ import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.Tag;
 import org.kmipkit.ttlv.TtlvItem;
+import org.kmipkit.ttlv.TtlvItemType;
 import org.kmipkit.ttlv.TtlvItemView;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvValue;
+import org.kmipkit.ttlv.TtlvValueView;
 import org.junit.jupiter.api.Test;
 
 final class CredentialValueFacadeTest {
@@ -27,9 +29,9 @@ final class CredentialValueFacadeTest {
     // KMIP Specification v2.1 §9.11 Table 414 and §11.11 Table 442.
     void preservesKnownExtensionAndUnknownCredentialValueDiscriminators() {
         List<CredentialCase> cases = List.of(
-                new CredentialCase(4, List.of(USERNAME_TAG, ONE_TIME_PASSWORD_TAG)),
-                new CredentialCase(0x8000_4321L, List.of(OPAQUE_CHILD_TAG)),
-                new CredentialCase(0xf123_4567L, List.of(OPAQUE_CHILD_TAG)));
+                new CredentialCase(4, List.of(USERNAME_TAG, ONE_TIME_PASSWORD_TAG), null),
+                new CredentialCase(0x8000_4321L, List.of(OPAQUE_CHILD_TAG), 7),
+                new CredentialCase(0xf123_4567L, List.of(OPAQUE_CHILD_TAG), 7));
 
         for (CredentialCase credentialCase : cases) {
             try (CredentialValue value = CredentialValue.fromTtlv(
@@ -40,6 +42,9 @@ final class CredentialValueFacadeTest {
                 assertEquals(credentialCase.expectedTags(), value.withTtlv(view -> {
                     borrowed.add(view);
                     assertThrows(InvalidInputException.class, value::intoTtlv);
+                    if (credentialCase.expectedInteger() != null) {
+                        assertEquals(credentialCase.expectedInteger().intValue(), readFirstInteger(view));
+                    }
                     return readTags(view);
                 }));
                 assertThrows(InvalidInputException.class, borrowed.get(0)::itemCount);
@@ -47,8 +52,30 @@ final class CredentialValueFacadeTest {
                 TtlvStructure restored = value.intoTtlv();
                 try (TtlvStructureView view = restored.view()) {
                     assertEquals(credentialCase.expectedTags(), readTags(view));
+                    if (credentialCase.expectedInteger() != null) {
+                        assertEquals(credentialCase.expectedInteger().intValue(), readFirstInteger(view));
+                    }
                 }
                 restored.close();
+            }
+        }
+    }
+
+    @Test
+    void failedTransferWithRetainedChildViewKeepsCredentialValueUsable() {
+        long rawType = 0x8000_4321L;
+        try (CredentialValue value = CredentialValue.fromTtlv(
+                rawType, credentialValueStructure(rawType))) {
+            try (TtlvItemView retained = value.withTtlv(view -> view.itemAt(0))) {
+                assertEquals(TtlvItemType.Integer, retained.itemType());
+                assertThrows(InvalidInputException.class, value::intoTtlv);
+                assertEquals(rawType, value.credentialTypeRaw());
+            }
+
+            try (TtlvStructure restored = value.intoTtlv()) {
+                try (TtlvStructureView restoredView = restored.view()) {
+                    assertEquals(List.of(OPAQUE_CHILD_TAG), readTags(restoredView));
+                }
             }
         }
     }
@@ -73,6 +100,13 @@ final class CredentialValueFacadeTest {
         return List.copyOf(result);
     }
 
+    private static int readFirstInteger(TtlvStructureView view) {
+        try (TtlvItemView item = view.itemAt(0); TtlvValueView value = item.value()) {
+            assertEquals(TtlvItemType.Integer, value.itemType());
+            return value.integer();
+        }
+    }
+
     private static TtlvStructure credentialValueStructure(long rawType) {
         CodecLimits limits = CodecLimits.defaults();
         TtlvStructure structure = TtlvStructure.create();
@@ -83,7 +117,6 @@ final class CredentialValueFacadeTest {
         } else {
             structure = appendInteger(structure, OPAQUE_CHILD_TAG, limits);
         }
-        limits.close();
         return structure;
     }
 
@@ -91,7 +124,6 @@ final class CredentialValueFacadeTest {
         CodecLimits limits = CodecLimits.defaults();
         TtlvStructure structure = appendText(TtlvStructure.create(), ONE_TIME_PASSWORD_TAG,
                 "credential-value-secret", limits);
-        limits.close();
         return structure;
     }
 
@@ -113,5 +145,6 @@ final class CredentialValueFacadeTest {
         }
     }
 
-    private record CredentialCase(long rawType, List<Integer> expectedTags) {}
+    private record CredentialCase(
+            long rawType, List<Integer> expectedTags, Integer expectedInteger) {}
 }

@@ -593,7 +593,7 @@ int32_t kmipkit_device_credential_c_consumer_round_trip(uint64_t *out_count) {
     if (status == 0) status = device_values_match(view);
     if (status == 0) {
         int32_t shared_status = kmipkit_device_credential_into_ttlv(credential, &restored);
-        if (shared_status != 4 || restored != 0) status = 2;
+        if (shared_status != KMIPKIT_ERROR_SHARED_OWNER || restored != 0) status = 2;
     }
     kmipkit_ttlv_structure_view_release(view);
     view = 0;
@@ -670,7 +670,7 @@ int32_t kmipkit_username_password_credential_c_consumer_round_trip(uint64_t *out
     if (status == 0) {
         int32_t shared_status = kmipkit_username_and_password_credential_into_ttlv(
                 credential, &restored);
-        if (shared_status != 4 || restored != 0) status = 2;
+        if (shared_status != KMIPKIT_ERROR_SHARED_OWNER || restored != 0) status = 2;
     }
     kmipkit_ttlv_structure_view_release(view);
     view = 0;
@@ -825,7 +825,7 @@ int32_t kmipkit_authentication_c_consumer_round_trip(
     if (status == 0) status = tags_match(first_structure_view, &count);
     if (status == 0) {
         int32_t shared_status = kmipkit_authentication_into_ttlv(authentication, &restored);
-        if (shared_status != 4 || restored != 0) status = 103;
+        if (shared_status != KMIPKIT_ERROR_SHARED_OWNER || restored != 0) status = 103;
     }
     kmipkit_ttlv_structure_view_release(first_structure_view);
     first_structure_view = 0;
@@ -948,7 +948,7 @@ static int32_t hashed_password_tags_match(
 static int32_t hashed_password_timestamp_matches(kmipkit_ttlv_structure_view_t *view) {
     kmipkit_ttlv_item_view_t *item = 0;
     kmipkit_ttlv_value_view_t *value = 0;
-    uint32_t item_type = 0;
+    uint8_t item_type = 0;
     int64_t timestamp = 0;
     int32_t status = kmipkit_ttlv_structure_view_item_at(view, 1, &item);
     if (status == 0) status = kmipkit_ttlv_item_view_value(item, &value);
@@ -965,7 +965,7 @@ static int32_t hashed_password_username_matches(kmipkit_ttlv_structure_view_t *v
     const uint8_t expected[] = {'a', 'l', 'i', 'c', 'e'};
     kmipkit_ttlv_item_view_t *item = 0;
     kmipkit_ttlv_value_view_t *value = 0;
-    uint32_t item_type = 0;
+    uint8_t item_type = 0;
     uint64_t length = 0;
     int32_t status = kmipkit_ttlv_structure_view_item_at(view, 0, &item);
     if (status == 0) status = kmipkit_ttlv_item_view_value(item, &value);
@@ -1185,10 +1185,30 @@ static int32_t build_credential_value_structure(
     return status;
 }
 
-static int32_t credential_value_round_trip(uint32_t expected_type, uint64_t expected_count) {
+static int32_t credential_value_integer_matches(
+    kmipkit_ttlv_structure_view_t *view, int32_t expected_integer) {
+    kmipkit_ttlv_item_view_t *item = 0;
+    kmipkit_ttlv_value_view_t *value = 0;
+    uint8_t item_type = 0;
+    int32_t observed_integer = 0;
+    int32_t status = kmipkit_ttlv_structure_view_item_at(view, 0, &item);
+    if (status == 0) status = kmipkit_ttlv_item_view_value(item, &value);
+    if (status == 0) status = kmipkit_ttlv_value_view_type(value, &item_type);
+    if (status == 0 && item_type != KMIPKIT_TTLV_ITEM_TYPE_INTEGER) status = 1;
+    if (status == 0) status = kmipkit_ttlv_value_view_integer(value, &observed_integer);
+    if (status == 0 && observed_integer != expected_integer) status = 1;
+    kmipkit_ttlv_value_view_release(value);
+    kmipkit_ttlv_item_view_release(item);
+    return status;
+}
+
+static int32_t credential_value_round_trip(
+    uint32_t expected_type, uint64_t expected_count, int32_t expected_integer) {
     kmipkit_ttlv_structure_t *structure = 0;
     kmipkit_ttlv_structure_t *restored = 0;
     kmipkit_ttlv_structure_view_t *view = 0;
+    kmipkit_ttlv_item_view_t *retained_item = 0;
+    kmipkit_ttlv_value_view_t *retained_value = 0;
     kmipkit_credential_value_t *credential_value = 0;
     uint32_t observed_type = 0;
     uint64_t observed_count = 0;
@@ -1202,16 +1222,46 @@ static int32_t credential_value_round_trip(uint32_t expected_type, uint64_t expe
     if (status == 0) status = kmipkit_credential_value_ttlv_view(credential_value, &view);
     if (status == 0) status = kmipkit_ttlv_structure_view_item_count(view, &observed_count);
     if (status == 0 && observed_count != expected_count) status = 1;
+    if (status == 0 && expected_integer >= 0) {
+        status = credential_value_integer_matches(view, expected_integer);
+        if (status == 0) status = kmipkit_ttlv_structure_view_item_at(view, 0, &retained_item);
+    }
     kmipkit_ttlv_structure_view_release(view);
     view = 0;
+    if (status == 0 && retained_item != 0) {
+        uint8_t retained_type = 0;
+        int32_t retained_integer = 0;
+        status = kmipkit_ttlv_item_view_type(retained_item, &retained_type);
+        if (status == 0 && retained_type != KMIPKIT_TTLV_ITEM_TYPE_INTEGER) status = 1;
+        if (status == 0) status = kmipkit_ttlv_item_view_value(retained_item, &retained_value);
+        if (status == 0) status = kmipkit_ttlv_value_view_integer(retained_value, &retained_integer);
+        if (status == 0 && retained_integer != expected_integer) status = 1;
+        kmipkit_ttlv_value_view_release(retained_value);
+        retained_value = 0;
+        if (status == 0) {
+            int32_t transfer_status = kmipkit_credential_value_into_ttlv(
+                    credential_value, &restored);
+            if (transfer_status != KMIPKIT_ERROR_SHARED_OWNER || restored != 0) status = 1;
+        }
+        if (status == 0) status = kmipkit_credential_value_type_raw(
+                credential_value, &observed_type);
+        if (status == 0 && observed_type != expected_type) status = 1;
+        kmipkit_ttlv_item_view_release(retained_item);
+        retained_item = 0;
+    }
     if (status == 0) status = kmipkit_credential_value_into_ttlv(credential_value, &restored);
     if (status == 0) credential_value = 0;
     if (status == 0) status = kmipkit_ttlv_structure_view(restored, &view);
     if (status == 0) status = kmipkit_ttlv_structure_view_item_count(view, &observed_count);
     if (status == 0 && observed_count != expected_count) status = 1;
+    if (status == 0 && expected_integer >= 0) {
+        status = credential_value_integer_matches(view, expected_integer);
+    }
     kmipkit_ttlv_structure_view_release(view);
     kmipkit_ttlv_structure_release(structure);
     kmipkit_ttlv_structure_release(restored);
+    kmipkit_ttlv_item_view_release(retained_item);
+    kmipkit_ttlv_value_view_release(retained_value);
     kmipkit_credential_value_release(credential_value);
     return status;
 }
@@ -1219,8 +1269,8 @@ static int32_t credential_value_round_trip(uint32_t expected_type, uint64_t expe
 int32_t kmipkit_credential_value_c_consumer_contract(void) {
     // KMIP Specification v2.1 §9.11 Tables 414 and 442: validate the OTP shape and preserve raw
     // Extensions and unknown Credential Type discriminators through the generic value facade.
-    int32_t status = credential_value_round_trip(4, 2);
-    if (status == 0) status = credential_value_round_trip(0x80004321, 1);
-    if (status == 0) status = credential_value_round_trip(0xf1234567, 1);
+    int32_t status = credential_value_round_trip(4, 2, -1);
+    if (status == 0) status = credential_value_round_trip(0x80004321, 1, CREDENTIAL_PAYLOAD_VALUE);
+    if (status == 0) status = credential_value_round_trip(0xf1234567, 1, CREDENTIAL_PAYLOAD_VALUE);
     return status;
 }

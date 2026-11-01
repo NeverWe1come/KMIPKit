@@ -65,6 +65,20 @@ def tags(view: ttlv.TtlvStructureView) -> tuple[int, ...]:
     return tuple(result)
 
 
+def first_integer(view: ttlv.TtlvStructureView) -> int:
+    item = ttlv.ttlv_structure_view_item_at(view, 0)
+    try:
+        value = ttlv.ttlv_item_view_value(item)
+        try:
+            if ttlv.ttlv_value_view_type(value) != ttlv.ItemType.Integer:
+                raise AssertionError("opaque credential payload is not an Integer")
+            return ttlv.ttlv_value_view_integer(value)
+        finally:
+            value.close()
+    finally:
+        item.close()
+
+
 class CredentialValueTests(unittest.TestCase):
     def test_known_extension_and_unknown_values_preserve_raw_type_and_ttlv(self) -> None:
         facade = getattr(kmipkit.credentials, "CredentialValue", None)
@@ -73,11 +87,11 @@ class CredentialValueTests(unittest.TestCase):
             return
 
         cases = (
-            (4, (USERNAME_TAG, ONE_TIME_PASSWORD_TAG)),
-            (0x8000_4321, (OPAQUE_CHILD_TAG,)),
-            (0xF123_4567, (OPAQUE_CHILD_TAG,)),
+            (4, (USERNAME_TAG, ONE_TIME_PASSWORD_TAG), None),
+            (0x8000_4321, (OPAQUE_CHILD_TAG,), 7),
+            (0xF123_4567, (OPAQUE_CHILD_TAG,), 7),
         )
-        for raw_type, expected_tags in cases:
+        for raw_type, expected_tags, expected_integer in cases:
             with self.subTest(raw_type=raw_type):
                 value = facade.from_ttlv(raw_type, credential_value_structure(raw_type))
                 self.assertEqual(raw_type, value.credential_type_raw())
@@ -88,6 +102,8 @@ class CredentialValueTests(unittest.TestCase):
                     borrowed.append(view)
                     with self.assertRaises(errors.InvalidInputError):
                         value.into_ttlv()
+                    if expected_integer is not None:
+                        self.assertEqual(expected_integer, first_integer(view))
                     return tags(view)
 
                 self.assertEqual(expected_tags, value.with_ttlv(inspect))
@@ -98,6 +114,8 @@ class CredentialValueTests(unittest.TestCase):
                 view = ttlv.ttlv_structure_view(restored)
                 try:
                     self.assertEqual(expected_tags, tags(view))
+                    if expected_integer is not None:
+                        self.assertEqual(expected_integer, first_integer(view))
                 finally:
                     view.close()
                     restored.close()
@@ -116,3 +134,31 @@ class CredentialValueTests(unittest.TestCase):
             )
         self.assertEqual(errors.CredentialValidationErrorKind.MISSING_FIELD, raised.exception.kind)
         self.assertNotIn("credential-value-secret", str(raised.exception))
+
+    def test_failed_transfer_with_retained_child_view_keeps_value_usable(self) -> None:
+        facade = getattr(kmipkit.credentials, "CredentialValue", None)
+        self.assertIsNotNone(facade)
+        if facade is None:
+            return
+
+        raw_type = 0x8000_4321
+        value = facade.from_ttlv(raw_type, credential_value_structure(raw_type))
+        retained = value.with_ttlv(
+            lambda view: ttlv.ttlv_structure_view_item_at(view, 0)
+        )
+        try:
+            self.assertEqual(ttlv.ItemType.Integer, ttlv.ttlv_item_view_type(retained))
+            with self.assertRaises(errors.InvalidInputError):
+                value.into_ttlv()
+            self.assertEqual(raw_type, value.credential_type_raw())
+        finally:
+            retained.close()
+
+        restored = value.into_ttlv()
+        view = ttlv.ttlv_structure_view(restored)
+        try:
+            self.assertEqual(1, ttlv.ttlv_structure_view_item_count(view))
+        finally:
+            view.close()
+            restored.close()
+            value.close()
