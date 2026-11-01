@@ -293,6 +293,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("apiAuditClasspath", prime_script)
         self.assertIn("bindings/java/gradlew.bat", prime_script)
         self.assertIn("bash bindings/java/gradlew", prime_script)
+        self.assertIn("--project-dir bindings/java", prime_script)
         self.assertLess(prime.start(), python_contracts.start())
 
     def test_script_contract_job_installs_pinned_fixture_test_dependencies(self) -> None:
