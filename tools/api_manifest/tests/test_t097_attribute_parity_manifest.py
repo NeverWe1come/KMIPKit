@@ -13,12 +13,12 @@ from tools.api_manifest import generate as api_manifest_generator
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 OWNER_SPEC = "KMIPKIT-0016"
-BASE_CANDIDATE_COUNT = 871
-BASE_CANDIDATE_SHA256 = "9bb3ad387dedafe61eaf8c03ddd87b2388d2a233c8856fff2a2729c912ba08e6"
+BASE_CANDIDATE_COUNT = 880
+BASE_CANDIDATE_SHA256 = "4aca129ebaa89b347c0fedfc7453408b0f4222d9737cc6f355ec568178fd00b9"
 BASE_TRAIT_COUNT = 524
 BASE_TRAIT_SHA256 = "86e73fe96baf9ee1249010f7cfa8d927e18d22cbf48fb6a86df4a87b8cfe2554"
 MAPPED_COUNT = 219
-EXCLUDED_COUNT = 652
+EXCLUDED_COUNT = 661
 OWNER_SPEC_PATH = "specs/016-attribute-operations/spec.md"
 SHARED_REQUIREMENTS = {
     "KMIPKIT-0043-FR-004",
@@ -535,6 +535,39 @@ class T097AttributeParityManifestTests(unittest.TestCase):
                     jni_symbol,
                     functions[function_id]["java"].get("jniSymbol"),
                 )
+
+    def test_java_attribute_request_handle_kind_constants_are_exactly_excluded(self) -> None:
+        expected = {
+            f"org.kmipkit.NativeExtensionRegistry.{name}"
+            for name in (
+                "ADD_ATTRIBUTE_REQUEST",
+                "ADJUST_ATTRIBUTE_REQUEST",
+                "DELETE_ATTRIBUTE_REQUEST",
+                "MODIFY_ATTRIBUTE_REQUEST",
+                "SET_ATTRIBUTE_REQUEST",
+                "GET_ATTRIBUTES_REQUEST",
+                "GET_ATTRIBUTE_LIST_REQUEST",
+            )
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "java-kmipkit"
+        }
+        self.assertTrue(expected <= exclusions.keys())
+        for export_name in expected:
+            with self.subTest(export=export_name):
+                row = exclusions.get(export_name)
+                self.assertIsNotNone(row)
+                if row is not None:
+                    self.assertEqual(
+                        "specs/043-public-api-bindings/spec.md",
+                        row["approvalSource"]["path"],
+                    )
+                    self.assertEqual("Approved", row["approvalSource"]["status"])
+                    self.assertTrue(row["reason"].strip())
+                    self.assertIn("T097", row["evidence"])
+                    self.assertIn("KMIPKIT-0043-FR-021", row["evidence"])
 
     def test_typed_request_lifecycle_batch_conversion_and_abi_are_mapped(self) -> None:
         declarations = {
