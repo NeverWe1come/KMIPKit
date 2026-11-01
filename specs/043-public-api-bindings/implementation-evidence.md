@@ -8180,8 +8180,9 @@ Verification and generated audit evidence:
 - `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t101_hash_mac_signature_declaration_mapping tools.api_manifest.tests.test_hash_mac_signature_parity_manifest -v` — 14 passed.
 - `uv run --no-cache --no-project --python 3.12 --with-requirements requirements-coverage.txt --with . python -m pytest -q tests/test_hash_mac_signature_operations.py` — 67 passed. Full Python suite with the same package-build options — 910 passed, 1 skipped.
 - `gradlew.bat test --tests org.kmipkit.CryptoOperationsJavaFacadeTest` — BUILD SUCCESSFUL; `gradlew.bat test` — BUILD SUCCESSFUL.
-- `cargo test -p kmipkit-ffi --features coverage-c-consumer --lib` — 346 passed, including the C-compiled consumer test. `cargo test -p kmipkit-protocol -p kmipkit-client --all-features` — exit 0.
-- `cargo fmt --all --check` and `cargo clippy --workspace --all-targets --all-features -- -D warnings` — passed.
+- `cargo test -p kmipkit-ffi --features coverage-c-consumer --lib ffi_hash_response_ttlv_omits_pending_response` — 1 passed; the Hash Status Pending response returns `SUCCESS` with `present = 0` and a null TTLV output, then releases the response item.
+- `cargo test -p kmipkit-ffi --features coverage-c-consumer --lib` — 347 passed, including the C-compiled consumer test and the new Pending case. `cargo test -p kmipkit-protocol -p kmipkit-client --all-features` — exit 0.
+- `cargo fmt --all --check` and `cargo clippy --workspace --all-targets --all-features -- -D warnings` — passed after the Pending test addition.
 - Independent manual read-only review of the FFI, JNI, CFFI, ownership, and diagnostic-redaction changes reported no actionable findings. This was not a formal security scan or certification; no scan ID was produced.
 - `python -B -m unittest tools.api_manifest.tests.test_rust_exports tools.api_manifest.tests.test_binding_exports -v` — 78 passed.
 - Rust audit `--check` passed and wrote `reports/rust-export-report-2026-11-01.json`: 10,463 observed, 6,557 matched, 3,906 excluded, zero missing, unobserved, kind mismatch, conditional mismatch, or issue rows.

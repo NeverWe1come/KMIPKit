@@ -1471,6 +1471,33 @@ fn ffi_crypto_response_ttlv_omits_mismatched_and_non_success_responses() {
 }
 
 #[test]
+fn ffi_hash_response_ttlv_omits_pending_response() {
+    let batch_item_id = b"hash-ttlv-pending";
+    let correlation = b"hash-ttlv-pending-correlation";
+    let response = execute_single_abi_response_with_async(
+        test_hash_request(),
+        batch_item_id,
+        pending_response_for_operation(0x27, batch_item_id, correlation),
+        Some(1),
+    )
+    .expect("the asynchronous Hash request permits a Pending response");
+    let pending = client_batch_item_response_from(response);
+    let mut present = 1;
+    let mut response_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_hash_ttlv(
+            pending,
+            &raw mut present,
+            &raw mut response_ttlv,
+        )
+    );
+    assert_eq!(0, present);
+    assert!(response_ttlv.is_null());
+    kmipkit_client_batch_item_response_release(pending);
+}
+
+#[test]
 fn ffi_successful_encrypt_response_getter_returns_typed_fields() {
     let correlation = [0x51, 0x00, 0x52];
     let identifier = b"encrypt-response-id";
