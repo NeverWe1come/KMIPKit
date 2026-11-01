@@ -66,6 +66,14 @@ final class DeviceCredentialFacadeTest {
         assertFalse(error.getMessage().contains("sensitive-sentinel"));
     }
 
+    @Test
+    void unknownCredentialValidationKindsRemainRaw() {
+        CredentialValidationException error = new CredentialValidationException(0x7f);
+
+        assertEquals(0x7f, error.kind());
+        assertFalse(error.getMessage().contains("sensitive-sentinel"));
+    }
+
     private static List<Integer> readTags(TtlvStructureView view) {
         List<Integer> tags = new ArrayList<>();
         for (long index = 0; index < view.itemCount(); index++) {

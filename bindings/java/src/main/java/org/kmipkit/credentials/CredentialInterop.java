@@ -13,7 +13,11 @@ final class CredentialInterop {
     static void throwIfFailed(int status, String modelName) {
         switch (status) {
             case 0 -> { return; }
-            case 4 -> throw new InvalidInputException(modelName + " structure is invalid");
+            case 4 -> {
+                int kind = CredentialValidationException.lastKindFromNative();
+                if (kind != 0) throw new CredentialValidationException(kind);
+                throw new InvalidInputException(modelName + " structure is invalid");
+            }
             case SHARED_OWNER_STATUS -> throw new InvalidInputException(
                     modelName + " structure is still owned by a scoped view");
             case 6 -> throw new ResourceLimitException("configured resource limit was exceeded");

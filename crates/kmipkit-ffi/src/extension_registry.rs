@@ -30,7 +30,8 @@ use crate::{
     kmipkit_client_batch_item_response_t, kmipkit_client_batch_item_t,
     kmipkit_client_batch_response_t, kmipkit_client_batch_t, kmipkit_client_configuration_t,
     kmipkit_client_extension_registry_t, kmipkit_client_request_message_extension_t,
-    kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_credential_t, kmipkit_credential_view_t,
+    kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_credential_t,
+    kmipkit_credential_validation_error_v1_t, kmipkit_credential_view_t,
     kmipkit_device_credential_t, kmipkit_extension_child_rule_t, kmipkit_extension_compatibility_t,
     kmipkit_extension_definition_t, kmipkit_extension_discriminator_t,
     kmipkit_extension_identity_t, kmipkit_extension_information_t,
@@ -78,7 +79,8 @@ use kmipkit_protocol::{
     UniqueIdentifier, ValidateRequest,
 };
 use kmipkit_protocol::{
-    AttestationCredential, Authentication, Credential, CredentialType, DeviceCredential, Nonce,
+    AttestationCredential, Authentication, Credential, CredentialType, CredentialValidationError,
+    CredentialValidationErrorKind, DeviceCredential, Nonce,
 };
 use kmipkit_protocol::{MessageValidationError, MessageValidationErrorKind, RequestMessage};
 use kmipkit_protocol::{
@@ -243,6 +245,7 @@ struct LastError {
     category: u32,
     cause: u32,
     delivery: u32,
+    credential_validation_kind: u32,
 }
 
 impl LastError {
@@ -251,6 +254,7 @@ impl LastError {
         category: ERROR_CATEGORY_NONE,
         cause: ERROR_CAUSE_NONE,
         delivery: DELIVERY_STATE_NONE,
+        credential_validation_kind: 0,
     };
 }
 
@@ -277,6 +281,7 @@ fn record_ffi_error(status: i32) -> i32 {
             category,
             cause,
             delivery: DELIVERY_STATE_NONE,
+            credential_validation_kind: 0,
         });
     });
     LAST_PROFILE_VALIDATION_ERROR.with(|last_error| *last_error.borrow_mut() = None);
@@ -331,12 +336,97 @@ fn record_client_error(error: &ClientError) -> i32 {
             category,
             cause,
             delivery,
+            credential_validation_kind: 0,
         });
     });
     LAST_PROFILE_VALIDATION_ERROR.with(|last_error| {
         *last_error.borrow_mut() = error.profile_validation_error().cloned();
     });
     status
+}
+
+fn credential_validation_kind_code(kind: CredentialValidationErrorKind) -> u32 {
+    match kind {
+        CredentialValidationErrorKind::EmptyAuthentication => 1,
+        CredentialValidationErrorKind::DuplicateField => 2,
+        CredentialValidationErrorKind::MissingField => 3,
+        CredentialValidationErrorKind::WrongFieldType => 4,
+        CredentialValidationErrorKind::FieldOutOfOrder => 5,
+        CredentialValidationErrorKind::InvalidTtlvStructure => 6,
+        _ => 0,
+    }
+}
+
+fn record_credential_validation_error_kind(kind: u32) -> i32 {
+    LAST_ERROR.with(|last_error| {
+        last_error.set(LastError {
+            status: ERROR_INVALID_INPUT,
+            category: ERROR_CATEGORY_VALIDATION,
+            cause: ERROR_CAUSE_INVALID_INPUT,
+            delivery: DELIVERY_STATE_NONE,
+            credential_validation_kind: kind,
+        });
+    });
+    LAST_PROFILE_VALIDATION_ERROR.with(|last_error| *last_error.borrow_mut() = None);
+    ERROR_INVALID_INPUT
+}
+
+fn record_credential_validation_error(error: CredentialValidationError) -> i32 {
+    record_credential_validation_error_kind(credential_validation_kind_code(error.kind()))
+}
+
+#[cfg(test)]
+mod credential_validation_error_code_tests {
+    use super::*;
+    use std::cell::Cell;
+
+    #[test]
+    fn validation_kinds_have_stable_open_numeric_codes() {
+        assert_eq!(
+            1,
+            credential_validation_kind_code(CredentialValidationErrorKind::EmptyAuthentication)
+        );
+        assert_eq!(
+            2,
+            credential_validation_kind_code(CredentialValidationErrorKind::DuplicateField)
+        );
+        assert_eq!(
+            3,
+            credential_validation_kind_code(CredentialValidationErrorKind::MissingField)
+        );
+        assert_eq!(
+            4,
+            credential_validation_kind_code(CredentialValidationErrorKind::WrongFieldType)
+        );
+        assert_eq!(
+            5,
+            credential_validation_kind_code(CredentialValidationErrorKind::FieldOutOfOrder)
+        );
+        assert_eq!(
+            6,
+            credential_validation_kind_code(CredentialValidationErrorKind::InvalidTtlvStructure)
+        );
+    }
+
+    #[test]
+    fn validation_error_detail_is_thread_local() {
+        record_credential_validation_error_kind(3);
+        let child = std::thread::spawn(|| {
+            let initial = LAST_ERROR.with(Cell::get);
+            record_credential_validation_error_kind(5);
+            (
+                initial.credential_validation_kind,
+                LAST_ERROR.with(|last_error| last_error.get().credential_validation_kind),
+            )
+        });
+        let (child_initial, child_recorded) = child.join().expect("test thread should complete");
+        assert_eq!(0, child_initial);
+        assert_eq!(5, child_recorded);
+        assert_eq!(
+            3,
+            LAST_ERROR.with(|last_error| last_error.get().credential_validation_kind)
+        );
+    }
 }
 
 trait FfiPanicFallback: Sized {
@@ -2157,6 +2247,40 @@ pub extern "C" fn kmipkit_last_error_get(
             *out_cause = snapshot.cause;
             *out_delivery = snapshot.delivery;
         }
+        SUCCESS
+    })
+}
+
+/// Copies the calling thread's payload-free credential validation detail without clearing it.
+///
+/// # Safety
+///
+/// `out_error` must be non-null, aligned, and point to an initialized, exclusively writable
+/// v1 record whose `struct_size` is its concrete size and whose `abi_version` is 1.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_last_credential_validation_error_get_v1(
+    out_error: *mut kmipkit_credential_validation_error_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_error.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: the caller promises an initialized writable v1 record, documented above.
+        let output = unsafe { &mut *out_error };
+        let Ok(expected_size) =
+            u32::try_from(size_of::<kmipkit_credential_validation_error_v1_t>())
+        else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        if output.struct_size != expected_size || output.abi_version != 1 {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let kind = LAST_ERROR.with(|last_error| last_error.get().credential_validation_kind);
+        *output = kmipkit_credential_validation_error_v1_t {
+            struct_size: expected_size,
+            abi_version: 1,
+            kind,
+        };
         SUCCESS
     })
 }
@@ -8096,7 +8220,7 @@ pub extern "C" fn kmipkit_nonce_from_ttlv(
         };
         let nonce = match Nonce::try_from_ttlv(structure) {
             Ok(nonce) => nonce,
-            Err(_error) => return record_ffi_error(ERROR_INVALID_INPUT),
+            Err(error) => return record_credential_validation_error(error),
         };
         *out = try_ffi!(try_make_handle(Kind::Nonce, HandleValue::Nonce(nonce)));
         SUCCESS
@@ -8161,7 +8285,7 @@ pub extern "C" fn kmipkit_credential_from_ttlv(
         };
         let credential = match Credential::try_from_ttlv(structure) {
             Ok(credential) => credential,
-            Err(_error) => return record_ffi_error(ERROR_INVALID_INPUT),
+            Err(error) => return record_credential_validation_error(error),
         };
         *out = try_ffi!(try_make_handle(
             Kind::Credential,
@@ -8262,9 +8386,6 @@ pub extern "C" fn kmipkit_authentication_create(
             credential_count,
             MAX_VALIDATE_INPUT_ITEMS
         ));
-        if pointers.is_empty() {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
         let mut values = Vec::new();
         if values.try_reserve_exact(pointers.len()).is_err() {
             return record_ffi_error(ERROR_RESOURCE_LIMIT);
@@ -8279,7 +8400,7 @@ pub extern "C" fn kmipkit_authentication_create(
         }
         let authentication = match Authentication::new(values) {
             Ok(authentication) => authentication,
-            Err(_error) => return record_ffi_error(ERROR_INVALID_INPUT),
+            Err(error) => return record_credential_validation_error(error),
         };
         *out = try_ffi!(try_make_handle(
             Kind::Authentication,
@@ -8303,7 +8424,7 @@ pub extern "C" fn kmipkit_authentication_from_ttlv(
         };
         let authentication = match Authentication::try_from_ttlv(structure) {
             Ok(authentication) => authentication,
-            Err(_error) => return record_ffi_error(ERROR_INVALID_INPUT),
+            Err(error) => return record_credential_validation_error(error),
         };
         *out = try_ffi!(try_make_handle(
             Kind::Authentication,
@@ -8498,7 +8619,7 @@ pub extern "C" fn kmipkit_attestation_credential_from_ttlv(
         };
         let credential = match AttestationCredential::try_from_ttlv(structure) {
             Ok(credential) => credential,
-            Err(_error) => return record_ffi_error(ERROR_INVALID_INPUT),
+            Err(error) => return record_credential_validation_error(error),
         };
         *out = try_ffi!(try_make_handle(
             Kind::AttestationCredential,
@@ -8572,7 +8693,7 @@ pub extern "C" fn kmipkit_device_credential_from_ttlv(
         };
         let credential = match DeviceCredential::try_from_ttlv(structure) {
             Ok(credential) => credential,
-            Err(_error) => return record_ffi_error(ERROR_INVALID_INPUT),
+            Err(error) => return record_credential_validation_error(error),
         };
         *out = try_ffi!(try_make_handle(
             Kind::DeviceCredential,

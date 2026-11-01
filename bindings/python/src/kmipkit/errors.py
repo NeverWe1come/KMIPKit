@@ -144,6 +144,27 @@ def _known_or_raw(enum_type: type[_IntEnum], value: int) -> _IntEnum | int:
         return value
 
 
+class CredentialValidationErrorKind(_IntEnum):
+    """Stable credential validation categories; unrecognized values remain raw integers."""
+
+    EMPTY_AUTHENTICATION = 1
+    DUPLICATE_FIELD = 2
+    MISSING_FIELD = 3
+    WRONG_FIELD_TYPE = 4
+    FIELD_OUT_OF_ORDER = 5
+    INVALID_TTLV_STRUCTURE = 6
+
+
+class CredentialValidationError(InvalidInputError):
+    """A redacted credential validation failure containing only its stable category."""
+
+    category = "credential_validation"
+
+    def __init__(self, kind: int) -> None:
+        self.kind = _known_or_raw(CredentialValidationErrorKind, int(kind))
+        Exception.__init__(self, f"KMIPKit credential validation failed ({self.kind!s})")
+
+
 class ClientExecutionError(KmipKitError):
     """A client call failed with sanitized metadata and optional approved UID-error TTLV.
 

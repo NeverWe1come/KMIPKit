@@ -452,6 +452,16 @@ pub struct kmipkit_ttlv_decode_error_v1_t {
     pub byte_offset: u64,
 }
 
+/// Versioned, payload-free details for one credential validation failure.
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct kmipkit_credential_validation_error_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    /// Stable category code, or zero when the last failure was not credential validation.
+    pub kind: u32,
+}
+
 /// Versioned production transport inputs. All spans are borrowed only for the
 /// constructor call; the validated configuration owns its parsed material.
 #[repr(C)]

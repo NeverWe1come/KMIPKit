@@ -20,9 +20,9 @@ public final class Authentication implements AutoCloseable {
         handle = NativeHandle.owned(nativeHandle, NativeExtensionRegistry.AUTHENTICATION);
     }
 
-    /** Consumes a nonempty ordered list of Credential handles. */
+    /** Consumes an ordered list of Credential handles, rejecting an empty Authentication natively. */
     public static Authentication create(List<Credential> credentials) {
-        if (credentials == null || credentials.isEmpty()) {
+        if (credentials == null) {
             throw new InvalidInputException("authentication credentials are invalid");
         }
         if (credentials.size() > MAX_CREDENTIALS) {

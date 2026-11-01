@@ -1848,10 +1848,6 @@ JNIEXPORT jint JNICALL Java_org_kmipkit_NativeExtensionRegistry_authenticationCr
             return static_cast<jint>(KMIPKIT_ERROR_INVALID_INPUT);
         }
         const jsize count = env->GetArrayLength(raw_credentials);
-        if (count <= 0) {
-            throw_invalid_input(env);
-            return static_cast<jint>(KMIPKIT_ERROR_INVALID_INPUT);
-        }
         if (count > 100000) {
             return static_cast<jint>(KMIPKIT_ERROR_RESOURCE_LIMIT);
         }
@@ -10004,6 +10000,16 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_messageExtensio
                     from_java_handle<kmipkit_message_extension_view_t>(raw_extension), output);
         });
     });
+}
+
+JNIEXPORT jint JNICALL Java_org_kmipkit_credentials_CredentialValidationException_nativeLastKind(
+        JNIEnv*, jclass) {
+    kmipkit_credential_validation_error_v1_t error = {
+            static_cast<uint32_t>(sizeof(kmipkit_credential_validation_error_v1_t)), 1, 0};
+    if (kmipkit_last_credential_validation_error_get_v1(&error) != 0) {
+        return 0;
+    }
+    return static_cast<jint>(error.kind);
 }
 
 } // extern "C"

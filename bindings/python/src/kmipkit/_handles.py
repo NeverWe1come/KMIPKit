@@ -185,6 +185,7 @@ def _new_handle(
     *arguments: object,
     consumed: tuple[int, ...] = (),
     restore_on_statuses: tuple[int, ...] = (),
+    credential_validation_error: bool = False,
 ) -> Any:
     """Call an out-handle ABI function and return its private CFFI value."""
     output = ffi.new(f"{c_type} **")
@@ -199,7 +200,7 @@ def _new_handle(
         if consumed
         else _invoke(function, *call_arguments)
     )
-    errors.raise_for_status(status)
+    _raise_for_credential_status(status, credential_validation_error)
     if output[0] == ffi.NULL:
         errors.raise_for_status(4)
     return output[0]
@@ -212,6 +213,7 @@ def _new_handle_from_array(
     values: list[NativeHandle] | tuple[NativeHandle, ...],
     *,
     restore_on_statuses: tuple[int, ...] = (),
+    credential_validation_error: bool = False,
 ) -> Any:
     """Call a consuming array ABI function while preserving wrapper ownership on rejection."""
     handles = tuple(values)
@@ -241,10 +243,27 @@ def _new_handle_from_array(
         finally:
             for handle in reversed(ordered_locks):
                 handle._release_ownership_lock()
-    errors.raise_for_status(status)
+    _raise_for_credential_status(status, credential_validation_error)
     if output[0] == ffi.NULL:
         errors.raise_for_status(4)
     return output[0]
+
+
+def _raise_for_credential_status(status: int, enabled: bool) -> None:
+    """Raise a credential category when the native constructor supplies one."""
+    if status == 0:
+        return
+    if enabled and status == 4:
+        detail = ffi.new("kmipkit_credential_validation_error_v1_t *")
+        detail.struct_size = ffi.sizeof("kmipkit_credential_validation_error_v1_t")
+        detail.abi_version = 1
+        try:
+            detail_status = int(lib.kmipkit_last_credential_validation_error_get_v1(detail))
+        except (AttributeError, TypeError, ValueError):
+            detail_status = 4
+        if detail_status == 0 and detail.kind != 0:
+            raise errors.CredentialValidationError(int(detail.kind))
+    errors.raise_for_status(status)
 
 
 def _scalar(

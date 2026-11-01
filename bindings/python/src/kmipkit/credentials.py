@@ -86,6 +86,7 @@ class Nonce(NativeHandle):
             structure,
             consumed=(0,),
             restore_on_statuses=(errors._SHARED_OWNER_STATUS,),
+            credential_validation_error=True,
         )
         nonce = _wrap_owned_handle(cls, handle)
         return nonce
@@ -146,6 +147,7 @@ class Credential(NativeHandle):
             structure,
             consumed=(0,),
             restore_on_statuses=(errors._SHARED_OWNER_STATUS,),
+            credential_validation_error=True,
         )
         return _wrap_owned_handle(cls, handle)
 
@@ -216,7 +218,7 @@ class Authentication(NativeHandle):
 
     @classmethod
     def create(cls, credentials: Sequence[Credential]) -> Authentication:
-        """Consume a nonempty ordered sequence of Credential handles."""
+        """Consume ordered Credential handles and report native validation categories."""
         if isinstance(credentials, (str, bytes, bytearray)) or not isinstance(
             credentials, Sequence
         ):
@@ -224,13 +226,12 @@ class Authentication(NativeHandle):
         if len(credentials) > _MAX_AUTHENTICATION_CREDENTIALS:
             errors.raise_for_status(6)
         values = tuple(credentials)
-        if not values:
-            errors.raise_for_status(4)
         handle = _new_handle_from_array(
             "kmipkit_credential_t",
             "kmipkit_authentication_t",
             lib.kmipkit_authentication_create,
             values,
+            credential_validation_error=True,
             restore_on_statuses=(4, errors._SHARED_OWNER_STATUS),
         )
         return _wrap_owned_handle(cls, handle)
@@ -244,6 +245,7 @@ class Authentication(NativeHandle):
             structure,
             consumed=(0,),
             restore_on_statuses=(errors._SHARED_OWNER_STATUS,),
+            credential_validation_error=True,
         )
         return _wrap_owned_handle(cls, handle)
 
@@ -379,6 +381,7 @@ class AttestationCredential(NativeHandle):
             structure,
             consumed=(0,),
             restore_on_statuses=(errors._SHARED_OWNER_STATUS,),
+            credential_validation_error=True,
         )
         return _wrap_owned_handle(cls, handle)
 
@@ -437,6 +440,7 @@ class DeviceCredential(NativeHandle):
             structure,
             consumed=(0,),
             restore_on_statuses=(errors._SHARED_OWNER_STATUS,),
+            credential_validation_error=True,
         )
         return _wrap_owned_handle(cls, handle)
 

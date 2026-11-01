@@ -9,6 +9,7 @@ pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
     "client_profile_validation",
     "credential_ttlv_parity",
     "credential_type_parity",
+    "credential_validation_error_parity",
     "crypto_response_ttlv",
     "discover_versions_request_item",
     "ffi_runtime_metadata",
@@ -1126,6 +1127,51 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-37dab5effc63fc149ca1",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::CredentialType::raw",
+    ),
+    (
+        "rust-observed-e5dabe4538c722126f04",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValidationError",
+    ),
+    (
+        "rust-observed-eff4a6bfdfacb740fd51",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValidationError::kind",
+    ),
+    (
+        "rust-observed-f8466021713e5665742d",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValidationErrorKind",
+    ),
+    (
+        "rust-observed-dd0693d92813bdcfb9b7",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValidationErrorKind::EmptyAuthentication",
+    ),
+    (
+        "rust-observed-87d18e7dcdd7b56649d0",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValidationErrorKind::DuplicateField",
+    ),
+    (
+        "rust-observed-f6f37cfea6d38c4d0fcd",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValidationErrorKind::MissingField",
+    ),
+    (
+        "rust-observed-07c1877c7aa125b8289e",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValidationErrorKind::WrongFieldType",
+    ),
+    (
+        "rust-observed-18e8c5d04b1878094bdc",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValidationErrorKind::FieldOutOfOrder",
+    ),
+    (
+        "rust-observed-60a6c595336e91c396ac",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialValidationErrorKind::InvalidTtlvStructure",
     ),
     (
         "rust-observed-079139eccf04c89b6587",

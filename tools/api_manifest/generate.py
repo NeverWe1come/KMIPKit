@@ -29,7 +29,9 @@ from typing import Any
 MANIFEST_PATH = "specification/api/public-api.json"
 SCHEMA_PATH = "specification/api/public-api.schema.json"
 CATALOG_PATH = "specification/catalog/kmip-2.1.json"
-MAX_MANIFEST_BYTES = 16 * 1024 * 1024
+# Public API parity records include exact declarations in all four languages;
+# keep parsing bounded while leaving room for the complete generated inventory.
+MAX_MANIFEST_BYTES = 20 * 1024 * 1024
 MAX_SCHEMA_BYTES = 4 * 1024 * 1024
 MAX_CATALOG_BYTES = 16 * 1024 * 1024
 MAX_RELEASE_METADATA_BYTES = 1024 * 1024

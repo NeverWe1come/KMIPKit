@@ -186,6 +186,12 @@ class DeviceCredentialTests(unittest.TestCase):
         )
         self.assertNotIn("sensitive-sentinel", str(raised.exception))
 
+    def test_credential_validation_error_preserves_unknown_kind_values(self) -> None:
+        error = errors.CredentialValidationError(0x7F)
+
+        self.assertEqual(0x7F, error.kind)
+        self.assertNotIn("sensitive-sentinel", str(error))
+
 
 if __name__ == "__main__":
     unittest.main()

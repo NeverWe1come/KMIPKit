@@ -20919,6 +20919,30 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0008-FR-005/-010 and KMIPKIT-0043-FR-013/-021/-022. This constructor accepts only a numeric validation category and has no credential payload parameter.",
+      "exportName": "kmipkit.errors.CredentialValidationError.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python exception initializer constructs only a local, payload-free validation exception; it does not parse, attach, or transmit a KMIP Credential. The exception type and stable validation kind are mapped across all supported bindings."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0008-FR-005/-010 and KMIPKIT-0043-FR-013/-021/-022. The class label contains no payload; its stable numeric kind is mapped through C, Java, and Python.",
+      "exportName": "kmipkit.errors.CredentialValidationError.category",
+      "packageId": "python-kmipkit",
+      "reason": "This exact string identifies the exception subclass within the local Python error taxonomy. It is not an independent KMIP capability; the typed validation kind and invalid-input status define the cross-language error data."
+    },
+    {
+      "approvalSource": {
         "evidence": "**Created**: 2026-10-04",
         "kind": "feature-specification",
         "path": "specs/005-ttlv-wire-codec/spec.md",
@@ -36154,6 +36178,98 @@
         "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "capabilityState": "declared",
+      "mappings": {
+        "c": [
+          "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_DUPLICATE_FIELD",
+          "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_EMPTY_AUTHENTICATION",
+          "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_FIELD_OUT_OF_ORDER",
+          "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_INVALID_TTLV_STRUCTURE",
+          "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_MISSING_FIELD",
+          "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_WRONG_FIELD_TYPE",
+          "kmipkit_credential_validation_error_kind_t",
+          "kmipkit_credential_validation_error_v1_t",
+          "kmipkit_credential_validation_error_v1_t.kind",
+          "kmipkit_last_credential_validation_error_get_v1"
+        ],
+        "java": [
+          "org.kmipkit.credentials.CredentialValidationErrorKind",
+          "org.kmipkit.credentials.CredentialValidationErrorKind.DUPLICATE_FIELD",
+          "org.kmipkit.credentials.CredentialValidationErrorKind.EMPTY_AUTHENTICATION",
+          "org.kmipkit.credentials.CredentialValidationErrorKind.FIELD_OUT_OF_ORDER",
+          "org.kmipkit.credentials.CredentialValidationErrorKind.INVALID_TTLV_STRUCTURE",
+          "org.kmipkit.credentials.CredentialValidationErrorKind.MISSING_FIELD",
+          "org.kmipkit.credentials.CredentialValidationErrorKind.WRONG_FIELD_TYPE",
+          "org.kmipkit.credentials.CredentialValidationException",
+          "org.kmipkit.credentials.CredentialValidationException.kind"
+        ],
+        "python": [
+          "kmipkit.errors.CredentialValidationError",
+          "kmipkit.errors.CredentialValidationError.kind",
+          "kmipkit.errors.CredentialValidationErrorKind",
+          "kmipkit.errors.CredentialValidationErrorKind.DUPLICATE_FIELD",
+          "kmipkit.errors.CredentialValidationErrorKind.EMPTY_AUTHENTICATION",
+          "kmipkit.errors.CredentialValidationErrorKind.FIELD_OUT_OF_ORDER",
+          "kmipkit.errors.CredentialValidationErrorKind.INVALID_TTLV_STRUCTURE",
+          "kmipkit.errors.CredentialValidationErrorKind.MISSING_FIELD",
+          "kmipkit.errors.CredentialValidationErrorKind.WRONG_FIELD_TYPE"
+        ],
+        "rust": [
+          "kmipkit_protocol::CredentialValidationError",
+          "kmipkit_protocol::CredentialValidationError::kind",
+          "kmipkit_protocol::CredentialValidationErrorKind",
+          "kmipkit_protocol::CredentialValidationErrorKind::DuplicateField",
+          "kmipkit_protocol::CredentialValidationErrorKind::EmptyAuthentication",
+          "kmipkit_protocol::CredentialValidationErrorKind::FieldOutOfOrder",
+          "kmipkit_protocol::CredentialValidationErrorKind::InvalidTtlvStructure",
+          "kmipkit_protocol::CredentialValidationErrorKind::MissingField",
+          "kmipkit_protocol::CredentialValidationErrorKind::WrongFieldType"
+        ]
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_abi_layout",
+      "capabilityState": "declared",
+      "mappings": {
+        "c": [
+          "kmipkit_credential_validation_error_v1_t.abi_version",
+          "kmipkit_credential_validation_error_v1_t.struct_size"
+        ]
+      },
+      "ownerSpecId": "KMIPKIT-0008",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007"
       ]
     }
   ],
@@ -69723,6 +69839,67 @@
         "requestBoundary": "not-applicable",
         "returnType": "Option<R>"
       }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Copies the calling thread's payload-free credential validation category without clearing the last-error snapshot.",
+          "Initialize struct_size to sizeof(kmipkit_credential_validation_error_v1_t) and abi_version to 1 before calling.",
+          "kind is zero when the last error has no credential validation category; nonzero values preserve known and future raw codes."
+        ],
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "parameters": [
+          {
+            "direction": "output",
+            "kind": "versioned-value-pointer",
+            "name": "out_error",
+            "ownership": "none",
+            "type": "kmipkit_credential_validation_error_v1_t *"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_last_credential_validation_error_get_v1"
+      },
+      "id": "ffi_last_credential_validation_error_get_v1",
+      "java": {
+        "class": "CredentialValidationException",
+        "errorCategories": [],
+        "jniSymbol": "Java_org_kmipkit_credentials_CredentialValidationException_nativeLastKind",
+        "method": "nativeLastKind",
+        "package": "org.kmipkit.credentials",
+        "parameters": [],
+        "returnType": "int"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_last_credential_validation_error_get_v1",
+        "errorCategories": [],
+        "function": "CredentialValidationError.kind",
+        "module": "kmipkit.errors",
+        "parameters": [],
+        "returnType": "int"
+      },
+      "requirementIds": [
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry",
+        "name": "kmipkit_last_credential_validation_error_get_v1",
+        "owner": "ffi",
+        "parameters": [
+          {
+            "name": "out_error",
+            "type": "*mut kmipkit_credential_validation_error_v1_t"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "i32"
+      }
     }
   ],
   "languages": [
@@ -102876,6 +103053,411 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "rust-observed-e5dabe4538c722126f04",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValidationError",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_validation_error_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationException",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationError",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationError",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "rust-observed-eff4a6bfdfacb740fd51",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValidationError::kind",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_last_credential_validation_error_get_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationException.kind",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationError.kind",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationError::kind",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "rust-observed-f8466021713e5665742d",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValidationErrorKind",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_validation_error_kind_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "rust-observed-dd0693d92813bdcfb9b7",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValidationErrorKind::EmptyAuthentication",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_EMPTY_AUTHENTICATION",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind.EMPTY_AUTHENTICATION",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind.EMPTY_AUTHENTICATION",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind::EmptyAuthentication",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "rust-observed-87d18e7dcdd7b56649d0",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValidationErrorKind::DuplicateField",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_DUPLICATE_FIELD",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind.DUPLICATE_FIELD",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind.DUPLICATE_FIELD",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind::DuplicateField",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "rust-observed-f6f37cfea6d38c4d0fcd",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValidationErrorKind::MissingField",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_MISSING_FIELD",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind.MISSING_FIELD",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind.MISSING_FIELD",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind::MissingField",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "rust-observed-07c1877c7aa125b8289e",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValidationErrorKind::WrongFieldType",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_WRONG_FIELD_TYPE",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind.WRONG_FIELD_TYPE",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind.WRONG_FIELD_TYPE",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind::WrongFieldType",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "rust-observed-18e8c5d04b1878094bdc",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValidationErrorKind::FieldOutOfOrder",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_FIELD_OUT_OF_ORDER",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind.FIELD_OUT_OF_ORDER",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind.FIELD_OUT_OF_ORDER",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind::FieldOutOfOrder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "rust-observed-60a6c595336e91c396ac",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialValidationErrorKind::InvalidTtlvStructure",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_INVALID_TTLV_STRUCTURE",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind.INVALID_TTLV_STRUCTURE",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind.INVALID_TTLV_STRUCTURE",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind::InvalidTtlvStructure",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
       ]
     },
     {
@@ -280262,6 +280844,1314 @@
         "KMIPKIT-REQ-SPEC-9.4-001-002",
         "KMIPKIT-REQ-SPEC-9.4-002"
       ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-error-type-c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_credential_validation_error_v1_t",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_validation_error_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationException",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationError",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationError",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-error-type-java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.CredentialValidationException",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_validation_error_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationException",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationError",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationError",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-error-type-python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.errors.CredentialValidationError",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_validation_error_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationException",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationError",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationError",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-kind-accessor-c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_last_credential_validation_error_get_v1",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_last_credential_validation_error_get_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationException.kind",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationError.kind",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationError::kind",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-kind-accessor-java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.CredentialValidationException.kind",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_last_credential_validation_error_get_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationException.kind",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationError.kind",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationError::kind",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-kind-accessor-python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.errors.CredentialValidationError.kind",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_last_credential_validation_error_get_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationException.kind",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationError.kind",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationError::kind",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-kind-type-c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_credential_validation_error_kind_t",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_validation_error_kind_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-kind-type-java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.CredentialValidationErrorKind",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_validation_error_kind_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-kind-type-python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.errors.CredentialValidationErrorKind",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_validation_error_kind_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-empty-authentication-c",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_EMPTY_AUTHENTICATION",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_EMPTY_AUTHENTICATION",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind.EMPTY_AUTHENTICATION",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind.EMPTY_AUTHENTICATION",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind::EmptyAuthentication",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-empty-authentication-java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.CredentialValidationErrorKind.EMPTY_AUTHENTICATION",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_EMPTY_AUTHENTICATION",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind.EMPTY_AUTHENTICATION",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind.EMPTY_AUTHENTICATION",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind::EmptyAuthentication",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-empty-authentication-python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.errors.CredentialValidationErrorKind.EMPTY_AUTHENTICATION",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_EMPTY_AUTHENTICATION",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind.EMPTY_AUTHENTICATION",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind.EMPTY_AUTHENTICATION",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind::EmptyAuthentication",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-duplicate-field-c",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_DUPLICATE_FIELD",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_DUPLICATE_FIELD",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind.DUPLICATE_FIELD",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind.DUPLICATE_FIELD",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind::DuplicateField",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-duplicate-field-java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.CredentialValidationErrorKind.DUPLICATE_FIELD",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_DUPLICATE_FIELD",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind.DUPLICATE_FIELD",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind.DUPLICATE_FIELD",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind::DuplicateField",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-duplicate-field-python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.errors.CredentialValidationErrorKind.DUPLICATE_FIELD",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_DUPLICATE_FIELD",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind.DUPLICATE_FIELD",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind.DUPLICATE_FIELD",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind::DuplicateField",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-missing-field-c",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_MISSING_FIELD",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_MISSING_FIELD",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind.MISSING_FIELD",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind.MISSING_FIELD",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind::MissingField",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-missing-field-java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.CredentialValidationErrorKind.MISSING_FIELD",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_MISSING_FIELD",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind.MISSING_FIELD",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind.MISSING_FIELD",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind::MissingField",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-missing-field-python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.errors.CredentialValidationErrorKind.MISSING_FIELD",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_MISSING_FIELD",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind.MISSING_FIELD",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind.MISSING_FIELD",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind::MissingField",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-wrong-field-type-c",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_WRONG_FIELD_TYPE",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_WRONG_FIELD_TYPE",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind.WRONG_FIELD_TYPE",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind.WRONG_FIELD_TYPE",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind::WrongFieldType",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-wrong-field-type-java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.CredentialValidationErrorKind.WRONG_FIELD_TYPE",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_WRONG_FIELD_TYPE",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind.WRONG_FIELD_TYPE",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind.WRONG_FIELD_TYPE",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind::WrongFieldType",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-wrong-field-type-python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.errors.CredentialValidationErrorKind.WRONG_FIELD_TYPE",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_WRONG_FIELD_TYPE",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind.WRONG_FIELD_TYPE",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind.WRONG_FIELD_TYPE",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind::WrongFieldType",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-field-out-of-order-c",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_FIELD_OUT_OF_ORDER",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_FIELD_OUT_OF_ORDER",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind.FIELD_OUT_OF_ORDER",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind.FIELD_OUT_OF_ORDER",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind::FieldOutOfOrder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-field-out-of-order-java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.CredentialValidationErrorKind.FIELD_OUT_OF_ORDER",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_FIELD_OUT_OF_ORDER",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind.FIELD_OUT_OF_ORDER",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind.FIELD_OUT_OF_ORDER",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind::FieldOutOfOrder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-field-out-of-order-python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.errors.CredentialValidationErrorKind.FIELD_OUT_OF_ORDER",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_FIELD_OUT_OF_ORDER",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind.FIELD_OUT_OF_ORDER",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind.FIELD_OUT_OF_ORDER",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind::FieldOutOfOrder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-invalid-ttlv-structure-c",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_INVALID_TTLV_STRUCTURE",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_INVALID_TTLV_STRUCTURE",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind.INVALID_TTLV_STRUCTURE",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind.INVALID_TTLV_STRUCTURE",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind::InvalidTtlvStructure",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-invalid-ttlv-structure-java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.CredentialValidationErrorKind.INVALID_TTLV_STRUCTURE",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_INVALID_TTLV_STRUCTURE",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind.INVALID_TTLV_STRUCTURE",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind.INVALID_TTLV_STRUCTURE",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind::InvalidTtlvStructure",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-invalid-ttlv-structure-python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.errors.CredentialValidationErrorKind.INVALID_TTLV_STRUCTURE",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_INVALID_TTLV_STRUCTURE",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationErrorKind.INVALID_TTLV_STRUCTURE",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationErrorKind.INVALID_TTLV_STRUCTURE",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationErrorKind::InvalidTtlvStructure",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_abi_layout",
+      "declarationId": "credential-validation-error-layout-struct_size",
+      "declarationState": "declared",
+      "exportName": "kmipkit_credential_validation_error_v1_t.struct_size",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_validation_error_v1_t.struct_size",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_abi_layout",
+      "declarationId": "credential-validation-error-layout-abi_version",
+      "declarationState": "declared",
+      "exportName": "kmipkit_credential_validation_error_v1_t.abi_version",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_validation_error_v1_t.abi_version",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "credential_validation_error_parity",
+      "declarationId": "credential-validation-error-field-kind",
+      "declarationState": "declared",
+      "exportName": "kmipkit_credential_validation_error_v1_t.kind",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_credential_validation_error_v1_t.kind",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialValidationException.kind",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.errors.CredentialValidationError.kind",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialValidationError::kind",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
     }
   ],
   "publicPackages": [
@@ -283200,6 +285090,120 @@
         "module": "kmipkit_protocol",
         "name": "CredentialView",
         "owner": "protocol"
+      }
+    },
+    {
+      "c": {
+        "kind": "enum",
+        "name": "kmipkit_credential_validation_error_kind_t",
+        "underlyingType": "uint32_t",
+        "unknownValuePolicy": "preserve-raw"
+      },
+      "enumRepresentation": {
+        "shape": "open-numeric",
+        "unknownValuePolicy": "preserve-raw",
+        "values": [
+          {
+            "name": "EmptyAuthentication",
+            "value": 1
+          },
+          {
+            "name": "DuplicateField",
+            "value": 2
+          },
+          {
+            "name": "MissingField",
+            "value": 3
+          },
+          {
+            "name": "WrongFieldType",
+            "value": 4
+          },
+          {
+            "name": "FieldOutOfOrder",
+            "value": 5
+          },
+          {
+            "name": "InvalidTtlvStructure",
+            "value": 6
+          }
+        ]
+      },
+      "id": "CredentialValidationErrorKind",
+      "java": {
+        "name": "CredentialValidationErrorKind",
+        "package": "org.kmipkit.credentials"
+      },
+      "kind": "enum",
+      "python": {
+        "module": "kmipkit.errors",
+        "name": "CredentialValidationErrorKind"
+      },
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::credential",
+        "name": "CredentialValidationErrorKind",
+        "owner": "protocol"
+      }
+    },
+    {
+      "c": {
+        "fields": [
+          {
+            "name": "struct_size",
+            "type": "uint32_t"
+          },
+          {
+            "name": "abi_version",
+            "type": "uint32_t"
+          },
+          {
+            "name": "kind",
+            "type": "uint32_t"
+          }
+        ],
+        "kind": "fixed-width-value",
+        "name": "kmipkit_credential_validation_error_v1_t",
+        "versioned": true,
+        "visibility": "public"
+      },
+      "id": "CredentialValidationErrorV1",
+      "java": {
+        "name": "CredentialValidationException",
+        "package": "org.kmipkit.credentials"
+      },
+      "kind": "struct",
+      "python": {
+        "module": "kmipkit.errors",
+        "name": "CredentialValidationError"
+      },
+      "requirementIds": [
+        "KMIPKIT-0008-FR-001",
+        "KMIPKIT-0008-FR-002",
+        "KMIPKIT-0008-FR-003",
+        "KMIPKIT-0008-FR-004",
+        "KMIPKIT-0008-FR-005",
+        "KMIPKIT-0008-FR-006",
+        "KMIPKIT-0008-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry",
+        "name": "kmipkit_credential_validation_error_v1_t",
+        "owner": "ffi"
       }
     }
   ]
