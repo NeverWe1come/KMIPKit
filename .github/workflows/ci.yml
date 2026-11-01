@@ -296,6 +296,17 @@ jobs:
         id: fetch-locked-cargo-dependencies-for-offline-abi-audit
         run: cargo fetch --locked
 
+      - name: Resolve Java compile classpath for offline binding audit
+        id: resolve-java-compile-classpath-for-offline-binding-audit
+        shell: pwsh
+        run: |
+          if ($IsWindows) {
+            & 'bindings/java/gradlew.bat' --project-dir bindings/java --no-daemon --console=plain --quiet apiAuditClasspath
+          } else {
+            bash bindings/java/gradlew --project-dir bindings/java --no-daemon --console=plain --quiet apiAuditClasspath
+          }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - name: Run Python contracts
         id: run-python-contracts
         shell: pwsh
