@@ -78,6 +78,7 @@ SHARED_PARITY_CASES = {
     "creation.key-pair.request-response.v1",
     "creation.split-key.request-response.v1",
     "creation.result-message-on-failure.v1",
+    "credentials.hashed-password-timestamp-sequence.v1",
     "codec-limits.defaults-and-ranges.v1",
     "usage-allocation.guard-accounting.v1",
     "typed-message.ordered-open-values-and-lifetime.v1",
@@ -230,7 +231,9 @@ class PublicApiParityTests(unittest.TestCase):
                             "KMIPKIT-0007-FR-",
                             "KMIPKIT-0012-FR-",
                             "KMIPKIT-0014-FR-",
+                            "KMIPKIT-0008-FR-",
                             "KMIPKIT-0039-FR-",
+                            "KMIPKIT-REQ-SPEC-9.11-",
                             "KMIPKIT-REQ-SPEC-6.1.23-",
                         ))
                         for requirement in case["requirementIds"]
@@ -312,7 +315,7 @@ class PublicApiParityTests(unittest.TestCase):
                                 declaration = rf"\bdef\s+{re.escape(test_name)}\s*\("
                             else:
                                 declaration = (
-                                    rf"\b(?:static\s+)?(?:bool|int|void)\s+"
+                                    rf"\b(?:static\s+)?(?:bool|int32_t|int|void)\s+"
                                     rf"{re.escape(test_name)}\s*\("
                                 )
                             self.assertRegex(
