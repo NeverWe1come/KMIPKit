@@ -16,8 +16,9 @@ def _attribute_item() -> tuple[ttlv.CodecLimits, ttlv.TtlvItem]:
 
 
 def _assert_standalone_request(request, expected_count: int) -> None:
-    with request.to_ttlv_payload() as payload, payload.view() as view:
-        assert view.item_count() == expected_count
+    with request.to_ttlv_payload() as payload:
+        with ttlv.ttlv_structure_view(payload) as view:
+            assert ttlv.ttlv_structure_view_item_count(view) == expected_count
     with request.to_batch_item() as item:
         assert item is not None
 
@@ -70,5 +71,9 @@ def test_delete_modify_and_set_models_remain_separate_from_batch_items():
     new.close()
     for request, expected_count in zip(models, (3, 3, 2), strict=True):
         with request:
+            if isinstance(request, attribute_operations.DeleteAttributeRequest):
+                assert request.attribute_reference == reference
+            else:
+                assert not hasattr(request, "adjustment_type")
             _assert_standalone_request(request, expected_count)
     limits.close()
