@@ -63888,6 +63888,32 @@
       "exportName": "<kmipkit_protocol::HashedPasswordTimestampSequenceError as core::fmt::Display>::fmt",
       "packageId": "rust-kmipkit-protocol",
       "reason": "Exact Rust standard-trait implementation artifact; it is not a standalone C, Java, or Python capability. This excludes only the trait-qualified item, retaining the timestamp sequence and payload-free error facade plus all inherent APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "The HashedPasswordTimestampSequence API exposes caller-managed create, record, and last_timestamp operations; arbitrary native-handle construction is not public.",
+      "exportName": "kmipkit.credentials.HashedPasswordTimestampSequence.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "Inherited native-handle initializer requires KMIPKit's private ownership token; callers construct HashedPasswordTimestampSequence only with create()."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "The HashedPasswordTimestampSequence facade exposes caller-managed sequence behavior; its Python slot layout is implementation metadata.",
+      "exportName": "kmipkit.credentials.HashedPasswordTimestampSequence.__slots__",
+      "packageId": "python-kmipkit",
+      "reason": "Exact Python slot layout used for internal HashedPasswordTimestampSequence wrapper state; it is not a KMIP credential field or product-level capability."
     }
   ],
   "capabilities": [

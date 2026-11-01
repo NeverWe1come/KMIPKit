@@ -449196,6 +449196,32 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Exact export <kmipkit_protocol::HashedPasswordTimestampSequenceError as core::fmt::Display>::fmt appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json under kmipkit_protocol::HashedPasswordTimestampSequence. KMIPKIT-0008-FR-007 and FR-010 continue to govern the sequence behavior and payload-safe diagnostics."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.credentials.HashedPasswordTimestampSequence.__init__",
+      "reason": "Inherited native-handle initializer requires KMIPKit's private ownership token; callers construct HashedPasswordTimestampSequence only with create().",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md)."
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "The HashedPasswordTimestampSequence API exposes caller-managed create, record, and last_timestamp operations; arbitrary native-handle construction is not public."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.credentials.HashedPasswordTimestampSequence.__slots__",
+      "reason": "Exact Python slot layout used for internal HashedPasswordTimestampSequence wrapper state; it is not a KMIP credential field or product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md)."
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "The HashedPasswordTimestampSequence facade exposes caller-managed sequence behavior; its Python slot layout is implementation metadata."
     }
   ],
   "apiLevels": [
