@@ -284,6 +284,17 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("cargo fetch --locked", fetch.group(1))
         self.assertLess(fetch.start(), python_contracts.start())
 
+    def test_script_contract_job_primes_java_classpath_before_offline_binding_audit(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        prime = self.require_named_step(job, "Resolve Java compile classpath for offline binding audit")
+        python_contracts = self.require_named_step(job, "Run Python contracts")
+        prime_script = prime.group(1)
+        self.assertIn("apiAuditClasspath", prime_script)
+        self.assertIn("bindings/java/gradlew.bat", prime_script)
+        self.assertIn("bash bindings/java/gradlew", prime_script)
+        self.assertLess(prime.start(), python_contracts.start())
+
     def test_script_contract_job_installs_pinned_fixture_test_dependencies(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "script-contracts")
