@@ -1498,6 +1498,92 @@
           "test": "test_typed_message_model_matches_shared_fixture"
         }
       }
+    },
+    {
+      "id": "credentials.hashed-password-timestamp-sequence.v1",
+      "capability": "hashed_password_timestamp_sequence",
+      "requirementIds": [
+        "KMIPKIT-0008-FR-007",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "input": {
+        "restoredTimestamp": 1800000001,
+        "nextTimestamp": 1800000002,
+        "equalTimestamp": 1800000002,
+        "earlierTimestamp": 1800000000,
+        "minimumTimestamp": -9223372036854775808,
+        "maximumTimestamp": 9223372036854775807
+      },
+      "expectedOutput": {
+        "initialTimestamp": 1800000001,
+        "lastAfterIncrease": 1800000002,
+        "rejectedTimestamps": [1800000002, 1800000000],
+        "rejectionCategory": "invalid_input",
+        "stateUnchangedAfterRejection": true,
+        "independentSequencesAcceptSameTimestamp": true,
+        "signed64MinimumAcceptedWithoutPrevious": true,
+        "signed64MaximumAcceptedAfterMinimum": true,
+        "maximumRepeatedRejected": true,
+        "clockReads": 0,
+        "hashCalculations": 0,
+        "credentialTransmissions": 0
+      },
+      "javaObservedOutput": {
+        "initialTimestamp": 1800000001,
+        "lastAfterIncrease": 1800000002,
+        "rejectedTimestamps": [1800000002, 1800000000],
+        "rejectionCategory": "invalid_input",
+        "stateUnchangedAfterRejection": true,
+        "independentSequencesAcceptSameTimestamp": true,
+        "signed64MinimumAcceptedWithoutPrevious": true,
+        "signed64MaximumAcceptedAfterMinimum": true,
+        "maximumRepeatedRejected": true,
+        "clockReads": 0,
+        "hashCalculations": 0,
+        "credentialTransmissions": 0
+      },
+      "errorCategory": "invalid_input",
+      "cleanup": ["close-each-caller-owned-sequence-once"],
+      "consumerTests": {
+        "rust": {
+          "status": "available",
+          "testFile": "crates/kmipkit-protocol/tests/credential_contract.rs",
+          "test": "hashed_password_timestamp_sequence_matches_shared_fixture"
+        },
+        "c": {
+          "status": "available",
+          "testFile": "bindings/c/tests/credential_abi_consumer.c",
+          "test": "kmipkit_hashed_password_timestamp_sequence_c_consumer_contract",
+          "supportingTests": [
+            {
+              "language": "rust",
+              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "test": "compiled_c_consumer_matches_hashed_password_timestamp_sequence_fixture",
+              "assertions": [
+                "fixture-values-passed-to-compiled-c-consumer",
+                "stable-invalid-input-rejection",
+                "state-unchanged-and-restorable",
+                "signed-64-bit-boundaries",
+                "independent-sequence-ownership"
+              ]
+            }
+          ]
+        },
+        "java": {
+          "status": "available",
+          "test": "org.kmipkit.SharedCapabilityParityFixtureTest#hashedPasswordTimestampSequenceMatchesSharedFixture"
+        },
+        "python": {
+          "status": "available",
+          "testFile": "bindings/python/tests/test_shared_parity_fixtures.py",
+          "test": "test_hashed_password_timestamp_sequence_matches_shared_fixture"
+        }
+      }
     }
   ]
 }

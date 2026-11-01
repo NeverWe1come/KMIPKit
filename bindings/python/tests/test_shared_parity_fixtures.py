@@ -16,7 +16,7 @@ from typing import Any, get_type_hints
 
 import pytest
 
-from kmipkit import client, errors, extensions, metadata, ttlv
+from kmipkit import client, credentials, errors, extensions, metadata, ttlv
 from kmipkit import _handles
 from kmipkit._handles import _wrap_owned_handle
 
@@ -87,6 +87,40 @@ def test_api_level_query_matches_shared_fixture_locally(monkeypatch: pytest.Monk
     assert queried_symbols == [
         "kmipkit_api_levels_get_v1",
     ]
+
+
+def test_hashed_password_timestamp_sequence_matches_shared_fixture() -> None:
+    case = _parity_cases()["credentials.hashed-password-timestamp-sequence.v1"]
+    inputs = case["input"]
+    expected = case["expectedOutput"]
+    sequence_type = getattr(credentials, "HashedPasswordTimestampSequence", None)
+    assert sequence_type is not None
+
+    with sequence_type.create(last_timestamp=inputs["restoredTimestamp"]) as sequence:
+        assert sequence.last_timestamp == expected["initialTimestamp"]
+        sequence.record(inputs["nextTimestamp"])
+        assert sequence.last_timestamp == expected["lastAfterIncrease"]
+        for timestamp in expected["rejectedTimestamps"]:
+            with pytest.raises(errors.InvalidInputError) as raised:
+                sequence.record(timestamp)
+            assert str(timestamp) not in str(raised.value)
+            assert sequence.last_timestamp == expected["lastAfterIncrease"]
+
+    with sequence_type.create() as first, sequence_type.create() as second:
+        first.record(inputs["nextTimestamp"])
+        second.record(inputs["nextTimestamp"])
+        assert first.last_timestamp == second.last_timestamp
+        assert expected["independentSequencesAcceptSameTimestamp"] is True
+
+    with sequence_type.create() as boundary:
+        boundary.record(inputs["minimumTimestamp"])
+        boundary.record(inputs["maximumTimestamp"])
+        with pytest.raises(errors.InvalidInputError):
+            boundary.record(inputs["maximumTimestamp"])
+        assert boundary.last_timestamp == inputs["maximumTimestamp"]
+        assert expected["signed64MinimumAcceptedWithoutPrevious"] is True
+        assert expected["signed64MaximumAcceptedAfterMinimum"] is True
+        assert expected["maximumRepeatedRejected"] is True
 
 
 def test_generic_ttlv_shared_fixture_has_an_executable_python_link() -> None:

@@ -13,10 +13,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
+import org.kmipkit.InvalidInputException;
+import org.kmipkit.credentials.HashedPasswordTimestampSequence;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.TtlvItem;
@@ -55,7 +58,7 @@ final class SharedCapabilityParityFixtureTest {
                 stringArrayField(fixture, "executableConsumerLanguages"));
 
         List<String> ids = caseIds(fixture);
-        assertEquals(15, ids.size());
+        assertEquals(16, ids.size());
         assertEquals(ids.size(), ids.stream().distinct().count());
         for (String id : ids) {
             String item = caseById(fixture, id);
@@ -82,6 +85,52 @@ final class SharedCapabilityParityFixtureTest {
         assertTrue(objectField(typedMessage, "invalidRequest").contains("payloadMarker"));
         assertTrue(objectField(typedMessage, "lifetime").contains("extensionViewSurvivesParentClose"));
         assertTrue(typedMessage.contains("\"status\": \"available\""));
+    }
+
+    @Test
+    void hashedPasswordTimestampSequenceMatchesSharedFixture() throws IOException {
+        String fixture = caseById(Files.readString(sharedFixturePath()),
+                "credentials.hashed-password-timestamp-sequence.v1");
+        String input = objectField(fixture, "input");
+        String expected = objectField(fixture, "expectedOutput");
+        long restored = numberField(input, "restoredTimestamp");
+        long next = numberField(input, "nextTimestamp");
+        long equal = numberField(input, "equalTimestamp");
+        long earlier = numberField(input, "earlierTimestamp");
+
+        assertEquals("invalid_input", stringField(expected, "rejectionCategory"));
+        try (HashedPasswordTimestampSequence sequence =
+                HashedPasswordTimestampSequence.create(OptionalLong.of(restored))) {
+            assertEquals(restored, sequence.lastTimestamp().orElseThrow());
+            sequence.record(next);
+            assertEquals(numberField(expected, "lastAfterIncrease"),
+                    sequence.lastTimestamp().orElseThrow());
+            for (long rejected : new long[] {equal, earlier}) {
+                InvalidInputException error = assertThrows(
+                        InvalidInputException.class, () -> sequence.record(rejected));
+                assertFalse(error.getMessage().contains(Long.toString(rejected)));
+                assertEquals(numberField(expected, "lastAfterIncrease"),
+                        sequence.lastTimestamp().orElseThrow());
+            }
+        }
+
+        long minimum = numberField(input, "minimumTimestamp");
+        long maximum = numberField(input, "maximumTimestamp");
+        try (HashedPasswordTimestampSequence boundary =
+                HashedPasswordTimestampSequence.create(OptionalLong.empty())) {
+            boundary.record(minimum);
+            boundary.record(maximum);
+            assertThrows(InvalidInputException.class, () -> boundary.record(maximum));
+            assertEquals(maximum, boundary.lastTimestamp().orElseThrow());
+        }
+        try (HashedPasswordTimestampSequence first =
+                        HashedPasswordTimestampSequence.create(OptionalLong.empty());
+                HashedPasswordTimestampSequence second =
+                        HashedPasswordTimestampSequence.create(OptionalLong.empty())) {
+            first.record(next);
+            second.record(next);
+            assertEquals(first.lastTimestamp(), second.lastTimestamp());
+        }
     }
 
     @Test

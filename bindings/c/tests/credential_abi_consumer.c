@@ -1274,3 +1274,61 @@ int32_t kmipkit_credential_value_c_consumer_contract(void) {
     if (status == 0) status = credential_value_round_trip(0xf1234567, 1, CREDENTIAL_PAYLOAD_VALUE);
     return status;
 }
+
+int32_t kmipkit_hashed_password_timestamp_sequence_c_consumer_contract(
+        int64_t restored_timestamp,
+        int64_t next_timestamp,
+        int64_t equal_timestamp,
+        int64_t earlier_timestamp,
+        int64_t minimum_timestamp,
+        int64_t maximum_timestamp) {
+    int32_t status = 0;
+    uint8_t present = 0;
+    int64_t observed = 0;
+    kmipkit_hashed_password_timestamp_sequence_t *restored = 0;
+    kmipkit_hashed_password_timestamp_sequence_t *first = 0;
+    kmipkit_hashed_password_timestamp_sequence_t *second = 0;
+    kmipkit_hashed_password_timestamp_sequence_t *boundary = 0;
+
+    status = kmipkit_hashed_password_timestamp_sequence_new(
+            1, restored_timestamp, &restored);
+    if (status == 0) status = kmipkit_hashed_password_timestamp_sequence_last_timestamp(
+            restored, &present, &observed);
+    if (status == 0 && (present != 1 || observed != restored_timestamp)) status = 1;
+    if (status == 0) status = kmipkit_hashed_password_timestamp_sequence_record(
+            restored, next_timestamp);
+    if (status == 0) status = kmipkit_hashed_password_timestamp_sequence_last_timestamp(
+            restored, &present, &observed);
+    if (status == 0 && (present != 1 || observed != next_timestamp)) status = 1;
+    if (status == 0 && kmipkit_hashed_password_timestamp_sequence_record(
+            restored, equal_timestamp) != KMIPKIT_ERROR_INVALID_INPUT) status = 1;
+    if (status == 0 && kmipkit_hashed_password_timestamp_sequence_record(
+            restored, earlier_timestamp) != KMIPKIT_ERROR_INVALID_INPUT) status = 1;
+    if (status == 0) status = kmipkit_hashed_password_timestamp_sequence_last_timestamp(
+            restored, &present, &observed);
+    if (status == 0 && (present != 1 || observed != next_timestamp)) status = 1;
+
+    if (status == 0) status = kmipkit_hashed_password_timestamp_sequence_new(0, 0, &first);
+    if (status == 0) status = kmipkit_hashed_password_timestamp_sequence_new(0, 0, &second);
+    if (status == 0) status = kmipkit_hashed_password_timestamp_sequence_record(first, next_timestamp);
+    if (status == 0) status = kmipkit_hashed_password_timestamp_sequence_record(second, next_timestamp);
+    if (status == 0) status = kmipkit_hashed_password_timestamp_sequence_last_timestamp(
+            first, &present, &observed);
+    if (status == 0 && (present != 1 || observed != next_timestamp)) status = 1;
+    if (status == 0) status = kmipkit_hashed_password_timestamp_sequence_new(0, 0, &boundary);
+    if (status == 0) status = kmipkit_hashed_password_timestamp_sequence_record(
+            boundary, minimum_timestamp);
+    if (status == 0) status = kmipkit_hashed_password_timestamp_sequence_record(
+            boundary, maximum_timestamp);
+    if (status == 0 && kmipkit_hashed_password_timestamp_sequence_record(
+            boundary, maximum_timestamp) != KMIPKIT_ERROR_INVALID_INPUT) status = 1;
+    if (status == 0) status = kmipkit_hashed_password_timestamp_sequence_last_timestamp(
+            boundary, &present, &observed);
+    if (status == 0 && (present != 1 || observed != maximum_timestamp)) status = 1;
+
+    kmipkit_hashed_password_timestamp_sequence_release(boundary);
+    kmipkit_hashed_password_timestamp_sequence_release(second);
+    kmipkit_hashed_password_timestamp_sequence_release(first);
+    kmipkit_hashed_password_timestamp_sequence_release(restored);
+    return status;
+}

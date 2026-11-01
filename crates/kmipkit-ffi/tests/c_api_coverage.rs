@@ -49,6 +49,14 @@ unsafe extern "C" {
     fn kmipkit_credential_c_consumer_rejects_missing_required_field() -> i32;
     fn kmipkit_nonce_c_consumer_rejects_missing_required_value() -> i32;
     fn kmipkit_hashed_password_credential_c_consumer_contract() -> i32;
+    fn kmipkit_hashed_password_timestamp_sequence_c_consumer_contract(
+        restored_timestamp: i64,
+        next_timestamp: i64,
+        equal_timestamp: i64,
+        earlier_timestamp: i64,
+        minimum_timestamp: i64,
+        maximum_timestamp: i64,
+    ) -> i32;
     fn kmipkit_credential_value_c_consumer_contract() -> i32;
 }
 
@@ -97,6 +105,39 @@ fn compiled_c_consumer_checks_secret_ownership_callbacks_and_ttlv_conversion() {
 fn compiled_c_consumer_preserves_hashed_password_algorithm_and_ttlv() {
     // SAFETY: The C consumer owns all temporary TTLV and credential handles it creates.
     let status = unsafe { kmipkit_hashed_password_credential_c_consumer_contract() };
+    assert_eq!(status, 0);
+}
+
+#[test]
+fn compiled_c_consumer_matches_hashed_password_timestamp_sequence_fixture() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("shared API parity fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("fixture contains cases")
+        .iter()
+        .find(|case| case["id"] == "credentials.hashed-password-timestamp-sequence.v1")
+        .expect("hashed-password timestamp sequence case exists");
+    let input = &case["input"];
+    let read_i64 = |name: &str| {
+        input[name]
+            .as_i64()
+            .unwrap_or_else(|| panic!("fixture field {name} is signed 64-bit"))
+    };
+
+    // SAFETY: The C consumer owns, uses, and releases all temporary opaque sequence handles.
+    let status = unsafe {
+        kmipkit_hashed_password_timestamp_sequence_c_consumer_contract(
+            read_i64("restoredTimestamp"),
+            read_i64("nextTimestamp"),
+            read_i64("equalTimestamp"),
+            read_i64("earlierTimestamp"),
+            read_i64("minimumTimestamp"),
+            read_i64("maximumTimestamp"),
+        )
+    };
     assert_eq!(status, 0);
 }
 
