@@ -113,8 +113,25 @@ class T100QueryPingDeclarationMappingTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("candidateSpecId") == "KMIPKIT-0020"
         ]
-        identities = sorted(f"{row['packageId']}|{row['exportName']}" for row in candidates)
-        self.assertEqual(BASE_CANDIDATE_COUNT, len(candidates))
+        if candidates:
+            rows = candidates
+        else:
+            mapped_names = set(_expected_mappings())
+            mapped = [
+                row
+                for row in self.manifest["publicDeclarations"]
+                if row.get("approvalSource", {}).get("path") == OWNER_SPEC
+                and row["exportName"] in mapped_names
+            ]
+            excluded = [
+                row
+                for row in self.manifest["approvedExclusions"]
+                if row.get("approvalSource", {}).get("path") == OWNER_SPEC
+                and "T100" in row.get("evidence", "")
+            ]
+            rows = mapped + excluded
+        identities = sorted(f"{row['packageId']}|{row['exportName']}" for row in rows)
+        self.assertEqual(BASE_CANDIDATE_COUNT, len(rows))
         self.assertEqual(BASE_CANDIDATE_SHA256, hashlib.sha256("\n".join(identities).encode()).hexdigest())
 
     def test_no_kmipkit_0020_candidates_remain_blocked(self) -> None:
