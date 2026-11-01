@@ -75,6 +75,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "client_batch_model",
             "client_execution",
             "client_profile_validation",
+            "credential_secret_parity",
             "credential_ttlv_parity",
             "credential_type_parity",
             "credential_validation_error_parity",
@@ -404,6 +405,7 @@ fn every_exported_c_function_starts_inside_the_shared_panic_boundary() {
     let sources = [
         include_str!("../../src/extension_registry.rs"),
         include_str!("../../src/extension_registry/client_abi.rs"),
+        include_str!("../../src/extension_registry/credential_secrets.rs"),
     ];
     let mut exports: Vec<(String, bool)> = sources
         .into_iter()

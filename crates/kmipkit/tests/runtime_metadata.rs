@@ -58,6 +58,10 @@ fn capability_query_matches_manifest_ready_capabilities() {
         Ok(true)
     );
     assert_eq!(
+        kmipkit::capability_is_available("credential_secret_parity"),
+        Ok(true)
+    );
+    assert_eq!(
         kmipkit::capability_is_available("nonce_ttlv_parity"),
         Ok(true)
     );
