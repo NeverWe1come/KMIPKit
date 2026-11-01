@@ -112,7 +112,7 @@ impl UsernameAndPasswordCredential {
     /// has an invalid type, order, or multiplicity.
     pub fn try_from_ttlv(tree: Structure) -> Result<Self, CredentialValidationError> {
         validate(&tree, USERNAME_PASSWORD_RULES, &[])?;
-        Ok(Self { tree })
+        Ok(Self::from_tree(tree))
     }
 }
 
