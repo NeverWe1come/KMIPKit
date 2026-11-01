@@ -218,6 +218,9 @@ def _apply_input_array_contract(manifest: dict[str, object]) -> None:
 
 
 class ManifestGeneratorCliTests(unittest.TestCase):
+    def test_checked_in_manifest_fits_the_bounded_input_limit(self) -> None:
+        self.assertLessEqual(MANIFEST.stat().st_size, generate.MAX_MANIFEST_BYTES)
+
     def test_v1_reference_validation_does_not_require_v2_declarations(self) -> None:
         manifest = json.loads(PUBLIC_API_V1_FIXTURE.read_text(encoding="utf-8"))
 
