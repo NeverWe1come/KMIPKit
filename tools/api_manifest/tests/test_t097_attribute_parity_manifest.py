@@ -56,6 +56,22 @@ class T097AttributeParityManifestTests(unittest.TestCase):
             f"unresolved={[(row['packageId'], row['exportName']) for row in unresolved[:8]]}",
         )
 
+    def test_get_attributes_facade_mappings_use_the_get_attributes_requirement(self) -> None:
+        expected_ids = {
+            "client_batch_item_get_attributes",
+            "client_batch_item_response_get_attributes",
+        }
+        functions = {
+            row["id"]: set(row["requirementIds"])
+            for row in self.manifest["functions"]
+            if row["id"] in expected_ids
+        }
+        self.assertEqual(expected_ids, set(functions))
+        for function_id, requirement_ids in functions.items():
+            with self.subTest(function=function_id):
+                self.assertIn("KMIPKIT-0016-FR-006", requirement_ids)
+                self.assertNotIn("KMIPKIT-0016-FR-007", requirement_ids)
+
 
 if __name__ == "__main__":
     unittest.main()
