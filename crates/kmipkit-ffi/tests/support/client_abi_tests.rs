@@ -11,6 +11,7 @@ use base64::Engine;
 use kmipkit_client::{Client, ClientBatchResponse, ClientError, ClientErrorCategory};
 use kmipkit_protocol::{
     ActivateRequest, ArchiveRequest, AttributeSet, CertifyRequest, CheckRequest,
+    HashRequest, MacRequest, MacVerifyRequest, SignRequest, SignatureVerifyRequest,
     CreateKeyPairRequest, CreateSplitKeyRequest, DelegatedLoginRequest, DerivationMethod,
     DerivationParameters, DeriveKeyRequest, DestroyRequest, ExportRequest, GetRequest,
     GetUsageAllocationRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest, LocateRequest,
@@ -1178,6 +1179,239 @@ fn ffi_successful_hash_response_getter_returns_typed_fields() {
     assert_response_span(data, b"hash-response-data");
     assert_response_span(correlation_value, &correlation);
     kmipkit_client_batch_item_response_release(hash);
+}
+
+type SuccessfulCryptoResponseTtlvGetter = extern "C" fn(
+    *mut kmipkit_client_batch_item_response_t,
+    *mut u8,
+    *mut *mut kmipkit_ttlv_structure_t,
+) -> i32;
+
+fn assert_structure_view_tags(view: *mut kmipkit_ttlv_structure_view_t, expected: &[u32]) {
+    let mut count = 0;
+    assert_eq!(
+        SUCCESS,
+        kmipkit_ttlv_structure_view_item_count(view, &raw mut count)
+    );
+    assert_eq!(expected.len() as u64, count);
+    for (index, expected_tag) in expected.iter().copied().enumerate() {
+        let mut item = ptr::null_mut();
+        assert_eq!(
+            SUCCESS,
+            kmipkit_ttlv_structure_view_item_at(view, index as u64, &raw mut item)
+        );
+        let mut tag = ptr::null_mut();
+        assert_eq!(SUCCESS, kmipkit_ttlv_item_view_tag(item, &raw mut tag));
+        let mut raw_tag = 0;
+        assert_eq!(SUCCESS, kmipkit_ttlv_tag_value(tag, &raw mut raw_tag));
+        assert_eq!(expected_tag, raw_tag);
+        kmipkit_tag_release(tag);
+        kmipkit_ttlv_item_view_release(item);
+    }
+}
+
+fn assert_success_response_ttlv_copy(
+    getter: SuccessfulCryptoResponseTtlvGetter,
+    item: *mut kmipkit_client_batch_item_response_t,
+    expected_payload_tags: &[u32],
+) {
+    let mut present = 0;
+    let mut response_ttlv = ptr::null_mut();
+    assert_eq!(SUCCESS, getter(item, &raw mut present, &raw mut response_ttlv));
+    assert_eq!(1, present);
+    assert!(!response_ttlv.is_null());
+    kmipkit_client_batch_item_response_release(item);
+
+    let mut root = ptr::null_mut();
+    assert_eq!(SUCCESS, kmipkit_ttlv_structure_view(response_ttlv, &raw mut root));
+    assert_structure_view_tags(root, &[0x0042_005c, 0x0042_0093, 0x0042_007f, 0x0042_007c]);
+
+    let mut payload_item = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_ttlv_structure_view_item_at(root, 3, &raw mut payload_item)
+    );
+    let mut payload_value = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_ttlv_item_view_value(payload_item, &raw mut payload_value)
+    );
+    let mut payload = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_ttlv_value_view_structure(payload_value, &raw mut payload)
+    );
+    assert_structure_view_tags(payload, expected_payload_tags);
+
+    let mut unknown_item = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_ttlv_structure_view_item_at(
+            payload,
+            (expected_payload_tags.len() - 1) as u64,
+            &raw mut unknown_item,
+        )
+    );
+    let mut unknown_value = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_ttlv_item_view_value(unknown_item, &raw mut unknown_value)
+    );
+    let mut item_type = 0;
+    assert_eq!(
+        SUCCESS,
+        kmipkit_ttlv_value_view_type(unknown_value, &raw mut item_type)
+    );
+    assert_eq!(5, item_type);
+    let mut enumeration = 0;
+    assert_eq!(
+        SUCCESS,
+        kmipkit_ttlv_value_view_enumeration(unknown_value, &raw mut enumeration)
+    );
+    assert_eq!(0xfedc_ba98, enumeration);
+
+    kmipkit_ttlv_value_view_release(unknown_value);
+    kmipkit_ttlv_item_view_release(unknown_item);
+    kmipkit_ttlv_structure_view_release(payload);
+    kmipkit_ttlv_value_view_release(payload_value);
+    kmipkit_ttlv_item_view_release(payload_item);
+    kmipkit_ttlv_structure_view_release(root);
+    kmipkit_ttlv_structure_release(response_ttlv);
+}
+
+fn test_hash_request() -> ClientRequest {
+    let mut parameters = Structure::new();
+    parameters
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0038)
+                    .expect("Hashing Algorithm tag fits the KMIP tag field")
+                    .try_checked()
+                    .expect("Hashing Algorithm is allocated in KMIP 2.1"),
+                Value::enumeration(6),
+            )
+            .expect("valid Hashing Algorithm test item builds"),
+        )
+        .expect("Hashing Algorithm item fits within the test structure limit");
+    ClientRequest::Hash(HashRequest::new(parameters).with_data(OperationData::ByteString(
+        SecretBytes::new(b"request-hash-data".to_vec()),
+    )))
+}
+
+#[test]
+fn ffi_crypto_response_ttlv_returns_ordered_owned_success_copy_only() {
+    let unknown = ttlv_enumeration(0x0054_0001, 0xfedc_ba98);
+    let cases: [
+        (
+            SuccessfulCryptoResponseTtlvGetter,
+            *mut kmipkit_client_batch_item_response_t,
+            &[u32],
+        );
+        5
+    ] = [
+        (
+            kmipkit_client_batch_item_response_hash_ttlv,
+            successful_cryptographic_item(
+                test_hash_request(), 0x27, b"hash-ttlv-success",
+                vec![ttlv_item(0x0042_00c2, 0x08, b"digest"), unknown.clone()],
+            ),
+            &[0x0042_00c2, 0x0054_0001],
+        ),
+        (
+            kmipkit_client_batch_item_response_mac_ttlv,
+            successful_cryptographic_item(
+                ClientRequest::Mac(MacRequest::new()
+                    .with_unique_identifier(response_fixture_uid())
+                    .with_data(OperationData::ByteString(SecretBytes::new(b"mac-input".to_vec())))),
+                0x23, b"mac-ttlv-success",
+                vec![
+                    ttlv_item(0x0042_0094, 0x07, b"response-id"),
+                    ttlv_item(0x0042_00c4, 0x08, b"mac-data"),
+                    unknown.clone(),
+                ],
+            ),
+            &[0x0042_0094, 0x0042_00c4, 0x0054_0001],
+        ),
+        (
+            kmipkit_client_batch_item_response_mac_verify_ttlv,
+            successful_cryptographic_item(
+                ClientRequest::MacVerify(MacVerifyRequest::new()
+                    .with_unique_identifier(response_fixture_uid())
+                    .with_mac_data(SecretBytes::new(b"mac-input".to_vec()))),
+                0x24, b"mac-verify-ttlv-success",
+                vec![
+                    ttlv_item(0x0042_0094, 0x07, b"response-id"),
+                    ttlv_enumeration(0x0042_0128, 0xfedc_ba98),
+                    unknown.clone(),
+                ],
+            ),
+            &[0x0042_0094, 0x0042_0128, 0x0054_0001],
+        ),
+        (
+            kmipkit_client_batch_item_response_sign_ttlv,
+            successful_cryptographic_item(
+                ClientRequest::Sign(SignRequest::new()
+                    .with_unique_identifier(response_fixture_uid())
+                    .with_data(OperationData::ByteString(SecretBytes::new(b"sign-input".to_vec())))),
+                0x21, b"sign-ttlv-success",
+                vec![
+                    ttlv_item(0x0042_0094, 0x07, b"response-id"),
+                    ttlv_item(0x0042_00c3, 0x08, b"signature"),
+                    unknown.clone(),
+                ],
+            ),
+            &[0x0042_0094, 0x0042_00c3, 0x0054_0001],
+        ),
+        (
+            kmipkit_client_batch_item_response_signature_verify_ttlv,
+            successful_cryptographic_item(
+                ClientRequest::SignatureVerify(SignatureVerifyRequest::new()
+                    .with_unique_identifier(response_fixture_uid())
+                    .with_signature_data(SecretBytes::new(b"signature-input".to_vec()))),
+                0x22, b"signature-verify-ttlv-success",
+                vec![
+                    ttlv_item(0x0042_0094, 0x07, b"response-id"),
+                    ttlv_enumeration(0x0042_0128, 0xfedc_ba98),
+                    ttlv_item(0x0042_00c2, 0x08, b"recovered"),
+                    unknown.clone(),
+                ],
+            ),
+            &[0x0042_0094, 0x0042_0128, 0x0042_00c2, 0x0054_0001],
+        ),
+    ];
+
+    for (getter, item, expected_payload_tags) in cases {
+        assert_success_response_ttlv_copy(getter, item, expected_payload_tags);
+    }
+
+    let mismatched_operation = successful_cryptographic_item(
+        test_hash_request(), 0x27, b"hash-ttlv-wrong-operation",
+        vec![ttlv_item(0x0042_00c2, 0x08, b"digest"), unknown.clone()],
+    );
+    let mut present = 1;
+    let mut response_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_sign_ttlv(
+            mismatched_operation, &raw mut present, &raw mut response_ttlv,
+        )
+    );
+    assert_eq!(0, present);
+    assert!(response_ttlv.is_null());
+    kmipkit_client_batch_item_response_release(mismatched_operation);
+
+    let failed = failed_cryptographic_item(test_hash_request(), 0x27, b"hash-ttlv-failed");
+    present = 1;
+    response_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_hash_ttlv(
+            failed, &raw mut present, &raw mut response_ttlv,
+        )
+    );
+    assert_eq!(0, present);
+    assert!(response_ttlv.is_null());
+    kmipkit_client_batch_item_response_release(failed);
 }
 
 #[test]

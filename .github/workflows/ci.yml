@@ -309,7 +309,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B -m unittest tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_t076_client_mapping tools.api_manifest.tests.test_t071_parity_runner -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t100_query_ping_declaration_mapping tools.api_manifest.tests.test_ping_query_parity_manifest -v
+          & $python -B -m unittest tools.api_manifest.tests.test_t100_query_ping_declaration_mapping tools.api_manifest.tests.test_ping_query_parity_manifest tools.api_manifest.tests.test_t101_hash_mac_signature_declaration_mapping tools.api_manifest.tests.test_hash_mac_signature_parity_manifest -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B -m unittest tools.api_manifest.tests.test_operation_readiness -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

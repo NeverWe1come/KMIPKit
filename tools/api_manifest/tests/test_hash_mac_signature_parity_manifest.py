@@ -87,6 +87,36 @@ PUBLIC_FUNCTIONS = {
         "signatureVerifyResponse",
         "kmipkit.client.BatchItemResult.signature_verify_response",
     ),
+    "client_batch_item_response_hash_ttlv": (
+        "kmipkit_client_batch_item_response_hash_ttlv",
+        "HashResponse",
+        "responseTtlv",
+        "kmipkit.client.HashResponse.response_ttlv",
+    ),
+    "client_batch_item_response_mac_ttlv": (
+        "kmipkit_client_batch_item_response_mac_ttlv",
+        "MacResponse",
+        "responseTtlv",
+        "kmipkit.client.MacResponse.response_ttlv",
+    ),
+    "client_batch_item_response_mac_verify_ttlv": (
+        "kmipkit_client_batch_item_response_mac_verify_ttlv",
+        "MacVerifyResponse",
+        "responseTtlv",
+        "kmipkit.client.MacVerifyResponse.response_ttlv",
+    ),
+    "client_batch_item_response_sign_ttlv": (
+        "kmipkit_client_batch_item_response_sign_ttlv",
+        "SignResponse",
+        "responseTtlv",
+        "kmipkit.client.SignResponse.response_ttlv",
+    ),
+    "client_batch_item_response_signature_verify_ttlv": (
+        "kmipkit_client_batch_item_response_signature_verify_ttlv",
+        "SignatureVerifyResponse",
+        "responseTtlv",
+        "kmipkit.client.SignatureVerifyResponse.response_ttlv",
+    ),
 }
 
 
@@ -175,6 +205,46 @@ class HashMacSignatureParityManifestTests(unittest.TestCase):
                 self.assertEqual(java_class, row["java"]["class"])
                 self.assertEqual(java_method, row["java"]["method"])
                 self.assertEqual(python_name, row["python"]["function"])
+
+    def test_t101_success_response_ttlv_is_inventoried_under_each_operation(self) -> None:
+        expected = {
+            "KMIPKIT-ELEM-OP-C2S-HASH": "T101:hash:response-ttlv",
+            "KMIPKIT-ELEM-OP-C2S-MAC": "T101:mac:response-ttlv",
+            "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY": "T101:mac_verify:response-ttlv",
+            "KMIPKIT-ELEM-OP-C2S-SIGN": "T101:sign:response-ttlv",
+            "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY": "T101:signature_verify:response-ttlv",
+        }
+        for operation_id, prefix in expected.items():
+            with self.subTest(operation=operation_id):
+                operation = self.operations[operation_id]
+                for language in ("c", "java", "python"):
+                    self.assertEqual(
+                        [f"{prefix}:{language}"],
+                        [item for item in operation["declarations"][language]
+                         if item.startswith("T101:")],
+                    )
+
+    def test_mac_verify_and_signature_verify_map_unknown_validity_indicators(self) -> None:
+        expected = {
+            "kmipkit_protocol::MacVerifyResponse::validity_indicator",
+            "kmipkit_protocol::SignatureVerifyResponse::validity_indicator",
+        }
+        rows = [
+            row for row in self.manifest["publicDeclarations"]
+            if row["exportName"] in expected
+        ]
+        self.assertEqual(expected, {row["exportName"] for row in rows})
+        for row in rows:
+            with self.subTest(export=row["exportName"]):
+                self.assertIn("KMIPKIT-0021-FR-008", row["requirementIds"])
+                self.assertIn(
+                    "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+                    row["parityEvidenceIds"],
+                )
+                self.assertIn(
+                    "bindings/python/tests/test_hash_mac_signature_operations.py",
+                    row["parityEvidenceIds"],
+                )
 
     def test_hash_client_request_convenience_method_has_four_language_mapping(self) -> None:
         declaration_id = "rust-observed-7cc46b70a35514bf0bf6"

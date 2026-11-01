@@ -69,6 +69,11 @@ class T071ParityRunnerTests(unittest.TestCase):
             r"tools\.api_manifest\.tests\.test_t076_client_mapping "
             r"tools\.api_manifest\.tests\.test_t071_parity_runner -v",
         )
+        self.assertRegex(
+            workflow,
+            r"tools\.api_manifest\.tests\.test_t101_hash_mac_signature_declaration_mapping "
+            r"tools\.api_manifest\.tests\.test_hash_mac_signature_parity_manifest -v",
+        )
 
     def test_discover_versions_plan_selects_all_four_runtime_consumers(self) -> None:
         result = subprocess.run(

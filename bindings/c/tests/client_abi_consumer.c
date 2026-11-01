@@ -2720,6 +2720,26 @@ static int cryptographic_abi_symbols_are_callable(void) {
             &correlation_present, &correlation_value) != T076_ERROR_INVALID_INPUT) {
         return 0;
     }
+    typedef int32_t (*response_ttlv_getter)(
+        kmipkit_client_batch_item_response_t *, uint8_t *, kmipkit_ttlv_structure_t **);
+    const response_ttlv_getter response_ttlv_getters[] = {
+        kmipkit_client_batch_item_response_hash_ttlv,
+        kmipkit_client_batch_item_response_mac_ttlv,
+        kmipkit_client_batch_item_response_mac_verify_ttlv,
+        kmipkit_client_batch_item_response_sign_ttlv,
+        kmipkit_client_batch_item_response_signature_verify_ttlv,
+    };
+    for (size_t index = 0; index < sizeof(response_ttlv_getters) / sizeof(response_ttlv_getters[0]); ++index) {
+        kmipkit_ttlv_structure_t *response_ttlv =
+            (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+        present = UINT8_MAX;
+        if (response_ttlv_getters[index](0, &present, &response_ttlv) !=
+                T076_ERROR_INVALID_INPUT || present != 0 || response_ttlv != 0) {
+            kmipkit_ttlv_structure_release(response_ttlv);
+            return 0;
+        }
+        kmipkit_ttlv_structure_release(response_ttlv);
+    }
     return 1;
 }
 

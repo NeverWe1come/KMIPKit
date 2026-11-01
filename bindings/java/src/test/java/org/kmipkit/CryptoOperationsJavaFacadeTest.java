@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.lang.reflect.InvocationTargetException;
@@ -42,8 +43,11 @@ import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.Tag;
 import org.kmipkit.ttlv.TtlvItem;
+import org.kmipkit.ttlv.TtlvItemView;
 import org.kmipkit.ttlv.TtlvStructure;
+import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvValue;
+import org.kmipkit.ttlv.TtlvValueView;
 
 /** RED contract coverage for Java/JNI Hash, MAC, and signature operations. */
 final class CryptoOperationsJavaFacadeTest {
@@ -348,9 +352,47 @@ final class CryptoOperationsJavaFacadeTest {
             }
             default -> throw new AssertionError("unknown crypto response");
         }
+        if (operation.name().matches("hash|mac|macVerify|sign|signatureVerify")) {
+            assertSuccessfulResponseTtlv(response);
+        }
         if (operation.name().matches("encrypt|decrypt")) {
             assertResponseCloseWipesOwnedBytes(response);
         }
+    }
+
+    private static void assertSuccessfulResponseTtlv(Object response) throws Exception {
+        Object value = publicMethod(response.getClass(), "responseTtlv").invoke(response);
+        assertTrue(value instanceof TtlvStructure, "successful crypto responses expose an owned generic TTLV copy");
+        TtlvStructure responseTtlv = (TtlvStructure) value;
+        try (TtlvStructureView root = responseTtlv.view()) {
+            assertEquals(List.of(0x42005c, 0x420093, 0x42007f, 0x42007c), structureTags(root));
+            try (TtlvItemView payloadItem = root.itemAt(3);
+                    TtlvValueView payloadValue = payloadItem.value();
+                    TtlvStructureView payload = payloadValue.structure()) {
+                long count = payload.itemCount();
+                assertTrue(count >= 2);
+                try (TtlvItemView unknown = payload.itemAt(count - 1);
+                        var tag = unknown.tag();
+                        TtlvValueView rawValue = unknown.value()) {
+                    assertEquals(0x540001, tag.raw());
+                    assertEquals(0xfedcba98L, rawValue.enumeration());
+                }
+            }
+        }
+        publicMethod(response.getClass(), "close").invoke(response);
+        publicMethod(response.getClass(), "close").invoke(response);
+        assertThrows(InvalidInputException.class, responseTtlv::view,
+                "closing the typed response must release its independent TTLV copy exactly once");
+    }
+
+    private static List<Integer> structureTags(TtlvStructureView structure) {
+        List<Integer> tags = new ArrayList<>();
+        for (long index = 0; index < structure.itemCount(); index++) {
+            try (TtlvItemView item = structure.itemAt(index); var tag = item.tag()) {
+                tags.add(tag.raw());
+            }
+        }
+        return tags;
     }
 
     private static void assertCopiedResponseBytes(Object response, String fieldName, byte[] expected) throws Exception {
@@ -485,6 +527,9 @@ final class CryptoOperationsJavaFacadeTest {
                 fields.add(ttlvItem(0x4200c2, 8, SECRET_MARKER));
             }
             default -> throw new AssertionError("unknown crypto response");
+        }
+        if (operation.name().matches("hash|mac|macVerify|sign|signatureVerify")) {
+            fields.add(ttlvEnumeration(0x540001, 0xfedc_ba98));
         }
         return ttlvStructure(0x42000f,
                 ttlvEnumeration(0x42005c, operation.code()),

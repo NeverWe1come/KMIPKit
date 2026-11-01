@@ -71,6 +71,106 @@ def test_crypto_response_parsers_accept_omitted_optional_outputs(
         assert response.correlation_value is None
 
 
+@pytest.mark.parametrize("operation", _OPERATIONS)
+def test_successful_crypto_response_owns_ordered_generic_ttlv_copy(
+    monkeypatch: pytest.MonkeyPatch, operation: str
+) -> None:
+    pointer = extensions.ffi.cast("kmipkit_ttlv_structure_t *", 24)
+    response_ttlv = ttlv._wrap_owned_handle(ttlv.Structure, pointer)
+    response_ttlv.test_items = (
+        (0x42005C, ttlv.ItemType.Enumeration, 0x27),
+        (0x420093, ttlv.ItemType.ByteString, b"batch-id"),
+        (0x42007F, ttlv.ItemType.Enumeration, 0),
+        (0x42007C, ttlv.ItemType.Structure, None),
+    )
+    response_ttlv.test_payload_items = (
+        (0x4200C2, ttlv.ItemType.ByteString, b"typed-field"),
+        (0x540001, ttlv.ItemType.Enumeration, 0xFEDC_BA98),
+    )
+    released: list[object] = []
+
+    def get_response(_item: object, present: object, *_outputs: object) -> int:
+        present[0] = 1
+        return 0
+
+    def get_response_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 1
+        output[0] = pointer
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            **{
+                f"kmipkit_client_batch_item_response_{operation}": get_response,
+                f"kmipkit_client_batch_item_response_{operation}_ttlv": get_response_ttlv,
+            }
+        ),
+    )
+    monkeypatch.setattr(
+        client.ttlv,
+        "lib",
+        SimpleNamespace(kmipkit_ttlv_structure_release=lambda handle: released.append(handle)),
+    )
+    monkeypatch.setattr(
+        client.ttlv,
+        "_structure_from_native_address",
+        lambda address: response_ttlv if address == 24 else None,
+    )
+
+    parser = getattr(client, f"_{operation}_response")
+    response = parser(SimpleNamespace(_pointer=lambda: object()))
+
+    assert response is not None
+    assert response.response_ttlv is response_ttlv
+    assert [item[0] for item in response_ttlv.test_items] == [
+        0x42005C, 0x420093, 0x42007F, 0x42007C
+    ]
+    assert [item[0] for item in response_ttlv.test_payload_items] == [0x4200C2, 0x540001]
+    assert response_ttlv.test_payload_items[-1][1] is ttlv.ItemType.Enumeration
+    assert response_ttlv.test_payload_items[-1][2] == 0xFEDC_BA98
+    assert "fedc" not in repr(response).lower()
+    response.close()
+    response.close()
+    assert response_ttlv.closed
+    assert released == [pointer]
+
+
+@pytest.mark.parametrize("operation", _OPERATIONS)
+def test_unsuccessful_crypto_response_has_no_success_ttlv_accessor(
+    monkeypatch: pytest.MonkeyPatch, operation: str
+) -> None:
+    called = False
+
+    def get_response(_item: object, present: object, *_outputs: object) -> int:
+        present[0] = 0
+        return 0
+
+    def get_response_ttlv(*_arguments: object) -> int:
+        nonlocal called
+        called = True
+        raise AssertionError("a missing typed result must not request a success TTLV")
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            **{
+                f"kmipkit_client_batch_item_response_{operation}": get_response,
+                f"kmipkit_client_batch_item_response_{operation}_ttlv": get_response_ttlv,
+            }
+        ),
+    )
+
+    response = getattr(client, f"_{operation}_response")(
+        SimpleNamespace(_pointer=lambda: object())
+    )
+
+    assert response is None
+    assert not called
+
+
 def test_crypto_response_helpers_reject_malformed_native_optional_values() -> None:
     span = extensions.ffi.new("kmipkit_byte_span_v1_t *")
     with pytest.raises(errors.InvalidInputError):
