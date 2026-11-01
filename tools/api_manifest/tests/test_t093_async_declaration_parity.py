@@ -175,6 +175,8 @@ class T093AsyncDeclarationParityTests(unittest.TestCase):
             sorted(set(capability["requirementIds"])),
             capability["requirementIds"],
         )
+        for mappings in capability["mappings"].values():
+            self.assertEqual(sorted(set(mappings)), mappings)
         for package, export in sorted(expected):
             row = next(
                 item
