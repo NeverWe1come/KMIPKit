@@ -337,6 +337,10 @@ The KMIPKIT-0012 `NativeExtensionRegistry` bridge inventory has 60 exact exclusi
 
 The shared parity fixture `credentials.hashed-password-timestamp-sequence.v1` links the Rust, compiled C, Java, and Python sequence consumers under KMIPKIT-0008-FR-007, KMIPKIT-REQ-SPEC-9.11-010-001, and the applicable KMIPKIT-0043 parity requirements. The parity contract recognizes the `int32_t` return type used by its C consumer.
 
+### T102 — Rust-only `TransportResponse` trait artifacts
+
+The 11 exact trait-qualified declarations for `kmipkit_transport::TransportResponse` are excluded under accepted ADR-0014 and KMIPKIT-0043-FR-020/021. ADR-0014 Decisions 1 and 6 define the public Rust-only response wrapper, borrowed byte access, redacted `Debug`, and initialized-range zeroization on drop. These exclusions cover only standard-trait declaration artifacts: the `TransportResponse` type, `new`, `as_bytes`, and `Transport::exchange` remain declared with `rust-only-adr` parity scope. Focused response tests retain redaction and cleanup coverage, including partial-read cleanup in raw TLS and HTTPS transport tests. The exact-set contract rejects any additional trait exclusion for this type. This is API inventory accounting only; no transport or KMIP behavior changes.
+
 ### T094 — KMIPKIT-0012 vendor extension registry mapping
 
 Approved owner: `specs/012-vendor-extension-registry/spec.md`, especially FR-005/006/007/009/010, with exact per-declaration requirement IDs in the API manifest. The OASIS sources that define the preserved TTLV structures are KMIP Specification v2.1 §8.3/Table 396 (repeated Message Extension order), §9.13/Table 418 (Message Extension fields), §7.13/Table 365 (Extension Information), and §11.44/Table 476 (Query Extension List/Map). These are API mapping commitments and do not claim remote server support or implement Query.

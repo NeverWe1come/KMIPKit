@@ -31,17 +31,18 @@ class T102TransportResponseTraitExclusionTests(unittest.TestCase):
         cls.manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
 
     def test_exact_transport_response_trait_exports_have_adr_exclusions(self) -> None:
+        trait_export_prefix = "<kmipkit_transport::TransportResponse as "
         declarations = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-transport"
-            and row.get("exportName") in EXPECTED_TRANSPORT_RESPONSE_TRAITS
+            and row.get("exportName", "").startswith(trait_export_prefix)
         }
         exclusions = [
             row
             for row in self.manifest.get("approvedExclusions", [])
             if row.get("packageId") == "rust-kmipkit-transport"
-            and row.get("exportName") in EXPECTED_TRANSPORT_RESPONSE_TRAITS
+            and row.get("exportName", "").startswith(trait_export_prefix)
         ]
 
         self.assertEqual(set(declarations), set())

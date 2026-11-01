@@ -241,6 +241,8 @@ T102 Java TtlvPath bridge checkpoint (2026-11-02): the two `NativeExtensionRegis
 
 T102 KMIPKIT-0012 Java bridge checkpoint (2026-11-02): 45 `NativeExtensionRegistry` methods and 15 handle-kind constants are exact exclusions for JNI plumbing already called by the mapped four-language `vendor_extension_registry` facade. The semantic owner is approved KMIPKIT-0012-FR-010; the minimal JNI boundary is KMIPKIT-0043-FR-008/021. The exact T102 contract pins all 60 paths and their Java facade call sites, and keeps the 15 remaining bridge members plus the `NativeExtensionRegistry` type unresolved. The manifest now has 4,248 blocked KMIPKIT-0043 candidates; T102 remains open. Red `063204c44`, Green `8953b1a80`; full evidence and the related CI correction are in `implementation-evidence.md`.
 
+T102 Rust-only `TransportResponse` checkpoint (2026-11-02): the 11 exact Rust standard-trait artifacts are excluded under accepted ADR-0014 and KMIPKIT-0043-FR-020/021. The public `TransportResponse` type, `new`, `as_bytes`, and `Transport::exchange` remain declared Rust-only; the contract preserves redacted `Debug` and initialized-range zeroization behavior. The candidate inventory moves from 4,248 to 4,237; T102 remains open. Red `5745f4330`; Green and refactor evidence are recorded in `implementation-evidence.md`.
+
 ## Phase 13: Convergence
 
 - [x] T103 [US2] Enforce the signed 32-bit `ProtocolVersion` constructor contract in Python so its accepted major/minor values match Rust `i32`, C `int32_t`, and Java `int`; reject non-integers (including booleans) and out-of-range values with documented, safe errors. Add boundary and negative tests using Red, Green, Refactor commits. Cite KMIPKIT-0006-FR-012 and KMIPKIT-0043-FR-010/022.

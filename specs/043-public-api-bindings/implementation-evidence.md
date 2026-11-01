@@ -8379,3 +8379,26 @@ Verification:
 - `git diff --check` — passed.
 
 The first hosted run at `0dae7c0e8` failed only in `Script contracts / macos-latest`: the Gradle wrapper lacked POSIX execute permission, and the isolated runner's Cargo cache lacked `zeroize` while the audit deliberately built offline. Red `269648ad2` adds regression contracts for both prerequisites. Green `96d7692b9` invokes the POSIX wrapper through Bash and fetches the lockfile-pinned Cargo dependencies before the offline audit. The new head still needs its hosted CI rerun; no hosted-green claim is made here.
+
+### T102 Rust-only `TransportResponse` trait inventory (2026-11-02)
+
+This slice moves exactly 11 compiler-observed `TransportResponse` standard-trait paths from blocked declarations to accepted ADR-0014 exclusions. `TransportResponse`, `new`, `as_bytes`, and `Transport::exchange` remain declared with `rust-only-adr` scope. ADR-0014 Decisions 1 and 6 own the wrapper's borrowed byte access, redacted `Debug`, and initialized-range zeroization; the transport response unit and partial-read cleanup tests remain intact. The exact-set contract inspects every trait-qualified declaration and exclusion for this type and rejects any additional row. This is API inventory accounting only and adds no transport, KMIP, or language-binding behavior. The KMIPKIT-0043 blocked candidate count falls from 4,248 to 4,237; T102 remains open.
+
+| Phase | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red — pin the exact 11 exclusion paths, accepted owner, retained Rust-only API, and CI execution | `5745f4330` | `py -B -m unittest tools.api_manifest.tests.test_t102_transport_response_trait_exclusions scripts.tests.test_workflow.WorkflowContractTests.test_script_contract_job_runs_t102_transport_response_trait_exclusion_contract -v` | Expected failure before Green: the 11 paths were still blocked and the workflow did not yet invoke the focused contract. The retained API/security assertion passed. |
+| Green — record the exact ADR-0014 exclusions, regenerate outputs, and wire the contract into CI | `ca388007a` | `py -B tools/api_manifest/generate.py --write` | The pinned generator updated all affected checked-in outputs; no generated file was edited by hand. |
+| Refactor/evidence — strengthen the namespace-wide exact-set assertion and record owner boundaries | This commit | Focused contract, generation, inventory, and review results below | The current manifest contains exactly 11 `TransportResponse` trait exclusions and no remaining trait declarations. |
+
+Verification:
+
+- `py -B -m unittest tools.api_manifest.tests.test_t102_transport_response_trait_exclusions tools.api_manifest.tests.test_t102_java_ttlv_bridge_exclusions tools.api_manifest.tests.test_t094_vendor_extension_registry_parity -v` — 13 passed.
+- `py -B -m unittest scripts.tests.test_workflow.WorkflowContractTests.test_script_contract_job_runs_t102_transport_response_trait_exclusion_contract -v` — 1 passed.
+- `py -B -m unittest tools.api_manifest.tests.test_binding_exports -v` — 51 passed.
+- `py -B tools/api_manifest/generate.py --check` — all 12 outputs verified.
+- `py -B tools/api_manifest/audit_rust_exports.py --check` — passed with no Rust inventory mismatch or incomplete audit scope.
+- `cargo test -p kmipkit-transport --lib` — 136 passed, including redacted Debug and initialized-range zeroization tests.
+- Independent QA confirmed the exact 11-row manifest delta, unchanged functional declarations, and generated fixture consistency. Independent security review found no blocker; it prompted the namespace-wide exact-set assertion now covered by CI.
+- `git diff --check` — passed.
+
+Hosted CI for the published parent `180756eb9` later failed in `Script contracts / ubuntu-latest`: the isolated runner had not cached `org.jspecify:jspecify:1.0.0` before the offline Java binding audit. A follow-up Red/Green workflow correction is being recorded separately; the next pushed head must rerun hosted CI before this PR can be considered ready.
