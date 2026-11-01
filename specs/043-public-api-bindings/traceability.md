@@ -333,6 +333,8 @@ The four Java `NativeExtensionRegistry` exports for the sequence handle kind, co
 
 The `NativeExtensionRegistry.ttlvPathCreate` and `ttlvPathWithChildTag` members are likewise exact implementation-bridge exclusions. The typed `org.kmipkit.extensions.TtlvPath.create` and `withChildTag` methods remain mapped across Rust, C, Java, and Python under approved KMIPKIT-0012-FR-002/006/010/012; only their raw JNI entry points are excluded under the approved KMIPKIT-0043 minimal bridge boundary. `NativeExtensionRegistry.codecLimitsCreate` remains unresolved because it has no matching native-handle facade operation.
 
+The KMIPKIT-0012 `NativeExtensionRegistry` bridge inventory has 60 exact exclusions: 45 methods and 15 handle-kind constants. Each is invoked by a mapped typed Java facade; the functional capability remains mapped across Rust, C, Java, and Python. KMIPKIT-0012-FR-010 owns the extension-registry semantics, grounded in KMIP v2.1 §8.3/Table 396, §9.13/Table 418, §7.13/Table 365, and §11.44/Table 476; KMIPKIT-0043-FR-008/021 owns excluding internal JNI plumbing from the product API inventory. The contract pins the exact paths and call sites, and preserves 15 unresolved bridge members plus the unresolved `NativeExtensionRegistry` type. This is manifest accounting only and adds no protocol behavior or claim of server support.
+
 The shared parity fixture `credentials.hashed-password-timestamp-sequence.v1` links the Rust, compiled C, Java, and Python sequence consumers under KMIPKIT-0008-FR-007, KMIPKIT-REQ-SPEC-9.11-010-001, and the applicable KMIPKIT-0043 parity requirements. The parity contract recognizes the `int32_t` return type used by its C consumer.
 
 ### T094 — KMIPKIT-0012 vendor extension registry mapping

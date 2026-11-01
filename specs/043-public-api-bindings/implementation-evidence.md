@@ -8357,3 +8357,25 @@ Verification:
 The generated Java parity fixture stores the serialized manifest in fixed 12,000-character chunks. Moving the two declarations from the blocked list to the exclusions shifts chunk boundaries and causes broad mechanical line churn in `PublicApiParityFixtures.java`; the generated JSON fixture contains only the two additional exclusion records, and `generate.py --check` verifies the Java output is deterministic.
 
 The manifest has zero KMIPKIT-0043 candidates for these two paths and 4,308 other blocked candidates. T102 remains unchecked; this slice does not claim the PR, branch, coverage thresholds, profile conformance, or release complete.
+
+### T102 KMIPKIT-0012 Java NativeExtensionRegistry bridge reconciliation (2026-11-02)
+
+This manifest-only slice records 60 exact `NativeExtensionRegistry` exclusions: 45 methods and 15 handle-kind constants. Every entry is invoked by the mapped typed Java vendor-extension facade. The semantic capability remains mapped in Rust, C, Java, and Python under approved KMIPKIT-0012-FR-010; the exclusions cite the approved KMIPKIT-0043-FR-008/021 minimal JNI boundary. No KMIP wire behavior or facade capability changed. The 15 remaining bridge members stay blocked, as does the `NativeExtensionRegistry` type itself; `codecLimitsCreate`, lifecycle helpers, registration helpers, and unreferenced paths were not swept into this slice. The KMIPKIT-0043 inventory now has 4,248 blocked candidates.
+
+| Phase | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red — require the exact 60-row exclusion set, facade call sites, owner mappings, and residual blockers | `063204c44` | `py -B -m unittest tools.api_manifest.tests.test_t102_java_ttlv_bridge_exclusions -v` | Expected failure before the exclusions existed. |
+| Green — record exact exclusions and regenerate the checked-in manifest outputs | `8953b1a80` | `py -B tools/api_manifest/generate.py --write` | The pinned generator refreshed all affected outputs; no generated file was edited by hand. |
+| Refactor/evidence — document exact scope, CI remediation, reviewer result, and verification | This commit | Focused T102, parity, binding, inventory, generator, and full export-audit checks | Independent review found no blockers; T102 remains open. |
+
+Verification:
+
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_java_ttlv_bridge_exclusions tools.api_manifest.tests.test_t094_vendor_extension_registry_parity -v` — 11 passed.
+- `py -B -m unittest tools.api_manifest.tests.test_binding_exports -v` — 51 passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_checked_in_manifest_inventories_all_java_public_access_paths -v` — 1 passed at 1,018 Java public declarations.
+- `py -B -m unittest scripts.tests.test_workflow.WorkflowContractTests.test_script_contract_job_fetches_locked_cargo_dependencies_for_offline_audit scripts.tests.test_workflow.WorkflowContractTests.test_script_contract_job_runs_t102_java_ttlv_bridge_exclusion_contract -v` — 2 passed.
+- `py -B tools/api_manifest/generate.py --check` — all 12 outputs verified.
+- Full `audit_binding_exports.py --check` — C 801/757, Java 1,535/1,018, Python 1,921/1,140; all inventories match the manifest, with zero missing exports, kind mismatches, or issues.
+- `git diff --check` — passed.
+
+The first hosted run at `0dae7c0e8` failed only in `Script contracts / macos-latest`: the Gradle wrapper lacked POSIX execute permission, and the isolated runner's Cargo cache lacked `zeroize` while the audit deliberately built offline. Red `269648ad2` adds regression contracts for both prerequisites. Green `96d7692b9` invokes the POSIX wrapper through Bash and fetches the lockfile-pinned Cargo dependencies before the offline audit. The new head still needs its hosted CI rerun; no hosted-green claim is made here.
