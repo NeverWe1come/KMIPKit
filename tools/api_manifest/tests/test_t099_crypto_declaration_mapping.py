@@ -64,17 +64,6 @@ OPERATION_TARGETS = {
             "java": "org.kmipkit.extensions.ClientBatchItemResult.metadataV2",
             "python": "kmipkit.client.BatchItemResult.metadata_v2",
         },
-        "normative_requirements": {
-            "KMIPKIT-REQ-SPEC-4.16-001-001",
-            "KMIPKIT-REQ-SPEC-4.16-001-002",
-            "KMIPKIT-REQ-SPEC-4.16-002",
-            "KMIPKIT-REQ-SPEC-4.16-003",
-            "KMIPKIT-REQ-SPEC-6.1.17-001-001",
-            "KMIPKIT-REQ-SPEC-6.1.17-001-002",
-            "KMIPKIT-REQ-SPEC-6.1.17-005-001",
-            "KMIPKIT-REQ-SPEC-6.1.17-005-002",
-            "KMIPKIT-REQ-SPEC-6.1.17-006",
-        },
     },
     "Decrypt": {
         "id": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
@@ -96,18 +85,31 @@ OPERATION_TARGETS = {
             "java": "org.kmipkit.extensions.ClientBatchItemResult.metadataV2",
             "python": "kmipkit.client.BatchItemResult.metadata_v2",
         },
-        "normative_requirements": {
-            "KMIPKIT-REQ-SPEC-4.16-001-001",
-            "KMIPKIT-REQ-SPEC-4.16-001-002",
-            "KMIPKIT-REQ-SPEC-4.16-002",
-            "KMIPKIT-REQ-SPEC-4.16-003",
-            "KMIPKIT-REQ-SPEC-6.1.11-001-001",
-            "KMIPKIT-REQ-SPEC-6.1.11-001-002",
-            "KMIPKIT-REQ-SPEC-6.1.11-004-001",
-            "KMIPKIT-REQ-SPEC-6.1.11-004-002",
-            "KMIPKIT-REQ-SPEC-6.1.11-005",
-            "KMIPKIT-REQ-SPEC-6.1.11-006",
-        },
+    },
+}
+OPERATION_NORMATIVE_REQUIREMENTS = {
+    "Encrypt": {
+        "KMIPKIT-REQ-SPEC-4.16-001-001",
+        "KMIPKIT-REQ-SPEC-4.16-001-002",
+        "KMIPKIT-REQ-SPEC-4.16-002",
+        "KMIPKIT-REQ-SPEC-4.16-003",
+        "KMIPKIT-REQ-SPEC-6.1.17-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.17-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.17-005-001",
+        "KMIPKIT-REQ-SPEC-6.1.17-005-002",
+        "KMIPKIT-REQ-SPEC-6.1.17-006",
+    },
+    "Decrypt": {
+        "KMIPKIT-REQ-SPEC-4.16-001-001",
+        "KMIPKIT-REQ-SPEC-4.16-001-002",
+        "KMIPKIT-REQ-SPEC-4.16-002",
+        "KMIPKIT-REQ-SPEC-4.16-003",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-005",
+        "KMIPKIT-REQ-SPEC-6.1.11-006",
     },
 }
 REQUEST_METHODS = {
@@ -255,7 +257,7 @@ class T099CryptoDeclarationMappingTests(unittest.TestCase):
         self.assertEqual(T099_MAPPING_COUNT, len(mapped))
         for row in mapped:
             with self.subTest(export=row["exportName"]):
-                capability_id, expected_targets, semantics = _expected_targets(row["exportName"])
+                capability_id, expected_targets, _ = _expected_targets(row["exportName"])
                 self.assertEqual(capability_id, row["capabilityId"])
                 self.assertEqual("verified", row["declarationState"])
                 self.assertEqual("four-language", row["parityScope"])
@@ -282,7 +284,8 @@ class T099CryptoDeclarationMappingTests(unittest.TestCase):
                 requirements = set(row["requirementIds"])
                 self.assertTrue(SHARED_REQUIREMENTS <= requirements)
                 self.assertTrue(OWNER_REQUIREMENTS <= requirements)
-                self.assertTrue(OPERATION_TARGETS["Encrypt" if "Encrypt" in row["exportName"] or "encrypt" in row["exportName"] else "Decrypt"]["normative_requirements"] <= requirements)
+                operation = "Encrypt" if "Encrypt" in row["exportName"] or "encrypt" in row["exportName"] else "Decrypt"
+                self.assertTrue(OPERATION_NORMATIVE_REQUIREMENTS[operation] <= requirements)
                 self.assertTrue(PARITY_EVIDENCE <= set(row["parityEvidenceIds"]))
                 for evidence in PARITY_EVIDENCE:
                     self.assertTrue((ROOT / evidence).is_file(), evidence)

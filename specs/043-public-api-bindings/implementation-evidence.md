@@ -8092,3 +8092,29 @@ Verification for this checkpoint:
 - cargo fmt --all --check, cargo clippy --locked --offline -p kmipkit-ffi --all-targets --features coverage-c-consumer -- -D warnings, and git diff --check — passed.
 
 Independent security review confirmed that the enclosing-Structure depth check closes the earlier depth-limit concern and reported no new actionable issue. Final QA confirmed the compiled-C test covers both standalone request handles, their borrowed views, TTLV payloads, batch conversions, and releases, with no remaining T097 gap. A separate security review of the C consumer found no actionable memory-safety issue. The temporary coverage-gate waiver for PR #104 remains active, so this checkpoint does not claim PR-wide coverage thresholds. Hosted CI must rerun on the updated PR head before the branch can leave Draft.
+
+### T099 — KMIPKIT-0019 Encrypt and Decrypt declaration reconciliation (2026-11-01)
+
+T099 resolves the 165 Rust declarations that were blocked under `candidateSpecId` `KMIPKIT-0019`. The source is the approved `specs/019-cryptographic-operations/spec.md`; mapped declarations cite the manifest-listed owner requirements KMIPKIT-0019-FR-001–FR-007, FR-009, FR-011, and FR-012, plus KMIPKIT-0043-FR-004/005/010/017/021/022. Applicable OASIS traceability includes KMIP Specification v2.1 §4.16 and §§6.1.11/6.1.17, Tables 196/214. This is API inventory reconciliation and does not change protocol or runtime behavior.
+
+The final partition is 43 four-language semantic mappings and 122 exact exclusions. The mappings comprise 17 typed request type/constructor/`with_*` declarations, two response `result()` accessors, and 24 client/root operation declarations. The request and operation rows reuse the verified T040 Encrypt/Decrypt four-language operation facades. The two result accessors use their exact Rust path with C `kmipkit_client_batch_item_response_metadata_v2`, Java `ClientBatchItemResult.metadataV2`, and Python `BatchItemResult.metadata_v2`; the metadata-v2 fields preserve result status, reason, and message. The four standalone `try_from_*` response parsers are excluded because there is no corresponding standalone C, Java, or Python call; typed success, completed failure, and Pending conversion remain represented by the existing client outcome path.
+
+The 122 exclusions are individually keyed by package and exact export identity: 92 Rust trait artifacts, 18 operation conversion-error declarations, eight request getters/validators/serializers, and four standalone response parsers. Each reason/evidence identifies the applicable KMIPKIT-0019 FRs and every T099 API FR citation. The final owner slice contains 95 mapped declarations and 134 approved exclusions, including the 52 existing T040 mappings and 12 prior exclusions. Its 229-identity SHA-256 remains `9ea6a5e0e3ce1c9c37859a2d9232289fbf5c02c1398b5f8d6b6b99438a3535b3`; the Red baseline contained 165 candidates with SHA-256 `8622dae80e3772bab0af270c14d70c6c4ef658f73a73f059c0d4a7eb9d2ba470`.
+
+| Phase | Commit | Evidence | Result |
+|---|---|---|---|
+| Red — pin the initial candidate and owner identities and require the exact T099 partition | `d734f3213` | `tools/api_manifest/tests/test_t099_crypto_declaration_mapping.py` | Baseline fingerprint passed; four contract checks failed as expected with 165 unresolved candidates, 0 T099 mappings, and 0 T099 exclusions. |
+| Green — map the 43 semantic declarations, exclude the other 122 identities, and regenerate | `047bf9199` | Focused T099 contract and generated inventories | 43 exact four-language mappings and 122 owner-approved exclusions; the owner identity fingerprint is preserved. |
+| Refactor/evidence — consolidate contract expectations and record completion | this commit | Focused contracts, generator check, and manifest validation | No runtime behavior changed; task and evidence records are synchronized. |
+| T040 pair correction — retain the canonical client request/response pair in each operation inventory | `1ab4f8b8a` | Existing Encrypt/Decrypt parity manifest contract | Removed the root response alias from `operations[].declarations.rust` while retaining it in the public declaration inventory; the existing T040 contract now passes. |
+
+Verification:
+
+- `python -B -m unittest -v tools.api_manifest.tests.test_t099_crypto_declaration_mapping` — 5 passed.
+- `python -B -m unittest -v tools.api_manifest.tests.test_encrypt_decrypt_parity_manifest` — 4 passed after the separate canonical-pair correction.
+- `python -B -m unittest -v tools.api_manifest.tests.test_t099_crypto_declaration_mapping tools.api_manifest.tests.test_encrypt_decrypt_parity_manifest` — 9 passed.
+- `python -B tools/api_manifest/generate.py --write` regenerated 12 outputs; `python -B tools/api_manifest/generate.py --check` verified all 12.
+- Direct `_validate_v2_manifest` validation passed. `git diff --check` passed.
+- The source diff review confirmed that all 10,050 public declaration records outside the 165-row T099 candidate slice were byte-for-byte unchanged; all 4,469 pre-existing exclusions were preserved before the 122 appended rows. The canonical operation-pair correction changes only the two Encrypt/Decrypt Rust ID arrays.
+
+The T099 mapping test pins exact C/Java/Python targets and package IDs, Rust identity/package matches, owner and T099 requirement citations, evidence file existence, partition counts, and the full owner identity hash. Existing parity evidence is `bindings/c/tests/client_abi_consumer.c`, `bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java`, `bindings/python/tests/test_encrypt_decrypt_operations.py`, and `crates/kmipkit-ffi/tests/support/client_abi_tests.rs`. No runtime API or wire behavior changed; generated outputs were produced only with the pinned tool.
