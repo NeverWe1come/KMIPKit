@@ -139,6 +139,11 @@ typedef struct kmipkit_cancel_request_t kmipkit_cancel_request_t;
 typedef struct kmipkit_poll_request_t kmipkit_poll_request_t;
 typedef struct kmipkit_process_request_t kmipkit_process_request_t;
 typedef struct kmipkit_query_async_requests_request_t kmipkit_query_async_requests_request_t;
+typedef struct kmipkit_add_attribute_request_t kmipkit_add_attribute_request_t;
+typedef struct kmipkit_adjust_attribute_request_t kmipkit_adjust_attribute_request_t;
+typedef struct kmipkit_delete_attribute_request_t kmipkit_delete_attribute_request_t;
+typedef struct kmipkit_modify_attribute_request_t kmipkit_modify_attribute_request_t;
+typedef struct kmipkit_set_attribute_request_t kmipkit_set_attribute_request_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -406,6 +411,11 @@ void kmipkit_cancel_request_release(kmipkit_cancel_request_t *handle);
 void kmipkit_poll_request_release(kmipkit_poll_request_t *handle);
 void kmipkit_process_request_release(kmipkit_process_request_t *handle);
 void kmipkit_query_async_requests_request_release(kmipkit_query_async_requests_request_t *handle);
+void kmipkit_add_attribute_request_release(kmipkit_add_attribute_request_t *handle);
+void kmipkit_adjust_attribute_request_release(kmipkit_adjust_attribute_request_t *handle);
+void kmipkit_delete_attribute_request_release(kmipkit_delete_attribute_request_t *handle);
+void kmipkit_modify_attribute_request_release(kmipkit_modify_attribute_request_t *handle);
+void kmipkit_set_attribute_request_release(kmipkit_set_attribute_request_t *handle);
 #define KMIPKIT_ERROR_INVALID_INPUT ((int32_t)4)
 #define KMIPKIT_ERROR_RESOURCE_LIMIT ((int32_t)6)
 #define KMIPKIT_ERROR_INTERNAL ((int32_t)7)
@@ -1677,6 +1687,122 @@ int32_t kmipkit_query_async_requests_request_with_operations(kmipkit_query_async
  */
 /* KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-006, KMIPKIT-0009-FR-007, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-012, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_query_async_requests_request_to_ttlv_payload(kmipkit_query_async_requests_request_t * request, kmipkit_ttlv_structure_t ** out_payload);
+/* Creates an owned standalone KMIP 2.1 Add Attribute request model without performing I/O.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-003, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_add_attribute_request_create(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_ttlv_item_t * new_attribute, kmipkit_add_attribute_request_t ** out_request);
+/* Copies new attribute from the standalone AddAttributeRequest.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-003, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_add_attribute_request_new_attribute(kmipkit_add_attribute_request_t * request, kmipkit_ttlv_item_t ** out_new_attribute);
+/* Creates a ClientBatchItem copy while leaving the standalone request open.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-003, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_add_attribute_from_request(kmipkit_add_attribute_request_t * request, kmipkit_client_batch_item_t ** out_item);
+/* Copies the typed request payload into a caller-owned TTLV Structure.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-003, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_add_attribute_request_to_ttlv_payload(kmipkit_add_attribute_request_t * request, kmipkit_ttlv_structure_t ** out_payload);
+/* Returns the optional Unique Identifier as a borrowed view into the request. The Text String span remains valid only while the request handle remains open; copy the bytes before releasing the request.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-003, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_add_attribute_request_unique_identifier(kmipkit_add_attribute_request_t * request, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Copies adjustment type from the standalone AdjustAttributeRequest.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-004, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_adjust_attribute_request_adjustment_type(kmipkit_adjust_attribute_request_t * request, uint32_t * out_adjustment_type);
+/* Copies adjustment value from the standalone AdjustAttributeRequest.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-004, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_adjust_attribute_request_adjustment_value(kmipkit_adjust_attribute_request_t * request, uint8_t * out_present, kmipkit_ttlv_value_t ** out_adjustment_value);
+/* Returns the Attribute Reference as a borrowed view into the request. Name-form text spans remain valid only while the request handle remains open; copy the bytes before releasing the request.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-004, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_adjust_attribute_request_attribute_reference(kmipkit_adjust_attribute_request_t * request, kmipkit_attribute_reference_v1_t * out_attribute_reference);
+/* Creates an owned standalone KMIP 2.1 Adjust Attribute request model without performing I/O.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-004, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_adjust_attribute_request_create(const kmipkit_unique_identifier_v1_t * unique_identifier, const kmipkit_attribute_reference_v1_t * attribute_reference, uint32_t adjustment_type, kmipkit_ttlv_value_t * adjustment_value, kmipkit_adjust_attribute_request_t ** out_request);
+/* Creates a ClientBatchItem copy while leaving the standalone request open.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-004, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_adjust_attribute_from_request(kmipkit_adjust_attribute_request_t * request, kmipkit_client_batch_item_t ** out_item);
+/* Copies the typed request payload into a caller-owned TTLV Structure.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-004, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_adjust_attribute_request_to_ttlv_payload(kmipkit_adjust_attribute_request_t * request, kmipkit_ttlv_structure_t ** out_payload);
+/* Returns the optional Unique Identifier as a borrowed view into the request. The Text String span remains valid only while the request handle remains open; copy the bytes before releasing the request.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-004, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_adjust_attribute_request_unique_identifier(kmipkit_adjust_attribute_request_t * request, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Returns the optional Attribute Reference as a borrowed view into the request. Name-form text spans remain valid only while the request handle remains open; copy the bytes before releasing the request.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-005, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_delete_attribute_request_attribute_reference(kmipkit_delete_attribute_request_t * request, uint8_t * out_present, kmipkit_attribute_reference_v1_t * out_attribute_reference);
+/* Creates an owned standalone KMIP 2.1 Delete Attribute request model without performing I/O.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-005, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_delete_attribute_request_create(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_ttlv_item_t * current_attribute, const kmipkit_attribute_reference_v1_t * attribute_reference, kmipkit_delete_attribute_request_t ** out_request);
+/* Copies current attribute from the standalone DeleteAttributeRequest.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-005, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_delete_attribute_request_current_attribute(kmipkit_delete_attribute_request_t * request, uint8_t * out_present, kmipkit_ttlv_item_t ** out_current_attribute);
+/* Creates a ClientBatchItem copy while leaving the standalone request open.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-005, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_delete_attribute_from_request(kmipkit_delete_attribute_request_t * request, kmipkit_client_batch_item_t ** out_item);
+/* Copies the typed request payload into a caller-owned TTLV Structure.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-005, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_delete_attribute_request_to_ttlv_payload(kmipkit_delete_attribute_request_t * request, kmipkit_ttlv_structure_t ** out_payload);
+/* Returns the optional Unique Identifier as a borrowed view into the request. The Text String span remains valid only while the request handle remains open; copy the bytes before releasing the request.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-005, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_delete_attribute_request_unique_identifier(kmipkit_delete_attribute_request_t * request, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Creates an owned standalone KMIP 2.1 Modify Attribute request model without performing I/O.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-008, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_modify_attribute_request_create(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_ttlv_item_t * current_attribute, kmipkit_ttlv_item_t * new_attribute, kmipkit_modify_attribute_request_t ** out_request);
+/* Copies current attribute from the standalone ModifyAttributeRequest.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-008, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_modify_attribute_request_current_attribute(kmipkit_modify_attribute_request_t * request, uint8_t * out_present, kmipkit_ttlv_item_t ** out_current_attribute);
+/* Copies new attribute from the standalone ModifyAttributeRequest.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-008, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_modify_attribute_request_new_attribute(kmipkit_modify_attribute_request_t * request, kmipkit_ttlv_item_t ** out_new_attribute);
+/* Creates a ClientBatchItem copy while leaving the standalone request open.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-008, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_modify_attribute_from_request(kmipkit_modify_attribute_request_t * request, kmipkit_client_batch_item_t ** out_item);
+/* Copies the typed request payload into a caller-owned TTLV Structure.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-008, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_modify_attribute_request_to_ttlv_payload(kmipkit_modify_attribute_request_t * request, kmipkit_ttlv_structure_t ** out_payload);
+/* Returns the optional Unique Identifier as a borrowed view into the request. The Text String span remains valid only while the request handle remains open; copy the bytes before releasing the request.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-008, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_modify_attribute_request_unique_identifier(kmipkit_modify_attribute_request_t * request, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Creates an owned standalone KMIP 2.1 Set Attribute request model without performing I/O.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-009, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_set_attribute_request_create(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_ttlv_item_t * new_attribute, kmipkit_set_attribute_request_t ** out_request);
+/* Copies new attribute from the standalone SetAttributeRequest.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-009, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_set_attribute_request_new_attribute(kmipkit_set_attribute_request_t * request, kmipkit_ttlv_item_t ** out_new_attribute);
+/* Creates a ClientBatchItem copy while leaving the standalone request open.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-009, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_set_attribute_from_request(kmipkit_set_attribute_request_t * request, kmipkit_client_batch_item_t ** out_item);
+/* Copies the typed request payload into a caller-owned TTLV Structure.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-009, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_set_attribute_request_to_ttlv_payload(kmipkit_set_attribute_request_t * request, kmipkit_ttlv_structure_t ** out_payload);
+/* Returns the optional Unique Identifier as a borrowed view into the request. The Text String span remains valid only while the request handle remains open; copy the bytes before releasing the request.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-009, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_set_attribute_request_unique_identifier(kmipkit_set_attribute_request_t * request, kmipkit_unique_identifier_v1_t * out_unique_identifier);
 /* KMIPKIT-0006-FR-021, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_message_extension_view_ttlv(kmipkit_message_extension_view_t * extension, kmipkit_ttlv_structure_t ** out_structure);
 /* KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */

@@ -1277,7 +1277,9 @@ pub extern "C" fn kmipkit_add_attribute_request_create(
     })
 }
 
-/// Copies the optional Unique Identifier from a standalone Add Attribute request.
+/// Returns the optional Unique Identifier as a borrowed view into the request.
+/// For Text String identifiers, `text_data` remains valid only while the request
+/// handle remains open; copy the bytes before releasing the request.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_add_attribute_request_unique_identifier(
     request: *mut kmipkit_add_attribute_request_t,
@@ -1406,7 +1408,9 @@ pub extern "C" fn kmipkit_adjust_attribute_request_create(
     })
 }
 
-/// Copies the optional Text String Unique Identifier from an Adjust request.
+/// Returns the optional Unique Identifier as a borrowed view into the request.
+/// Its Text String span remains valid only while the request handle remains open;
+/// copy the bytes before releasing the request.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_adjust_attribute_request_unique_identifier(
     request: *mut kmipkit_adjust_attribute_request_t,
@@ -1426,7 +1430,9 @@ pub extern "C" fn kmipkit_adjust_attribute_request_unique_identifier(
     })
 }
 
-/// Copies the Adjust request's Attribute Reference into a versioned record.
+/// Returns the Attribute Reference as a borrowed view into the request.
+/// Name-form text spans remain valid only while the request handle remains open;
+/// copy the bytes before releasing the request.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_adjust_attribute_request_attribute_reference(
     request: *mut kmipkit_adjust_attribute_request_t,
@@ -1587,7 +1593,9 @@ pub extern "C" fn kmipkit_delete_attribute_request_create(
     })
 }
 
-/// Copies the optional Text String Unique Identifier from a Delete request.
+/// Returns the optional Unique Identifier as a borrowed view into the request.
+/// Its Text String span remains valid only while the request handle remains open;
+/// copy the bytes before releasing the request.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_delete_attribute_request_unique_identifier(
     request: *mut kmipkit_delete_attribute_request_t,
@@ -1638,7 +1646,9 @@ pub extern "C" fn kmipkit_delete_attribute_request_current_attribute(
     })
 }
 
-/// Copies the optional Attribute Reference from a Delete request.
+/// Returns the optional Attribute Reference as a borrowed view into the request.
+/// Name-form text spans remain valid only while the request handle remains open;
+/// copy the bytes before releasing the request.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_delete_attribute_request_attribute_reference(
     request: *mut kmipkit_delete_attribute_request_t,
@@ -1760,7 +1770,9 @@ pub extern "C" fn kmipkit_modify_attribute_request_create(
     })
 }
 
-/// Copies the optional Text String Unique Identifier from a Modify request.
+/// Returns the optional Unique Identifier as a borrowed view into the request.
+/// Its Text String span remains valid only while the request handle remains open;
+/// copy the bytes before releasing the request.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_modify_attribute_request_unique_identifier(
     request: *mut kmipkit_modify_attribute_request_t,
@@ -1919,7 +1931,9 @@ pub extern "C" fn kmipkit_set_attribute_request_create(
     })
 }
 
-/// Copies the optional Text String Unique Identifier from a Set request.
+/// Returns the optional Unique Identifier as a borrowed view into the request.
+/// Its Text String span remains valid only while the request handle remains open;
+/// copy the bytes before releasing the request.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_set_attribute_request_unique_identifier(
     request: *mut kmipkit_set_attribute_request_t,

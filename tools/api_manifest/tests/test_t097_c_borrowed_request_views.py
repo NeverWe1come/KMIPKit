@@ -33,7 +33,7 @@ class BorrowedRequestViewDocumentationTests(unittest.TestCase):
                 documentation = header[api_comment:traceability_comment].casefold()
                 self.assertIn("borrowed view", documentation)
                 self.assertIn(
-                    "remains valid only while request handle remains open",
+                    "only while the request handle remains open",
                     documentation,
                 )
                 self.assertIn("copy the bytes before releasing", documentation)
