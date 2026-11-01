@@ -87,6 +87,7 @@ EXPECTED_MAPPED_CREDENTIAL_EXPORTS = (
     | CREDENTIAL_EXPORTS
     | ATTESTATION_CREDENTIAL_EXPORTS
     | DEVICE_CREDENTIAL_EXPORTS
+    | USERNAME_PASSWORD_CREDENTIAL_EXPORTS
     | AUTHENTICATION_EXPORTS
     | VALIDATION_ERROR_EXPORTS
 )
@@ -105,7 +106,7 @@ RUST_EXPORT_INVENTORY = (
     / "specs"
     / "043-public-api-bindings"
     / "reports"
-    / "rust-export-report-2026-10-31.json"
+    / "rust-export-report-2026-11-01.json"
 )
 
 
@@ -237,6 +238,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                         "kmipkit_protocol::Credential",
                         "kmipkit_protocol::AttestationCredential",
                         "kmipkit_protocol::DeviceCredential",
+                        "kmipkit_protocol::UsernameAndPasswordCredential",
                         "kmipkit_protocol::Authentication",
                         "kmipkit_protocol::CredentialView",
                         "kmipkit_protocol::CredentialValidationError",
@@ -385,7 +387,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                 == "specs/008-credentials-attestation/spec.md"
             )
         ]
-        self.assertEqual(96, len(meaningful))
+        self.assertEqual(97, len(meaningful))
         credential_type_rows = {
             row["exportName"]: row
             for row in meaningful
@@ -402,7 +404,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             row for row in meaningful
             if row.get("exportName") not in EXPECTED_MAPPED_CREDENTIAL_EXPORTS
         ]
-        self.assertEqual(46, len(remaining))
+        self.assertEqual(43, len(remaining))
         self.assertTrue(all(row.get("declarationState") == "blocked" for row in remaining))
 
     def test_credential_type_is_mapped_as_an_open_raw_enum(self) -> None:
@@ -553,7 +555,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             for declaration in declarations
             if declaration.get("declarationState") == "blocked"
         ]
-        self.assertEqual(46, len(blocked))
+        self.assertEqual(43, len(blocked))
 
         exclusions = {
             (row.get("packageId"), row.get("exportName")): row
@@ -1111,6 +1113,44 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
         python_glue_exports = {
             "kmipkit.credentials.DeviceCredential.__init__",
             "kmipkit.credentials.DeviceCredential.__slots__",
+        }
+        expected = {
+            **{
+                ("java-kmipkit", name): "specs/043-public-api-bindings/spec.md"
+                for name in java_bridge_exports
+            },
+            **{
+                ("python-kmipkit", name): "specs/008-credentials-attestation/spec.md"
+                for name in python_glue_exports
+            },
+        }
+        exclusions = {
+            (row["packageId"], row["exportName"]): row
+            for row in manifest["approvedExclusions"]
+            if (row.get("packageId"), row.get("exportName")) in expected
+        }
+        self.assertEqual(expected.keys(), exclusions.keys())
+        for identity, owner_path in expected.items():
+            with self.subTest(export=identity[1]):
+                exclusion = exclusions[identity]
+                self.assertEqual(owner_path, exclusion["approvalSource"]["path"])
+                self.assertEqual("Approved", exclusion["approvalSource"]["status"])
+                self.assertTrue(exclusion.get("reason"))
+                self.assertTrue(exclusion.get("evidence"))
+                if identity[0] == "python-kmipkit":
+                    self.assertEqual("KMIPKIT-0008", exclusion["candidateSpecId"])
+
+    def test_username_and_password_binding_glue_has_exact_owner_exclusions(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        java_bridge_exports = {
+            "org.kmipkit.NativeExtensionRegistry.USERNAME_AND_PASSWORD_CREDENTIAL",
+            "org.kmipkit.NativeExtensionRegistry.usernameAndPasswordCredentialFromTtlv",
+            "org.kmipkit.NativeExtensionRegistry.usernameAndPasswordCredentialTtlvView",
+            "org.kmipkit.NativeExtensionRegistry.usernameAndPasswordCredentialIntoTtlv",
+        }
+        python_glue_exports = {
+            "kmipkit.credentials.UsernameAndPasswordCredential.__init__",
+            "kmipkit.credentials.UsernameAndPasswordCredential.__slots__",
         }
         expected = {
             **{
