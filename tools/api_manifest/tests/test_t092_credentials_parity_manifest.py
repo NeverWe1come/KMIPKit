@@ -101,6 +101,30 @@ NONCE_REQUIREMENTS = {
     "KMIPKIT-0043-FR-021",
     "KMIPKIT-0043-FR-022",
 }
+SECRET_WRAPPER_EXPORTS = {
+    "kmipkit_protocol::SecretBytes",
+    "kmipkit_protocol::SecretBytes::new",
+    "kmipkit_protocol::SecretBytes::with_bytes",
+    "kmipkit_protocol::SecretBytes::into_ttlv_value",
+    "kmipkit_protocol::SecretText",
+    "kmipkit_protocol::SecretText::new",
+    "kmipkit_protocol::SecretText::with_str",
+    "kmipkit_protocol::SecretText::into_ttlv_value",
+    "kmipkit::SecretBytes",
+    "kmipkit::SecretBytes::new",
+    "kmipkit::SecretBytes::with_bytes",
+    "kmipkit::SecretBytes::into_ttlv_value",
+}
+SECRET_WRAPPER_REQUIREMENTS = {
+    "KMIPKIT-0008-FR-010",
+    "KMIPKIT-0043-FR-004",
+    "KMIPKIT-0043-FR-005",
+    "KMIPKIT-0043-FR-010",
+    "KMIPKIT-0043-FR-013",
+    "KMIPKIT-0043-FR-017",
+    "KMIPKIT-0043-FR-021",
+    "KMIPKIT-0043-FR-022",
+}
 RUST_EXPORT_INVENTORY = (
     ROOT
     / "specs"
@@ -678,6 +702,106 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
         ):
             function = next(row for row in manifest["functions"] if row["id"] == function_id)
             self.assertEqual(symbol, function["c"]["symbol"])
+
+    def test_secret_wrappers_have_exact_four_language_owner_mapping(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        declarations = {
+            row["exportName"]: row
+            for row in manifest["publicDeclarations"]
+            if row.get("exportName") in SECRET_WRAPPER_EXPORTS
+        }
+        self.assertEqual(SECRET_WRAPPER_EXPORTS, declarations.keys())
+
+        expected_names = {
+            "kmipkit_protocol::SecretBytes": {
+                "rust": "kmipkit_protocol::SecretBytes",
+                "c": "kmipkit_secret_bytes_t",
+                "java": "org.kmipkit.credentials.SecretBytes",
+                "python": "kmipkit.credentials.SecretBytes",
+            },
+            "kmipkit_protocol::SecretBytes::new": {
+                "rust": "kmipkit_protocol::SecretBytes::new",
+                "c": "kmipkit_secret_bytes_create",
+                "java": "org.kmipkit.credentials.SecretBytes.fromBytes",
+                "python": "kmipkit.credentials.SecretBytes.from_bytes",
+            },
+            "kmipkit_protocol::SecretBytes::with_bytes": {
+                "rust": "kmipkit_protocol::SecretBytes::with_bytes",
+                "c": "kmipkit_secret_bytes_with_bytes",
+                "java": "org.kmipkit.credentials.SecretBytes.withBytes",
+                "python": "kmipkit.credentials.SecretBytes.with_bytes",
+            },
+            "kmipkit_protocol::SecretBytes::into_ttlv_value": {
+                "rust": "kmipkit_protocol::SecretBytes::into_ttlv_value",
+                "c": "kmipkit_secret_bytes_into_ttlv_value",
+                "java": "org.kmipkit.credentials.SecretBytes.intoTtlvValue",
+                "python": "kmipkit.credentials.SecretBytes.into_ttlv_value",
+            },
+            "kmipkit_protocol::SecretText": {
+                "rust": "kmipkit_protocol::SecretText",
+                "c": "kmipkit_secret_text_t",
+                "java": "org.kmipkit.credentials.SecretText",
+                "python": "kmipkit.credentials.SecretText",
+            },
+            "kmipkit_protocol::SecretText::new": {
+                "rust": "kmipkit_protocol::SecretText::new",
+                "c": "kmipkit_secret_text_create",
+                "java": "org.kmipkit.credentials.SecretText.fromString",
+                "python": "kmipkit.credentials.SecretText.from_text",
+            },
+            "kmipkit_protocol::SecretText::with_str": {
+                "rust": "kmipkit_protocol::SecretText::with_str",
+                "c": "kmipkit_secret_text_with_str",
+                "java": "org.kmipkit.credentials.SecretText.withStr",
+                "python": "kmipkit.credentials.SecretText.with_str",
+            },
+            "kmipkit_protocol::SecretText::into_ttlv_value": {
+                "rust": "kmipkit_protocol::SecretText::into_ttlv_value",
+                "c": "kmipkit_secret_text_into_ttlv_value",
+                "java": "org.kmipkit.credentials.SecretText.intoTtlvValue",
+                "python": "kmipkit.credentials.SecretText.into_ttlv_value",
+            },
+        }
+        for export_name, declaration in declarations.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual("declared", declaration.get("declarationState"))
+                self.assertEqual("four-language", declaration.get("parityScope"))
+                self.assertNotIn("candidateSpecId", declaration)
+                self.assertIn("secret", declaration.get("capabilityId", ""))
+                self.assertEqual("KMIPKIT-0043", declaration.get("ownerSpecId"))
+                self.assertEqual(
+                    "specs/043-public-api-bindings/spec.md",
+                    declaration.get("approvalEvidence", {}).get("path"),
+                )
+                self.assertEqual(
+                    "Approved",
+                    declaration.get("approvalEvidence", {}).get("status"),
+                )
+                self.assertTrue(
+                    SECRET_WRAPPER_REQUIREMENTS
+                    <= set(declaration.get("requirementIds", []))
+                )
+                mappings = declaration.get("languageMappings")
+                self.assertIsInstance(mappings, dict)
+                self.assertEqual(LANGUAGES, set(mappings or {}))
+                for language, expected_name in expected_names[export_name].items():
+                    self.assertEqual(expected_name, mappings[language]["name"])
+
+        root_alias_names = {
+            "kmipkit::SecretBytes",
+            "kmipkit::SecretBytes::new",
+            "kmipkit::SecretBytes::with_bytes",
+            "kmipkit::SecretBytes::into_ttlv_value",
+        }
+        for export_name in root_alias_names:
+            with self.subTest(root_alias=export_name):
+                protocol_export = export_name.replace(
+                    "kmipkit::SecretBytes", "kmipkit_protocol::SecretBytes", 1
+                )
+                self.assertEqual(
+                    declarations[protocol_export].get("languageMappings"),
+                    declarations[export_name].get("languageMappings"),
+                )
 
     def test_credential_and_nonce_jni_converters_declare_status_and_output_handle(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
