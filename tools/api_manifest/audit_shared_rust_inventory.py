@@ -39,7 +39,15 @@ _RUNTIME_METADATA_NAMESPACE_BLOCKS = frozenset(
     }
 )
 RUST_ONLY_CAPABILITY = "rust_transport_exchange"
+# Accepted KMIPKIT-0013 FR-016 exposes the bounded concrete adapters to direct
+# Rust users; their raw exchange APIs stay inside ADR-0014's Rust-only boundary.
 RUST_ONLY_DECLARATIONS = {
+    "kmipkit_transport::HttpsTransport",
+    "kmipkit_transport::HttpsTransport::new",
+    "kmipkit_transport::HttpsTransport::exchange_with_options",
+    "kmipkit_transport::RawTlsTransport",
+    "kmipkit_transport::RawTlsTransport::new",
+    "kmipkit_transport::RawTlsTransport::exchange_with_options",
     "kmipkit_transport::Transport",
     "kmipkit_transport::Transport::exchange",
     "kmipkit_transport::TransportResponse",

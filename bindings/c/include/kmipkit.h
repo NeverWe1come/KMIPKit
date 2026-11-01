@@ -406,6 +406,7 @@ void kmipkit_cancel_request_release(kmipkit_cancel_request_t *handle);
 void kmipkit_poll_request_release(kmipkit_poll_request_t *handle);
 void kmipkit_process_request_release(kmipkit_process_request_t *handle);
 void kmipkit_query_async_requests_request_release(kmipkit_query_async_requests_request_t *handle);
+#define KMIPKIT_ERROR_INVALID_INPUT ((int32_t)4)
 #define KMIPKIT_ERROR_RESOURCE_LIMIT ((int32_t)6)
 #define KMIPKIT_ERROR_INTERNAL ((int32_t)7)
 #define KMIPKIT_ERROR_PROTOCOL ((int32_t)8)

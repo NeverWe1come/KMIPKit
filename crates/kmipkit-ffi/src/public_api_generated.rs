@@ -2525,6 +2525,31 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_transport::TimeoutPolicy",
     ),
     (
+        "rust-observed-51c4f7b544cca4541dbd",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TimeoutPolicy::with_overrides",
+    ),
+    (
+        "rust-observed-d521ae771952ff56c171",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TimeoutPolicy::with_connect",
+    ),
+    (
+        "rust-observed-6edf5f1bed2b7a14d6e0",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TimeoutPolicy::with_write",
+    ),
+    (
+        "rust-observed-61c81c78236790b5db68",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TimeoutPolicy::with_read",
+    ),
+    (
+        "rust-observed-cb5871177452f0940d7e",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TimeoutPolicy::with_total",
+    ),
+    (
         "rust-observed-c85663a1dcd544c9e996",
         "rust-kmipkit-transport",
         "kmipkit_transport::TransportConfig",
@@ -2538,6 +2563,16 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "T076:target:rust-kmipkit-transport:kmipkit_transport::TransportConfigBuilder",
         "rust-kmipkit-transport",
         "kmipkit_transport::TransportConfigBuilder",
+    ),
+    (
+        "rust-observed-ba9dbc058e475fa3e88f",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TransportConfigBuilder::client_identity",
+    ),
+    (
+        "rust-observed-5009977cd06c4c987f7d",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TransportConfigBuilder::trust_source",
     ),
     (
         "T076:target:rust-kmipkit-transport:kmipkit_transport::TransportConfigBuilder::revocation_lists",
@@ -2570,9 +2605,74 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_transport::TransportConfigBuilder::build",
     ),
     (
+        "rust-observed-44f52d011b6a3a9b062b",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TransportConfigError",
+    ),
+    (
+        "rust-observed-97644622154577261deb",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TransportConfigError::InvalidEndpoint",
+    ),
+    (
+        "rust-observed-3b4a1bdb17cba49a1726",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TransportConfigError::InvalidTarget",
+    ),
+    (
+        "rust-observed-b99f064672a14185554e",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TransportConfigError::InvalidRequestLimit",
+    ),
+    (
+        "rust-observed-6dfad23e81c30f55cb65",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TransportConfigError::MissingIdentity",
+    ),
+    (
+        "rust-observed-6a3e868b4b3c76244871",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TransportConfigError::MissingTrust",
+    ),
+    (
+        "rust-observed-5a00393dd0cc3e9036fb",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TransportConfigError::InvalidCredential",
+    ),
+    (
+        "rust-observed-e3457b3e60a0ea93e858",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TransportConfigError::InvalidTrust",
+    ),
+    (
+        "rust-observed-22cb323b62a70f0d9715",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TransportConfigError::InvalidRevocationList",
+    ),
+    (
+        "rust-observed-765312a3fffc0df69bbf",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TransportConfigError::InvalidServerName",
+    ),
+    (
+        "rust-observed-7bc43e5a910da6e4826b",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TransportConfigError::InvalidTlsConfiguration",
+    ),
+    (
+        "rust-observed-61af19473a00f883c6f1",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TransportConfigError::PlatformTrustUnavailable",
+    ),
+    (
         "T076:target:rust-kmipkit-transport:kmipkit_transport::TrustSource",
         "rust-kmipkit-transport",
         "kmipkit_transport::TrustSource",
+    ),
+    (
+        "rust-observed-24364c7ead9db8bc69bd",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TrustSource::CertificateAuthorities",
     ),
     (
         "rust-observed-83c5fcf917e9f9721e78",
@@ -2673,6 +2773,36 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-8ff47c22ccd71f1105a8",
         "rust-kmipkit-transport",
         "kmipkit_transport::TransportError::cause_category",
+    ),
+    (
+        "rust-observed-5568554d6d6f9771e4bf",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::HttpsTransport",
+    ),
+    (
+        "rust-observed-0567695b156740007906",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::HttpsTransport::new",
+    ),
+    (
+        "rust-observed-f4e352881660cb22de8d",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::HttpsTransport::exchange_with_options",
+    ),
+    (
+        "rust-observed-2f5e5d2cb68a523a758d",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::RawTlsTransport",
+    ),
+    (
+        "rust-observed-081f6de7c68659f9cee1",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::RawTlsTransport::new",
+    ),
+    (
+        "rust-observed-43a32f5b7995dfb995d5",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::RawTlsTransport::exchange_with_options",
     ),
     (
         "rust-adr0014-91e7a41f5f7a2bcb",
@@ -8264,6 +8394,16 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-4c6d6a9625864ba8b0a4",
         "rust-kmipkit-transport",
         "<kmipkit_transport::RequestOptions as core::default::Default>::default",
+    ),
+    (
+        "rust-observed-d1be40b0c1d469c5735c",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TimeoutLimit::Bounded::0",
+    ),
+    (
+        "rust-observed-feabcd9321ef92b9ea39",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TrustSource::CertificateAuthorities::0",
     ),
     (
         "rust-observed-10df3b050212b6de2463",
