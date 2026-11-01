@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from kmipkit import ttlv
+import pytest
+
+from kmipkit import async_operations, ttlv
 from kmipkit.async_operations import (
     CancelRequest,
     PollRequest,
@@ -126,3 +128,25 @@ def test_query_request_preserves_absent_and_present_ordered_filters() -> None:
                         operations_value.close()
                 finally:
                     operations_item.close()
+
+
+def test_query_filter_wipes_staged_values_when_iteration_fails(monkeypatch: pytest.MonkeyPatch) -> None:
+    source = bytearray(b"correlation")
+    wiped: list[bytes] = []
+    original_wipe = async_operations._wipe
+
+    def record_wipe(staging: bytearray) -> None:
+        original_wipe(staging)
+        wiped.append(bytes(staging))
+
+    def values():
+        yield source
+        raise RuntimeError("filter source failed")
+
+    monkeypatch.setattr(async_operations, "_wipe", record_wipe)
+    with QueryAsyncRequestsRequest.create() as request:
+        with pytest.raises(RuntimeError, match="filter source failed"):
+            request.with_correlation_values(values())
+
+    assert source == b"correlation"
+    assert wiped == [bytes(len(source))]
