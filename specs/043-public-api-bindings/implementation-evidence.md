@@ -8401,4 +8401,19 @@ Verification:
 - Independent QA confirmed the exact 11-row manifest delta, unchanged functional declarations, and generated fixture consistency. Independent security review found no blocker; it prompted the namespace-wide exact-set assertion now covered by CI.
 - `git diff --check` — passed.
 
-Hosted CI for the published parent `180756eb9` later failed in `Script contracts / ubuntu-latest`: the isolated runner had not cached `org.jspecify:jspecify:1.0.0` before the offline Java binding audit. A follow-up Red/Green workflow correction is being recorded separately; the next pushed head must rerun hosted CI before this PR can be considered ready.
+Hosted CI for the published parent `180756eb9` later failed in `Script contracts / ubuntu-latest`: the isolated runner had not cached `org.jspecify:jspecify:1.0.0` before the offline Java binding audit. A follow-up Red/Green workflow correction is recorded below; the next pushed head must rerun hosted CI before this PR can be considered ready.
+
+### CI Gradle cache priming for the offline binding audit (2026-11-02)
+
+Hosted CI run `41362328581` failed only in `Script contracts / ubuntu-latest`. `test_java_compile_uses_gradle_configured_jspecify_classpath` raised because the audit intentionally uses offline Gradle and the isolated runner had not cached `org.jspecify:jspecify:1.0.0`. Red `b878eae53` pins a Gradle classpath warmup step before Python contracts; Red `5a08407cc` additionally requires `--project-dir bindings/java` after a local reproduction showed that invoking the wrapper from the repository root otherwise reports that no Gradle build exists. Green `baf0db416` runs `apiAuditClasspath` online using the Windows wrapper on Windows and Bash on POSIX, then lets the audit resolve the same classpath offline. This changes CI dependency preparation only, not binding behavior.
+
+Verification:
+
+- The two Red workflow tests failed as expected before their corresponding workflow fixes: first because the warmup step was absent, then because it omitted the Gradle project directory.
+- The warmup command completed locally and emitted the cached `jspecify-1.0.0.jar` classpath.
+- `py -B -m unittest scripts.tests.test_workflow -v` — 65 passed.
+- `py -B -m unittest tools.api_manifest.tests.test_binding_exports.BindingExportAuditTests.test_java_compile_uses_gradle_configured_jspecify_classpath -v` — 1 passed after warmup.
+- `py -B tools/api_manifest/audit_binding_exports.py --check` — complete with no issues: C 757/757, Java 1,018/1,018, Python 1,140/1,140; no missing exports or kind mismatches.
+- `git diff --check` — passed.
+
+Hosted CI for the corrected head remains pending until these commits are pushed and GitHub runs the workflow again.
