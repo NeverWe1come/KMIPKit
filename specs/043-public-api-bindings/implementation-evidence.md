@@ -8745,3 +8745,27 @@ Verification:
 - `git diff --check` — passed after documentation review.
 
 The candidate count falls from 4,098 to 4,088. T102 remains open; this slice does not claim PR completion, full API parity, profile conformance, or release readiness.
+
+### T102 Locate request Rust trait-artifact exclusions (2026-11-02)
+
+The Rust export audit observed exactly ten standard-trait paths for `kmipkit_protocol::LocateRequest`. T102 records only those compiler artifacts as approved inventory exclusions under KMIPKIT-0043-FR-010/021 and functional ownership KMIPKIT-0017-FR-001/006. The `LocateRequest` type remains verified; its eleven inherent methods (`attributes`, `maximum_items`, `new`, `object_group_member`, `offset_items`, `storage_status_mask`, `to_ttlv_payload`, `with_maximum_items`, `with_object_group_member`, `with_offset_items`, and `with_storage_status_mask`) remain blocked under T102. No root alias exists. OASIS KMIP v2.1 §6.1.28 Tables 247–249, including the Table 247 request, grounds the Locate contract; no normative OASIS clause applies directly to Rust standard traits. This manifest-only inventory change does not alter KMIP behavior.
+
+| Phase | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red — pin the exact ten Locate request trait paths, audit observations/exclusions, and unchanged functional declarations | `a1cb8e253` | Focused exact-set, audit, and request-state tests in `tools/api_manifest/tests/test_t102_get_constraints_response_trait_exclusions.py` | Expected failure before Green: the ten paths remained blocked and absent from audit exclusions; the verified request type and eleven blocked inherent methods were already correct. |
+| Green — exclude only the ten trait artifacts and regenerate checked-in output | `6601308fe` | `py -B tools/api_manifest/generate.py --write`; Rust export audit report regeneration | Exactly ten compiler-observed paths moved to approved exclusions; the pinned generator refreshed all dependent outputs. |
+| Refactor/evidence — synchronize T102 counts, ownership, normative traceability, and verification | This commit | Focused T102, manifest, workflow, generation, export-audit, and traceability checks plus independent QA | T102 remains open with 4,078 blocked KMIPKIT-0043 candidates. |
+
+Verification:
+
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions -v` — 39 passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2 -v` — 150 passed.
+- `py -B -m unittest scripts.tests.test_workflow -v` — 68 passed; the workflow selects the focused T102 contract.
+- `py -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
+- `py -B tools/api_manifest/audit_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` — 6,361 declarations and 4,102 exact exclusions reconcile with all 10,463 observed paths; zero audit issues. The successful audit build emitted optional `aws-lc-sys` compiler-probe and NASM warnings.
+- `py -B tools/api_manifest/audit_binding_exports.py --check` — no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
+- `py -B -m unittest scripts.tests.test_requirement_traceability -v` — 2 passed; `py -B -m unittest discover -s tools/normative_catalog/tests -p test_feature_traceability.py -v` — 30 passed, 1 Windows symlink permission skip.
+- Independent QA — no blockers; confirmed all ten paths in manifest and audit, approved KMIPKIT-0017 ownership and OASIS request table, preserved the verified type and eleven blocked methods, no root alias, 10,463 observed paths, zero issues, and no runtime changes.
+- `git diff --check` — passed after documentation review.
+
+The candidate count falls from 4,088 to 4,078. T102 remains open; this slice does not claim PR completion, full API parity, profile conformance, or release readiness.
