@@ -32,6 +32,7 @@ ROOT_PREFIX = "<kmipkit::GetConstraintsResponse as "
 SET_PREFIX = "<kmipkit_protocol::SetConstraintsResponse as "
 SET_ROOT_PREFIX = "<kmipkit::SetConstraintsResponse as "
 CERTIFY_PREFIX = "<kmipkit_protocol::CertifyResponse as "
+VALIDATE_PREFIX = "<kmipkit_protocol::ValidateResponse as "
 EXPECTED_TRAIT_EXPORTS = {
     "<kmipkit_protocol::GetConstraintsResponse as core::any::Any>::type_id",
     "<kmipkit_protocol::GetConstraintsResponse as core::borrow::Borrow<kmipkit_protocol::get_constraints::GetConstraintsResponse>>::borrow",
@@ -91,6 +92,18 @@ EXPECTED_CERTIFY_TRAIT_EXPORTS = {
     "<kmipkit_protocol::CertifyResponse as core::convert::TryInto<U>>::Error",
     "<kmipkit_protocol::CertifyResponse as core::convert::TryInto<U>>::try_into",
     "<kmipkit_protocol::CertifyResponse as core::fmt::Debug>::fmt",
+}
+EXPECTED_VALIDATE_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::ValidateResponse as core::any::Any>::type_id",
+    "<kmipkit_protocol::ValidateResponse as core::borrow::Borrow<kmipkit_protocol::validate::ValidateResponse>>::borrow",
+    "<kmipkit_protocol::ValidateResponse as core::borrow::BorrowMut<kmipkit_protocol::validate::ValidateResponse>>::borrow_mut",
+    "<kmipkit_protocol::ValidateResponse as core::convert::From<kmipkit_protocol::validate::ValidateResponse>>::from",
+    "<kmipkit_protocol::ValidateResponse as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::ValidateResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::ValidateResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::ValidateResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::ValidateResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::ValidateResponse as core::fmt::Debug>::fmt",
 }
 RETAINED_EXPORTS = {
     "kmipkit_protocol::GetConstraintsResponse",
@@ -492,6 +505,88 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             row for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit"
             and row.get("exportName", "").startswith("kmipkit::CertifyResponse")
+        ]
+        self.assertEqual(root_rows, [])
+
+    def test_validate_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(VALIDATE_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(VALIDATE_PREFIX)
+        }
+
+        self.assertEqual(set(declarations), set())
+        self.assertEqual(set(exclusions), EXPECTED_VALIDATE_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0042-FR-001",
+                    "KMIPKIT-0042-FR-004",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 §6.1.57 Tables 340–342", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("ValidateResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_validate_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(VALIDATE_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(VALIDATE_PREFIX)
+        }
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_VALIDATE_TRAIT_EXPORTS)
+        self.assertEqual(audited_exclusions, EXPECTED_VALIDATE_TRAIT_EXPORTS)
+
+    def test_validate_response_functional_declarations_remain_verified(self) -> None:
+        expected = {
+            "kmipkit_protocol::ValidateResponse",
+            "kmipkit_protocol::ValidateResponse::result",
+            "kmipkit_protocol::ValidateResponse::try_from_response_item",
+            "kmipkit_protocol::ValidateResponse::validity_indicator",
+            "kmipkit_protocol::ValidateResponse::with_ttlv",
+        }
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::ValidateResponse")
+        }
+
+        self.assertEqual(set(rows), expected)
+        for export_name, row in rows.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["declarationState"], "verified")
+                self.assertEqual(row["capabilityId"], "KMIPKIT-ELEM-OP-C2S-VALIDATE")
+                self.assertIn("KMIPKIT-0042-FR-001", row["requirementIds"])
+        root_rows = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::ValidateResponse")
         ]
         self.assertEqual(root_rows, [])
 
