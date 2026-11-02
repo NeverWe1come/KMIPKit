@@ -186301,236 +186301,16 @@
       "candidateSpecId": "KMIPKIT-0043",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
-    {
-      "declarationId": "rust-observed-1c0ec3a6c3605361ed00",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DelegatedLoginResponse as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-984bf14fa3f06d1a2d42",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DelegatedLoginResponse as core::borrow::Borrow<kmipkit_protocol::delegated_login::DelegatedLoginResponse>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-028a1c4084a685016b7a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DelegatedLoginResponse as core::borrow::BorrowMut<kmipkit_protocol::delegated_login::DelegatedLoginResponse>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-15e21f6150525ed9b0ca",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DelegatedLoginResponse as core::convert::From<kmipkit_protocol::delegated_login::DelegatedLoginResponse>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-cce0f6a19c4e9a96bc8d",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DelegatedLoginResponse as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::delegated_login::DelegatedLoginResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-61d33ee7059bc7940219",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DelegatedLoginResponse as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::delegated_login::DelegatedLoginResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-e066a4d0cfed8fd6baf4",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DelegatedLoginResponse as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::delegated_login::DelegatedLoginResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-e6a8fded2c8667d08f28",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DelegatedLoginResponse as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::delegated_login::DelegatedLoginResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-57a47aac51991824f200",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DelegatedLoginResponse as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::delegated_login::DelegatedLoginResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-fbaf26ad5c4069760142",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DelegatedLoginResponse as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
+
+
+
+
+
+
+
+
+
+
     {
       "declarationId": "rust-observed-d3e7f687fc8e3877923b",
       "packageId": "rust-kmipkit-protocol",
@@ -197721,236 +197501,16 @@
       "candidateSpecId": "KMIPKIT-0043",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
-    {
-      "declarationId": "rust-observed-4f97509e38ba787fd028",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LoginResponse as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-16298248bffe7fed9957",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LoginResponse as core::borrow::Borrow<kmipkit_protocol::login::LoginResponse>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-aac6723b5addb9f2df1a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LoginResponse as core::borrow::BorrowMut<kmipkit_protocol::login::LoginResponse>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-194d1bcdd535f0fa2b5a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LoginResponse as core::convert::From<kmipkit_protocol::login::LoginResponse>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-a076b6940aad4444ea23",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LoginResponse as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::login::LoginResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-619c791e765585eb63d4",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LoginResponse as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::login::LoginResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-9832483f7557da612854",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LoginResponse as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::login::LoginResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-7afdc00fead33b66f8c1",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LoginResponse as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::login::LoginResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-5c307aa0e93bbfd3051f",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LoginResponse as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::login::LoginResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-1b9c7f7658f50ebb1263",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LoginResponse as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
+
+
+
+
+
+
+
+
+
+
     {
       "declarationId": "rust-observed-271b3533e1445558639f",
       "packageId": "rust-kmipkit-protocol",
@@ -198635,236 +198195,16 @@
       "candidateSpecId": "KMIPKIT-0043",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
-    {
-      "declarationId": "rust-observed-4a9b2548d0e582a54544",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogoutResponse as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-d580a9d17db2c37e0394",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogoutResponse as core::borrow::Borrow<kmipkit_protocol::logout::LogoutResponse>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-9648fd9f824c126a8708",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogoutResponse as core::borrow::BorrowMut<kmipkit_protocol::logout::LogoutResponse>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-8adf05932dab24608c50",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogoutResponse as core::convert::From<kmipkit_protocol::logout::LogoutResponse>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-e41b893c996b6c39965c",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogoutResponse as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::logout::LogoutResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-692782048efcb5f7c224",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogoutResponse as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::logout::LogoutResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-e1590128c9fde8b50f88",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogoutResponse as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::logout::LogoutResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-7ed59660f5cb76547aab",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogoutResponse as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::logout::LogoutResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-234e3a2ded645beb7cec",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogoutResponse as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::logout::LogoutResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-3557efbeaf4ba9d7f1b4",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogoutResponse as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
+
+
+
+
+
+
+
+
+
+
     {
       "declarationId": "rust-observed-ad80ee6ba1d4610ebb97",
       "packageId": "rust-kmipkit-protocol",
@@ -445873,6 +445213,366 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, and KMIPKIT-REQ-SPEC-6.1.50-001. The typed RNG Seed response remains mapped under KMIP v2.1 Section 6.1.50 Tables 319-321, including the Table 320 response; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Seed test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.12 Table 200. The approved catalog lists Delegated Login cases 2.21–2.33; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginResponse as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed DelegatedLoginResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current secret Ticket behavior remains unchanged where applicable."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.12 Table 200. The approved catalog lists Delegated Login cases 2.21–2.33; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginResponse as core::borrow::Borrow<kmipkit_protocol::delegated_login::DelegatedLoginResponse>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed DelegatedLoginResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current secret Ticket behavior remains unchanged where applicable."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.12 Table 200. The approved catalog lists Delegated Login cases 2.21–2.33; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginResponse as core::borrow::BorrowMut<kmipkit_protocol::delegated_login::DelegatedLoginResponse>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed DelegatedLoginResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current secret Ticket behavior remains unchanged where applicable."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.12 Table 200. The approved catalog lists Delegated Login cases 2.21–2.33; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginResponse as core::convert::From<kmipkit_protocol::delegated_login::DelegatedLoginResponse>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed DelegatedLoginResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current secret Ticket behavior remains unchanged where applicable."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.12 Table 200. The approved catalog lists Delegated Login cases 2.21–2.33; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginResponse as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed DelegatedLoginResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current secret Ticket behavior remains unchanged where applicable."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.12 Table 200. The approved catalog lists Delegated Login cases 2.21–2.33; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginResponse as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed DelegatedLoginResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current secret Ticket behavior remains unchanged where applicable."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.12 Table 200. The approved catalog lists Delegated Login cases 2.21–2.33; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginResponse as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed DelegatedLoginResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current secret Ticket behavior remains unchanged where applicable."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.12 Table 200. The approved catalog lists Delegated Login cases 2.21–2.33; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginResponse as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed DelegatedLoginResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current secret Ticket behavior remains unchanged where applicable."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.12 Table 200. The approved catalog lists Delegated Login cases 2.21–2.33; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginResponse as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed DelegatedLoginResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current secret Ticket behavior remains unchanged where applicable."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.12 Table 200. The approved catalog lists Delegated Login cases 2.21–2.33; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginResponse as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed DelegatedLoginResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current secret Ticket behavior remains unchanged where applicable."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.30 Table 254. The approved catalog lists Login cases 2.48–2.50; case 2.48 has the pinned fixture `specification/oasis/kmip-2.1/fixtures/TC-LOGIN-1-21.xml`; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LoginResponse as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current secret Ticket behavior remains unchanged where applicable."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.30 Table 254. The approved catalog lists Login cases 2.48–2.50; case 2.48 has the pinned fixture `specification/oasis/kmip-2.1/fixtures/TC-LOGIN-1-21.xml`; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LoginResponse as core::borrow::Borrow<kmipkit_protocol::login::LoginResponse>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current secret Ticket behavior remains unchanged where applicable."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.30 Table 254. The approved catalog lists Login cases 2.48–2.50; case 2.48 has the pinned fixture `specification/oasis/kmip-2.1/fixtures/TC-LOGIN-1-21.xml`; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LoginResponse as core::borrow::BorrowMut<kmipkit_protocol::login::LoginResponse>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current secret Ticket behavior remains unchanged where applicable."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.30 Table 254. The approved catalog lists Login cases 2.48–2.50; case 2.48 has the pinned fixture `specification/oasis/kmip-2.1/fixtures/TC-LOGIN-1-21.xml`; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LoginResponse as core::convert::From<kmipkit_protocol::login::LoginResponse>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current secret Ticket behavior remains unchanged where applicable."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.30 Table 254. The approved catalog lists Login cases 2.48–2.50; case 2.48 has the pinned fixture `specification/oasis/kmip-2.1/fixtures/TC-LOGIN-1-21.xml`; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LoginResponse as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current secret Ticket behavior remains unchanged where applicable."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.30 Table 254. The approved catalog lists Login cases 2.48–2.50; case 2.48 has the pinned fixture `specification/oasis/kmip-2.1/fixtures/TC-LOGIN-1-21.xml`; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LoginResponse as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current secret Ticket behavior remains unchanged where applicable."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.30 Table 254. The approved catalog lists Login cases 2.48–2.50; case 2.48 has the pinned fixture `specification/oasis/kmip-2.1/fixtures/TC-LOGIN-1-21.xml`; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LoginResponse as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current secret Ticket behavior remains unchanged where applicable."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.30 Table 254. The approved catalog lists Login cases 2.48–2.50; case 2.48 has the pinned fixture `specification/oasis/kmip-2.1/fixtures/TC-LOGIN-1-21.xml`; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LoginResponse as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current secret Ticket behavior remains unchanged where applicable."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.30 Table 254. The approved catalog lists Login cases 2.48–2.50; case 2.48 has the pinned fixture `specification/oasis/kmip-2.1/fixtures/TC-LOGIN-1-21.xml`; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LoginResponse as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current secret Ticket behavior remains unchanged where applicable."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.30 Table 254. The approved catalog lists Login cases 2.48–2.50; case 2.48 has the pinned fixture `specification/oasis/kmip-2.1/fixtures/TC-LOGIN-1-21.xml`; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LoginResponse as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current secret Ticket behavior remains unchanged where applicable."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.31 Table 257. The approved catalog lists no direct Logout case; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LogoutResponse as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LogoutResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.31 Table 257. The approved catalog lists no direct Logout case; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LogoutResponse as core::borrow::Borrow<kmipkit_protocol::logout::LogoutResponse>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LogoutResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.31 Table 257. The approved catalog lists no direct Logout case; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LogoutResponse as core::borrow::BorrowMut<kmipkit_protocol::logout::LogoutResponse>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LogoutResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.31 Table 257. The approved catalog lists no direct Logout case; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LogoutResponse as core::convert::From<kmipkit_protocol::logout::LogoutResponse>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LogoutResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.31 Table 257. The approved catalog lists no direct Logout case; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LogoutResponse as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LogoutResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.31 Table 257. The approved catalog lists no direct Logout case; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LogoutResponse as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LogoutResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.31 Table 257. The approved catalog lists no direct Logout case; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LogoutResponse as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LogoutResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.31 Table 257. The approved catalog lists no direct Logout case; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LogoutResponse as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LogoutResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.31 Table 257. The approved catalog lists no direct Logout case; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LogoutResponse as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LogoutResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current."
+    },
+    {
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owned by approved KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-003, and KMIPKIT-0038-FR-004, inventoried under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The response is defined by OASIS KMIP v2.1 §6.1.31 Table 257. The approved catalog lists no direct Logout case; these identifiers are catalog references, not tests executed in this inventory batch. This inventory-only reconciliation does not claim those cases passed or make an operation-conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LogoutResponse as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LogoutResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current."
     }
   ],
   "apiLevels": [
