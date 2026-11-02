@@ -1,8 +1,8 @@
-"""Exact T102 exclusions for operation response trait artifacts.
+"""Exact T102 response-trait exclusion and preservation contracts.
 
-The functional response contracts are owned by KMIPKIT-0039 and grounded in
-KMIP v2.1 §6.1.22 Tables 230–231, §6.1.52 Tables 325–327, and §7.7. These
-compiler-visible Rust traits are not separate KMIP capabilities.
+The tests cover Constraints, Check, Certify, and Validate responses. Each
+operation's approved owner and OASIS citation are asserted by its focused
+case; compiler-visible Rust traits are not separate KMIP capabilities.
 """
 
 from __future__ import annotations
