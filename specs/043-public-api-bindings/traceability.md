@@ -528,3 +528,14 @@ The exact exclusions are authorized by `KMIPKIT-0043-FR-010` and `KMIPKIT-0043-F
 | `kmipkit_protocol::RngRetrieveRequest` | Approved `specs/027-rng-operations/spec.md` (`KMIPKIT-0041-FR-001/002/004`) | Section 6.1.49 Tables 316-318; Table 316 requires Data Length, Table 317 returns Data, and Table 318 lists RNG Retrieve errors | 19 paths (14 direct, five conditional); `tools/api_manifest/tests/test_t102_rng_retrieve_request_trait_exclusions.py` |
 
 The Rust 1.94.0 export report and manifest reconcile the exact 19 `(packageId, exportName)` pairs under `rust-kmipkit-protocol`. The protocol type and `new` remain verified, while `data_length` and `to_ttlv_payload` remain blocked. The `kmipkit::RngRetrieveRequest` root alias and all four API rows plus 19 trait rows remain blocked. The approved operation catalog lists no direct RNG Retrieve test-case ID. This is inventory-only and makes no OASIS conformance, profile-support, interoperability, or certification claim.
+
+### T102 - Export and Get request trait-artifact reconciliation
+
+The exact exclusions are authorized by `KMIPKIT-0043-FR-010` and `KMIPKIT-0043-FR-021`; no OASIS requirement directly applies to compiler-generated Rust traits.
+
+| Protocol declaration | Approved functional owner requirements | Pinned OASIS KMIP v2.1 reference | Exact trait count and inventory test |
+|---|---|---|---|
+| `kmipkit_protocol::ExportRequest` | Approved `specs/023-key-material-transfer/spec.md` (KMIPKIT-0037-FR-001/002/004/005/008) | Section 6.1.18; Table 217 Export Request Payload, Table 218 Export Response Payload, Table 219 Export Errors | 11 paths (six direct, five conditional); `tools/api_manifest/tests/test_t102_export_get_request_trait_exclusions.py` |
+| `kmipkit_protocol::GetRequest` | Approved `specs/017-managed-object-retrieval/spec.md` (KMIPKIT-0017-FR-001/002/003) | Section 6.1.19; Table 220 Get Request Payload, Table 221 Get Response Payload, Table 222 Get Errors | 11 paths (six direct, five conditional); same exact-set test |
+
+The pinned upstream OASIS KMIP v2.1 source SHA-256 is `8BF9D914C097E98A6509AA1FFCBF03406F738066E940597AEE93D0A5E07ADDCF`. The Rust 1.94.0 report and manifest reconcile the exact 22 `(packageId, exportName)` pairs under `rust-kmipkit-protocol`. Both protocol type declarations remain verified and their existing functional members remain blocked. Neither type has a `kmipkit::` root alias. This inventory-only batch makes no conformance, profile-support, interoperability, or certification claim.

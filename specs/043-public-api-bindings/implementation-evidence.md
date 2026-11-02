@@ -9613,3 +9613,32 @@ uv run --offline --no-project --with-requirements tools/api_manifest/requirement
 
   Result: 240 tests passed in 22.893 seconds, exit 0.
 - Baseline comparison: exactly 19 target declaration rows removed and the same 19 exclusions added; no other semantic manifest values or unrelated object/separator bytes changed. `git diff --check` and `git show --check` for Red, Green, and Refactor pass. Pre-existing untracked artifacts were not staged; nothing was pushed or merged.
+
+### T102 - Export and Get request trait exclusions (2026-11-03)
+
+This inventory-only batch excludes exactly 22 compiler-observed standard-trait paths: 11 each for `kmipkit_protocol::ExportRequest` and `kmipkit_protocol::GetRequest`, with six direct and five conditional paths per type in the Rust 1.94.0 report. The approved Export owner is `specs/023-key-material-transfer/spec.md`, KMIPKIT-0037, approved for implementation 2026-10-11; the approved Get owner is `specs/017-managed-object-retrieval/spec.md`, KMIPKIT-0017, approved and human-merged in PRs #63/#79 with the release-contract refresh in PR #81. Inventory exclusions are authorized by KMIPKIT-0043-FR-010/021.
+
+The pinned upstream OASIS KMIP v2.1 source is `specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html`, SHA-256 `8BF9D914C097E98A6509AA1FFCBF03406F738066E940597AEE93D0A5E07ADDCF`. Direct inspection of §6.1.18 confirms the literal captions Table 217 Export Request Payload, Table 218 Export Response Payload, and Table 219 Export Errors. Direct inspection of §6.1.19 confirms Table 220 Get Request Payload, Table 221 Get Response Payload, and Table 222 Get Errors. The focused contract pins those exact captions. Compiler-generated standard traits have no direct OASIS requirement; this batch makes no conformance claim.
+
+Only the 22 protocol trait declaration rows moved to approved exclusions. `ExportRequest` and `GetRequest` remain verified protocol types; all their existing functional/inherent member declarations remain blocked. Neither has a root-facade alias. The baseline comparison confirms all non-target manifest values, declaration/exclusion objects, and unrelated array separators remain byte-identical. No protocol or runtime source changed.
+
+| Phase | Commit | Evidence | Result |
+|---|---|---|---|
+| Red | `79280d5622fbeabda82a4e47d08e69cbb8e52cd6` | `python -B -m unittest tools.api_manifest.tests.test_t102_export_get_request_trait_exclusions -v` | Expected failure: 3 tests ran; exact exclusions were absent and candidate count was 3,571 instead of 3,549. The functional-state and absent-root-alias test passed. |
+| Green | `da655382153e2d52ba626c2c652845b771a44bf4` | Exact-set test, pinned generator and reports, affected guards and workflow contract | Pass: exactly 22 declarations moved to 22 owner-approved exclusions. Totals are 8,747 public declarations, 5,977 exclusions, and 3,549 blocked candidates. |
+| Refactor | This evidence commit | Task/traceability updates and final commit checks | Records the approved owners, literal normative captions, exact delta, and verification evidence. |
+
+Verification:
+
+- `python -B tools/api_manifest/generate.py --write` — exit 0; generated 12 outputs. `python -B tools/api_manifest/generate.py --check` — exit 0; all 12 current.
+- `python -B tools/api_manifest/audit_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json` and `python -B tools/api_manifest/audit_rust_exports.py --check` — exit 0; 10,463 observed, 5,832 matched/manifest, 4,631 excluded; zero missing, unobserved, issue, kind, or conditional discrepancies. The report delta is exactly the 22 target pairs. Windows emitted optional AWS-LC compiler-probe/NASM warnings during report generation.
+- `python -B tools/api_manifest/audit_shared_rust_inventory.py --report specs/043-public-api-bindings/reports/shared-rust-inventory-2026-11-01.json` and the same command with `--check` — exit 0; report current.
+- `python -B tools/api_manifest/audit_binding_exports.py --check` — exit 0; no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
+- Focused exact-set test: `python -B -m unittest tools.api_manifest.tests.test_t102_export_get_request_trait_exclusions -v` — 3 passed. Aggregate command:
+
+```powershell
+uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest -v tools.api_manifest.tests.test_t102_export_get_request_trait_exclusions tools.api_manifest.tests.test_t102_rng_retrieve_request_trait_exclusions tools.api_manifest.tests.test_t102_request_trait_batch_two tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions tools.api_manifest.tests.test_t102_import_request_trait_exclusions tools.api_manifest.tests.test_t102_interop_request_trait_exclusions tools.api_manifest.tests.test_t102_join_split_key_request_trait_exclusions tools.api_manifest.tests.test_t102_lifecycle_request_trait_exclusions tools.api_manifest.tests.test_t102_log_request_trait_exclusions tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions tools.api_manifest.tests.test_t102_pkcs11_response_trait_exclusions tools.api_manifest.tests.test_t102_protocol_request_trait_exclusions tools.api_manifest.tests.test_t102_revoke_request_trait_exclusions tools.api_manifest.tests.test_t102_rng_seed_request_trait_exclusions tools.api_manifest.tests.test_t102_set_constraints_request_trait_exclusions tools.api_manifest.tests.test_t102_ticket_login_request_trait_exclusions tools.api_manifest.tests.test_shared_rust_inventory scripts.tests.test_workflow tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_declaration_and_exclusion_records_are_closed_and_complete
+```
+
+  Result: 244 tests passed in 23.172 seconds, exit 0.
+- Exact baseline comparison: 22 target declaration rows removed and the same 22 exclusions added; all 8,747 retained declarations, 5,955 prior exclusions, other top-level manifest values, and unrelated adjacent separators are byte-identical. `git diff --check` and `git show --check` for Red, Green, and Refactor pass. Pre-existing untracked artifacts were not staged. Nothing was pushed or merged.
