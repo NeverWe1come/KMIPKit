@@ -68414,6 +68414,126 @@
       "exportName": "<kmipkit_protocol::RevokeResponse as core::fmt::Debug>::fmt",
       "packageId": "rust-kmipkit-protocol",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RevokeResponse wrapper, not a separate KMIP client capability; the response type, Unique Identifier, and response TTLV remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Re-Provision response remains mapped to KMIP v2.1 Section 6.1.48 Tables 313-315, including its Table 314 response; these standard-trait artifacts do not add separate KMIP behavior. KMIPKIT-DEC-014 keeps Unique Identifier optional: an absent field remains absent and a present identifier is preserved. The approved operation catalog lists no direct Re-Provision case ID; T061 table-derived tests are not official-vector evidence, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ReProvisionResponse as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ReProvisionResponse wrapper, not a separate KMIP client capability; its optional Unique Identifier and owned response TTLV remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Re-Provision response remains mapped to KMIP v2.1 Section 6.1.48 Tables 313-315, including its Table 314 response; these standard-trait artifacts do not add separate KMIP behavior. KMIPKIT-DEC-014 keeps Unique Identifier optional: an absent field remains absent and a present identifier is preserved. The approved operation catalog lists no direct Re-Provision case ID; T061 table-derived tests are not official-vector evidence, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ReProvisionResponse as core::borrow::Borrow<kmipkit_protocol::reprovision::ReProvisionResponse>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ReProvisionResponse wrapper, not a separate KMIP client capability; its optional Unique Identifier and owned response TTLV remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Re-Provision response remains mapped to KMIP v2.1 Section 6.1.48 Tables 313-315, including its Table 314 response; these standard-trait artifacts do not add separate KMIP behavior. KMIPKIT-DEC-014 keeps Unique Identifier optional: an absent field remains absent and a present identifier is preserved. The approved operation catalog lists no direct Re-Provision case ID; T061 table-derived tests are not official-vector evidence, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ReProvisionResponse as core::borrow::BorrowMut<kmipkit_protocol::reprovision::ReProvisionResponse>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ReProvisionResponse wrapper, not a separate KMIP client capability; its optional Unique Identifier and owned response TTLV remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Re-Provision response remains mapped to KMIP v2.1 Section 6.1.48 Tables 313-315, including its Table 314 response; these standard-trait artifacts do not add separate KMIP behavior. KMIPKIT-DEC-014 keeps Unique Identifier optional: an absent field remains absent and a present identifier is preserved. The approved operation catalog lists no direct Re-Provision case ID; T061 table-derived tests are not official-vector evidence, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ReProvisionResponse as core::convert::From<kmipkit_protocol::reprovision::ReProvisionResponse>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ReProvisionResponse wrapper, not a separate KMIP client capability; its optional Unique Identifier and owned response TTLV remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Re-Provision response remains mapped to KMIP v2.1 Section 6.1.48 Tables 313-315, including its Table 314 response; these standard-trait artifacts do not add separate KMIP behavior. KMIPKIT-DEC-014 keeps Unique Identifier optional: an absent field remains absent and a present identifier is preserved. The approved operation catalog lists no direct Re-Provision case ID; T061 table-derived tests are not official-vector evidence, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ReProvisionResponse as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ReProvisionResponse wrapper, not a separate KMIP client capability; its optional Unique Identifier and owned response TTLV remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Re-Provision response remains mapped to KMIP v2.1 Section 6.1.48 Tables 313-315, including its Table 314 response; these standard-trait artifacts do not add separate KMIP behavior. KMIPKIT-DEC-014 keeps Unique Identifier optional: an absent field remains absent and a present identifier is preserved. The approved operation catalog lists no direct Re-Provision case ID; T061 table-derived tests are not official-vector evidence, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ReProvisionResponse as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ReProvisionResponse wrapper, not a separate KMIP client capability; its optional Unique Identifier and owned response TTLV remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Re-Provision response remains mapped to KMIP v2.1 Section 6.1.48 Tables 313-315, including its Table 314 response; these standard-trait artifacts do not add separate KMIP behavior. KMIPKIT-DEC-014 keeps Unique Identifier optional: an absent field remains absent and a present identifier is preserved. The approved operation catalog lists no direct Re-Provision case ID; T061 table-derived tests are not official-vector evidence, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ReProvisionResponse as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ReProvisionResponse wrapper, not a separate KMIP client capability; its optional Unique Identifier and owned response TTLV remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Re-Provision response remains mapped to KMIP v2.1 Section 6.1.48 Tables 313-315, including its Table 314 response; these standard-trait artifacts do not add separate KMIP behavior. KMIPKIT-DEC-014 keeps Unique Identifier optional: an absent field remains absent and a present identifier is preserved. The approved operation catalog lists no direct Re-Provision case ID; T061 table-derived tests are not official-vector evidence, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ReProvisionResponse as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ReProvisionResponse wrapper, not a separate KMIP client capability; its optional Unique Identifier and owned response TTLV remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Re-Provision response remains mapped to KMIP v2.1 Section 6.1.48 Tables 313-315, including its Table 314 response; these standard-trait artifacts do not add separate KMIP behavior. KMIPKIT-DEC-014 keeps Unique Identifier optional: an absent field remains absent and a present identifier is preserved. The approved operation catalog lists no direct Re-Provision case ID; T061 table-derived tests are not official-vector evidence, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ReProvisionResponse as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ReProvisionResponse wrapper, not a separate KMIP client capability; its optional Unique Identifier and owned response TTLV remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Re-Provision response remains mapped to KMIP v2.1 Section 6.1.48 Tables 313-315, including its Table 314 response; these standard-trait artifacts do not add separate KMIP behavior. KMIPKIT-DEC-014 keeps Unique Identifier optional: an absent field remains absent and a present identifier is preserved. The approved operation catalog lists no direct Re-Provision case ID; T061 table-derived tests are not official-vector evidence, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ReProvisionResponse as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ReProvisionResponse wrapper, not a separate KMIP client capability; its optional Unique Identifier and owned response TTLV remain mapped."
     }
   ],
   "capabilities": [
