@@ -42,7 +42,9 @@ def _root_log_request_exports(rows: list[dict[str, str]]) -> set[str]:
         row["exportName"]
         for row in rows
         if row.get("packageId") == "rust-kmipkit"
-        and row.get("exportName", "").startswith("kmipkit::LogRequest")
+        and row.get("exportName", "").startswith(
+            ("kmipkit::LogRequest", "<kmipkit::LogRequest as ")
+        )
     }
 
 
