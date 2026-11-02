@@ -9586,3 +9586,30 @@ uv run --offline --no-project --with-requirements tools/api_manifest/requirement
   Result: 236 tests passed in 26.770 seconds, exit 0.
 - Exact baseline comparison — 44 target declaration rows removed and the same 44 exclusions added; all non-target rows and other top-level manifest values semantically unchanged. `git diff --quiet HEAD -- crates/kmipkit-protocol` and `.../tests` exited 0, preserving Ticket custom formatting and redaction tests.
 - `git diff --check` and `git show --check` for Red, Green, and Refactor — pass. Pre-existing untracked artifacts were not staged. Nothing was pushed or merged.
+
+### T102 - RNG Retrieve request trait exclusions (2026-11-03)
+
+This inventory-only batch excludes exactly 19 compiler-observed standard-trait paths for `kmipkit_protocol::RngRetrieveRequest`: 14 direct and five conditional paths in the Rust 1.94.0 report. The approved functional owner is `specs/027-rng-operations/spec.md`, approved for implementation 2026-10-11, under KMIPKIT-0041-FR-001/002/004; exact inventory exclusions are authorized by KMIPKIT-0043-FR-010/021. The pinned source is `specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html`, SHA-256 `8BF9D914C097E98A6509AA1FFCBF03406F738066E940597AEE93D0A5E07ADDCF`. Its §6.1.49 text confirms Table 316 is the RNG Retrieve request payload with required Data Length, Table 317 is the response payload with Data, and §6.1.49.1 Table 318 lists RNG Retrieve errors. The approved catalog lists no direct RNG Retrieve test-case ID; no OASIS conformance or profile-support claim is made.
+
+Only the 19 `rust-kmipkit-protocol` trait declaration rows moved to approved exclusions. The protocol type and `new` remain verified; `data_length` and `to_ttlv_payload` remain blocked. The root `kmipkit::RngRetrieveRequest` alias, its four blocked API rows, and its 19 blocked trait paths are unchanged. All non-target declaration/exclusion objects and unrelated separators in the manifest are byte-identical to the Red baseline. No protocol or runtime source changed.
+
+| Phase | Commit | Evidence | Result |
+|---|---|---|---|
+| Red | `2262228819afeee1a8a19c74c7b7d51fb430fc64` | `python -B -m unittest tools.api_manifest.tests.test_t102_rng_retrieve_request_trait_exclusions -v` | Expected failure: 3 tests ran, two failed because all 19 exclusions were absent and the candidate count was 3,590 instead of 3,571. The root alias and protocol API state-preservation test passed. |
+| Green | `cc9f669d06f58c48425f926b2578acff3c86ba94` | Exact-set test, pinned generator, updated Rust/shared reports, affected aggregate guards and workflow contract | Pass: 19 declarations moved to 19 approved exclusions; declarations/exclusions are 8,769/5,955 and candidate count is 3,571. All 19 root traits and four root API rows remain blocked. |
+| Refactor | This evidence commit | Task/traceability updates and final diff checks | Records source ownership, OASIS tables, exact counts, unchanged-state proof, verification commands, and inventory-only boundary. |
+
+Verification:
+
+- `python -B tools/api_manifest/generate.py --write` — exit 0; generated 12 outputs. `python -B tools/api_manifest/generate.py --check` — exit 0; all 12 outputs current.
+- `python -B tools/api_manifest/audit_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json` and `python -B tools/api_manifest/audit_rust_exports.py --check` — exit 0; matched/manifest decreased 5,873 to 5,854 and exclusions increased 4,590 to 4,609; 10,463 observed, zero discrepancies. The report delta is exactly the 19 target pairs. Windows emitted optional AWS-LC compiler-probe/NASM warnings during report generation.
+- `python -B tools/api_manifest/audit_shared_rust_inventory.py --report specs/043-public-api-bindings/reports/shared-rust-inventory-2026-11-01.json` and the same command with `--check` — exit 0; report current.
+- `python -B tools/api_manifest/audit_binding_exports.py --check` — exit 0; no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
+- `python -B -m unittest tools.api_manifest.tests.test_t102_rng_retrieve_request_trait_exclusions -v` — 3 passed. The aggregate command was:
+
+```powershell
+uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest -v tools.api_manifest.tests.test_t102_rng_retrieve_request_trait_exclusions tools.api_manifest.tests.test_t102_request_trait_batch_two tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions tools.api_manifest.tests.test_t102_import_request_trait_exclusions tools.api_manifest.tests.test_t102_interop_request_trait_exclusions tools.api_manifest.tests.test_t102_join_split_key_request_trait_exclusions tools.api_manifest.tests.test_t102_lifecycle_request_trait_exclusions tools.api_manifest.tests.test_t102_log_request_trait_exclusions tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions tools.api_manifest.tests.test_t102_pkcs11_response_trait_exclusions tools.api_manifest.tests.test_t102_protocol_request_trait_exclusions tools.api_manifest.tests.test_t102_revoke_request_trait_exclusions tools.api_manifest.tests.test_t102_rng_seed_request_trait_exclusions tools.api_manifest.tests.test_t102_set_constraints_request_trait_exclusions tools.api_manifest.tests.test_t102_ticket_login_request_trait_exclusions tools.api_manifest.tests.test_shared_rust_inventory scripts.tests.test_workflow tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_declaration_and_exclusion_records_are_closed_and_complete
+```
+
+  Result: 240 tests passed in 22.893 seconds, exit 0.
+- Baseline comparison: exactly 19 target declaration rows removed and the same 19 exclusions added; no other semantic manifest values or unrelated object/separator bytes changed. `git diff --check` and `git show --check` for Red, Green, and Refactor pass. Pre-existing untracked artifacts were not staged; nothing was pushed or merged.
