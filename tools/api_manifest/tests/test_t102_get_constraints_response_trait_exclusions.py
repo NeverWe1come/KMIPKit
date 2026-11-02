@@ -30,6 +30,7 @@ APPROVAL_SOURCE = {
 PREFIX = "<kmipkit_protocol::GetConstraintsResponse as "
 ROOT_PREFIX = "<kmipkit::GetConstraintsResponse as "
 SET_PREFIX = "<kmipkit_protocol::SetConstraintsResponse as "
+SET_ROOT_PREFIX = "<kmipkit::SetConstraintsResponse as "
 EXPECTED_TRAIT_EXPORTS = {
     "<kmipkit_protocol::GetConstraintsResponse as core::any::Any>::type_id",
     "<kmipkit_protocol::GetConstraintsResponse as core::borrow::Borrow<kmipkit_protocol::get_constraints::GetConstraintsResponse>>::borrow",
@@ -65,6 +66,18 @@ EXPECTED_SET_TRAIT_EXPORTS = {
     "<kmipkit_protocol::SetConstraintsResponse as core::convert::TryInto<U>>::Error",
     "<kmipkit_protocol::SetConstraintsResponse as core::convert::TryInto<U>>::try_into",
     "<kmipkit_protocol::SetConstraintsResponse as core::fmt::Debug>::fmt",
+}
+EXPECTED_SET_ROOT_TRAIT_EXPORTS = {
+    "<kmipkit::SetConstraintsResponse as core::any::Any>::type_id",
+    "<kmipkit::SetConstraintsResponse as core::borrow::Borrow<kmipkit_protocol::set_constraints::SetConstraintsResponse>>::borrow",
+    "<kmipkit::SetConstraintsResponse as core::borrow::BorrowMut<kmipkit_protocol::set_constraints::SetConstraintsResponse>>::borrow_mut",
+    "<kmipkit::SetConstraintsResponse as core::convert::From<kmipkit_protocol::set_constraints::SetConstraintsResponse>>::from",
+    "<kmipkit::SetConstraintsResponse as core::convert::Into<U>>::into",
+    "<kmipkit::SetConstraintsResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit::SetConstraintsResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit::SetConstraintsResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit::SetConstraintsResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit::SetConstraintsResponse as core::fmt::Debug>::fmt",
 }
 RETAINED_EXPORTS = {
     "kmipkit_protocol::GetConstraintsResponse",
@@ -304,6 +317,87 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             with self.subTest(export_name=name):
                 self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS")
                 self.assertIn("KMIPKIT-0039-FR-001", rows[name]["requirementIds"])
+
+
+    def test_set_root_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith(SET_ROOT_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith(SET_ROOT_PREFIX)
+        }
+
+        self.assertEqual(set(declarations), set())
+        self.assertEqual(set(exclusions), EXPECTED_SET_ROOT_TRAIT_EXPORTS)
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0039-FR-001",
+                    "KMIPKIT-0039-FR-004",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 §6.1.52 Tables 325–327", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("SetConstraintsResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_set_root_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith(SET_ROOT_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith(SET_ROOT_PREFIX)
+        }
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_SET_ROOT_TRAIT_EXPORTS)
+        self.assertEqual(audited_exclusions, EXPECTED_SET_ROOT_TRAIT_EXPORTS)
+
+    def test_set_root_response_facade_remains_blocked_except_existing_ttlv_constructor(self) -> None:
+        blocked = {
+            "kmipkit::SetConstraintsResponse",
+            "kmipkit::SetConstraintsResponse::result",
+            "kmipkit::SetConstraintsResponse::try_from_response_item",
+        }
+        ttlv_constructor = "kmipkit::SetConstraintsResponse::with_ttlv"
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::SetConstraintsResponse")
+        }
+        self.assertEqual(set(rows), blocked | {ttlv_constructor})
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        for name in blocked:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["candidateSpecId"], "KMIPKIT-0043")
+        self.assertEqual(rows[ttlv_constructor]["declarationState"], "verified")
+        self.assertEqual(
+            rows[ttlv_constructor]["capabilityId"],
+            "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS",
+        )
 
 
 if __name__ == "__main__":
