@@ -3220,5 +3220,191 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
 
 
+POLICY_RESPONSE_TRAIT_CASES = {
+    "get_usage_allocation": {
+        "response": "GetUsageAllocationResponse",
+        "module": "get_usage_allocation",
+        "operation": "Get Usage Allocation",
+        "requirements": {
+            "KMIPKIT-0039-FR-001",
+            "KMIPKIT-0039-FR-003",
+            "KMIPKIT-0039-FR-004",
+        },
+        "citation": "KMIP v2.1 §6.1.23 Table 233",
+        "owner_test_case_note": "| Get Usage Allocation | No direct catalog case ID |",
+        "verified_members": {
+            "kmipkit_protocol::GetUsageAllocationResponse",
+            "kmipkit_protocol::GetUsageAllocationResponse::result",
+            "kmipkit_protocol::GetUsageAllocationResponse::unique_identifier",
+            "kmipkit_protocol::GetUsageAllocationResponse::with_ttlv",
+        },
+        "root_rows": {
+            "kmipkit::GetUsageAllocationResponse": "blocked",
+            "kmipkit::GetUsageAllocationResponse::result": "blocked",
+            "kmipkit::GetUsageAllocationResponse::try_from_response_item": "blocked",
+            "kmipkit::GetUsageAllocationResponse::unique_identifier": "blocked",
+            "kmipkit::GetUsageAllocationResponse::with_ttlv": "verified",
+        },
+    },
+    "set_defaults": {
+        "response": "SetDefaultsResponse",
+        "module": "set_defaults",
+        "operation": "Set Defaults",
+        "requirements": {
+            "KMIPKIT-0039-FR-001",
+            "KMIPKIT-0039-FR-003",
+            "KMIPKIT-0039-FR-004",
+        },
+        "citation": "KMIP v2.1 §6.1.53 Table 329",
+        "owner_test_case_note": "| Set Defaults | No direct catalog case ID |",
+        "verified_members": {
+            "kmipkit_protocol::SetDefaultsResponse",
+            "kmipkit_protocol::SetDefaultsResponse::result",
+            "kmipkit_protocol::SetDefaultsResponse::with_ttlv",
+        },
+        "root_rows": {
+            "kmipkit::SetDefaultsResponse": "blocked",
+            "kmipkit::SetDefaultsResponse::result": "blocked",
+            "kmipkit::SetDefaultsResponse::try_from_response_item": "blocked",
+            "kmipkit::SetDefaultsResponse::with_ttlv": "blocked",
+        },
+    },
+}
+
+
+def _policy_response_trait_paths(response: str, module: str) -> tuple[set[str], set[str]]:
+    owner = f"kmipkit_protocol::{module}::{response}"
+    prefix = f"<kmipkit_protocol::{response} as "
+    direct_suffixes = {
+        "core::any::Any>::type_id",
+        f"core::borrow::Borrow<{owner}>>::borrow",
+        f"core::borrow::BorrowMut<{owner}>>::borrow_mut",
+        f"core::convert::From<{owner}>>::from",
+        "core::fmt::Debug>::fmt",
+    }
+    conditional_suffixes = {
+        "core::convert::Into<U>>::into",
+        "core::convert::TryFrom<U>>::Error",
+        "core::convert::TryFrom<U>>::try_from",
+        "core::convert::TryInto<U>>::Error",
+        "core::convert::TryInto<U>>::try_into",
+    }
+    return (
+        {prefix + suffix for suffix in direct_suffixes},
+        {prefix + suffix for suffix in conditional_suffixes},
+    )
+
+
+class T102PolicyResponseTraitExclusionTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        self.rust_report = json.loads(RUST_REPORT.read_text(encoding="utf-8"))
+
+    def _assert_operation_response(self, name: str) -> None:
+        case = POLICY_RESPONSE_TRAIT_CASES[name]
+        response = case["response"]
+        expected_direct, expected_conditional = _policy_response_trait_paths(
+            response, case["module"]
+        )
+        expected_paths = expected_direct | expected_conditional
+        self.assertEqual(len(expected_direct), 5)
+        self.assertEqual(len(expected_conditional), 5)
+
+        prefix = f"kmipkit_protocol::{response}"
+        protocol_rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(prefix)
+        }
+        blocked_parser = f"{prefix}::try_from_response_item"
+        self.assertEqual(set(protocol_rows), case["verified_members"] | {blocked_parser})
+        self.assertEqual(
+            {path for path, row in protocol_rows.items() if row["declarationState"] == "verified"},
+            case["verified_members"],
+        )
+        self.assertEqual(protocol_rows[blocked_parser]["declarationState"], "blocked")
+
+        root_prefix = f"kmipkit::{response}"
+        root_rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith(root_prefix)
+        }
+        self.assertEqual(
+            {path: row["declarationState"] for path, row in root_rows.items()},
+            case["root_rows"],
+        )
+
+        observed_direct = {
+            row["exportName"]
+            for row in self.rust_report["declarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(f"<{prefix} as ")
+        }
+        observed_conditional = {
+            row["exportName"]
+            for row in self.rust_report["conditionalDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(f"<{prefix} as ")
+        }
+        self.assertEqual(observed_direct, expected_direct)
+        self.assertEqual(observed_conditional, expected_conditional)
+
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(f"<{prefix} as ")
+        }
+        self.assertEqual(set(exclusions), expected_paths)
+        self.assertFalse(
+            {
+                row["exportName"]
+                for row in self.manifest["publicDeclarations"]
+                if row.get("exportName") in expected_paths
+            }
+        )
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(f"<{prefix} as ")
+        }
+        self.assertEqual(audited_exclusions, expected_paths)
+
+        owner_spec = (ROOT / "specs" / "025-policy-controls" / "spec.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("**Status**: Approved for implementation", owner_spec)
+        self.assertIn(case["owner_test_case_note"], owner_spec)
+        for path, row in exclusions.items():
+            with self.subTest(export_name=path):
+                for requirement in case["requirements"]:
+                    self.assertIn(requirement, row["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-010", row["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-021", row["evidence"])
+                self.assertIn(case["citation"], row["evidence"])
+                self.assertIn("no direct operation-specific client test-case ID", row["evidence"])
+                self.assertIn("no operation-conformance claim", row["evidence"])
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+
+    def test_get_usage_allocation_response_excludes_only_standard_trait_artifacts(self) -> None:
+        self._assert_operation_response("get_usage_allocation")
+
+    def test_set_defaults_response_excludes_only_standard_trait_artifacts(self) -> None:
+        self._assert_operation_response("set_defaults")
+
+    def test_policy_response_exclusions_reduce_candidate_count_by_20(self) -> None:
+        self.assertEqual(
+            sum(
+                row.get("candidateSpecId") == "KMIPKIT-0043"
+                and row.get("declarationState") == "blocked"
+                for row in self.manifest["publicDeclarations"]
+            ),
+            3928,
+        )
+
 if __name__ == "__main__":
     unittest.main()
