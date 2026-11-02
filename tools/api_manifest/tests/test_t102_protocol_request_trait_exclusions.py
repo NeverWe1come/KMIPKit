@@ -23,8 +23,8 @@ TYPES = {
         "owner_spec": "specs/024-credential-sessions/spec.md",
         "owner_spec_id": "KMIPKIT-0038",
         "owner_requirement_ids": ("KMIPKIT-0038-FR-001", "KMIPKIT-0038-FR-004"),
-        "section_tables": "OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.12 Tables 199–201",
-        "request_table": "Table 199 as the request",
+        "section_tables": "OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.12 Tables 199-201",
+        "request_table": "Table 199 as request",
         "protocol_functional_states": {
             "": "verified",
             "::into_ttlv_payload": "blocked",
@@ -49,8 +49,8 @@ TYPES = {
         "owner_spec": "specs/024-credential-sessions/spec.md",
         "owner_spec_id": "KMIPKIT-0038",
         "owner_requirement_ids": ("KMIPKIT-0038-FR-001", "KMIPKIT-0038-FR-004"),
-        "section_tables": "OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.31 Tables 256–258",
-        "request_table": "Table 256 as the request",
+        "section_tables": "OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.31 Tables 256-258",
+        "request_table": "Table 256 as request",
         "protocol_functional_states": {
             "": "verified",
             "::into_ttlv_payload": "blocked",
@@ -67,8 +67,8 @@ TYPES = {
         "owner_spec": "specs/025-policy-controls/spec.md",
         "owner_spec_id": "KMIPKIT-0039",
         "owner_requirement_ids": ("KMIPKIT-0039-FR-001", "KMIPKIT-0039-FR-004"),
-        "section_tables": "OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.23 Tables 232–234",
-        "request_table": "Table 232 as the request",
+        "section_tables": "OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.23 Tables 232-234",
+        "request_table": "Table 232 as request",
         "protocol_functional_states": {
             "": "verified",
             "::new": "verified",
@@ -91,8 +91,8 @@ TYPES = {
         "owner_spec": "specs/023-key-material-transfer/spec.md",
         "owner_spec_id": "KMIPKIT-0037",
         "owner_requirement_ids": ("KMIPKIT-0037-FR-001", "KMIPKIT-0037-FR-004"),
-        "section_tables": "OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.27 Tables 244–246",
-        "request_table": "Table 244 as the request",
+        "section_tables": "OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.27 Tables 244-246",
+        "request_table": "Table 244 as request",
         "protocol_functional_states": {
             "": "verified",
             "::new": "verified",

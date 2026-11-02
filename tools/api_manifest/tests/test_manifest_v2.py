@@ -6221,7 +6221,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(len(t094_exclusions), 230)
         self.assertEqual(len(t096_exclusions), 265)
         self.assertEqual(len(t097_exclusions), 627)
-        self.assertEqual(len(rust_exclusions), 2924)
+        self.assertEqual(len(rust_exclusions), 2964)
         self.assertTrue(
             any(
                 item["exportName"] == "kmipkit_protocol::RegisterRequest::validate_local_shape"
@@ -6253,6 +6253,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "specs/021-hash-mac-signature-operations/spec.md",
                 "specs/026-pkcs11/spec.md",
                 "specs/023-key-material-transfer/spec.md",
+                "specs/024-credential-sessions/spec.md",
                 "specs/028-diagnostics-interop/spec.md",
             },
         )

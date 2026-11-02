@@ -179,7 +179,7 @@ class T102Pkcs11ResponseTraitExclusionTests(unittest.TestCase):
                 and row["declarationState"] == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            3808,
+            3768,
         )
 
 

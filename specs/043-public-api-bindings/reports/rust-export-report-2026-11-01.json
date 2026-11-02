@@ -59500,11 +59500,11 @@
   "counts": {
     "conditionalConditionMismatches": 0,
     "conditionalStateMismatches": 0,
-    "excluded": 4372,
+    "excluded": 4412,
     "issues": 0,
     "kindMismatches": 0,
-    "manifest": 6091,
-    "matched": 6091,
+    "manifest": 6051,
+    "matched": 6051,
     "missingFromManifest": 0,
     "notObserved": 0,
     "observed": 10463
@@ -260721,6 +260721,240 @@
     },
     {
       "aliases": [
+        "<kmipkit_protocol::DelegatedLoginRequest as core::any::Any>::type_id"
+      ],
+      "exportLocations": [
+        {
+          "column": 48,
+          "line": 124,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::DelegatedLoginRequest as core::any::Any>::type_id",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"delegated_login\",\"DelegatedLoginRequest\"],[\"core\",\"any\",\"Any\"],\"kmipkit_protocol::delegated_login::DelegatedLoginRequest\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"delegated_login\",\"DelegatedLoginRequest\"]}}}}]},\"type_id\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::DelegatedLoginRequest as core::borrow::Borrow<kmipkit_protocol::delegated_login::DelegatedLoginRequest>>::borrow"
+      ],
+      "exportLocations": [
+        {
+          "column": 48,
+          "line": 124,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::DelegatedLoginRequest as core::borrow::Borrow<kmipkit_protocol::delegated_login::DelegatedLoginRequest>>::borrow",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"delegated_login\",\"DelegatedLoginRequest\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_protocol::delegated_login::DelegatedLoginRequest\",\"core::borrow::Borrow<kmipkit_protocol::delegated_login::DelegatedLoginRequest>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"delegated_login\",\"DelegatedLoginRequest\"]}}}}]},\"borrow\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::DelegatedLoginRequest as core::borrow::BorrowMut<kmipkit_protocol::delegated_login::DelegatedLoginRequest>>::borrow_mut"
+      ],
+      "exportLocations": [
+        {
+          "column": 48,
+          "line": 124,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::DelegatedLoginRequest as core::borrow::BorrowMut<kmipkit_protocol::delegated_login::DelegatedLoginRequest>>::borrow_mut",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"delegated_login\",\"DelegatedLoginRequest\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_protocol::delegated_login::DelegatedLoginRequest\",\"core::borrow::BorrowMut<kmipkit_protocol::delegated_login::DelegatedLoginRequest>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"delegated_login\",\"DelegatedLoginRequest\"]}}}}]},\"borrow_mut\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::DelegatedLoginRequest as core::convert::From<kmipkit_protocol::delegated_login::DelegatedLoginRequest>>::from"
+      ],
+      "exportLocations": [
+        {
+          "column": 48,
+          "line": 124,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::DelegatedLoginRequest as core::convert::From<kmipkit_protocol::delegated_login::DelegatedLoginRequest>>::from",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"delegated_login\",\"DelegatedLoginRequest\"],[\"core\",\"convert\",\"From\"],\"kmipkit_protocol::delegated_login::DelegatedLoginRequest\",\"core::convert::From<kmipkit_protocol::delegated_login::DelegatedLoginRequest>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::delegated_login::DelegatedLoginRequest"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "From"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::DelegatedLoginRequest as core::convert::Into<U>>::into",
+      "implementationId": "3186",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "delegated_login",
+        "DelegatedLoginRequest"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::delegated_login::DelegatedLoginRequest"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::DelegatedLoginRequest as core::convert::TryFrom<U>>::Error",
+      "implementationId": "3189",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "delegated_login",
+        "DelegatedLoginRequest"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::delegated_login::DelegatedLoginRequest"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::DelegatedLoginRequest as core::convert::TryFrom<U>>::try_from",
+      "implementationId": "3189",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "delegated_login",
+        "DelegatedLoginRequest"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::delegated_login::DelegatedLoginRequest"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::DelegatedLoginRequest as core::convert::TryInto<U>>::Error",
+      "implementationId": "3188",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "delegated_login",
+        "DelegatedLoginRequest"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::delegated_login::DelegatedLoginRequest"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::DelegatedLoginRequest as core::convert::TryInto<U>>::try_into",
+      "implementationId": "3188",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "delegated_login",
+        "DelegatedLoginRequest"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::DelegatedLoginRequest as core::fmt::Debug>::fmt"
+      ],
+      "exportLocations": [
+        {
+          "column": 48,
+          "line": 124,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::DelegatedLoginRequest as core::fmt::Debug>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"delegated_login\",\"DelegatedLoginRequest\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_protocol::delegated_login::DelegatedLoginRequest\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 112,
+        "path": "crates/kmipkit-protocol/src/delegated_login.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
         "<kmipkit_protocol::DelegatedLoginResponse as core::any::Any>::type_id"
       ],
       "exportLocations": [
@@ -268144,6 +268378,240 @@
     },
     {
       "aliases": [
+        "<kmipkit_protocol::GetUsageAllocationRequest as core::any::Any>::type_id"
+      ],
+      "exportLocations": [
+        {
+          "column": 30,
+          "line": 143,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::GetUsageAllocationRequest as core::any::Any>::type_id",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"get_usage_allocation\",\"GetUsageAllocationRequest\"],[\"core\",\"any\",\"Any\"],\"kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"get_usage_allocation\",\"GetUsageAllocationRequest\"]}}}}]},\"type_id\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::GetUsageAllocationRequest as core::borrow::Borrow<kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest>>::borrow"
+      ],
+      "exportLocations": [
+        {
+          "column": 30,
+          "line": 143,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::GetUsageAllocationRequest as core::borrow::Borrow<kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest>>::borrow",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"get_usage_allocation\",\"GetUsageAllocationRequest\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest\",\"core::borrow::Borrow<kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"get_usage_allocation\",\"GetUsageAllocationRequest\"]}}}}]},\"borrow\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::GetUsageAllocationRequest as core::borrow::BorrowMut<kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest>>::borrow_mut"
+      ],
+      "exportLocations": [
+        {
+          "column": 30,
+          "line": 143,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::GetUsageAllocationRequest as core::borrow::BorrowMut<kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest>>::borrow_mut",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"get_usage_allocation\",\"GetUsageAllocationRequest\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest\",\"core::borrow::BorrowMut<kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"get_usage_allocation\",\"GetUsageAllocationRequest\"]}}}}]},\"borrow_mut\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::GetUsageAllocationRequest as core::convert::From<kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest>>::from"
+      ],
+      "exportLocations": [
+        {
+          "column": 30,
+          "line": 143,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::GetUsageAllocationRequest as core::convert::From<kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest>>::from",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"get_usage_allocation\",\"GetUsageAllocationRequest\"],[\"core\",\"convert\",\"From\"],\"kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest\",\"core::convert::From<kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "From"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::GetUsageAllocationRequest as core::convert::Into<U>>::into",
+      "implementationId": "5576",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "get_usage_allocation",
+        "GetUsageAllocationRequest"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::GetUsageAllocationRequest as core::convert::TryFrom<U>>::Error",
+      "implementationId": "5579",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "get_usage_allocation",
+        "GetUsageAllocationRequest"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::GetUsageAllocationRequest as core::convert::TryFrom<U>>::try_from",
+      "implementationId": "5579",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "get_usage_allocation",
+        "GetUsageAllocationRequest"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::GetUsageAllocationRequest as core::convert::TryInto<U>>::Error",
+      "implementationId": "5578",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "get_usage_allocation",
+        "GetUsageAllocationRequest"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::GetUsageAllocationRequest as core::convert::TryInto<U>>::try_into",
+      "implementationId": "5578",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "get_usage_allocation",
+        "GetUsageAllocationRequest"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::GetUsageAllocationRequest as core::fmt::Debug>::fmt"
+      ],
+      "exportLocations": [
+        {
+          "column": 30,
+          "line": 143,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::GetUsageAllocationRequest as core::fmt::Debug>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"get_usage_allocation\",\"GetUsageAllocationRequest\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 157,
+        "path": "crates/kmipkit-protocol/src/get_usage_allocation.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
         "<kmipkit_protocol::GetUsageAllocationResponse as core::any::Any>::type_id"
       ],
       "exportLocations": [
@@ -273628,6 +274096,240 @@
         "column": 10,
         "line": 124,
         "path": "crates/kmipkit-protocol/src/login.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::LogoutRequest as core::any::Any>::type_id"
+      ],
+      "exportLocations": [
+        {
+          "column": 31,
+          "line": 156,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::LogoutRequest as core::any::Any>::type_id",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"logout\",\"LogoutRequest\"],[\"core\",\"any\",\"Any\"],\"kmipkit_protocol::logout::LogoutRequest\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"logout\",\"LogoutRequest\"]}}}}]},\"type_id\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::LogoutRequest as core::borrow::Borrow<kmipkit_protocol::logout::LogoutRequest>>::borrow"
+      ],
+      "exportLocations": [
+        {
+          "column": 31,
+          "line": 156,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::LogoutRequest as core::borrow::Borrow<kmipkit_protocol::logout::LogoutRequest>>::borrow",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"logout\",\"LogoutRequest\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_protocol::logout::LogoutRequest\",\"core::borrow::Borrow<kmipkit_protocol::logout::LogoutRequest>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"logout\",\"LogoutRequest\"]}}}}]},\"borrow\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::LogoutRequest as core::borrow::BorrowMut<kmipkit_protocol::logout::LogoutRequest>>::borrow_mut"
+      ],
+      "exportLocations": [
+        {
+          "column": 31,
+          "line": 156,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::LogoutRequest as core::borrow::BorrowMut<kmipkit_protocol::logout::LogoutRequest>>::borrow_mut",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"logout\",\"LogoutRequest\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_protocol::logout::LogoutRequest\",\"core::borrow::BorrowMut<kmipkit_protocol::logout::LogoutRequest>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"logout\",\"LogoutRequest\"]}}}}]},\"borrow_mut\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::LogoutRequest as core::convert::From<kmipkit_protocol::logout::LogoutRequest>>::from"
+      ],
+      "exportLocations": [
+        {
+          "column": 31,
+          "line": 156,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::LogoutRequest as core::convert::From<kmipkit_protocol::logout::LogoutRequest>>::from",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"logout\",\"LogoutRequest\"],[\"core\",\"convert\",\"From\"],\"kmipkit_protocol::logout::LogoutRequest\",\"core::convert::From<kmipkit_protocol::logout::LogoutRequest>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::logout::LogoutRequest"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "From"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::LogoutRequest as core::convert::Into<U>>::into",
+      "implementationId": "6508",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "logout",
+        "LogoutRequest"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::logout::LogoutRequest"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::LogoutRequest as core::convert::TryFrom<U>>::Error",
+      "implementationId": "6511",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "logout",
+        "LogoutRequest"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::logout::LogoutRequest"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::LogoutRequest as core::convert::TryFrom<U>>::try_from",
+      "implementationId": "6511",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "logout",
+        "LogoutRequest"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::logout::LogoutRequest"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::LogoutRequest as core::convert::TryInto<U>>::Error",
+      "implementationId": "6510",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "logout",
+        "LogoutRequest"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::logout::LogoutRequest"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::LogoutRequest as core::convert::TryInto<U>>::try_into",
+      "implementationId": "6510",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "logout",
+        "LogoutRequest"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::LogoutRequest as core::fmt::Debug>::fmt"
+      ],
+      "exportLocations": [
+        {
+          "column": 31,
+          "line": 156,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::LogoutRequest as core::fmt::Debug>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"logout\",\"LogoutRequest\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_protocol::logout::LogoutRequest\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 53,
+        "path": "crates/kmipkit-protocol/src/logout.rs"
       },
       "packageId": "rust-kmipkit-protocol"
     },
@@ -296726,6 +297428,240 @@
         "column": 34,
         "line": 27,
         "path": "crates/kmipkit-protocol/src/create_split_key.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::SplitKeyReference as core::any::Any>::type_id"
+      ],
+      "exportLocations": [
+        {
+          "column": 67,
+          "line": 149,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::SplitKeyReference as core::any::Any>::type_id",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"join_split_key\",\"SplitKeyReference\"],[\"core\",\"any\",\"Any\"],\"kmipkit_protocol::join_split_key::SplitKeyReference\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"join_split_key\",\"SplitKeyReference\"]}}}}]},\"type_id\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::SplitKeyReference as core::borrow::Borrow<kmipkit_protocol::join_split_key::SplitKeyReference>>::borrow"
+      ],
+      "exportLocations": [
+        {
+          "column": 67,
+          "line": 149,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::SplitKeyReference as core::borrow::Borrow<kmipkit_protocol::join_split_key::SplitKeyReference>>::borrow",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"join_split_key\",\"SplitKeyReference\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_protocol::join_split_key::SplitKeyReference\",\"core::borrow::Borrow<kmipkit_protocol::join_split_key::SplitKeyReference>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"join_split_key\",\"SplitKeyReference\"]}}}}]},\"borrow\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::SplitKeyReference as core::borrow::BorrowMut<kmipkit_protocol::join_split_key::SplitKeyReference>>::borrow_mut"
+      ],
+      "exportLocations": [
+        {
+          "column": 67,
+          "line": 149,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::SplitKeyReference as core::borrow::BorrowMut<kmipkit_protocol::join_split_key::SplitKeyReference>>::borrow_mut",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"join_split_key\",\"SplitKeyReference\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_protocol::join_split_key::SplitKeyReference\",\"core::borrow::BorrowMut<kmipkit_protocol::join_split_key::SplitKeyReference>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"join_split_key\",\"SplitKeyReference\"]}}}}]},\"borrow_mut\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::SplitKeyReference as core::convert::From<kmipkit_protocol::join_split_key::SplitKeyReference>>::from"
+      ],
+      "exportLocations": [
+        {
+          "column": 67,
+          "line": 149,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::SplitKeyReference as core::convert::From<kmipkit_protocol::join_split_key::SplitKeyReference>>::from",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"join_split_key\",\"SplitKeyReference\"],[\"core\",\"convert\",\"From\"],\"kmipkit_protocol::join_split_key::SplitKeyReference\",\"core::convert::From<kmipkit_protocol::join_split_key::SplitKeyReference>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::join_split_key::SplitKeyReference"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "From"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::SplitKeyReference as core::convert::Into<U>>::into",
+      "implementationId": "5976",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "join_split_key",
+        "SplitKeyReference"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::join_split_key::SplitKeyReference"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::SplitKeyReference as core::convert::TryFrom<U>>::Error",
+      "implementationId": "5979",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "join_split_key",
+        "SplitKeyReference"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::join_split_key::SplitKeyReference"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::SplitKeyReference as core::convert::TryFrom<U>>::try_from",
+      "implementationId": "5979",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "join_split_key",
+        "SplitKeyReference"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::join_split_key::SplitKeyReference"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::SplitKeyReference as core::convert::TryInto<U>>::Error",
+      "implementationId": "5978",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "join_split_key",
+        "SplitKeyReference"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::join_split_key::SplitKeyReference"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::SplitKeyReference as core::convert::TryInto<U>>::try_into",
+      "implementationId": "5978",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "join_split_key",
+        "SplitKeyReference"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::SplitKeyReference as core::fmt::Debug>::fmt"
+      ],
+      "exportLocations": [
+        {
+          "column": 67,
+          "line": 149,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::SplitKeyReference as core::fmt::Debug>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"join_split_key\",\"SplitKeyReference\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_protocol::join_split_key::SplitKeyReference\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 62,
+        "path": "crates/kmipkit-protocol/src/join_split_key.rs"
       },
       "packageId": "rust-kmipkit-protocol"
     },
@@ -385018,250 +385954,6 @@
     },
     {
       "aliases": [
-        "<kmipkit_protocol::DelegatedLoginRequest as core::any::Any>::type_id"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 48,
-          "line": 124,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::DelegatedLoginRequest as core::any::Any>::type_id",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"delegated_login\",\"DelegatedLoginRequest\"],[\"core\",\"any\",\"Any\"],\"kmipkit_protocol::delegated_login::DelegatedLoginRequest\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"delegated_login\",\"DelegatedLoginRequest\"]}}}}]},\"type_id\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::DelegatedLoginRequest as core::borrow::Borrow<kmipkit_protocol::delegated_login::DelegatedLoginRequest>>::borrow"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 48,
-          "line": 124,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::DelegatedLoginRequest as core::borrow::Borrow<kmipkit_protocol::delegated_login::DelegatedLoginRequest>>::borrow",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"delegated_login\",\"DelegatedLoginRequest\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_protocol::delegated_login::DelegatedLoginRequest\",\"core::borrow::Borrow<kmipkit_protocol::delegated_login::DelegatedLoginRequest>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"delegated_login\",\"DelegatedLoginRequest\"]}}}}]},\"borrow\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::DelegatedLoginRequest as core::borrow::BorrowMut<kmipkit_protocol::delegated_login::DelegatedLoginRequest>>::borrow_mut"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 48,
-          "line": 124,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::DelegatedLoginRequest as core::borrow::BorrowMut<kmipkit_protocol::delegated_login::DelegatedLoginRequest>>::borrow_mut",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"delegated_login\",\"DelegatedLoginRequest\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_protocol::delegated_login::DelegatedLoginRequest\",\"core::borrow::BorrowMut<kmipkit_protocol::delegated_login::DelegatedLoginRequest>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"delegated_login\",\"DelegatedLoginRequest\"]}}}}]},\"borrow_mut\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::DelegatedLoginRequest as core::convert::From<kmipkit_protocol::delegated_login::DelegatedLoginRequest>>::from"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 48,
-          "line": 124,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::DelegatedLoginRequest as core::convert::From<kmipkit_protocol::delegated_login::DelegatedLoginRequest>>::from",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"delegated_login\",\"DelegatedLoginRequest\"],[\"core\",\"convert\",\"From\"],\"kmipkit_protocol::delegated_login::DelegatedLoginRequest\",\"core::convert::From<kmipkit_protocol::delegated_login::DelegatedLoginRequest>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::delegated_login::DelegatedLoginRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::DelegatedLoginRequest as core::convert::Into<U>>::into",
-      "implementationId": "3186",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "delegated_login",
-        "DelegatedLoginRequest"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::delegated_login::DelegatedLoginRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::DelegatedLoginRequest as core::convert::TryFrom<U>>::Error",
-      "implementationId": "3189",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "delegated_login",
-        "DelegatedLoginRequest"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::delegated_login::DelegatedLoginRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::DelegatedLoginRequest as core::convert::TryFrom<U>>::try_from",
-      "implementationId": "3189",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "delegated_login",
-        "DelegatedLoginRequest"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::delegated_login::DelegatedLoginRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::DelegatedLoginRequest as core::convert::TryInto<U>>::Error",
-      "implementationId": "3188",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "delegated_login",
-        "DelegatedLoginRequest"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::delegated_login::DelegatedLoginRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::DelegatedLoginRequest as core::convert::TryInto<U>>::try_into",
-      "implementationId": "3188",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "delegated_login",
-        "DelegatedLoginRequest"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::DelegatedLoginRequest as core::fmt::Debug>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 48,
-          "line": 124,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::DelegatedLoginRequest as core::fmt::Debug>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"delegated_login\",\"DelegatedLoginRequest\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_protocol::delegated_login::DelegatedLoginRequest\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 112,
-        "path": "crates/kmipkit-protocol/src/delegated_login.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
         "<kmipkit_protocol::DerivationMethod as alloc::borrow::ToOwned>::Owned"
       ],
       "declarationState": "blocked",
@@ -392000,250 +392692,6 @@
     },
     {
       "aliases": [
-        "<kmipkit_protocol::GetUsageAllocationRequest as core::any::Any>::type_id"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 30,
-          "line": 143,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::GetUsageAllocationRequest as core::any::Any>::type_id",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"get_usage_allocation\",\"GetUsageAllocationRequest\"],[\"core\",\"any\",\"Any\"],\"kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"get_usage_allocation\",\"GetUsageAllocationRequest\"]}}}}]},\"type_id\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::GetUsageAllocationRequest as core::borrow::Borrow<kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest>>::borrow"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 30,
-          "line": 143,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::GetUsageAllocationRequest as core::borrow::Borrow<kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest>>::borrow",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"get_usage_allocation\",\"GetUsageAllocationRequest\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest\",\"core::borrow::Borrow<kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"get_usage_allocation\",\"GetUsageAllocationRequest\"]}}}}]},\"borrow\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::GetUsageAllocationRequest as core::borrow::BorrowMut<kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest>>::borrow_mut"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 30,
-          "line": 143,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::GetUsageAllocationRequest as core::borrow::BorrowMut<kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest>>::borrow_mut",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"get_usage_allocation\",\"GetUsageAllocationRequest\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest\",\"core::borrow::BorrowMut<kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"get_usage_allocation\",\"GetUsageAllocationRequest\"]}}}}]},\"borrow_mut\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::GetUsageAllocationRequest as core::convert::From<kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest>>::from"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 30,
-          "line": 143,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::GetUsageAllocationRequest as core::convert::From<kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest>>::from",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"get_usage_allocation\",\"GetUsageAllocationRequest\"],[\"core\",\"convert\",\"From\"],\"kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest\",\"core::convert::From<kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::GetUsageAllocationRequest as core::convert::Into<U>>::into",
-      "implementationId": "5576",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "get_usage_allocation",
-        "GetUsageAllocationRequest"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::GetUsageAllocationRequest as core::convert::TryFrom<U>>::Error",
-      "implementationId": "5579",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "get_usage_allocation",
-        "GetUsageAllocationRequest"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::GetUsageAllocationRequest as core::convert::TryFrom<U>>::try_from",
-      "implementationId": "5579",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "get_usage_allocation",
-        "GetUsageAllocationRequest"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::GetUsageAllocationRequest as core::convert::TryInto<U>>::Error",
-      "implementationId": "5578",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "get_usage_allocation",
-        "GetUsageAllocationRequest"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::GetUsageAllocationRequest as core::convert::TryInto<U>>::try_into",
-      "implementationId": "5578",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "get_usage_allocation",
-        "GetUsageAllocationRequest"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::GetUsageAllocationRequest as core::fmt::Debug>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 30,
-          "line": 143,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::GetUsageAllocationRequest as core::fmt::Debug>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"get_usage_allocation\",\"GetUsageAllocationRequest\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_protocol::get_usage_allocation::GetUsageAllocationRequest\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 157,
-        "path": "crates/kmipkit-protocol/src/get_usage_allocation.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
         "<kmipkit_protocol::HashingAlgorithm as alloc::borrow::ToOwned>::Owned"
       ],
       "declarationState": "blocked",
@@ -398416,250 +398864,6 @@
       "location": {
         "column": 5,
         "line": 129,
-        "path": "crates/kmipkit-protocol/src/logout.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::LogoutRequest as core::any::Any>::type_id"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 31,
-          "line": 156,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::LogoutRequest as core::any::Any>::type_id",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"logout\",\"LogoutRequest\"],[\"core\",\"any\",\"Any\"],\"kmipkit_protocol::logout::LogoutRequest\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"logout\",\"LogoutRequest\"]}}}}]},\"type_id\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::LogoutRequest as core::borrow::Borrow<kmipkit_protocol::logout::LogoutRequest>>::borrow"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 31,
-          "line": 156,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::LogoutRequest as core::borrow::Borrow<kmipkit_protocol::logout::LogoutRequest>>::borrow",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"logout\",\"LogoutRequest\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_protocol::logout::LogoutRequest\",\"core::borrow::Borrow<kmipkit_protocol::logout::LogoutRequest>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"logout\",\"LogoutRequest\"]}}}}]},\"borrow\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::LogoutRequest as core::borrow::BorrowMut<kmipkit_protocol::logout::LogoutRequest>>::borrow_mut"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 31,
-          "line": 156,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::LogoutRequest as core::borrow::BorrowMut<kmipkit_protocol::logout::LogoutRequest>>::borrow_mut",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"logout\",\"LogoutRequest\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_protocol::logout::LogoutRequest\",\"core::borrow::BorrowMut<kmipkit_protocol::logout::LogoutRequest>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"logout\",\"LogoutRequest\"]}}}}]},\"borrow_mut\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::LogoutRequest as core::convert::From<kmipkit_protocol::logout::LogoutRequest>>::from"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 31,
-          "line": 156,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::LogoutRequest as core::convert::From<kmipkit_protocol::logout::LogoutRequest>>::from",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"logout\",\"LogoutRequest\"],[\"core\",\"convert\",\"From\"],\"kmipkit_protocol::logout::LogoutRequest\",\"core::convert::From<kmipkit_protocol::logout::LogoutRequest>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::logout::LogoutRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::LogoutRequest as core::convert::Into<U>>::into",
-      "implementationId": "6508",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "logout",
-        "LogoutRequest"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::logout::LogoutRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::LogoutRequest as core::convert::TryFrom<U>>::Error",
-      "implementationId": "6511",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "logout",
-        "LogoutRequest"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::logout::LogoutRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::LogoutRequest as core::convert::TryFrom<U>>::try_from",
-      "implementationId": "6511",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "logout",
-        "LogoutRequest"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::logout::LogoutRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::LogoutRequest as core::convert::TryInto<U>>::Error",
-      "implementationId": "6510",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "logout",
-        "LogoutRequest"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::logout::LogoutRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::LogoutRequest as core::convert::TryInto<U>>::try_into",
-      "implementationId": "6510",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "logout",
-        "LogoutRequest"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::LogoutRequest as core::fmt::Debug>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 31,
-          "line": 156,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::LogoutRequest as core::fmt::Debug>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"logout\",\"LogoutRequest\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_protocol::logout::LogoutRequest\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 53,
         "path": "crates/kmipkit-protocol/src/logout.rs"
       },
       "packageId": "rust-kmipkit-protocol"
@@ -418501,250 +418705,6 @@
         "column": 5,
         "line": 79,
         "path": "crates/kmipkit-protocol/src/set_defaults.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::SplitKeyReference as core::any::Any>::type_id"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 67,
-          "line": 149,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::SplitKeyReference as core::any::Any>::type_id",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"join_split_key\",\"SplitKeyReference\"],[\"core\",\"any\",\"Any\"],\"kmipkit_protocol::join_split_key::SplitKeyReference\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"join_split_key\",\"SplitKeyReference\"]}}}}]},\"type_id\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::SplitKeyReference as core::borrow::Borrow<kmipkit_protocol::join_split_key::SplitKeyReference>>::borrow"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 67,
-          "line": 149,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::SplitKeyReference as core::borrow::Borrow<kmipkit_protocol::join_split_key::SplitKeyReference>>::borrow",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"join_split_key\",\"SplitKeyReference\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_protocol::join_split_key::SplitKeyReference\",\"core::borrow::Borrow<kmipkit_protocol::join_split_key::SplitKeyReference>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"join_split_key\",\"SplitKeyReference\"]}}}}]},\"borrow\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::SplitKeyReference as core::borrow::BorrowMut<kmipkit_protocol::join_split_key::SplitKeyReference>>::borrow_mut"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 67,
-          "line": 149,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::SplitKeyReference as core::borrow::BorrowMut<kmipkit_protocol::join_split_key::SplitKeyReference>>::borrow_mut",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"join_split_key\",\"SplitKeyReference\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_protocol::join_split_key::SplitKeyReference\",\"core::borrow::BorrowMut<kmipkit_protocol::join_split_key::SplitKeyReference>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"join_split_key\",\"SplitKeyReference\"]}}}}]},\"borrow_mut\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::SplitKeyReference as core::convert::From<kmipkit_protocol::join_split_key::SplitKeyReference>>::from"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 67,
-          "line": 149,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::SplitKeyReference as core::convert::From<kmipkit_protocol::join_split_key::SplitKeyReference>>::from",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"join_split_key\",\"SplitKeyReference\"],[\"core\",\"convert\",\"From\"],\"kmipkit_protocol::join_split_key::SplitKeyReference\",\"core::convert::From<kmipkit_protocol::join_split_key::SplitKeyReference>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::join_split_key::SplitKeyReference"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::SplitKeyReference as core::convert::Into<U>>::into",
-      "implementationId": "5976",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "join_split_key",
-        "SplitKeyReference"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::join_split_key::SplitKeyReference"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::SplitKeyReference as core::convert::TryFrom<U>>::Error",
-      "implementationId": "5979",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "join_split_key",
-        "SplitKeyReference"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::join_split_key::SplitKeyReference"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::SplitKeyReference as core::convert::TryFrom<U>>::try_from",
-      "implementationId": "5979",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "join_split_key",
-        "SplitKeyReference"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::join_split_key::SplitKeyReference"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::SplitKeyReference as core::convert::TryInto<U>>::Error",
-      "implementationId": "5978",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "join_split_key",
-        "SplitKeyReference"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::join_split_key::SplitKeyReference"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::SplitKeyReference as core::convert::TryInto<U>>::try_into",
-      "implementationId": "5978",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "join_split_key",
-        "SplitKeyReference"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::SplitKeyReference as core::fmt::Debug>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 67,
-          "line": 149,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::SplitKeyReference as core::fmt::Debug>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"join_split_key\",\"SplitKeyReference\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_protocol::join_split_key::SplitKeyReference\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 62,
-        "path": "crates/kmipkit-protocol/src/join_split_key.rs"
       },
       "packageId": "rust-kmipkit-protocol"
     },
