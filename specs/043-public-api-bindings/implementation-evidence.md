@@ -8892,3 +8892,28 @@ Verification:
 - `git diff --check` — passed after evidence review.
 
 The candidate count falls from 4,038 to 4,028. T102 remains open; this slice does not claim Re-key Key Pair operation conformance, PR completion, full API parity, profile conformance, or release readiness.
+
+### T102 Cancel response trait-artifact reconciliation (2026-11-02)
+
+The Rust export audit observed exactly ten standard-trait paths for `kmipkit_protocol::CancelResponse` with a borrowed response lifetime: four direct declarations (`Borrow`, `BorrowMut`, `From`, and `Debug`) and six conditional declarations (`Any`, `Into`, `TryFrom`, and `TryInto` associated paths). T102 records only those compiler artifacts as approved inventory exclusions under KMIPKIT-0043-FR-010/021 and functional ownership KMIPKIT-0009-FR-001/004. The typed response and its four associated members remain declared under the approved asynchronous-operations feature; no root alias exists. OASIS KMIP v2.1 Section 6.1.5 Tables 176-178, including Table 177, defines the Cancel operation response; Section 11.7 Tables 437-438 defines Cancellation Result values. The exclusion changes no KMIP or runtime behavior and makes no new operation-conformance claim.
+
+| Phase | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red - pin the exact ten lifetime-bearing CancelResponse trait paths, audit classification, candidate count, and unchanged functional declarations | `ec5d4c69c` | Focused exact-set, owner, audit, functional-state, and count tests in `tools/api_manifest/tests/test_t102_get_constraints_response_trait_exclusions.py` | Expected failure before Green: ten paths remained blocked and absent from exclusions; count was 4,028 instead of 4,018. The functional declarations and four/six audit split passed. |
+| Green - exclude only those ten paths and regenerate checked-in output | `129121c6f` | `py -B tools/api_manifest/generate.py --write`; Rust export audit report regeneration | Ten compiler-observed paths moved to approved exclusions; all dependent outputs were regenerated. |
+| Refactor/evidence - synchronize T102 counts, ownership, OASIS traceability, and verification | This commit | Focused T102, manifest, workflow, generation, export-audit, binding-audit, traceability, and independent review | T102 remains open with 4,018 blocked KMIPKIT-0043 candidates. |
+
+Verification:
+
+- Red command: `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions -k cancel_response -v` - 3 expected failures because the ten paths were not yet excluded and the candidate count remained 4,028; the preserved functional declaration test passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools/api_manifest.tests.test_t102_get_constraints_response_trait_exclusions -v` - 61 passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2 -v` - 150 passed.
+- `py -B -m unittest scripts.tests.test_workflow -v` - 68 passed; `py -B -m unittest scripts.tests.test_requirement_traceability -v` - 2 passed; feature traceability - 30 passed, 1 Windows symlink permission skip.
+- `py -B tools/api_manifest/generate.py --check` - all 12 generated outputs verified.
+- `py -B tools/api_manifest/audit_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` - 6,301 declarations and 4,162 exact exclusions reconcile with 10,463 observed paths; zero issues or mismatches. The successful Windows audit build emitted optional `aws-lc-sys` compiler-probe and NASM warnings.
+- `py -B tools/api_manifest/audit_binding_exports.py --check` - no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
+- Independent QA reviewed the exact paths, four/six direct/conditional split, KMIPKIT-0009 ownership, OASIS references, unchanged declarations, and inventory count; no blockers.
+- Independent security review found no findings; this manifest/report/fixture/test change touches no production Rust, C ABI, TLS, or secret-handling code.
+- `git diff --check` passed before the Green commit; it will be rerun after Refactor evidence is added.
+
+The candidate count falls from 4,028 to 4,018. T102 remains open; this slice does not claim completion of the asynchronous-operations API, full API parity, profile conformance, PR completion, or release readiness.

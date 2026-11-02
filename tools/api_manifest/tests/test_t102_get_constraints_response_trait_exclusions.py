@@ -1,8 +1,8 @@
 """Exact T102 operation-trait exclusion and preservation contracts.
 
 The tests cover Constraints, Check, Certify, Derive Key, Export, Get, Import,
-Join Split Key, Interop, Locate, Log, Obtain Lease, Re-key Key Pair, and
-Validate operations.
+Join Split Key, Interop, Locate, Log, Obtain Lease, Re-key Key Pair, Validate,
+and Cancel operations.
 Each operation's approved owner and OASIS citation are asserted by its focused
 case; compiler-visible Rust traits are not separate KMIP capabilities.
 """
