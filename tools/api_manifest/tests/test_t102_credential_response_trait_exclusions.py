@@ -37,6 +37,7 @@ RESPONSES = {
         "section": "§6.1.30",
         "response_table": "Table 254",
         "cases": "Login cases 2.48–2.50",
+        "case_fixture": "specification/oasis/kmip-2.1/fixtures/TC-LOGIN-1-21.xml",
         "protocol_states": {
             "type": "verified",
             "result": "blocked",
@@ -148,12 +149,17 @@ class T102CredentialResponseTraitExclusionTests(unittest.TestCase):
                             },
                         )
                         self.assertIn("KMIPKIT-0038-FR-001", row["evidence"])
+                        self.assertIn("KMIPKIT-0038-FR-003", row["evidence"])
                         self.assertIn("KMIPKIT-0038-FR-004", row["evidence"])
                         self.assertIn("KMIPKIT-0043-FR-010", row["evidence"])
                         self.assertIn("KMIPKIT-0043-FR-021", row["evidence"])
                         self.assertIn(details["section"], row["evidence"])
                         self.assertIn(details["response_table"], row["evidence"])
                         self.assertIn(details["cases"], row["evidence"])
+                        if "case_fixture" in details:
+                            self.assertIn(details["case_fixture"], row["evidence"])
+                        self.assertIn("approved catalog", row["evidence"])
+                        self.assertIn("catalog references, not tests executed", row["evidence"])
                         self.assertIn("inventory-only", row["evidence"])
 
     def test_functional_protocol_and_root_facade_rows_keep_their_states(self) -> None:

@@ -9123,3 +9123,30 @@ Verification:
 - git diff --check — passed after the documentation updates.
 
 The candidate count changes from 3,948 to 3,928. T102 remains open. This slice does not claim Get Usage Allocation or Set Defaults operation conformance, full API parity, profile conformance, PR completion, or release readiness.
+
+
+### T102 Credential-session response Rust trait-artifact exclusions (2026-11-02)
+
+The approved functional owner is `specs/024-credential-sessions/spec.md`, KMIPKIT-0038-FR-001/003/004. This inventory-only slice reconciles exactly ten compiler-observed standard-trait paths for each of `kmipkit_protocol::DelegatedLoginResponse`, `kmipkit_protocol::LoginResponse`, and `kmipkit_protocol::LogoutResponse`: five direct and five conditional paths per response in the Rust 1.94.0 audit. It moves only those 30 protocol trait rows from blocked declarations to approved exclusions. Existing functional protocol response rows keep their states: Delegated Login and Login types and `ticket` remain verified, while `result` and `try_from_response_item` remain blocked; Logout's type and `result` remain verified while `try_from_response_item` remains blocked. All root-facade rows and trait declarations keep their prior blocked states. Secret Ticket mapping and handling are unchanged; no runtime or protocol code changed. A base-manifest comparison confirms all other declarations and exclusions are unchanged and all 348 KMIPKIT-0018 candidates are preserved.
+
+The responses are defined by OASIS KMIP v2.1 §6.1.12 Table 200, §6.1.30 Table 254, and §6.1.31 Table 257. The approved catalog references Delegated Login cases 2.21–2.33 and Login cases 2.48–2.50; case 2.48 has the pinned fixture `specification/oasis/kmip-2.1/fixtures/TC-LOGIN-1-21.xml`. Logout has no direct case. These are catalog references, not tests executed in this inventory batch. No test-pass, operation-conformance, profile, interoperability, or certification claim is made.
+
+| Phase | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red — pin exact direct/conditional paths, exclusion state, owner evidence, response-member states, parser-helper states, and unchanged root rows | `e6544b855` | `python -B -m unittest tools.api_manifest.tests.test_t102_credential_response_trait_exclusions -v` | Two tests ran; the exact exclusion assertions failed for all three responses because the ten paths were still blocked declarations. Functional-member and root-row preservation assertions passed. |
+| Green — move only the 30 protocol trait rows, cite owner FR-001/003/004 and exact OASIS/catalog references, and regenerate outputs | `bb9deb540` | `python -B tools/api_manifest/generate.py --repo-root . --write`; focused T102 contract | The pinned generator wrote 12 outputs; the focused contract passed. Rust audit reconciles the manifest with the compiler inventory. |
+| Refactor/evidence — update current aggregate assertions and reports, synchronize traceability, and record verification | This commit | Full T102, manifest, T076/credential parity, generator, Rust/binding export audits, traceability, and diff checks | KMIPKIT-0043 blocked-candidate count changes from 3,928 to 3,898; current Rust protocol approved exclusions increase from 2,804 to 2,834. T102 remains open. |
+
+Verification:
+
+- `python -B -m unittest tools.api_manifest.tests.test_t102_credential_response_trait_exclusions tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions` — 94 passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2` — 150 passed.
+- `python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping tools.api_manifest.tests.test_delegated_login_parity_manifest tools.api_manifest.tests.test_login_parity_manifest` — 72 passed. The generated Logout parity fixture check also passed (1 test).
+- The combined T076/credential parity run had one failure in `test_logout_has_approved_four_language_mapping_and_evidence`; replaying that method against base manifest `76439495533a537854a204af623431a801c829c8` reproduced the same 12 extra Rust request/operation/outcome mappings. This pre-existing mapping issue is outside the response-trait slice and was left untouched.
+- `python -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
+- `python -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` — 6,181 declarations and 4,282 exclusions reconcile with 10,463 observed paths; zero missing, unobserved, issue, kind, or conditional mismatches. Windows emitted optional aws-lc compiler-probe and missing NASM warnings.
+- `python -B tools/api_manifest/audit_binding_exports.py --check` — no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
+- `python -B -m unittest scripts.tests.test_requirement_traceability` — 2 passed. `python -B -m unittest discover -s tools/normative_catalog/tests -p test_feature_traceability.py` — 29 passed, one skipped because Windows did not permit symlink creation.
+- `git diff --check` — passed on the final Refactor diff.
+
+The inventory does not change secret handling or claim that any OASIS case passed.
