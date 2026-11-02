@@ -1,4 +1,4 @@
-"""Exact T102 exclusions for Constraints response trait artifacts.
+"""Exact T102 exclusions for operation response trait artifacts.
 
 The functional response contracts are owned by KMIPKIT-0039 and grounded in
 KMIP v2.1 §6.1.22 Tables 230–231, §6.1.52 Tables 325–327, and §7.7. These
@@ -31,6 +31,7 @@ PREFIX = "<kmipkit_protocol::GetConstraintsResponse as "
 ROOT_PREFIX = "<kmipkit::GetConstraintsResponse as "
 SET_PREFIX = "<kmipkit_protocol::SetConstraintsResponse as "
 SET_ROOT_PREFIX = "<kmipkit::SetConstraintsResponse as "
+CERTIFY_PREFIX = "<kmipkit_protocol::CertifyResponse as "
 EXPECTED_TRAIT_EXPORTS = {
     "<kmipkit_protocol::GetConstraintsResponse as core::any::Any>::type_id",
     "<kmipkit_protocol::GetConstraintsResponse as core::borrow::Borrow<kmipkit_protocol::get_constraints::GetConstraintsResponse>>::borrow",
@@ -78,6 +79,18 @@ EXPECTED_SET_ROOT_TRAIT_EXPORTS = {
     "<kmipkit::SetConstraintsResponse as core::convert::TryInto<U>>::Error",
     "<kmipkit::SetConstraintsResponse as core::convert::TryInto<U>>::try_into",
     "<kmipkit::SetConstraintsResponse as core::fmt::Debug>::fmt",
+}
+EXPECTED_CERTIFY_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::CertifyResponse as core::any::Any>::type_id",
+    "<kmipkit_protocol::CertifyResponse as core::borrow::Borrow<kmipkit_protocol::certify::CertifyResponse>>::borrow",
+    "<kmipkit_protocol::CertifyResponse as core::borrow::BorrowMut<kmipkit_protocol::certify::CertifyResponse>>::borrow_mut",
+    "<kmipkit_protocol::CertifyResponse as core::convert::From<kmipkit_protocol::certify::CertifyResponse>>::from",
+    "<kmipkit_protocol::CertifyResponse as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::CertifyResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::CertifyResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::CertifyResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::CertifyResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::CertifyResponse as core::fmt::Debug>::fmt",
 }
 RETAINED_EXPORTS = {
     "kmipkit_protocol::GetConstraintsResponse",
@@ -398,6 +411,89 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             rows[ttlv_constructor]["capabilityId"],
             "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS",
         )
+
+
+    def test_certify_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(CERTIFY_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(CERTIFY_PREFIX)
+        }
+
+        self.assertEqual(set(declarations), set())
+        self.assertEqual(set(exclusions), EXPECTED_CERTIFY_TRAIT_EXPORTS)
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                self.assertIn("KMIPKIT-0036-FR-001", row["evidence"])
+                self.assertIn("KMIPKIT-0036-FR-004", row["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-010", row["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-021", row["evidence"])
+                self.assertIn("KMIP v2.1 §6.1.6 Tables 179–181", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("CertifyResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_certify_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(CERTIFY_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(CERTIFY_PREFIX)
+        }
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_CERTIFY_TRAIT_EXPORTS)
+        self.assertEqual(audited_exclusions, EXPECTED_CERTIFY_TRAIT_EXPORTS)
+
+    def test_certify_response_functional_declarations_remain_in_their_current_states(self) -> None:
+        verified = {
+            "kmipkit_protocol::CertifyResponse",
+            "kmipkit_protocol::CertifyResponse::unique_identifier",
+            "kmipkit_protocol::CertifyResponse::with_ttlv",
+        }
+        blocked = {
+            "kmipkit_protocol::CertifyResponse::result",
+            "kmipkit_protocol::CertifyResponse::try_from_response_item",
+        }
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::CertifyResponse")
+        }
+        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "verified"},
+            verified,
+        )
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        root_rows = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::CertifyResponse")
+        ]
+        self.assertEqual(root_rows, [])
 
 
 if __name__ == "__main__":
