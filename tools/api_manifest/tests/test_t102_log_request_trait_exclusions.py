@@ -37,11 +37,29 @@ EXPECTED_PROTOCOL_TRAIT_EXPORTS = {
 }
 
 
+def _root_log_request_exports(rows: list[dict[str, str]]) -> set[str]:
+    return {
+        row["exportName"]
+        for row in rows
+        if row.get("packageId") == "rust-kmipkit"
+        and row.get("exportName", "").startswith("kmipkit::LogRequest")
+    }
+
+
 class T102LogRequestTraitExclusionTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         cls.rust_report = json.loads(RUST_REPORT.read_text(encoding="utf-8"))
+
+    def test_root_export_filter_recognizes_compiler_trait_path_format(self) -> None:
+        trait_path = "<kmipkit::LogRequest as core::fmt::Debug>::fmt"
+        self.assertEqual(
+            _root_log_request_exports(
+                [{"packageId": "rust-kmipkit", "exportName": trait_path}]
+            ),
+            {trait_path},
+        )
 
     def test_protocol_request_traits_are_exact_approved_exclusions(self) -> None:
         declarations = {
@@ -146,14 +164,7 @@ class T102LogRequestTraitExclusionTests(unittest.TestCase):
             },
             blocked,
         )
-        root_rows = {
-            row["exportName"]
-            for row in self.manifest["publicDeclarations"]
-            if row.get("packageId") == "rust-kmipkit"
-            and row.get("exportName", "").startswith(
-                ("kmipkit::LogRequest", "<kmipkit::LogRequest as ")
-            )
-        }
+        root_rows = _root_log_request_exports(self.manifest["publicDeclarations"])
         self.assertEqual(root_rows, set())
         self.assertEqual(
             sum(
