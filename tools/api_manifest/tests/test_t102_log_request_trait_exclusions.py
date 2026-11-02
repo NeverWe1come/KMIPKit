@@ -174,7 +174,7 @@ class T102LogRequestTraitExclusionTests(unittest.TestCase):
                 and row["declarationState"] == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            3858,
+            3848,
         )
 
 
