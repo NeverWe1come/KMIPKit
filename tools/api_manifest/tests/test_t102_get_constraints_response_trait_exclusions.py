@@ -1,6 +1,6 @@
 """Exact T102 response-trait exclusion and preservation contracts.
 
-The tests cover Constraints, Check, Certify, Derive Key, Export, Get, and Validate
+The tests cover Constraints, Check, Certify, Derive Key, Export, Get, Locate, and Validate
 responses. Each operation's approved owner and OASIS citation are asserted by
 its focused case; compiler-visible Rust traits are not separate KMIP
 capabilities.
@@ -38,6 +38,7 @@ CHECK_PREFIX = "<kmipkit_protocol::CheckResponse as "
 DERIVE_KEY_PREFIX = "<kmipkit_protocol::DeriveKeyResponse as "
 EXPORT_PREFIX = "<kmipkit_protocol::ExportResponse as "
 GET_PREFIX = "<kmipkit_protocol::GetResponse as "
+LOCATE_PREFIX = "<kmipkit_protocol::LocateResponse as "
 EXPECTED_TRAIT_EXPORTS = {
     "<kmipkit_protocol::GetConstraintsResponse as core::any::Any>::type_id",
     "<kmipkit_protocol::GetConstraintsResponse as core::borrow::Borrow<kmipkit_protocol::get_constraints::GetConstraintsResponse>>::borrow",
@@ -157,6 +158,18 @@ EXPECTED_GET_TRAIT_EXPORTS = {
     "<kmipkit_protocol::GetResponse as core::convert::TryInto<U>>::Error",
     "<kmipkit_protocol::GetResponse as core::convert::TryInto<U>>::try_into",
     "<kmipkit_protocol::GetResponse as core::fmt::Debug>::fmt",
+}
+EXPECTED_LOCATE_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::LocateResponse as core::any::Any>::type_id",
+    "<kmipkit_protocol::LocateResponse as core::borrow::Borrow<kmipkit_protocol::locate::LocateResponse>>::borrow",
+    "<kmipkit_protocol::LocateResponse as core::borrow::BorrowMut<kmipkit_protocol::locate::LocateResponse>>::borrow_mut",
+    "<kmipkit_protocol::LocateResponse as core::convert::From<kmipkit_protocol::locate::LocateResponse>>::from",
+    "<kmipkit_protocol::LocateResponse as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::LocateResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::LocateResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::LocateResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::LocateResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::LocateResponse as core::fmt::Debug>::fmt",
 }
 RETAINED_EXPORTS = {
     "kmipkit_protocol::GetConstraintsResponse",
@@ -1028,6 +1041,106 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             row for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit"
             and row.get("exportName", "").startswith("kmipkit::GetResponse")
+        ]
+        self.assertEqual(root_rows, [])
+
+    def test_locate_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(LOCATE_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(LOCATE_PREFIX)
+        }
+
+        self.assertEqual(set(declarations), set())
+        self.assertEqual(set(exclusions), EXPECTED_LOCATE_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        self.assertEqual(
+            sum(
+                row.get("candidateSpecId") == "KMIPKIT-0043"
+                and row.get("declarationState") == "blocked"
+                for row in self.manifest["publicDeclarations"]
+            ),
+            4098,
+        )
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0017-FR-001",
+                    "KMIPKIT-0017-FR-008",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 §6.1.28 Tables 247–249", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("LocateResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_locate_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(LOCATE_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(LOCATE_PREFIX)
+        }
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_LOCATE_TRAIT_EXPORTS)
+        self.assertEqual(audited_exclusions, EXPECTED_LOCATE_TRAIT_EXPORTS)
+
+    def test_locate_response_preserves_verified_accessors_and_blocked_helpers(self) -> None:
+        verified = {
+            "kmipkit_protocol::LocateResponse",
+            "kmipkit_protocol::LocateResponse::located_items",
+            "kmipkit_protocol::LocateResponse::unique_identifiers",
+        }
+        blocked = {
+            "kmipkit_protocol::LocateResponse::result",
+            "kmipkit_protocol::LocateResponse::try_from_response_item",
+        }
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::LocateResponse")
+        }
+
+        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "verified"},
+            verified,
+        )
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        for name in verified:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-LOCATE")
+                self.assertIn("KMIPKIT-0017-FR-001", rows[name]["requirementIds"])
+                self.assertIn("KMIPKIT-0017-FR-008", rows[name]["requirementIds"])
+        root_rows = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::LocateResponse")
         ]
         self.assertEqual(root_rows, [])
 
