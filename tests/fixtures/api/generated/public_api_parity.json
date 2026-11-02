@@ -69974,6 +69974,126 @@
       "exportName": "<kmipkit_protocol::JoinSplitKeyRequest as core::fmt::Debug>::fmt",
       "packageId": "rust-kmipkit-protocol",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed JoinSplitKeyRequest wrapper, not a separate KMIP client capability; the request type, constructor, and four-language operation mapping remain represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Import request remains mapped to KMIP v2.1 Section 6.1.25 Tables 238-240, including the Table 238 request. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no operation-conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::ImportRequest as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ImportRequest wrapper, not a separate KMIP client capability; the request type, Unique Identifier, Any Object, and four-language operation mapping remain represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Import request remains mapped to KMIP v2.1 Section 6.1.25 Tables 238-240, including the Table 238 request. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no operation-conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::ImportRequest as core::borrow::Borrow<kmipkit_protocol::import::ImportRequest>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ImportRequest wrapper, not a separate KMIP client capability; the request type, Unique Identifier, Any Object, and four-language operation mapping remain represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Import request remains mapped to KMIP v2.1 Section 6.1.25 Tables 238-240, including the Table 238 request. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no operation-conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::ImportRequest as core::borrow::BorrowMut<kmipkit_protocol::import::ImportRequest>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ImportRequest wrapper, not a separate KMIP client capability; the request type, Unique Identifier, Any Object, and four-language operation mapping remain represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Import request remains mapped to KMIP v2.1 Section 6.1.25 Tables 238-240, including the Table 238 request. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no operation-conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::ImportRequest as core::convert::From<kmipkit_protocol::import::ImportRequest>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ImportRequest wrapper, not a separate KMIP client capability; the request type, Unique Identifier, Any Object, and four-language operation mapping remain represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Import request remains mapped to KMIP v2.1 Section 6.1.25 Tables 238-240, including the Table 238 request. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no operation-conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::ImportRequest as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ImportRequest wrapper, not a separate KMIP client capability; the request type, Unique Identifier, Any Object, and four-language operation mapping remain represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Import request remains mapped to KMIP v2.1 Section 6.1.25 Tables 238-240, including the Table 238 request. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no operation-conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::ImportRequest as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ImportRequest wrapper, not a separate KMIP client capability; the request type, Unique Identifier, Any Object, and four-language operation mapping remain represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Import request remains mapped to KMIP v2.1 Section 6.1.25 Tables 238-240, including the Table 238 request. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no operation-conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::ImportRequest as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ImportRequest wrapper, not a separate KMIP client capability; the request type, Unique Identifier, Any Object, and four-language operation mapping remain represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Import request remains mapped to KMIP v2.1 Section 6.1.25 Tables 238-240, including the Table 238 request. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no operation-conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::ImportRequest as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ImportRequest wrapper, not a separate KMIP client capability; the request type, Unique Identifier, Any Object, and four-language operation mapping remain represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Import request remains mapped to KMIP v2.1 Section 6.1.25 Tables 238-240, including the Table 238 request. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no operation-conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::ImportRequest as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ImportRequest wrapper, not a separate KMIP client capability; the request type, Unique Identifier, Any Object, and four-language operation mapping remain represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Import request remains mapped to KMIP v2.1 Section 6.1.25 Tables 238-240, including the Table 238 request. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no operation-conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::ImportRequest as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ImportRequest wrapper, not a separate KMIP client capability; the request type, Unique Identifier, Any Object, and four-language operation mapping remain represented."
     }
   ],
   "capabilities": [
