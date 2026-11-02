@@ -2262,7 +2262,9 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         ]
         self.assertEqual(root_rows, [])
         owner_spec = ROOT / "specs" / "022-object-lifecycle" / "spec.md"
-        case_rows = [            line for line in owner_spec.read_text(encoding="utf-8").splitlines()
+        case_rows = [
+            line
+            for line in owner_spec.read_text(encoding="utf-8").splitlines()
             if line.startswith("| Re-key |") and "KMIPKIT-TEST-CN01-2-76" in line
         ]
         self.assertEqual(len(case_rows), 1)
