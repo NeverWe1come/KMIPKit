@@ -104,7 +104,7 @@ class T102RngRetrieveRequestTraitExclusionTests(unittest.TestCase):
                 self.assertIn("Table 317 response Data", row["evidence"])
                 self.assertIn("Table 318 RNG Retrieve Errors", row["evidence"])
                 self.assertIn("inventory-only", row["evidence"])
-                self.assertIn("no OASIS conformance", row["evidence"])
+                self.assertIn("makes no conformance claim", row["evidence"])
                 self.assertIn("exact Rust standard-trait implementation", row["reason"])
                 self.assertIn("not a separate KMIP client capability", row["reason"])
 

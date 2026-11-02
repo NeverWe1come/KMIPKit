@@ -204523,362 +204523,6 @@
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
-      "declarationId": "rust-observed-64ec5fcc0cad159601f3",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngRetrieveRequest as alloc::borrow::ToOwned>::Owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-0dfd92df946c17c4cd92",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngRetrieveRequest as alloc::borrow::ToOwned>::clone_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-947472a85952eac9b138",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngRetrieveRequest as alloc::borrow::ToOwned>::to_owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-d034a8884b5e36c5b4f5",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-0bbe52ad2d4e95d2ca78",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::borrow::Borrow<kmipkit_protocol::rng_retrieve::RngRetrieveRequest>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-7b0cfac795b2b6d612d4",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::borrow::BorrowMut<kmipkit_protocol::rng_retrieve::RngRetrieveRequest>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-94febadb1328b62ec481",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::clone::Clone>::clone",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-5f5a4893d03cd08fb6d1",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::clone::Clone>::clone_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-b0b0f92c0e34d90f2a4e",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::clone::CloneToUninit>::clone_to_uninit",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-c08ee87abcec7066aae8",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-c3d2a4e21f865fd3c372",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::cmp::PartialEq>::eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-5571266a19d70be2e7f9",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::cmp::PartialEq>::ne",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-8acb347147addd783f4d",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::convert::From<kmipkit_protocol::rng_retrieve::RngRetrieveRequest>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-88c480a49f981f38bbe3",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::rng_retrieve::RngRetrieveRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-c60e03489f408972902c",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::rng_retrieve::RngRetrieveRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-654e637ec431c36521bb",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::rng_retrieve::RngRetrieveRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-0844dca676839223052b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::rng_retrieve::RngRetrieveRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-0d130142da63bfbccbad",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::rng_retrieve::RngRetrieveRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-8c10c7c412002748b284",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
       "declarationId": "rust-observed-aa7e05bb611dc4886d38",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
@@ -442699,6 +442343,234 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngRetrieveRequest as alloc::borrow::ToOwned>::Owned",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveRequest wrapper, not a separate KMIP client capability; the required request value remains covered by the approved four-language operation mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve request remains mapped under OASIS KMIP v2.1 Section 6.1.49 Tables 316-318: Table 316 required Data Length request item, Table 317 response Data item, and Table 318 RNG Retrieve Errors table. The approved operation catalog lists no direct RNG Retrieve test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngRetrieveRequest as alloc::borrow::ToOwned>::clone_into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveRequest wrapper, not a separate KMIP client capability; the required request value remains covered by the approved four-language operation mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve request remains mapped under OASIS KMIP v2.1 Section 6.1.49 Tables 316-318: Table 316 required Data Length request item, Table 317 response Data item, and Table 318 RNG Retrieve Errors table. The approved operation catalog lists no direct RNG Retrieve test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngRetrieveRequest as alloc::borrow::ToOwned>::to_owned",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveRequest wrapper, not a separate KMIP client capability; the required request value remains covered by the approved four-language operation mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve request remains mapped under OASIS KMIP v2.1 Section 6.1.49 Tables 316-318: Table 316 required Data Length request item, Table 317 response Data item, and Table 318 RNG Retrieve Errors table. The approved operation catalog lists no direct RNG Retrieve test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveRequest wrapper, not a separate KMIP client capability; the required request value remains covered by the approved four-language operation mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve request remains mapped under OASIS KMIP v2.1 Section 6.1.49 Tables 316-318: Table 316 required Data Length request item, Table 317 response Data item, and Table 318 RNG Retrieve Errors table. The approved operation catalog lists no direct RNG Retrieve test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::borrow::Borrow<kmipkit_protocol::rng_retrieve::RngRetrieveRequest>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveRequest wrapper, not a separate KMIP client capability; the required request value remains covered by the approved four-language operation mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve request remains mapped under OASIS KMIP v2.1 Section 6.1.49 Tables 316-318: Table 316 required Data Length request item, Table 317 response Data item, and Table 318 RNG Retrieve Errors table. The approved operation catalog lists no direct RNG Retrieve test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::borrow::BorrowMut<kmipkit_protocol::rng_retrieve::RngRetrieveRequest>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveRequest wrapper, not a separate KMIP client capability; the required request value remains covered by the approved four-language operation mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve request remains mapped under OASIS KMIP v2.1 Section 6.1.49 Tables 316-318: Table 316 required Data Length request item, Table 317 response Data item, and Table 318 RNG Retrieve Errors table. The approved operation catalog lists no direct RNG Retrieve test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::clone::Clone>::clone",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveRequest wrapper, not a separate KMIP client capability; the required request value remains covered by the approved four-language operation mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve request remains mapped under OASIS KMIP v2.1 Section 6.1.49 Tables 316-318: Table 316 required Data Length request item, Table 317 response Data item, and Table 318 RNG Retrieve Errors table. The approved operation catalog lists no direct RNG Retrieve test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::clone::Clone>::clone_from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveRequest wrapper, not a separate KMIP client capability; the required request value remains covered by the approved four-language operation mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve request remains mapped under OASIS KMIP v2.1 Section 6.1.49 Tables 316-318: Table 316 required Data Length request item, Table 317 response Data item, and Table 318 RNG Retrieve Errors table. The approved operation catalog lists no direct RNG Retrieve test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::clone::CloneToUninit>::clone_to_uninit",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveRequest wrapper, not a separate KMIP client capability; the required request value remains covered by the approved four-language operation mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve request remains mapped under OASIS KMIP v2.1 Section 6.1.49 Tables 316-318: Table 316 required Data Length request item, Table 317 response Data item, and Table 318 RNG Retrieve Errors table. The approved operation catalog lists no direct RNG Retrieve test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveRequest wrapper, not a separate KMIP client capability; the required request value remains covered by the approved four-language operation mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve request remains mapped under OASIS KMIP v2.1 Section 6.1.49 Tables 316-318: Table 316 required Data Length request item, Table 317 response Data item, and Table 318 RNG Retrieve Errors table. The approved operation catalog lists no direct RNG Retrieve test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::cmp::PartialEq>::eq",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveRequest wrapper, not a separate KMIP client capability; the required request value remains covered by the approved four-language operation mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve request remains mapped under OASIS KMIP v2.1 Section 6.1.49 Tables 316-318: Table 316 required Data Length request item, Table 317 response Data item, and Table 318 RNG Retrieve Errors table. The approved operation catalog lists no direct RNG Retrieve test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::cmp::PartialEq>::ne",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveRequest wrapper, not a separate KMIP client capability; the required request value remains covered by the approved four-language operation mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve request remains mapped under OASIS KMIP v2.1 Section 6.1.49 Tables 316-318: Table 316 required Data Length request item, Table 317 response Data item, and Table 318 RNG Retrieve Errors table. The approved operation catalog lists no direct RNG Retrieve test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::convert::From<kmipkit_protocol::rng_retrieve::RngRetrieveRequest>>::from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveRequest wrapper, not a separate KMIP client capability; the required request value remains covered by the approved four-language operation mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve request remains mapped under OASIS KMIP v2.1 Section 6.1.49 Tables 316-318: Table 316 required Data Length request item, Table 317 response Data item, and Table 318 RNG Retrieve Errors table. The approved operation catalog lists no direct RNG Retrieve test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveRequest wrapper, not a separate KMIP client capability; the required request value remains covered by the approved four-language operation mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve request remains mapped under OASIS KMIP v2.1 Section 6.1.49 Tables 316-318: Table 316 required Data Length request item, Table 317 response Data item, and Table 318 RNG Retrieve Errors table. The approved operation catalog lists no direct RNG Retrieve test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveRequest wrapper, not a separate KMIP client capability; the required request value remains covered by the approved four-language operation mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve request remains mapped under OASIS KMIP v2.1 Section 6.1.49 Tables 316-318: Table 316 required Data Length request item, Table 317 response Data item, and Table 318 RNG Retrieve Errors table. The approved operation catalog lists no direct RNG Retrieve test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveRequest wrapper, not a separate KMIP client capability; the required request value remains covered by the approved four-language operation mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve request remains mapped under OASIS KMIP v2.1 Section 6.1.49 Tables 316-318: Table 316 required Data Length request item, Table 317 response Data item, and Table 318 RNG Retrieve Errors table. The approved operation catalog lists no direct RNG Retrieve test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveRequest wrapper, not a separate KMIP client capability; the required request value remains covered by the approved four-language operation mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve request remains mapped under OASIS KMIP v2.1 Section 6.1.49 Tables 316-318: Table 316 required Data Length request item, Table 317 response Data item, and Table 318 RNG Retrieve Errors table. The approved operation catalog lists no direct RNG Retrieve test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveRequest wrapper, not a separate KMIP client capability; the required request value remains covered by the approved four-language operation mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve request remains mapped under OASIS KMIP v2.1 Section 6.1.49 Tables 316-318: Table 316 required Data Length request item, Table 317 response Data item, and Table 318 RNG Retrieve Errors table. The approved operation catalog lists no direct RNG Retrieve test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveRequest wrapper, not a separate KMIP client capability; the required request value remains covered by the approved four-language operation mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve request remains mapped under OASIS KMIP v2.1 Section 6.1.49 Tables 316-318: Table 316 required Data Length request item, Table 317 response Data item, and Table 318 RNG Retrieve Errors table. The approved operation catalog lists no direct RNG Retrieve test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     }
   ],
   "apiLevels": [

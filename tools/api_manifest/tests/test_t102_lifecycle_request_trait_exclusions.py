@@ -132,7 +132,7 @@ class T102LifecycleRequestTraitExclusionTests(unittest.TestCase):
 
     def test_candidate_count_drops_by_exactly_66(self) -> None:
         count = sum(row.get("candidateSpecId") == "KMIPKIT-0043" and row["declarationState"] == "blocked" for row in self.manifest["publicDeclarations"])
-        self.assertEqual(count, 3590)
+        self.assertEqual(count, 3571)
 
 
 if __name__ == "__main__":
