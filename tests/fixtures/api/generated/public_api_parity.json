@@ -65902,6 +65902,126 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. KMIP v2.1 §6.1.23 Table 233 defines the Get Usage Allocation response; no OASIS clause directly requires these compiler-generated Rust traits. The approved catalog has no direct operation-specific client test-case ID for Get Usage Allocation, so this inventory-only slice makes no operation-conformance claim. Exact paths are recorded in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationResponse as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetUsageAllocationResponse wrapper, not a separate KMIP client capability; it does not replace or alter the verified response model or its blocked response-item parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. KMIP v2.1 §6.1.23 Table 233 defines the Get Usage Allocation response; no OASIS clause directly requires these compiler-generated Rust traits. The approved catalog has no direct operation-specific client test-case ID for Get Usage Allocation, so this inventory-only slice makes no operation-conformance claim. Exact paths are recorded in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationResponse as core::borrow::Borrow<kmipkit_protocol::get_usage_allocation::GetUsageAllocationResponse>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetUsageAllocationResponse wrapper, not a separate KMIP client capability; it does not replace or alter the verified response model or its blocked response-item parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. KMIP v2.1 §6.1.23 Table 233 defines the Get Usage Allocation response; no OASIS clause directly requires these compiler-generated Rust traits. The approved catalog has no direct operation-specific client test-case ID for Get Usage Allocation, so this inventory-only slice makes no operation-conformance claim. Exact paths are recorded in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationResponse as core::borrow::BorrowMut<kmipkit_protocol::get_usage_allocation::GetUsageAllocationResponse>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetUsageAllocationResponse wrapper, not a separate KMIP client capability; it does not replace or alter the verified response model or its blocked response-item parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. KMIP v2.1 §6.1.23 Table 233 defines the Get Usage Allocation response; no OASIS clause directly requires these compiler-generated Rust traits. The approved catalog has no direct operation-specific client test-case ID for Get Usage Allocation, so this inventory-only slice makes no operation-conformance claim. Exact paths are recorded in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationResponse as core::convert::From<kmipkit_protocol::get_usage_allocation::GetUsageAllocationResponse>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetUsageAllocationResponse wrapper, not a separate KMIP client capability; it does not replace or alter the verified response model or its blocked response-item parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. KMIP v2.1 §6.1.23 Table 233 defines the Get Usage Allocation response; no OASIS clause directly requires these compiler-generated Rust traits. The approved catalog has no direct operation-specific client test-case ID for Get Usage Allocation, so this inventory-only slice makes no operation-conformance claim. Exact paths are recorded in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationResponse as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetUsageAllocationResponse wrapper, not a separate KMIP client capability; it does not replace or alter the verified response model or its blocked response-item parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. KMIP v2.1 §6.1.23 Table 233 defines the Get Usage Allocation response; no OASIS clause directly requires these compiler-generated Rust traits. The approved catalog has no direct operation-specific client test-case ID for Get Usage Allocation, so this inventory-only slice makes no operation-conformance claim. Exact paths are recorded in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationResponse as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetUsageAllocationResponse wrapper, not a separate KMIP client capability; it does not replace or alter the verified response model or its blocked response-item parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. KMIP v2.1 §6.1.23 Table 233 defines the Get Usage Allocation response; no OASIS clause directly requires these compiler-generated Rust traits. The approved catalog has no direct operation-specific client test-case ID for Get Usage Allocation, so this inventory-only slice makes no operation-conformance claim. Exact paths are recorded in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationResponse as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetUsageAllocationResponse wrapper, not a separate KMIP client capability; it does not replace or alter the verified response model or its blocked response-item parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. KMIP v2.1 §6.1.23 Table 233 defines the Get Usage Allocation response; no OASIS clause directly requires these compiler-generated Rust traits. The approved catalog has no direct operation-specific client test-case ID for Get Usage Allocation, so this inventory-only slice makes no operation-conformance claim. Exact paths are recorded in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationResponse as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetUsageAllocationResponse wrapper, not a separate KMIP client capability; it does not replace or alter the verified response model or its blocked response-item parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. KMIP v2.1 §6.1.23 Table 233 defines the Get Usage Allocation response; no OASIS clause directly requires these compiler-generated Rust traits. The approved catalog has no direct operation-specific client test-case ID for Get Usage Allocation, so this inventory-only slice makes no operation-conformance claim. Exact paths are recorded in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationResponse as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetUsageAllocationResponse wrapper, not a separate KMIP client capability; it does not replace or alter the verified response model or its blocked response-item parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. KMIP v2.1 §6.1.23 Table 233 defines the Get Usage Allocation response; no OASIS clause directly requires these compiler-generated Rust traits. The approved catalog has no direct operation-specific client test-case ID for Get Usage Allocation, so this inventory-only slice makes no operation-conformance claim. Exact paths are recorded in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationResponse as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetUsageAllocationResponse wrapper, not a separate KMIP client capability; it does not replace or alter the verified response model or its blocked response-item parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
       "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints response remains mapped to KMIP v2.1 §6.1.52 Tables 325–327; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
       "exportName": "<kmipkit_protocol::SetConstraintsResponse as core::any::Any>::type_id",
       "packageId": "rust-kmipkit-protocol",
@@ -66134,6 +66254,126 @@
       "exportName": "<kmipkit::SetConstraintsResponse as core::fmt::Debug>::fmt",
       "packageId": "rust-kmipkit",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the root SetConstraintsResponse re-export, not a separate KMIP client capability; the protocol response remains mapped and the root functional declarations retain their existing states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. KMIP v2.1 §6.1.53 Table 329 defines the Set Defaults response; no OASIS clause directly requires these compiler-generated Rust traits. The approved catalog has no direct operation-specific client test-case ID for Set Defaults, so this inventory-only slice makes no operation-conformance claim. Exact paths are recorded in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::SetDefaultsResponse as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsResponse wrapper, not a separate KMIP client capability; it does not replace or alter the verified response model or its blocked response-item parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. KMIP v2.1 §6.1.53 Table 329 defines the Set Defaults response; no OASIS clause directly requires these compiler-generated Rust traits. The approved catalog has no direct operation-specific client test-case ID for Set Defaults, so this inventory-only slice makes no operation-conformance claim. Exact paths are recorded in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::SetDefaultsResponse as core::borrow::Borrow<kmipkit_protocol::set_defaults::SetDefaultsResponse>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsResponse wrapper, not a separate KMIP client capability; it does not replace or alter the verified response model or its blocked response-item parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. KMIP v2.1 §6.1.53 Table 329 defines the Set Defaults response; no OASIS clause directly requires these compiler-generated Rust traits. The approved catalog has no direct operation-specific client test-case ID for Set Defaults, so this inventory-only slice makes no operation-conformance claim. Exact paths are recorded in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::SetDefaultsResponse as core::borrow::BorrowMut<kmipkit_protocol::set_defaults::SetDefaultsResponse>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsResponse wrapper, not a separate KMIP client capability; it does not replace or alter the verified response model or its blocked response-item parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. KMIP v2.1 §6.1.53 Table 329 defines the Set Defaults response; no OASIS clause directly requires these compiler-generated Rust traits. The approved catalog has no direct operation-specific client test-case ID for Set Defaults, so this inventory-only slice makes no operation-conformance claim. Exact paths are recorded in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::SetDefaultsResponse as core::convert::From<kmipkit_protocol::set_defaults::SetDefaultsResponse>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsResponse wrapper, not a separate KMIP client capability; it does not replace or alter the verified response model or its blocked response-item parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. KMIP v2.1 §6.1.53 Table 329 defines the Set Defaults response; no OASIS clause directly requires these compiler-generated Rust traits. The approved catalog has no direct operation-specific client test-case ID for Set Defaults, so this inventory-only slice makes no operation-conformance claim. Exact paths are recorded in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::SetDefaultsResponse as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsResponse wrapper, not a separate KMIP client capability; it does not replace or alter the verified response model or its blocked response-item parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. KMIP v2.1 §6.1.53 Table 329 defines the Set Defaults response; no OASIS clause directly requires these compiler-generated Rust traits. The approved catalog has no direct operation-specific client test-case ID for Set Defaults, so this inventory-only slice makes no operation-conformance claim. Exact paths are recorded in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::SetDefaultsResponse as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsResponse wrapper, not a separate KMIP client capability; it does not replace or alter the verified response model or its blocked response-item parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. KMIP v2.1 §6.1.53 Table 329 defines the Set Defaults response; no OASIS clause directly requires these compiler-generated Rust traits. The approved catalog has no direct operation-specific client test-case ID for Set Defaults, so this inventory-only slice makes no operation-conformance claim. Exact paths are recorded in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::SetDefaultsResponse as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsResponse wrapper, not a separate KMIP client capability; it does not replace or alter the verified response model or its blocked response-item parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. KMIP v2.1 §6.1.53 Table 329 defines the Set Defaults response; no OASIS clause directly requires these compiler-generated Rust traits. The approved catalog has no direct operation-specific client test-case ID for Set Defaults, so this inventory-only slice makes no operation-conformance claim. Exact paths are recorded in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::SetDefaultsResponse as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsResponse wrapper, not a separate KMIP client capability; it does not replace or alter the verified response model or its blocked response-item parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. KMIP v2.1 §6.1.53 Table 329 defines the Set Defaults response; no OASIS clause directly requires these compiler-generated Rust traits. The approved catalog has no direct operation-specific client test-case ID for Set Defaults, so this inventory-only slice makes no operation-conformance claim. Exact paths are recorded in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::SetDefaultsResponse as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsResponse wrapper, not a separate KMIP client capability; it does not replace or alter the verified response model or its blocked response-item parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. KMIP v2.1 §6.1.53 Table 329 defines the Set Defaults response; no OASIS clause directly requires these compiler-generated Rust traits. The approved catalog has no direct operation-specific client test-case ID for Set Defaults, so this inventory-only slice makes no operation-conformance claim. Exact paths are recorded in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::SetDefaultsResponse as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsResponse wrapper, not a separate KMIP client capability; it does not replace or alter the verified response model or its blocked response-item parser."
     },
     {
       "approvalSource": {
