@@ -42,7 +42,9 @@ def _root_pkcs11_response_exports(rows: list[dict[str, str]]) -> set[str]:
         row["exportName"]
         for row in rows
         if row.get("packageId") == "rust-kmipkit"
-        and row.get("exportName", "").startswith("kmipkit::Pkcs11Response")
+        and row.get("exportName", "").startswith(
+            ("kmipkit::Pkcs11Response", "<kmipkit::Pkcs11Response as ")
+        )
     }
 
 
