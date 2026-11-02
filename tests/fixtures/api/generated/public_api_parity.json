@@ -70934,6 +70934,798 @@
       "exportName": "<kmipkit_protocol::SplitKeyReference as core::fmt::Debug>::fmt",
       "packageId": "rust-kmipkit-protocol",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SplitKeyReference helper, not a separate KMIP client capability; the underlying request model remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.7-001, KMIPKIT-REQ-SPEC-6.1.7-002-001, KMIPKIT-REQ-SPEC-6.1.7-002-002, KMIPKIT-REQ-SPEC-6.1.7-002-003, KMIPKIT-REQ-SPEC-6.1.7-003, KMIPKIT-REQ-SPEC-6.1.7-004-001, KMIPKIT-REQ-SPEC-6.1.7-004-002, KMIPKIT-REQ-SPEC-6.1.7-005. The Check request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.7, Tables 183-185, including Table 183 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::CheckRequest as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed CheckRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.7-001, KMIPKIT-REQ-SPEC-6.1.7-002-001, KMIPKIT-REQ-SPEC-6.1.7-002-002, KMIPKIT-REQ-SPEC-6.1.7-002-003, KMIPKIT-REQ-SPEC-6.1.7-003, KMIPKIT-REQ-SPEC-6.1.7-004-001, KMIPKIT-REQ-SPEC-6.1.7-004-002, KMIPKIT-REQ-SPEC-6.1.7-005. The Check request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.7, Tables 183-185, including Table 183 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::CheckRequest as core::borrow::Borrow<kmipkit_protocol::check::CheckRequest>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed CheckRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.7-001, KMIPKIT-REQ-SPEC-6.1.7-002-001, KMIPKIT-REQ-SPEC-6.1.7-002-002, KMIPKIT-REQ-SPEC-6.1.7-002-003, KMIPKIT-REQ-SPEC-6.1.7-003, KMIPKIT-REQ-SPEC-6.1.7-004-001, KMIPKIT-REQ-SPEC-6.1.7-004-002, KMIPKIT-REQ-SPEC-6.1.7-005. The Check request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.7, Tables 183-185, including Table 183 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::CheckRequest as core::borrow::BorrowMut<kmipkit_protocol::check::CheckRequest>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed CheckRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.7-001, KMIPKIT-REQ-SPEC-6.1.7-002-001, KMIPKIT-REQ-SPEC-6.1.7-002-002, KMIPKIT-REQ-SPEC-6.1.7-002-003, KMIPKIT-REQ-SPEC-6.1.7-003, KMIPKIT-REQ-SPEC-6.1.7-004-001, KMIPKIT-REQ-SPEC-6.1.7-004-002, KMIPKIT-REQ-SPEC-6.1.7-005. The Check request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.7, Tables 183-185, including Table 183 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::CheckRequest as core::convert::From<kmipkit_protocol::check::CheckRequest>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed CheckRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.7-001, KMIPKIT-REQ-SPEC-6.1.7-002-001, KMIPKIT-REQ-SPEC-6.1.7-002-002, KMIPKIT-REQ-SPEC-6.1.7-002-003, KMIPKIT-REQ-SPEC-6.1.7-003, KMIPKIT-REQ-SPEC-6.1.7-004-001, KMIPKIT-REQ-SPEC-6.1.7-004-002, KMIPKIT-REQ-SPEC-6.1.7-005. The Check request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.7, Tables 183-185, including Table 183 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::CheckRequest as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed CheckRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.7-001, KMIPKIT-REQ-SPEC-6.1.7-002-001, KMIPKIT-REQ-SPEC-6.1.7-002-002, KMIPKIT-REQ-SPEC-6.1.7-002-003, KMIPKIT-REQ-SPEC-6.1.7-003, KMIPKIT-REQ-SPEC-6.1.7-004-001, KMIPKIT-REQ-SPEC-6.1.7-004-002, KMIPKIT-REQ-SPEC-6.1.7-005. The Check request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.7, Tables 183-185, including Table 183 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::CheckRequest as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed CheckRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.7-001, KMIPKIT-REQ-SPEC-6.1.7-002-001, KMIPKIT-REQ-SPEC-6.1.7-002-002, KMIPKIT-REQ-SPEC-6.1.7-002-003, KMIPKIT-REQ-SPEC-6.1.7-003, KMIPKIT-REQ-SPEC-6.1.7-004-001, KMIPKIT-REQ-SPEC-6.1.7-004-002, KMIPKIT-REQ-SPEC-6.1.7-005. The Check request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.7, Tables 183-185, including Table 183 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::CheckRequest as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed CheckRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.7-001, KMIPKIT-REQ-SPEC-6.1.7-002-001, KMIPKIT-REQ-SPEC-6.1.7-002-002, KMIPKIT-REQ-SPEC-6.1.7-002-003, KMIPKIT-REQ-SPEC-6.1.7-003, KMIPKIT-REQ-SPEC-6.1.7-004-001, KMIPKIT-REQ-SPEC-6.1.7-004-002, KMIPKIT-REQ-SPEC-6.1.7-005. The Check request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.7, Tables 183-185, including Table 183 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::CheckRequest as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed CheckRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.7-001, KMIPKIT-REQ-SPEC-6.1.7-002-001, KMIPKIT-REQ-SPEC-6.1.7-002-002, KMIPKIT-REQ-SPEC-6.1.7-002-003, KMIPKIT-REQ-SPEC-6.1.7-003, KMIPKIT-REQ-SPEC-6.1.7-004-001, KMIPKIT-REQ-SPEC-6.1.7-004-002, KMIPKIT-REQ-SPEC-6.1.7-005. The Check request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.7, Tables 183-185, including Table 183 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::CheckRequest as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed CheckRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.7-001, KMIPKIT-REQ-SPEC-6.1.7-002-001, KMIPKIT-REQ-SPEC-6.1.7-002-002, KMIPKIT-REQ-SPEC-6.1.7-002-003, KMIPKIT-REQ-SPEC-6.1.7-003, KMIPKIT-REQ-SPEC-6.1.7-004-001, KMIPKIT-REQ-SPEC-6.1.7-004-002, KMIPKIT-REQ-SPEC-6.1.7-005. The Check request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.7, Tables 183-185, including Table 183 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::CheckRequest as core::default::Default>::default",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed CheckRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.7-001, KMIPKIT-REQ-SPEC-6.1.7-002-001, KMIPKIT-REQ-SPEC-6.1.7-002-002, KMIPKIT-REQ-SPEC-6.1.7-002-003, KMIPKIT-REQ-SPEC-6.1.7-003, KMIPKIT-REQ-SPEC-6.1.7-004-001, KMIPKIT-REQ-SPEC-6.1.7-004-002, KMIPKIT-REQ-SPEC-6.1.7-005. The Check request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.7, Tables 183-185, including Table 183 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::CheckRequest as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed CheckRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.35-001-001, KMIPKIT-REQ-SPEC-6.1.35-001-002, KMIPKIT-REQ-SPEC-6.1.35-002, KMIPKIT-REQ-SPEC-6.1.35-005. The Obtain Lease request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.35, Tables 268-270, including Table 268 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ObtainLeaseRequest as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ObtainLeaseRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.35-001-001, KMIPKIT-REQ-SPEC-6.1.35-001-002, KMIPKIT-REQ-SPEC-6.1.35-002, KMIPKIT-REQ-SPEC-6.1.35-005. The Obtain Lease request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.35, Tables 268-270, including Table 268 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ObtainLeaseRequest as core::borrow::Borrow<kmipkit_protocol::obtain_lease::ObtainLeaseRequest>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ObtainLeaseRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.35-001-001, KMIPKIT-REQ-SPEC-6.1.35-001-002, KMIPKIT-REQ-SPEC-6.1.35-002, KMIPKIT-REQ-SPEC-6.1.35-005. The Obtain Lease request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.35, Tables 268-270, including Table 268 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ObtainLeaseRequest as core::borrow::BorrowMut<kmipkit_protocol::obtain_lease::ObtainLeaseRequest>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ObtainLeaseRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.35-001-001, KMIPKIT-REQ-SPEC-6.1.35-001-002, KMIPKIT-REQ-SPEC-6.1.35-002, KMIPKIT-REQ-SPEC-6.1.35-005. The Obtain Lease request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.35, Tables 268-270, including Table 268 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ObtainLeaseRequest as core::convert::From<kmipkit_protocol::obtain_lease::ObtainLeaseRequest>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ObtainLeaseRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.35-001-001, KMIPKIT-REQ-SPEC-6.1.35-001-002, KMIPKIT-REQ-SPEC-6.1.35-002, KMIPKIT-REQ-SPEC-6.1.35-005. The Obtain Lease request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.35, Tables 268-270, including Table 268 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ObtainLeaseRequest as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ObtainLeaseRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.35-001-001, KMIPKIT-REQ-SPEC-6.1.35-001-002, KMIPKIT-REQ-SPEC-6.1.35-002, KMIPKIT-REQ-SPEC-6.1.35-005. The Obtain Lease request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.35, Tables 268-270, including Table 268 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ObtainLeaseRequest as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ObtainLeaseRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.35-001-001, KMIPKIT-REQ-SPEC-6.1.35-001-002, KMIPKIT-REQ-SPEC-6.1.35-002, KMIPKIT-REQ-SPEC-6.1.35-005. The Obtain Lease request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.35, Tables 268-270, including Table 268 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ObtainLeaseRequest as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ObtainLeaseRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.35-001-001, KMIPKIT-REQ-SPEC-6.1.35-001-002, KMIPKIT-REQ-SPEC-6.1.35-002, KMIPKIT-REQ-SPEC-6.1.35-005. The Obtain Lease request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.35, Tables 268-270, including Table 268 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ObtainLeaseRequest as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ObtainLeaseRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.35-001-001, KMIPKIT-REQ-SPEC-6.1.35-001-002, KMIPKIT-REQ-SPEC-6.1.35-002, KMIPKIT-REQ-SPEC-6.1.35-005. The Obtain Lease request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.35, Tables 268-270, including Table 268 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ObtainLeaseRequest as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ObtainLeaseRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.35-001-001, KMIPKIT-REQ-SPEC-6.1.35-001-002, KMIPKIT-REQ-SPEC-6.1.35-002, KMIPKIT-REQ-SPEC-6.1.35-005. The Obtain Lease request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.35, Tables 268-270, including Table 268 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ObtainLeaseRequest as core::default::Default>::default",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ObtainLeaseRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.35-001-001, KMIPKIT-REQ-SPEC-6.1.35-001-002, KMIPKIT-REQ-SPEC-6.1.35-002, KMIPKIT-REQ-SPEC-6.1.35-005. The Obtain Lease request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.35, Tables 268-270, including Table 268 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ObtainLeaseRequest as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ObtainLeaseRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.48-001, KMIPKIT-REQ-SPEC-6.1.48-006. The Re-Provision request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.48 Tables 313-314; Section 6.1.48.1 Table 315, including Table 313 as request. Table 315 appears in the Re-Provision Error Handling body immediately before Section 6.1.49; its printed caption incorrectly reads 'RNG Retrieve Errors'. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ReProvisionRequest as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ReProvisionRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.48-001, KMIPKIT-REQ-SPEC-6.1.48-006. The Re-Provision request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.48 Tables 313-314; Section 6.1.48.1 Table 315, including Table 313 as request. Table 315 appears in the Re-Provision Error Handling body immediately before Section 6.1.49; its printed caption incorrectly reads 'RNG Retrieve Errors'. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ReProvisionRequest as core::borrow::Borrow<kmipkit_protocol::reprovision::ReProvisionRequest>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ReProvisionRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.48-001, KMIPKIT-REQ-SPEC-6.1.48-006. The Re-Provision request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.48 Tables 313-314; Section 6.1.48.1 Table 315, including Table 313 as request. Table 315 appears in the Re-Provision Error Handling body immediately before Section 6.1.49; its printed caption incorrectly reads 'RNG Retrieve Errors'. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ReProvisionRequest as core::borrow::BorrowMut<kmipkit_protocol::reprovision::ReProvisionRequest>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ReProvisionRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.48-001, KMIPKIT-REQ-SPEC-6.1.48-006. The Re-Provision request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.48 Tables 313-314; Section 6.1.48.1 Table 315, including Table 313 as request. Table 315 appears in the Re-Provision Error Handling body immediately before Section 6.1.49; its printed caption incorrectly reads 'RNG Retrieve Errors'. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ReProvisionRequest as core::convert::From<kmipkit_protocol::reprovision::ReProvisionRequest>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ReProvisionRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.48-001, KMIPKIT-REQ-SPEC-6.1.48-006. The Re-Provision request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.48 Tables 313-314; Section 6.1.48.1 Table 315, including Table 313 as request. Table 315 appears in the Re-Provision Error Handling body immediately before Section 6.1.49; its printed caption incorrectly reads 'RNG Retrieve Errors'. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ReProvisionRequest as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ReProvisionRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.48-001, KMIPKIT-REQ-SPEC-6.1.48-006. The Re-Provision request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.48 Tables 313-314; Section 6.1.48.1 Table 315, including Table 313 as request. Table 315 appears in the Re-Provision Error Handling body immediately before Section 6.1.49; its printed caption incorrectly reads 'RNG Retrieve Errors'. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ReProvisionRequest as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ReProvisionRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.48-001, KMIPKIT-REQ-SPEC-6.1.48-006. The Re-Provision request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.48 Tables 313-314; Section 6.1.48.1 Table 315, including Table 313 as request. Table 315 appears in the Re-Provision Error Handling body immediately before Section 6.1.49; its printed caption incorrectly reads 'RNG Retrieve Errors'. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ReProvisionRequest as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ReProvisionRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.48-001, KMIPKIT-REQ-SPEC-6.1.48-006. The Re-Provision request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.48 Tables 313-314; Section 6.1.48.1 Table 315, including Table 313 as request. Table 315 appears in the Re-Provision Error Handling body immediately before Section 6.1.49; its printed caption incorrectly reads 'RNG Retrieve Errors'. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ReProvisionRequest as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ReProvisionRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.48-001, KMIPKIT-REQ-SPEC-6.1.48-006. The Re-Provision request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.48 Tables 313-314; Section 6.1.48.1 Table 315, including Table 313 as request. Table 315 appears in the Re-Provision Error Handling body immediately before Section 6.1.49; its printed caption incorrectly reads 'RNG Retrieve Errors'. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ReProvisionRequest as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ReProvisionRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.48-001, KMIPKIT-REQ-SPEC-6.1.48-006. The Re-Provision request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.48 Tables 313-314; Section 6.1.48.1 Table 315, including Table 313 as request. Table 315 appears in the Re-Provision Error Handling body immediately before Section 6.1.49; its printed caption incorrectly reads 'RNG Retrieve Errors'. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ReProvisionRequest as core::default::Default>::default",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ReProvisionRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.48-001, KMIPKIT-REQ-SPEC-6.1.48-006. The Re-Provision request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.48 Tables 313-314; Section 6.1.48.1 Table 315, including Table 313 as request. Table 315 appears in the Re-Provision Error Handling body immediately before Section 6.1.49; its printed caption incorrectly reads 'RNG Retrieve Errors'. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ReProvisionRequest as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ReProvisionRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.45-001, KMIPKIT-REQ-SPEC-6.1.45-002-001, KMIPKIT-REQ-SPEC-6.1.45-002-003, KMIPKIT-REQ-SPEC-6.1.45-004, KMIPKIT-REQ-SPEC-6.1.45-006-001, KMIPKIT-REQ-SPEC-6.1.45-008. The Re-certify request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.45, Tables 300-302, including Table 300 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RecertifyRequest as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RecertifyRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.45-001, KMIPKIT-REQ-SPEC-6.1.45-002-001, KMIPKIT-REQ-SPEC-6.1.45-002-003, KMIPKIT-REQ-SPEC-6.1.45-004, KMIPKIT-REQ-SPEC-6.1.45-006-001, KMIPKIT-REQ-SPEC-6.1.45-008. The Re-certify request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.45, Tables 300-302, including Table 300 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RecertifyRequest as core::borrow::Borrow<kmipkit_protocol::recertify::RecertifyRequest>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RecertifyRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.45-001, KMIPKIT-REQ-SPEC-6.1.45-002-001, KMIPKIT-REQ-SPEC-6.1.45-002-003, KMIPKIT-REQ-SPEC-6.1.45-004, KMIPKIT-REQ-SPEC-6.1.45-006-001, KMIPKIT-REQ-SPEC-6.1.45-008. The Re-certify request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.45, Tables 300-302, including Table 300 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RecertifyRequest as core::borrow::BorrowMut<kmipkit_protocol::recertify::RecertifyRequest>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RecertifyRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.45-001, KMIPKIT-REQ-SPEC-6.1.45-002-001, KMIPKIT-REQ-SPEC-6.1.45-002-003, KMIPKIT-REQ-SPEC-6.1.45-004, KMIPKIT-REQ-SPEC-6.1.45-006-001, KMIPKIT-REQ-SPEC-6.1.45-008. The Re-certify request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.45, Tables 300-302, including Table 300 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RecertifyRequest as core::convert::From<kmipkit_protocol::recertify::RecertifyRequest>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RecertifyRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.45-001, KMIPKIT-REQ-SPEC-6.1.45-002-001, KMIPKIT-REQ-SPEC-6.1.45-002-003, KMIPKIT-REQ-SPEC-6.1.45-004, KMIPKIT-REQ-SPEC-6.1.45-006-001, KMIPKIT-REQ-SPEC-6.1.45-008. The Re-certify request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.45, Tables 300-302, including Table 300 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RecertifyRequest as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RecertifyRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.45-001, KMIPKIT-REQ-SPEC-6.1.45-002-001, KMIPKIT-REQ-SPEC-6.1.45-002-003, KMIPKIT-REQ-SPEC-6.1.45-004, KMIPKIT-REQ-SPEC-6.1.45-006-001, KMIPKIT-REQ-SPEC-6.1.45-008. The Re-certify request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.45, Tables 300-302, including Table 300 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RecertifyRequest as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RecertifyRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.45-001, KMIPKIT-REQ-SPEC-6.1.45-002-001, KMIPKIT-REQ-SPEC-6.1.45-002-003, KMIPKIT-REQ-SPEC-6.1.45-004, KMIPKIT-REQ-SPEC-6.1.45-006-001, KMIPKIT-REQ-SPEC-6.1.45-008. The Re-certify request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.45, Tables 300-302, including Table 300 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RecertifyRequest as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RecertifyRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.45-001, KMIPKIT-REQ-SPEC-6.1.45-002-001, KMIPKIT-REQ-SPEC-6.1.45-002-003, KMIPKIT-REQ-SPEC-6.1.45-004, KMIPKIT-REQ-SPEC-6.1.45-006-001, KMIPKIT-REQ-SPEC-6.1.45-008. The Re-certify request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.45, Tables 300-302, including Table 300 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RecertifyRequest as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RecertifyRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.45-001, KMIPKIT-REQ-SPEC-6.1.45-002-001, KMIPKIT-REQ-SPEC-6.1.45-002-003, KMIPKIT-REQ-SPEC-6.1.45-004, KMIPKIT-REQ-SPEC-6.1.45-006-001, KMIPKIT-REQ-SPEC-6.1.45-008. The Re-certify request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.45, Tables 300-302, including Table 300 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RecertifyRequest as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RecertifyRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.45-001, KMIPKIT-REQ-SPEC-6.1.45-002-001, KMIPKIT-REQ-SPEC-6.1.45-002-003, KMIPKIT-REQ-SPEC-6.1.45-004, KMIPKIT-REQ-SPEC-6.1.45-006-001, KMIPKIT-REQ-SPEC-6.1.45-008. The Re-certify request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.45, Tables 300-302, including Table 300 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RecertifyRequest as core::default::Default>::default",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RecertifyRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.45-001, KMIPKIT-REQ-SPEC-6.1.45-002-001, KMIPKIT-REQ-SPEC-6.1.45-002-003, KMIPKIT-REQ-SPEC-6.1.45-004, KMIPKIT-REQ-SPEC-6.1.45-006-001, KMIPKIT-REQ-SPEC-6.1.45-008. The Re-certify request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.45, Tables 300-302, including Table 300 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RecertifyRequest as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RecertifyRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.47-001, KMIPKIT-REQ-SPEC-6.1.47-004-001. The Re-key Key Pair request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.47, Tables 310-312, including Table 310 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RekeyKeyPairRequest as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyKeyPairRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.47-001, KMIPKIT-REQ-SPEC-6.1.47-004-001. The Re-key Key Pair request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.47, Tables 310-312, including Table 310 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RekeyKeyPairRequest as core::borrow::Borrow<kmipkit_protocol::rekey_key_pair::RekeyKeyPairRequest>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyKeyPairRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.47-001, KMIPKIT-REQ-SPEC-6.1.47-004-001. The Re-key Key Pair request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.47, Tables 310-312, including Table 310 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RekeyKeyPairRequest as core::borrow::BorrowMut<kmipkit_protocol::rekey_key_pair::RekeyKeyPairRequest>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyKeyPairRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.47-001, KMIPKIT-REQ-SPEC-6.1.47-004-001. The Re-key Key Pair request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.47, Tables 310-312, including Table 310 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RekeyKeyPairRequest as core::convert::From<kmipkit_protocol::rekey_key_pair::RekeyKeyPairRequest>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyKeyPairRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.47-001, KMIPKIT-REQ-SPEC-6.1.47-004-001. The Re-key Key Pair request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.47, Tables 310-312, including Table 310 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RekeyKeyPairRequest as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyKeyPairRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.47-001, KMIPKIT-REQ-SPEC-6.1.47-004-001. The Re-key Key Pair request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.47, Tables 310-312, including Table 310 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RekeyKeyPairRequest as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyKeyPairRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.47-001, KMIPKIT-REQ-SPEC-6.1.47-004-001. The Re-key Key Pair request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.47, Tables 310-312, including Table 310 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RekeyKeyPairRequest as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyKeyPairRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.47-001, KMIPKIT-REQ-SPEC-6.1.47-004-001. The Re-key Key Pair request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.47, Tables 310-312, including Table 310 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RekeyKeyPairRequest as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyKeyPairRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.47-001, KMIPKIT-REQ-SPEC-6.1.47-004-001. The Re-key Key Pair request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.47, Tables 310-312, including Table 310 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RekeyKeyPairRequest as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyKeyPairRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.47-001, KMIPKIT-REQ-SPEC-6.1.47-004-001. The Re-key Key Pair request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.47, Tables 310-312, including Table 310 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RekeyKeyPairRequest as core::default::Default>::default",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyKeyPairRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.47-001, KMIPKIT-REQ-SPEC-6.1.47-004-001. The Re-key Key Pair request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.47, Tables 310-312, including Table 310 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RekeyKeyPairRequest as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyKeyPairRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.46-001, KMIPKIT-REQ-SPEC-6.1.46-004-001. The Re-key request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.46, Tables 305-307, including Table 305 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RekeyRequest as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.46-001, KMIPKIT-REQ-SPEC-6.1.46-004-001. The Re-key request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.46, Tables 305-307, including Table 305 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RekeyRequest as core::borrow::Borrow<kmipkit_protocol::rekey::RekeyRequest>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.46-001, KMIPKIT-REQ-SPEC-6.1.46-004-001. The Re-key request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.46, Tables 305-307, including Table 305 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RekeyRequest as core::borrow::BorrowMut<kmipkit_protocol::rekey::RekeyRequest>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.46-001, KMIPKIT-REQ-SPEC-6.1.46-004-001. The Re-key request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.46, Tables 305-307, including Table 305 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RekeyRequest as core::convert::From<kmipkit_protocol::rekey::RekeyRequest>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.46-001, KMIPKIT-REQ-SPEC-6.1.46-004-001. The Re-key request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.46, Tables 305-307, including Table 305 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RekeyRequest as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.46-001, KMIPKIT-REQ-SPEC-6.1.46-004-001. The Re-key request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.46, Tables 305-307, including Table 305 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RekeyRequest as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.46-001, KMIPKIT-REQ-SPEC-6.1.46-004-001. The Re-key request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.46, Tables 305-307, including Table 305 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RekeyRequest as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.46-001, KMIPKIT-REQ-SPEC-6.1.46-004-001. The Re-key request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.46, Tables 305-307, including Table 305 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RekeyRequest as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.46-001, KMIPKIT-REQ-SPEC-6.1.46-004-001. The Re-key request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.46, Tables 305-307, including Table 305 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RekeyRequest as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.46-001, KMIPKIT-REQ-SPEC-6.1.46-004-001. The Re-key request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.46, Tables 305-307, including Table 305 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RekeyRequest as core::default::Default>::default",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.46-001, KMIPKIT-REQ-SPEC-6.1.46-004-001. The Re-key request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.46, Tables 305-307, including Table 305 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RekeyRequest as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
     }
   ],
   "capabilities": [

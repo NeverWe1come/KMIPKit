@@ -143,7 +143,8 @@ class T102HashedPasswordTimestampSequenceTests(unittest.TestCase):
         report = json.loads(report_path.read_text(encoding="utf-8"))
         expected = {
             row["exportName"]
-            for row in report["matched"]
+            for source in (report["declarations"], report["conditionalDeclarations"])
+            for row in source
             if "HashedPasswordTimestampSequence" in row["exportName"]
             and " as " in row["exportName"]
         }
