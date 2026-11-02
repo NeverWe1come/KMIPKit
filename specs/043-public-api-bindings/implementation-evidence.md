@@ -8965,3 +8965,27 @@ Verification:
 - `git diff --check` — passed after the documentation update.
 
 The candidate count falls from 4,008 to 3,998. T102 remains open; this slice does not claim Re-certify operation conformance, full API parity, profile conformance, PR completion, or release readiness.
+
+### T102 Register response Rust trait-artifact exclusions (2026-11-02)
+
+The Rust export inventory observed exactly ten standard-trait paths for `kmipkit_protocol::RegisterResponse`: five direct and five conditional declarations. T102 excludes only those compiler-visible language artifacts under KMIPKIT-0043-FR-010/021 and functional ownership KMIPKIT-0036-FR-001/004. The response type, `unique_identifier`, and `with_ttlv` remain verified; `result` and `try_from_response_item` remain blocked, and no root alias exists. The Register operation catalog has no direct test-case ID. OASIS KMIP v2.1 §6.1.43 Tables 291–294 defines the operation; Table 292 is the response. Existing T062 provides four-language mapping evidence, not an official-vector pass. This inventory-only slice makes no operation-conformance claim and changes no runtime behavior.
+
+| Phase | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red — pin the exact ten paths, audit classification, candidate count, owner requirements, no-direct-case caveat, and unchanged functional declarations | `2e0bac32d` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions -k register_response -v` | Four tests ran; three failed as expected before Green: the ten paths remained blocked, the audit had no corresponding exclusions, and the candidate count was 3,998 instead of 3,988. Functional state and catalog guards passed. |
+| Green — exclude only the ten trait artifacts and regenerate checked-in outputs | `bec73686e` | `py -B tools/api_manifest/generate.py --write`; Rust export audit report regeneration | Exactly ten paths moved from blocked candidates to approved exclusions; generated parity data and the Rust report agree. |
+| Refactor/evidence — synchronize T102 counts, operation traceability, task notes, and verification | This commit | Focused T102, manifest, workflow, generator, audit, binding, traceability, and independent reviews | T102 remains open with 3,988 blocked KMIPKIT-0043 candidates. |
+
+Verification:
+
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions -v` — 73 passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2` — 150 passed.
+- `py -B -m unittest scripts.tests.test_workflow` — 68 passed.
+- `py -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
+- `py -B tools/api_manifest/audit_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` — 6,271 declarations and 4,192 exact exclusions reconcile with all 10,463 observed paths; zero issues or mismatches. The successful Windows audit emitted optional `aws-lc-sys` compiler-probe and NASM warnings.
+- `py -B tools/api_manifest/audit_binding_exports.py --check` — no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
+- `py -B -m unittest scripts.tests.test_requirement_traceability -v` — 2 passed; feature traceability — 30 passed, 1 Windows symlink permission skip.
+- Independent QA found no blockers. Independent security review found no security issue; no runtime, FFI, TLS, secret-handling, dependency, or workflow code changed. `RegisterError` declarations remain in the manifest and are not excluded.
+- `git diff --check` — passed after the Refactor documentation update.
+
+The candidate count falls from 3,998 to 3,988. T102 remains open; this slice does not claim Register operation conformance, full API parity, profile conformance, PR completion, or release readiness.
