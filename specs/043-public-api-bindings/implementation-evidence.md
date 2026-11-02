@@ -8481,4 +8481,25 @@ Verification:
 - `py -B tools/api_manifest/audit_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` — 6,481 declarations and 3,982 exact exclusions reconcile with all 10,463 observed paths; zero missing declarations, kind mismatches, incomplete-scope issues, or other audit issues.
 - `py -B tools/api_manifest/audit_binding_exports.py --check` — no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
 - Hosted PR #104 checks for the new head remain pending until these commits are pushed.
-- `git diff --check` — pending after independent QA and documentation review.
+- `git diff --check` — passed after independent QA and documentation review.
+
+### T102 Get Constraints root re-export trait-artifact exclusions (2026-11-02)
+
+The Rust audit observed ten standard-trait paths for root re-export `kmipkit::GetConstraintsResponse`. T102 records these exact paths as approved inventory exclusions under KMIPKIT-0043-FR-010/021, with the underlying operation owned by approved KMIPKIT-0039-FR-001/004. This is an API-inventory reconciliation only. The root type, `constraints`, `result`, and `try_from_response_item` remain blocked; the existing root `with_ttlv` remains verified. The protocol-crate response and its verified fields remain unchanged. OASIS KMIP v2.1 §6.1.22 Tables 229–231 and §7.7 ground the underlying operation, but no OASIS requirement applies directly to these compiler-generated traits. The candidate count falls from 4,198 to 4,188; T102 remains open.
+
+| Phase | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red — pin the exact ten root traits, audit observations/exclusions, and unchanged functional declaration states | `afb3f2e39` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest -v tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions.T102GetConstraintsResponseTraitExclusionTests.test_root_reexport_trait_paths_are_exact_approved_exclusions tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions.T102GetConstraintsResponseTraitExclusionTests.test_rust_audit_reports_exact_root_reexport_trait_paths tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions.T102GetConstraintsResponseTraitExclusionTests.test_root_response_facade_remains_blocked_except_existing_ttlv_constructor` | Expected failure before Green: ten traits were still blocked and absent from audit exclusions; the root functional-state guard passed. |
+| Green — exclude only the ten standard-trait paths and regenerate outputs/audit | `d328d49d3` | `py -B tools/api_manifest/generate.py --write`; `py -B tools/api_manifest/audit_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` | Exact compiler-observed paths now reconcile; no functional root declaration was promoted. |
+| Refactor/evidence — update T102 count and owner traceability | This commit | Full manifest, workflow, generated-output, Rust, and binding audits plus independent QA | T102 remains open with 4,188 blocked KMIPKIT-0043 candidates. |
+
+Verification:
+
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions -v` — 6 passed.
+- `py -B -m unittest scripts.tests.test_workflow -v` — 68 passed, including CI selection of the T102 contract on all supported workflow platforms.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2 -v` — 150 passed.
+- `py -B tools/api_manifest/generate.py --check` — all 12 outputs verified.
+- `py -B tools/api_manifest/audit_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` — 6,471 declarations and 3,992 exact exclusions reconcile with all 10,463 observed paths; zero missing declarations, kind mismatches, incomplete-scope issues, or other audit issues.
+- `py -B tools/api_manifest/audit_binding_exports.py --check` — no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
+- On published PR #104 head `95e3dd0fb`, all completed hosted checks passed; Script contracts on macOS and Windows were still pending when checked. This root-re-export slice is local and requires publication and a fresh hosted run.
+- `git diff --check` — passed after independent QA and documentation review.
