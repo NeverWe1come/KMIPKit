@@ -8573,3 +8573,27 @@ Verification:
 - Independent QA — no semantic blockers; confirmed the exact paths, approval owner, OASIS section, preserved API states, candidate delta, audit counts, and generated fixtures.
 - `git diff --check` — passed after documentation review.
 - The pushed PR head before this slice was `41bf82753`; this slice requires publication and a fresh hosted run.
+
+### T102 Validate response Rust trait-artifact exclusions (2026-11-02)
+
+The Rust export audit observed ten standard-trait paths for `kmipkit_protocol::ValidateResponse`. T102 records exactly those paths as approved inventory exclusions under KMIPKIT-0043-FR-010/021 and the approved operation owner KMIPKIT-0042-FR-001/004. The response type, `result`, `try_from_response_item`, `validity_indicator`, and `with_ttlv` remain verified; there is no root re-export. This is an API-inventory reconciliation only and changes no KMIP behavior. OASIS KMIP v2.1 §6.1.57 Tables 340–342 ground the underlying Validate operation; no OASIS requirement applies to compiler-generated Rust traits. The candidate count falls from 4,158 to 4,148, and T102 remains open.
+
+| Phase | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red — pin the exact ten Validate trait paths, audit observations/exclusions, and unchanged functional declaration states | `ac4bf2a03` | Focused exact-set, audit, and functional-state tests in `tools/api_manifest/tests/test_t102_get_constraints_response_trait_exclusions.py` | Expected failure before Green: all ten paths remained blocked and absent from audit exclusions; all five functional-state assertions passed. |
+| Green — exclude only the ten trait artifacts and regenerate outputs/audit | `caf684b43` | `py -B tools/api_manifest/generate.py --write`; `py -B tools/api_manifest/audit_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json` | Exactly ten declarations moved to approved exclusions; all checked-in outputs were regenerated and the candidate count changed by ten. |
+| Refactor/evidence — update T102 counts, owner/source traceability, and verification record | This commit | Focused T102, manifest, workflow, generated-output, export-audit, and traceability checks plus independent QA | T102 remains open with 4,148 blocked KMIPKIT-0043 candidates. |
+
+Verification:
+
+- Focused T102 manifest contract — 18 passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2 -v` — 150 passed.
+- `py -B -m unittest scripts.tests.test_workflow -v` — 68 passed; CI selects the T102 exact-set module.
+- `py -B -m unittest scripts.tests.test_requirement_traceability -v` — 2 passed.
+- `py -B -m unittest discover -s tools/normative_catalog/tests -p test_feature_traceability.py -v` — 30 passed, 1 platform skip (Windows could not create the test symlink).
+- `py -B tools/api_manifest/generate.py --check` — all 12 outputs verified.
+- `py -B tools/api_manifest/audit_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` — 6,431 declarations and 4,032 exact exclusions reconcile with all 10,463 observed paths; zero audit issues.
+- `py -B tools/api_manifest/audit_binding_exports.py --check` — no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
+- Independent QA — no semantic blockers; confirmed the exact set, KMIPKIT-0042 owner, OASIS citation, preserved functional states, candidate delta, audit totals, and generated fixtures.
+- `git diff --check` — passed after documentation review.
+- The pushed PR head before this slice was `38c5fc320`; this slice requires publication and a fresh hosted run.
