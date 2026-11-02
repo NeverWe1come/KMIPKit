@@ -37,11 +37,29 @@ EXPECTED_PROTOCOL_TRAIT_EXPORTS = {
 }
 
 
+def _root_pkcs11_response_exports(rows: list[dict[str, str]]) -> set[str]:
+    return {
+        row["exportName"]
+        for row in rows
+        if row.get("packageId") == "rust-kmipkit"
+        and row.get("exportName", "").startswith("kmipkit::Pkcs11Response")
+    }
+
+
 class T102Pkcs11ResponseTraitExclusionTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         cls.rust_report = json.loads(RUST_REPORT.read_text(encoding="utf-8"))
+
+    def test_root_export_filter_covers_compiler_trait_path_shape(self) -> None:
+        trait_path = "<kmipkit::Pkcs11Response as core::fmt::Debug>::fmt"
+        self.assertEqual(
+            _root_pkcs11_response_exports(
+                [{"packageId": "rust-kmipkit", "exportName": trait_path}]
+            ),
+            {trait_path},
+        )
 
     def test_protocol_response_traits_are_exact_approved_exclusions(self) -> None:
         declarations = {
@@ -151,12 +169,7 @@ class T102Pkcs11ResponseTraitExclusionTests(unittest.TestCase):
             },
             blocked,
         )
-        root_rows = {
-            row["exportName"]
-            for row in self.manifest["publicDeclarations"]
-            if row.get("packageId") == "rust-kmipkit"
-            and row.get("exportName", "").startswith("kmipkit::Pkcs11Response")
-        }
+        root_rows = _root_pkcs11_response_exports(self.manifest["publicDeclarations"])
         self.assertEqual(root_rows, set())
         self.assertEqual(
             sum(
