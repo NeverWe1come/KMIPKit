@@ -9414,3 +9414,32 @@ It exited 0 with all six contract tests passing.
 | Red - require the exact seven functional client declarations | `fc0c6b259` | Focused test command above | Exit 1 as expected; the assertion exposed ten trait paths included by the broad filter. |
 | Green - filter the seven functional declarations and assert exact verified/blocked states | `6facd1c17` | Focused module command above | Exit 0; all six contract tests passed, including the exact seven-row client state assertion and the separate ten-trait assertion. |
 | Evidence - record QA follow-up and final range check | This commit | `git diff --check 86ab82610..38603c6b1` | Exit 0 after this evidence edit; no production behavior or generated artifact changed. |
+
+
+### T102 Set Constraints request trait-artifact reconciliation (2026-11-02)
+
+The approved functional owner is `specs/025-policy-controls/spec.md` (KMIPKIT-0039-FR-001/004); the exact inventory exclusions use KMIPKIT-0043-FR-010/021. OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.52 Tables 325–327 defines Set Constraints, with Table 325 as the request. The approved catalog has no direct Set Constraints test-case ID. This inventory-only checkpoint makes no OASIS conformance or interoperability claim.
+
+The Rust 1.94.0 export audit observes exactly ten standard-trait paths for `kmipkit_protocol::SetConstraintsRequest`: five direct and five conditional. Only those ten protocol paths move from blocked declarations to exact approved exclusions. The protocol type, `constraints`, and `new` remain verified; `to_ttlv_payload` remains blocked. The root-facade type, its three functional methods, and all ten root-facade trait paths remain blocked and unchanged. No KMIP request behavior changed.
+
+| Phase | Commit | Evidence | Result |
+|---|---|---|---|
+| Red — pin exact trait paths, owner/requirements/citation, direct/conditional classification, candidate count, and protocol/root states | `003180a2d` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_set_constraints_request_trait_exclusions scripts.tests.test_workflow.WorkflowContractTests.test_script_contract_job_runs_t102_set_constraints_request_trait_exclusion_contract -v` | Exit 1 as expected: four contract failures showed the ten paths were still declarations, the exclusions/audit set was empty, the candidate count remained 3,818, and CI did not invoke the contract. The functional protocol and root-facade state test passed. |
+| Green — exclude only the ten paths, regenerate outputs and reports, and update aggregate guards/CI invocation | `c0f774066` | Focused contracts, generator and Rust/binding audits below | Candidate count fell 3,818 → 3,808; public declarations fell 9,016 → 9,006 and approved exclusions rose 5,708 → 5,718. The semantic manifest delta is exactly ten removed protocol declarations and ten approved exclusions, with no added declaration. |
+| Refactor/evidence — record the checkpoint and final verification | This commit | `git diff --check` | T102 remains open; no runtime or protocol behavior changed. |
+
+Focused verification:
+
+- The T102 Set Constraints request contract, related response/request regression modules, manifest aggregate guard, and shared Rust inventory suite — 147 passed. Command:
+
+  ```powershell
+  uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_set_constraints_request_trait_exclusions tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions tools.api_manifest.tests.test_t102_import_request_trait_exclusions tools.api_manifest.tests.test_t102_interop_request_trait_exclusions tools.api_manifest.tests.test_t102_join_split_key_request_trait_exclusions tools.api_manifest.tests.test_t102_log_request_trait_exclusions tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions tools.api_manifest.tests.test_t102_pkcs11_response_trait_exclusions tools.api_manifest.tests.test_t102_revoke_request_trait_exclusions tools.api_manifest.tests.test_t102_rng_seed_request_trait_exclusions tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_ffi_runtime_metadata_is_owned_and_mapped_in_all_languages tools.api_manifest.tests.test_shared_rust_inventory -v
+  ```
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest scripts.tests.test_workflow scripts.tests.test_requirement_traceability -v` — 76 passed, including the new cross-platform CI invocation guard.
+- `py -B tools/api_manifest/generate.py --write` — regenerated all 12 public API outputs. `py -B tools/api_manifest/generate.py --check` — all 12 verified.
+- `py -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` — 6,091 matched declarations and 4,372 approved exclusions reconcile with all 10,463 observed paths; zero missing, unobserved, issue, kind, conditional-state, or conditional-condition mismatches.
+- `py -B tools/api_manifest/audit_shared_rust_inventory.py --repo-root . --report specs/043-public-api-bindings/reports/shared-rust-inventory-2026-11-01.json --check` — report current; 10,463 observed paths and 4,372 exclusions.
+- `py -B tools/api_manifest/audit_binding_exports.py --check` — no issues: C 757/757, Java 1,014/1,014, and Python 1,140/1,140.
+- `git diff --check` — passed before the evidence-only Refactor commit.
+
+The Rust audit emitted optional Windows AWS-LC compiler-probe and missing NASM warnings; the audit completed successfully. Generated fixtures and reports were changed only by the pinned API generator or their audit generators. The manifest contract confirms the direct/conditional split and all prior functional/root declaration states. No OASIS test case ran; no conformance, interoperability, profile-support, or certification claim is made.
