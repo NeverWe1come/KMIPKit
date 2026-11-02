@@ -296,6 +296,16 @@ class WorkflowContractTests(unittest.TestCase):
             "Every supported platform must verify the exact RuntimeVersion trait exclusion set.",
         )
 
+    def test_script_contract_job_runs_t102_get_constraints_response_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact Get Constraints response trait exclusion set.",
+        )
+
     def test_script_contract_job_fetches_locked_cargo_dependencies_for_offline_audit(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "script-contracts")
