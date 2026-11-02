@@ -9552,3 +9552,37 @@ uv run --offline --no-project --with-requirements tools/api_manifest/requirement
 - `python -B tools/api_manifest/audit_shared_rust_inventory.py --report specs/043-public-api-bindings/reports/shared-rust-inventory-2026-11-01.json` and `--check` — exit 0; report current.
 - `python -B tools/api_manifest/audit_binding_exports.py --check` — exit 0; C 757/757, Java 1,014/1,014, Python 1,140/1,140; zero issues.
 - `git diff --check` and `git show --check` for Red, Green, and Refactor — pass. Pre-existing untracked artifacts were not staged. Nothing was pushed or merged.
+
+### T102 - Ticket and Login request trait-artifact reconciliation
+
+The exact exclusions are authorized by `KMIPKIT-0043-FR-010` and `KMIPKIT-0043-FR-021`; no OASIS requirement directly applies to compiler-generated Rust traits. The approved functional owner is `specs/024-credential-sessions/spec.md` (KMIPKIT-0038-FR-001/004). The pinned upstream OASIS KMIP v2.1 source SHA-256 is `8BF9D914C097E98A6509AA1FFCBF03406F738066E940597AEE93D0A5E07ADDCF`.
+
+| Protocol declaration | Approved owner requirements | Pinned OASIS KMIP v2.1 reference | Exact trait count and inventory test |
+|---|---|---|---|
+| `kmipkit_protocol::TicketType` | Approved `specs/024-credential-sessions/spec.md` (`KMIPKIT-0038-FR-001/004`) | Section 11.57, Table 488; Login is `00000001` and Extensions is `8XXXXXXX` | 21 paths (16 direct, five conditional); `tools/api_manifest/tests/test_t102_ticket_login_request_trait_exclusions.py` |
+| `kmipkit_protocol::Ticket` | Approved `specs/024-credential-sessions/spec.md` (`KMIPKIT-0038-FR-001/004`) | Section 7.39, Table 391; Section 11.57, Table 488 | 12 paths (seven direct, five conditional); same exact-set test |
+| `kmipkit_protocol::LoginRequest` | Approved `specs/024-credential-sessions/spec.md` (`KMIPKIT-0038-FR-001/004`) | Section 6.1.30, Tables 253-255; Table 253 is the request | 11 paths (six direct, five conditional); same exact-set test |
+
+The Rust 1.94.0 report and manifest reconcile exactly 44 `(packageId, exportName)` pairs under `rust-kmipkit-protocol`. The three root aliases and all blocked root trait paths, protocol type and inherent-method states, and every non-target manifest row remain unchanged. `Ticket` retains its custom secret-safe `Debug` and `Display` implementations and existing redaction tests; no protocol source or test file changed. The baseline comparison confirms all other top-level manifest values and non-target declarations/exclusions are unchanged. This is inventory-only and makes no OASIS conformance, profile-support, interoperability, or certification claim.
+
+| Phase | Commit | Evidence | Result |
+|---|---|---|---|
+| Red | `7ae499c5649f7a1ed86527ca8ce1572d1a543fe6` | `python -B -m unittest tools.api_manifest.tests.test_t102_ticket_login_request_trait_exclusions -v` | Expected failure before Green: 3 tests ran, 8 assertions failed because the exact 44 report/manifest exclusions were absent and candidate count was 3,634 instead of 3,590. The functional/root-state preservation test passed. |
+| Green | `d6e24e1bfe8fee8e7315735c2eea54e1562db320` | Exact-set test, pinned generator and reports, aggregate guards | Pass: exactly 44 declarations moved to 44 approved exclusions; public declarations/exclusions are 8,788/5,936 and candidate count is 3,590. |
+| Refactor | This evidence commit | Traceability/task updates and final commit checks | Records source ownership, exact normative references, unchanged secret-safe behavior, commands, results, and no-conformance boundary. |
+
+Verification:
+
+- `python -B tools/api_manifest/generate.py --write` — exit 0; generated 12 outputs. `python -B tools/api_manifest/generate.py --check` — exit 0; all 12 outputs current.
+- `python -B tools/api_manifest/audit_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json` and `python -B tools/api_manifest/audit_rust_exports.py --check` — exit 0; 10,463 observed, 5,873 matched/manifest, 4,590 excluded; zero missing, unobserved, issue, kind, or conditional discrepancies. Windows emitted optional AWS-LC MSVC compiler-probe and NASM warnings.
+- `python -B tools/api_manifest/audit_shared_rust_inventory.py --report specs/043-public-api-bindings/reports/shared-rust-inventory-2026-11-01.json` — exit 0; `python -B tools/api_manifest/audit_shared_rust_inventory.py --check` — exit 0, current.
+- `python -B tools/api_manifest/audit_binding_exports.py --check` — exit 0; no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
+- `python -B -m unittest tools.api_manifest.tests.test_t102_ticket_login_request_trait_exclusions -v` — 3 passed after Green. The affected aggregate command was:
+
+```powershell
+uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest -v tools.api_manifest.tests.test_t102_ticket_login_request_trait_exclusions tools.api_manifest.tests.test_t102_request_trait_batch_two tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions tools.api_manifest.tests.test_t102_import_request_trait_exclusions tools.api_manifest.tests.test_t102_interop_request_trait_exclusions tools.api_manifest.tests.test_t102_join_split_key_request_trait_exclusions tools.api_manifest.tests.test_t102_lifecycle_request_trait_exclusions tools.api_manifest.tests.test_t102_log_request_trait_exclusions tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions tools.api_manifest.tests.test_t102_pkcs11_response_trait_exclusions tools.api_manifest.tests.test_t102_protocol_request_trait_exclusions tools.api_manifest.tests.test_t102_revoke_request_trait_exclusions tools.api_manifest.tests.test_t102_rng_seed_request_trait_exclusions tools.api_manifest.tests.test_t102_set_constraints_request_trait_exclusions tools.api_manifest.tests.test_shared_rust_inventory scripts.tests.test_workflow tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_declaration_and_exclusion_records_are_closed_and_complete
+```
+
+  Result: 236 tests passed in 26.770 seconds, exit 0.
+- Exact baseline comparison — 44 target declaration rows removed and the same 44 exclusions added; all non-target rows and other top-level manifest values semantically unchanged. `git diff --quiet HEAD -- crates/kmipkit-protocol` and `.../tests` exited 0, preserving Ticket custom formatting and redaction tests.
+- `git diff --check` and `git show --check` for Red, Green, and Refactor — pass. Pre-existing untracked artifacts were not staged. Nothing was pushed or merged.

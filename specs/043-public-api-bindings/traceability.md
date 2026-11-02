@@ -506,3 +506,15 @@ The exact exclusions are authorized by `KMIPKIT-0043-FR-010` and `KMIPKIT-0043-F
 | `kmipkit_protocol::SetDefaultsRequest` | Approved `specs/025-policy-controls/spec.md` (`KMIPKIT-0039-FR-001/004`) | §6.1.53 Tables 328–330; Table 328 is the request | 11 paths (six direct, five conditional); `tools/api_manifest/tests/test_t102_request_trait_batch_two.py` |
 
 The pinned Rust 1.94.0 report and the manifest agree on the exact 68 `(packageId, exportName)` pairs, all under `rust-kmipkit-protocol`. `ValidateError` and `ValidateRequest` have no root aliases. Existing `kmipkit::GetConstraintsRequest` and `kmipkit::SetDefaultsRequest` aliases, all blocked root members and trait paths, and all protocol inherent/functional declaration states remain unchanged. No other owner or package path, including PKCS#11, is changed. The 3,702-to-3,634 candidate reduction is inventory reconciliation only; no OASIS conformance, interoperability, profile-support, or certification claim is made.
+
+### T102 - Ticket and Login request trait-artifact reconciliation
+
+The exact exclusions are authorized by `KMIPKIT-0043-FR-010` and `KMIPKIT-0043-FR-021`; no OASIS requirement directly applies to compiler-generated Rust traits. The approved functional owner is `specs/024-credential-sessions/spec.md` (`KMIPKIT-0038-FR-001/004`). Pinned upstream OASIS KMIP v2.1 source SHA-256: `8BF9D914C097E98A6509AA1FFCBF03406F738066E940597AEE93D0A5E07ADDCF`.
+
+| Protocol declaration | Approved owner requirements | Pinned OASIS KMIP v2.1 reference | Exact trait count and inventory test |
+|---|---|---|---|
+| `kmipkit_protocol::TicketType` | Approved `specs/024-credential-sessions/spec.md` (`KMIPKIT-0038-FR-001/004`) | Section 11.57, Table 488; Login is `00000001` and Extensions is `8XXXXXXX` | 21 paths (16 direct, five conditional); `tools/api_manifest/tests/test_t102_ticket_login_request_trait_exclusions.py` |
+| `kmipkit_protocol::Ticket` | Approved `specs/024-credential-sessions/spec.md` (`KMIPKIT-0038-FR-001/004`) | Section 7.39, Table 391; Section 11.57, Table 488 | 12 paths (seven direct, five conditional); same exact-set test |
+| `kmipkit_protocol::LoginRequest` | Approved `specs/024-credential-sessions/spec.md` (`KMIPKIT-0038-FR-001/004`) | Section 6.1.30, Tables 253-255; Table 253 is the request | 11 paths (six direct, five conditional); same exact-set test |
+
+The Rust 1.94.0 report and manifest reconcile exactly 44 `(packageId, exportName)` pairs under `rust-kmipkit-protocol`. The protocol types and inherent-method states, the three root aliases and all blocked root trait paths remain unchanged. `Ticket` retains its custom secret-safe `Debug` and `Display` implementations and existing redaction tests. All non-target manifest paths remain unchanged. This inventory-only batch makes no OASIS conformance, profile-support, interoperability, or certification claim.
