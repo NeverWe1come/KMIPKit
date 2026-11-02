@@ -376,6 +376,16 @@ class WorkflowContractTests(unittest.TestCase):
             "Every supported platform must verify the exact approved protocol request trait exclusions.",
         )
 
+    def test_script_contract_job_runs_t102_request_trait_batch_two_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_request_trait_batch_two -v",
+            python_contracts,
+            "Every supported platform must verify the exact Validate and policy request trait exclusions.",
+        )
+
     def test_script_contract_job_fetches_locked_cargo_dependencies_for_offline_audit(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "script-contracts")

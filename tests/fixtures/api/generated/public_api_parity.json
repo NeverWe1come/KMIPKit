@@ -71726,6 +71726,822 @@
       "exportName": "<kmipkit_protocol::RekeyRequest as core::fmt::Debug>::fmt",
       "packageId": "rust-kmipkit-protocol",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyRequest wrapper, not a separate KMIP client capability; its functional request declarations retain their current T102 states."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::borrow::Borrow<kmipkit_protocol::get_constraints::GetConstraintsRequest>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::borrow::BorrowMut<kmipkit_protocol::get_constraints::GetConstraintsRequest>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::convert::From<kmipkit_protocol::get_constraints::GetConstraintsRequest>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::default::Default>::default",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed SetDefaultsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.53 Tables 328-330, including Table 328 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed SetDefaultsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.53 Tables 328-330, including Table 328 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::borrow::Borrow<kmipkit_protocol::set_defaults::SetDefaultsRequest>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed SetDefaultsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.53 Tables 328-330, including Table 328 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::borrow::BorrowMut<kmipkit_protocol::set_defaults::SetDefaultsRequest>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed SetDefaultsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.53 Tables 328-330, including Table 328 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::convert::From<kmipkit_protocol::set_defaults::SetDefaultsRequest>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed SetDefaultsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.53 Tables 328-330, including Table 328 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed SetDefaultsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.53 Tables 328-330, including Table 328 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed SetDefaultsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.53 Tables 328-330, including Table 328 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed SetDefaultsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.53 Tables 328-330, including Table 328 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed SetDefaultsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.53 Tables 328-330, including Table 328 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed SetDefaultsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.53 Tables 328-330, including Table 328 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::default::Default>::default",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed SetDefaultsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.53 Tables 328-330, including Table 328 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateError as core::borrow::Borrow<kmipkit_protocol::validate::ValidateError>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateError as core::borrow::BorrowMut<kmipkit_protocol::validate::ValidateError>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateError as core::convert::From<kmipkit_protocol::validate::ValidateError>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateError as core::error::Error>::description",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateError as core::error::Error>::source",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Table 340 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateRequest as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Table 340 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateRequest as core::borrow::Borrow<kmipkit_protocol::validate::ValidateRequest>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Table 340 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateRequest as core::borrow::BorrowMut<kmipkit_protocol::validate::ValidateRequest>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Table 340 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateRequest as core::convert::From<kmipkit_protocol::validate::ValidateRequest>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Table 340 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateRequest as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Table 340 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateRequest as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Table 340 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateRequest as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Table 340 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateRequest as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Table 340 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateRequest as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Table 340 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateRequest as core::default::Default>::default",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Table 340 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::ValidateRequest as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
     }
   ],
   "capabilities": [

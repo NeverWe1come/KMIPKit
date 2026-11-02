@@ -189841,376 +189841,26 @@
       "candidateSpecId": "KMIPKIT-0043",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
-    {
-      "declarationId": "rust-observed-1e5fcb3f32de5063eedc",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::GetConstraintsRequest as alloc::borrow::ToOwned>::Owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-6342f2ece7ba35927d79",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::GetConstraintsRequest as alloc::borrow::ToOwned>::clone_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-031d3b6b02c92a38fe52",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::GetConstraintsRequest as alloc::borrow::ToOwned>::to_owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-5f8fa023179574d8bead",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-d54495f12238e2ec840b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::borrow::Borrow<kmipkit_protocol::get_constraints::GetConstraintsRequest>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-b8cfbb6cd87298c8a6d7",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::borrow::BorrowMut<kmipkit_protocol::get_constraints::GetConstraintsRequest>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-22baca3898ba95682fa8",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::clone::Clone>::clone",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-ecdc6f6bd0cfd82b1683",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::clone::Clone>::clone_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-c323e2139edd3ca452a6",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::clone::CloneToUninit>::clone_to_uninit",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-f3fbe540b21b37198132",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-6f967e7af49321e572e5",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::cmp::PartialEq>::eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-08330d1aec5ef6904cd3",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::cmp::PartialEq>::ne",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-2a3282868081ab71d9c5",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::convert::From<kmipkit_protocol::get_constraints::GetConstraintsRequest>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-8c6f0ba059ae0d9d578f",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::get_constraints::GetConstraintsRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-e09181ea17676da1a9f7",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::get_constraints::GetConstraintsRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-05735073742ac57e139b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::get_constraints::GetConstraintsRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-939fdcd4b064430ccd6c",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::get_constraints::GetConstraintsRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-dc9730d0713917fa282f",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::get_constraints::GetConstraintsRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-9684d04f98157da3f5b9",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::default::Default>::default",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-37934d285f7049fec3ef",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     {
       "declarationId": "rust-observed-c08158ff20d39caec6cf",
       "packageId": "rust-kmipkit-protocol",
@@ -206753,250 +206403,17 @@
       "candidateSpecId": "KMIPKIT-0043",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
-    {
-      "declarationId": "rust-observed-9200cf94c69cb653bec5",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-4dee7d3fdf465c6fd3d9",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::borrow::Borrow<kmipkit_protocol::set_defaults::SetDefaultsRequest>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-755c4db630b81bfeeb59",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::borrow::BorrowMut<kmipkit_protocol::set_defaults::SetDefaultsRequest>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-7f83cc7cd93d597687df",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::convert::From<kmipkit_protocol::set_defaults::SetDefaultsRequest>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-0ca7888e6a0fe5a67c33",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::set_defaults::SetDefaultsRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-d443f9f8e0328147e40b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::set_defaults::SetDefaultsRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-d8d0fd350da2c4daf116",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::set_defaults::SetDefaultsRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-a9079ea1912670f18b48",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::set_defaults::SetDefaultsRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-79d7da68df8cafb86571",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::set_defaults::SetDefaultsRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-4d4d26cdb71d796ab088",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::default::Default>::default",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-dfb83446d03b9f4b62c0",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
+
+
+
+
+
+
+
+
+
+
+
     {
       "declarationId": "rust-observed-0bf8c6c6f8510bb1a734",
       "packageId": "rust-kmipkit-protocol",
@@ -208861,704 +208278,43 @@
       "candidateSpecId": "KMIPKIT-0043",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
-    {
-      "declarationId": "rust-observed-223410d9b5da25622bd8",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateError as alloc::borrow::ToOwned>::Owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-0f3a2cac8d89a86c3186",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateError as alloc::borrow::ToOwned>::clone_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-c671f60ee8ffd27bde66",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateError as alloc::borrow::ToOwned>::to_owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-5e6805af80e939140ccc",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateError as alloc::string::ToString>::to_string",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-75f47781b57ff7313ce9",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateError as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-2e3cb5daa9c957af04e2",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateError as core::borrow::Borrow<kmipkit_protocol::validate::ValidateError>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-c26cef60da84e65c678c",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateError as core::borrow::BorrowMut<kmipkit_protocol::validate::ValidateError>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-56cd0e1d14f1585a5d57",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateError as core::clone::Clone>::clone",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-6b4be665ea29615b4e1b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateError as core::clone::Clone>::clone_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-e6b41b2ae80f0cde4112",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateError as core::clone::CloneToUninit>::clone_to_uninit",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-1c63ea01604314689f10",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateError as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-4010d476f1a500693447",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateError as core::cmp::PartialEq>::eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-10875cc212ed3c54513e",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateError as core::cmp::PartialEq>::ne",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-a758bda21fc1284d3271",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateError as core::convert::From<kmipkit_protocol::validate::ValidateError>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-7c781ef84e1081133940",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateError as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::validate::ValidateError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-25370c73b0f322ca0937",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateError as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::validate::ValidateError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-036e137e693c81eea905",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateError as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::validate::ValidateError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-aaabb1b0906a44fa301c",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateError as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::validate::ValidateError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-462d137e26e093761a88",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateError as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::validate::ValidateError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-cb26f8ae4447f603d7ff",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateError as core::error::Error>::cause",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-51279db559c9d94211bd",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateError as core::error::Error>::description",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-e25c2d34f59c92e943db",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateError as core::error::Error>::provide",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-487cccd6bc64abeab4e8",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateError as core::error::Error>::source",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-2254af9f3f1cbc1abf9e",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateError as core::error::Error>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-9d82e215e23473e8b861",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateError as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-6fa747f659913d16f6d1",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateError as core::fmt::Display>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-b97dba6b5634176caa32",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateRequest as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-d7e448fc78a5bd3a7343",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateRequest as core::borrow::Borrow<kmipkit_protocol::validate::ValidateRequest>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-2fb84bc39947acac2927",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateRequest as core::borrow::BorrowMut<kmipkit_protocol::validate::ValidateRequest>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-1f7f81bb823f93b3deef",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateRequest as core::convert::From<kmipkit_protocol::validate::ValidateRequest>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-2b753ee8f2715765eb9a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateRequest as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::validate::ValidateRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-a265d97b5d66ff63a64d",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateRequest as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::validate::ValidateRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-26e043d56c9d1804f8db",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateRequest as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::validate::ValidateRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-6337cea1090d7d3340d2",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateRequest as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::validate::ValidateRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-42a53bb6acaec6568ddf",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateRequest as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::validate::ValidateRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-80c5f46844469435b0c7",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateRequest as core::default::Default>::default",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-49ae0ca65305c0a947e7",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateRequest as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     {
       "declarationId": "rust-observed-f355b74a437665bc14d3",
       "packageId": "rust-kmipkit-protocol",
@@ -443441,6 +442197,822 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004; KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-REQ-SPEC-6.1.46-001, KMIPKIT-REQ-SPEC-6.1.46-004-001. The Re-key request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.46, Tables 305-307, including Table 305 as request. No OASIS requirement applies to compiler-generated standard-trait methods. This inventory-only checkpoint excludes compiler-visible standard Rust traits and does not claim OASIS conformance, profile support, interoperability, or certification. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as alloc::borrow::ToOwned>::Owned",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as alloc::borrow::ToOwned>::clone_into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as alloc::borrow::ToOwned>::to_owned",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::borrow::Borrow<kmipkit_protocol::get_constraints::GetConstraintsRequest>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::borrow::BorrowMut<kmipkit_protocol::get_constraints::GetConstraintsRequest>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::clone::Clone>::clone",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::clone::Clone>::clone_from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::clone::CloneToUninit>::clone_to_uninit",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::cmp::PartialEq>::eq",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::cmp::PartialEq>::ne",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::convert::From<kmipkit_protocol::get_constraints::GetConstraintsRequest>>::from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::default::Default>::default",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::GetConstraintsRequest as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetConstraintsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed GetConstraintsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.22 Tables 229-231, including Table 229 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed SetDefaultsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.53 Tables 328-330, including Table 328 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::borrow::Borrow<kmipkit_protocol::set_defaults::SetDefaultsRequest>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed SetDefaultsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.53 Tables 328-330, including Table 328 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::borrow::BorrowMut<kmipkit_protocol::set_defaults::SetDefaultsRequest>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed SetDefaultsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.53 Tables 328-330, including Table 328 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::convert::From<kmipkit_protocol::set_defaults::SetDefaultsRequest>>::from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed SetDefaultsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.53 Tables 328-330, including Table 328 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed SetDefaultsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.53 Tables 328-330, including Table 328 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed SetDefaultsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.53 Tables 328-330, including Table 328 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed SetDefaultsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.53 Tables 328-330, including Table 328 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed SetDefaultsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.53 Tables 328-330, including Table 328 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed SetDefaultsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.53 Tables 328-330, including Table 328 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::default::Default>::default",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed SetDefaultsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.53 Tables 328-330, including Table 328 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SetDefaultsRequest as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetDefaultsRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed SetDefaultsRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.53 Tables 328-330, including Table 328 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateError as alloc::borrow::ToOwned>::Owned",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateError as alloc::borrow::ToOwned>::clone_into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateError as alloc::borrow::ToOwned>::to_owned",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateError as alloc::string::ToString>::to_string",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateError as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateError as core::borrow::Borrow<kmipkit_protocol::validate::ValidateError>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateError as core::borrow::BorrowMut<kmipkit_protocol::validate::ValidateError>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateError as core::clone::Clone>::clone",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateError as core::clone::Clone>::clone_from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateError as core::clone::CloneToUninit>::clone_to_uninit",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateError as core::cmp::PartialEq>::eq",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateError as core::cmp::PartialEq>::ne",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateError as core::convert::From<kmipkit_protocol::validate::ValidateError>>::from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateError as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateError as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateError as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateError as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateError as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateError as core::error::Error>::cause",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateError as core::error::Error>::description",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateError as core::error::Error>::provide",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateError as core::error::Error>::source",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateError as core::error::Error>::type_id",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateError as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateError as core::fmt::Display>::fmt",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateError model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateError declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Tables 341-342 as Validate response and error tables. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateRequest as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Table 340 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateRequest as core::borrow::Borrow<kmipkit_protocol::validate::ValidateRequest>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Table 340 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateRequest as core::borrow::BorrowMut<kmipkit_protocol::validate::ValidateRequest>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Table 340 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateRequest as core::convert::From<kmipkit_protocol::validate::ValidateRequest>>::from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Table 340 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateRequest as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Table 340 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateRequest as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Table 340 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateRequest as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Table 340 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateRequest as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Table 340 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateRequest as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Table 340 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateRequest as core::default::Default>::default",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Table 340 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateRequest as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Table 340 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     }
   ],
   "apiLevels": [
