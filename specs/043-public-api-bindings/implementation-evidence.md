@@ -8818,6 +8818,31 @@ Verification:
 
 The candidate count falls from 4,068 to 4,058. T102 remains open; this slice does not claim PR completion, full API parity, profile conformance, or release readiness.
 
+### T102 Import request Rust trait-artifact exclusions (2026-11-02)
+
+The approved functional owner is `specs/023-key-material-transfer/spec.md` (KMIPKIT-0037-FR-001/004); inventory exclusions are authorized by KMIPKIT-0043-FR-010/021. OASIS KMIP v2.1 §6.1.25 Tables 238–240 defines Import, with Table 238 as the request. Catalog cases KMIPKIT-TEST-CN01-2-43 through -47 cover Import/Export but their fixtures are unavailable; this inventory-only checkpoint does not claim those tests were executed or make an operation-conformance claim.
+
+The Rust 1.94.0 export audit observes exactly ten standard-trait paths for `kmipkit_protocol::ImportRequest`: five direct and five conditional. Only those ten blocked protocol trait artifacts move to exact approved exclusions. `ImportRequest` and `new` remain verified; `attributes`, `into_ttlv_payload`, `key_wrap_type`, `object`, `object_type`, `replace_existing`, `unique_identifier`, `with_key_wrap_type`, and `with_replace_existing` remain blocked. No root-facade alias exists. The existing ImportResponse trait exclusions, T050 four-language mapping, Any Object behavior, and secret redaction are unchanged.
+
+| Phase | Commit | Evidence | Result |
+|---|---|---|---|
+| Red — pin exact paths, owner/OASIS references, direct/conditional split, candidate count, and preserved mapping states | `8b85d897d` | `py -B -m unittest tools.api_manifest.tests.test_t102_import_request_trait_exclusions -v` | Three assertions failed as expected: the ten paths remained declarations, were not exclusions, and the blocked-candidate count remained 3,848. The synthetic root-trait path check passed. |
+| Green — exclude only the ten observed traits, regenerate outputs/report, and update aggregate counts | `911a71cab` | Focused T102 contract, manifest suite, generator, Rust and binding audits | The exact ten exclusions reconcile; candidates fall from 3,848 to 3,838. Rust audit reports 6,111 declarations and 4,352 exclusions for 10,463 observed paths. |
+| CI contract Red — require this T102 contract in the cross-platform script job | `63e00e06a` | `py -B -m unittest scripts.tests.test_workflow.WorkflowContractTests.test_script_contract_job_runs_t102_import_request_trait_exclusion_contract -v` | Failed as expected because the workflow did not yet invoke the Import request contract. |
+| CI Green — execute this contract on each supported platform | `a1817cffa` | Workflow contract suite and focused Import request contract | The workflow now invokes the contract; all 71 workflow tests and all four focused request tests passed. |
+| Refactor/evidence — record traceability and verification | This commit | Checks below | T102 remains open; no runtime or protocol behavior changed. |
+
+Verification:
+
+- The configured manifest v2 and focused T102 suite, including ImportRequest — 264 passed.
+- `py -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
+- `py -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` — 6,111 declarations and 4,352 exclusions reconcile with 10,463 observed paths; zero missing, unobserved, issue, kind, conditional-state, or conditional-condition mismatches. Windows emitted optional AWS-LC compiler-probe and missing NASM warnings.
+- `py -B tools/api_manifest/audit_binding_exports.py --check` — no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
+- `py -B -m unittest scripts.tests.test_workflow` — 71 passed. Requirement traceability — 2 passed. Feature traceability — 30 passed, 1 skipped because Windows did not permit symlink creation.
+- `git diff --check` — passed on the Refactor/evidence diff.
+
+This inventory-only reconciliation changes no protocol or runtime behavior and does not claim any OASIS test-case pass.
+
 ### T102 Join Split Key response Rust trait-artifact exclusions (2026-11-02)
 
 The Rust export audit observed exactly ten standard-trait paths for `kmipkit_protocol::JoinSplitKeyResponse`. T102 records only those compiler artifacts as approved inventory exclusions under KMIPKIT-0043-FR-010/021 and functional ownership KMIPKIT-0037-FR-001/004. The response type, `unique_identifier`, and `with_ttlv` remain verified; `result` and `try_from_response_item` remain blocked. No root alias exists. OASIS KMIP v2.1 §6.1.27 Tables 244–246, including the Table 245 response, grounds the Join Split Key contract; no normative OASIS clause applies directly to Rust standard traits. The approved catalog records no direct operation test case, so this inventory slice makes no conformance claim and does not change that status. This manifest-only inventory change does not alter KMIP behavior.
