@@ -9352,3 +9352,7 @@ Verification:
 - `git diff --check` — passed for the Refactor/evidence diff.
 
 The Rust audit emitted optional Windows AWS-LC compiler-probe and missing NASM warnings; the audit completed successfully. The pinned API generator produced the updated JSON and Java parity fixtures. These generated changes contain no new functional API mapping. No OASIS test case ran.
+
+The shared Rust inventory report at the base was stale: it recorded 3,612 exclusions while the matching base Rust audit already recorded 4,342. Regeneration reconciles the full report; its five `HashedPasswordTimestampSequence` mapping rows were already present in the base API manifest and do not add a new functional declaration. The report now records 4,352 exclusions after this checkpoint's ten exact trait exclusions.
+
+Independent QA reviewed `23165635b4f0aa77505774dfb2896b9884008757..21b633b88226b762b3d786747acfb0794acbb56e` and found no blockers. Codex Security diff scan `1a0adf90-1793-449e-9874-33755124eba2` completed with four reviewed surfaces, full coverage, and zero findings for the same range. The scan was static and did not run tests or runtime behavior; a qualified human security review remains a release requirement.
