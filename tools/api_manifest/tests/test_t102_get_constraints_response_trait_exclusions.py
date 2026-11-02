@@ -1027,7 +1027,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            3988,
+            3978,
         )
         for export_name, row in exclusions.items():
             with self.subTest(export_name=export_name):
@@ -1129,7 +1129,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            3988,
+            3978,
         )
         for export_name, row in exclusions.items():
             with self.subTest(export_name=export_name):
@@ -1229,7 +1229,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            3988,
+            3978,
         )
         for export_name, row in exclusions.items():
             with self.subTest(export_name=export_name):
@@ -1329,7 +1329,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            3988,
+            3978,
         )
         for export_name, row in exclusions.items():
             with self.subTest(export_name=export_name):
@@ -1428,7 +1428,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            3988,
+            3978,
         )
         for export_name, row in exclusions.items():
             with self.subTest(export_name=export_name):
@@ -1536,7 +1536,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            3988,
+            3978,
         )
         for export_name, row in exclusions.items():
             with self.subTest(export_name=export_name):
@@ -1633,7 +1633,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            3988,
+            3978,
         )
         for export_name, row in exclusions.items():
             with self.subTest(export_name=export_name):
@@ -1810,7 +1810,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            3988,
+            3978,
         )
 
 
@@ -1936,7 +1936,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            3988,
+            3978,
         )
 
 
@@ -2061,7 +2061,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            3988,
+            3978,
         )
 
 
@@ -2185,7 +2185,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            3988,
+            3978,
         )
 
 
@@ -2320,7 +2320,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            3988,
+            3978,
         )
 
     def test_recertify_response_trait_paths_are_exact_approved_exclusions(self) -> None:
@@ -2452,7 +2452,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            3988,
+            3978,
         )
 
     def test_register_response_trait_paths_are_exact_approved_exclusions(self) -> None:
@@ -2584,7 +2584,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            3988,
+            3978,
         )
 
     def test_revoke_response_trait_paths_are_exact_approved_exclusions(self) -> None:
@@ -2615,6 +2615,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 ):
                     self.assertIn(requirement_id, row["evidence"])
                 self.assertIn("KMIP v2.1 Section 6.1.44 Tables 295-297", row["evidence"])
+                self.assertIn("Table 296 response", row["evidence"])
                 self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
                 self.assertIn("standard-trait implementation", row["reason"])
                 self.assertIn("RevokeResponse", row["reason"])
