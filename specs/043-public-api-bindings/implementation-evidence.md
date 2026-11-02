@@ -9185,17 +9185,21 @@ The Rust 1.94.0 export audit observes exactly ten standard-trait paths for `kmip
 |---|---|---|---|
 | Red — pin the exact paths, owner/OASIS references, compiler split, candidate count, and preserved mapping state | `3e6bbe07f` | `py -B -m unittest tools.api_manifest.tests.test_t102_pkcs11_response_trait_exclusions -v` | Three tests failed as expected: the ten paths remained declarations, were absent from exact exclusions, and the blocked-candidate count was still 3,878. |
 | Green — exclude only the ten observed trait paths and regenerate the API outputs and Rust audit | `b54aac9c3` | Focused T102 contract, generator, and Rust export audit | The focused contract passed; the blocked-candidate count fell from 3,878 to 3,868. The audit reconciles 6,151 declarations and 4,312 exclusions with 10,463 observed paths. |
+| QA follow-up Red — demonstrate that the root-facade inventory check catches a compiler trait path | `6ea4b78bd` | `py -B -m unittest tools.api_manifest.tests.test_t102_pkcs11_response_trait_exclusions.T102Pkcs11ResponseTraitExclusionTests.test_root_export_filter_covers_compiler_trait_path_shape -v` | The test failed because the filter recognized direct root names but missed `<kmipkit::Pkcs11Response as ...>` paths. |
+| QA follow-up Green — include both direct and compiler-trait root path shapes | `2fb4ed197` | `py -B -m unittest tools.api_manifest.tests.test_t102_pkcs11_response_trait_exclusions -v` | All four focused tests passed; the current manifest still has no root-facade PKCS#11 response paths. |
 | Refactor/evidence — refresh aggregate counts/owner allow-list and record traceability and verification | This commit | Full affected test and audit set | All checks below passed; T102 remains open. |
 
 Verification:
 
-- The combined manifest v2 and focused T102 suites — 251 passed.
+- The combined manifest v2 and focused T102 suites — 252 passed after the QA root-trait coverage correction.
 - `py -B -m unittest tools.api_manifest.tests.test_t076_client_mapping` — 66 passed.
 - `py -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
 - `py -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` — 6,151 declarations and 4,312 exclusions reconcile with 10,463 observed paths; zero missing, unobserved, issue, kind, conditional-state, or conditional-condition mismatches. Windows emitted optional AWS-LC compiler-probe and missing NASM warnings.
 - `py -B tools/api_manifest/audit_binding_exports.py --check` — no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
 - `py -B -m unittest scripts.tests.test_requirement_traceability` — 2 passed. `py -B -m unittest discover -s tools/normative_catalog/tests -p test_feature_traceability.py` — 30 passed, 1 skipped because Windows did not permit symlink creation.
 - `git diff --check` — passed on the Refactor/evidence diff.
+
+Independent QA initially reported a P2 because the root-facade assertion did not recognize Rust trait paths. The QA follow-up Red/Green commits add a synthetic trait-path regression test and widen the filter; the reviewer confirmed the finding is resolved and found no other issues. The final combined manifest/T102 suite passed 252 tests after this correction.
 
 This inventory-only reconciliation changes no protocol or runtime behavior and does not claim any OASIS test-case pass.
 
