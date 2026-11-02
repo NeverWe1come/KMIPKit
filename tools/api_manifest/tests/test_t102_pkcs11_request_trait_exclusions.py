@@ -219,7 +219,37 @@ class T102Pkcs11RequestTraitExclusionTests(unittest.TestCase):
             "kmipkit_client::Pkcs11Request::with_input_parameters",
             "kmipkit_client::Pkcs11Request::with_interface",
         }
-        self.assertEqual(set(client_rows), expected_client_request_declarations)
+        client_functional_rows = {
+            name: row
+            for name, row in client_rows.items()
+            if name.startswith("kmipkit_client::Pkcs11Request")
+        }
+        self.assertEqual(
+            set(client_functional_rows), expected_client_request_declarations
+        )
+        self.assertEqual(
+            {
+                name
+                for name, row in client_functional_rows.items()
+                if row["declarationState"] == "verified"
+            },
+            {
+                "kmipkit_client::Pkcs11Request",
+                "kmipkit_client::Pkcs11Request::new",
+            },
+        )
+        self.assertEqual(
+            {
+                name
+                for name, row in client_functional_rows.items()
+                if row["declarationState"] == "blocked"
+            },
+            expected_client_request_declarations
+            - {
+                "kmipkit_client::Pkcs11Request",
+                "kmipkit_client::Pkcs11Request::new",
+            },
+        )
 
     def test_existing_protocol_response_trait_exclusions_remain_exact(self) -> None:
         response_traits = {
