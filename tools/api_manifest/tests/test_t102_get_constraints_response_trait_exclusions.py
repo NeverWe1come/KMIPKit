@@ -1,8 +1,9 @@
 """Exact T102 response-trait exclusion and preservation contracts.
 
-The tests cover Constraints, Check, Certify, and Validate responses. Each
-operation's approved owner and OASIS citation are asserted by its focused
-case; compiler-visible Rust traits are not separate KMIP capabilities.
+The tests cover Constraints, Check, Certify, Derive Key, and Validate
+responses. Each operation's approved owner and OASIS citation are asserted by
+its focused case; compiler-visible Rust traits are not separate KMIP
+capabilities.
 """
 
 from __future__ import annotations
