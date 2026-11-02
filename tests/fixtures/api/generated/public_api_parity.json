@@ -17739,6 +17739,126 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.52 Tables 325–327, including Table 325 as request. No direct Set Constraints test-case ID appears in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetConstraintsRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.52 Tables 325–327, including Table 325 as request. No direct Set Constraints test-case ID appears in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::borrow::Borrow<kmipkit_protocol::set_constraints::SetConstraintsRequest>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetConstraintsRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.52 Tables 325–327, including Table 325 as request. No direct Set Constraints test-case ID appears in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::borrow::BorrowMut<kmipkit_protocol::set_constraints::SetConstraintsRequest>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetConstraintsRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.52 Tables 325–327, including Table 325 as request. No direct Set Constraints test-case ID appears in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::convert::From<kmipkit_protocol::set_constraints::SetConstraintsRequest>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetConstraintsRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.52 Tables 325–327, including Table 325 as request. No direct Set Constraints test-case ID appears in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetConstraintsRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.52 Tables 325–327, including Table 325 as request. No direct Set Constraints test-case ID appears in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetConstraintsRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.52 Tables 325–327, including Table 325 as request. No direct Set Constraints test-case ID appears in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetConstraintsRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.52 Tables 325–327, including Table 325 as request. No direct Set Constraints test-case ID appears in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetConstraintsRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.52 Tables 325–327, including Table 325 as request. No direct Set Constraints test-case ID appears in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetConstraintsRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.52 Tables 325–327, including Table 325 as request. No direct Set Constraints test-case ID appears in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetConstraintsRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped."
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Approved — scope preauthorized by the maintainer's direct instruction to execute the roadmap autonomously.",
         "kind": "feature-specification",
         "path": "specs/003-core-types-errors/spec.md",

@@ -103,7 +103,7 @@ class T102SetConstraintsRequestTraitExclusionTests(unittest.TestCase):
                     "KMIPKIT-0043-FR-021",
                     "OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.52 Tables 325–327",
                     "Table 325 as request",
-                    "no direct Set Constraints test-case ID appears in the approved catalog",
+                    "No direct Set Constraints test-case ID appears in the approved catalog",
                     "inventory-only checkpoint does not claim OASIS conformance or interoperability",
                 ):
                     self.assertIn(evidence, row["evidence"])

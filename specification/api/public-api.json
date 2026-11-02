@@ -208454,236 +208454,6 @@
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
-      "declarationId": "rust-observed-a960e41c158a8b6e80a3",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-313c1632e18cde35eb56",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::borrow::Borrow<kmipkit_protocol::set_constraints::SetConstraintsRequest>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-2626fc710ecade2eee40",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::borrow::BorrowMut<kmipkit_protocol::set_constraints::SetConstraintsRequest>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-9157bcd612405f28412a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::convert::From<kmipkit_protocol::set_constraints::SetConstraintsRequest>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-d186a23f4522f618c61c",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::set_constraints::SetConstraintsRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-a8dc15ba99693ed67321",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::set_constraints::SetConstraintsRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-4af33eee05145dc3092f",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::set_constraints::SetConstraintsRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-e81ffa6c6d81e6a45772",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::set_constraints::SetConstraintsRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-9a7bbd537e123ad86607",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::set_constraints::SetConstraintsRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-1cbd78ac67bc2cdf90f1",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
       "declarationId": "rust-observed-0229b9d41642c20fafaa",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
@@ -392068,6 +391838,126 @@
     },
     {
       "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetConstraintsRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.52 Tables 325–327, including Table 325 as request. No direct Set Constraints test-case ID appears in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::borrow::Borrow<kmipkit_protocol::set_constraints::SetConstraintsRequest>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetConstraintsRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.52 Tables 325–327, including Table 325 as request. No direct Set Constraints test-case ID appears in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::borrow::BorrowMut<kmipkit_protocol::set_constraints::SetConstraintsRequest>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetConstraintsRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.52 Tables 325–327, including Table 325 as request. No direct Set Constraints test-case ID appears in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::convert::From<kmipkit_protocol::set_constraints::SetConstraintsRequest>>::from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetConstraintsRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.52 Tables 325–327, including Table 325 as request. No direct Set Constraints test-case ID appears in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetConstraintsRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.52 Tables 325–327, including Table 325 as request. No direct Set Constraints test-case ID appears in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetConstraintsRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.52 Tables 325–327, including Table 325 as request. No direct Set Constraints test-case ID appears in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetConstraintsRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.52 Tables 325–327, including Table 325 as request. No direct Set Constraints test-case ID appears in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetConstraintsRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.52 Tables 325–327, including Table 325 as request. No direct Set Constraints test-case ID appears in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetConstraintsRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.52 Tables 325–327, including Table 325 as request. No direct Set Constraints test-case ID appears in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SetConstraintsRequest as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetConstraintsRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.52 Tables 325–327, including Table 325 as request. No direct Set Constraints test-case ID appears in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
       "exportName": "kmipkit_protocol::KmipOperationResult::new",
       "reason": "This exact Rust wrapper or helper is not a separate four-language product capability; the server result's raw status/reason values and optional message are exposed through the mapped client response metadata.",
       "approvalSource": {
@@ -443824,7 +443714,7 @@
       "packageId": "rust-kmipkit-protocol",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LogoutResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RngSeedRequest as core::any::Any>::type_id",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngSeedRequest wrapper, not a separate KMIP client capability; required secret Data, including present-empty data, remains preserved by the approved four-language mapping.",
@@ -443836,7 +443726,7 @@
       },
       "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Seed request remains mapped under KMIP v2.1 Section 6.1.50 Tables 319-321, including required Table 319 Data and present-empty Data; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Seed test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RngSeedRequest as core::borrow::Borrow<kmipkit_protocol::rng_seed::RngSeedRequest>>::borrow",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngSeedRequest wrapper, not a separate KMIP client capability; required secret Data, including present-empty data, remains preserved by the approved four-language mapping.",
@@ -443848,7 +443738,7 @@
       },
       "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Seed request remains mapped under KMIP v2.1 Section 6.1.50 Tables 319-321, including required Table 319 Data and present-empty Data; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Seed test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RngSeedRequest as core::borrow::BorrowMut<kmipkit_protocol::rng_seed::RngSeedRequest>>::borrow_mut",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngSeedRequest wrapper, not a separate KMIP client capability; required secret Data, including present-empty data, remains preserved by the approved four-language mapping.",
@@ -443860,7 +443750,7 @@
       },
       "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Seed request remains mapped under KMIP v2.1 Section 6.1.50 Tables 319-321, including required Table 319 Data and present-empty Data; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Seed test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RngSeedRequest as core::convert::From<kmipkit_protocol::rng_seed::RngSeedRequest>>::from",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngSeedRequest wrapper, not a separate KMIP client capability; required secret Data, including present-empty data, remains preserved by the approved four-language mapping.",
@@ -443872,7 +443762,7 @@
       },
       "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Seed request remains mapped under KMIP v2.1 Section 6.1.50 Tables 319-321, including required Table 319 Data and present-empty Data; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Seed test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RngSeedRequest as core::convert::Into<U>>::into",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngSeedRequest wrapper, not a separate KMIP client capability; required secret Data, including present-empty data, remains preserved by the approved four-language mapping.",
@@ -443884,7 +443774,7 @@
       },
       "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Seed request remains mapped under KMIP v2.1 Section 6.1.50 Tables 319-321, including required Table 319 Data and present-empty Data; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Seed test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RngSeedRequest as core::convert::TryFrom<U>>::Error",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngSeedRequest wrapper, not a separate KMIP client capability; required secret Data, including present-empty data, remains preserved by the approved four-language mapping.",
@@ -443896,7 +443786,7 @@
       },
       "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Seed request remains mapped under KMIP v2.1 Section 6.1.50 Tables 319-321, including required Table 319 Data and present-empty Data; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Seed test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RngSeedRequest as core::convert::TryFrom<U>>::try_from",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngSeedRequest wrapper, not a separate KMIP client capability; required secret Data, including present-empty data, remains preserved by the approved four-language mapping.",
@@ -443908,7 +443798,7 @@
       },
       "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Seed request remains mapped under KMIP v2.1 Section 6.1.50 Tables 319-321, including required Table 319 Data and present-empty Data; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Seed test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RngSeedRequest as core::convert::TryInto<U>>::Error",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngSeedRequest wrapper, not a separate KMIP client capability; required secret Data, including present-empty data, remains preserved by the approved four-language mapping.",
@@ -443920,7 +443810,7 @@
       },
       "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Seed request remains mapped under KMIP v2.1 Section 6.1.50 Tables 319-321, including required Table 319 Data and present-empty Data; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Seed test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RngSeedRequest as core::convert::TryInto<U>>::try_into",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngSeedRequest wrapper, not a separate KMIP client capability; required secret Data, including present-empty data, remains preserved by the approved four-language mapping.",
@@ -443932,7 +443822,7 @@
       },
       "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Seed request remains mapped under KMIP v2.1 Section 6.1.50 Tables 319-321, including required Table 319 Data and present-empty Data; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Seed test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RngSeedRequest as core::fmt::Debug>::fmt",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngSeedRequest wrapper, not a separate KMIP client capability; required secret Data, including present-empty data, remains preserved by the approved four-language mapping.",
