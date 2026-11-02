@@ -8503,3 +8503,27 @@ Verification:
 - `py -B tools/api_manifest/audit_binding_exports.py --check` — no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
 - On published PR #104 head `95e3dd0fb`, all completed hosted checks passed; Script contracts on macOS and Windows were still pending when checked. This root-re-export slice is local and requires publication and a fresh hosted run.
 - `git diff --check` — passed after independent QA and documentation review.
+
+### T102 Set Constraints response trait-artifact exclusions (2026-11-02)
+
+The Rust audit observed ten standard-trait paths for `kmipkit_protocol::SetConstraintsResponse`. T102 records those exact paths as approved inventory exclusions under KMIPKIT-0043-FR-010/021, with the operation owned by approved KMIPKIT-0039-FR-001/004. This is an API-inventory reconciliation only. The protocol response type, `result`, and `with_ttlv` remain verified; `try_from_response_item` remains blocked. Root re-export states are unchanged and no root traits are included. OASIS KMIP v2.1 §6.1.52 Tables 325–327 ground the underlying operation, but no OASIS requirement applies directly to compiler-generated traits. The candidate count falls from 4,188 to 4,178; T102 remains open.
+
+| Phase | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red — pin the exact ten paths, audit observations/exclusions, and unchanged response declaration states | `37758c210` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest -v tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions.T102GetConstraintsResponseTraitExclusionTests.test_set_response_trait_paths_are_exact_approved_exclusions tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions.T102GetConstraintsResponseTraitExclusionTests.test_rust_audit_reports_exact_set_response_trait_paths tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions.T102GetConstraintsResponseTraitExclusionTests.test_set_response_type_and_ttlv_members_remain_verified` | Expected failure before Green: the ten paths were still blocked and absent from audit exclusions; the response-state guard passed. |
+| Green — exclude only the ten protocol response traits, regenerate outputs/audit, and update aggregate exclusion count | `cd70371c4` | `py -B tools/api_manifest/generate.py --write`; `py -B tools/api_manifest/audit_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json` | Exact paths reconcile; the typed API and wire behavior are unchanged. |
+| Refactor/evidence — synchronize T102 counts and owner traceability | This commit | Full manifest suite, workflow contracts, focused T102 suite, generator, export audits, and independent QA | T102 remains open with 4,178 blocked KMIPKIT-0043 candidates. |
+
+Verification:
+
+- Focused T102 contract — 9 passed.
+- `py -B -m unittest scripts.tests.test_workflow -v` — 68 passed; the existing CI selection invokes the focused T102 module.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2 -v` — 150 passed.
+- `py -B tools/api_manifest/generate.py --check` — all 12 outputs verified.
+- `py -B tools/api_manifest/audit_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` — 6,461 declarations and 4,002 exact exclusions reconcile with all 10,463 observed paths; zero audit issues.
+- `py -B tools/api_manifest/audit_binding_exports.py --check` — no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
+- `py -B -m unittest scripts.tests.test_requirement_traceability -v` — 2 passed.
+- `py -B -m unittest discover -s tools/normative_catalog/tests -p test_feature_traceability.py -v` — 30 passed, 1 platform skip.
+- Independent QA — no blockers; confirmed exact scope, owner/citation, preserved functional states, and aggregate counts.
+- `git diff --check` — passed after QA and documentation review.
+- The pushed PR head before this slice was `455ad3799`; this slice requires publication and a fresh hosted run.
