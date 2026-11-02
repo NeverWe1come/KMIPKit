@@ -8989,3 +8989,28 @@ Verification:
 - `git diff --check` — passed after the Refactor documentation update.
 
 The candidate count falls from 3,998 to 3,988. T102 remains open; this slice does not claim Register operation conformance, full API parity, profile conformance, PR completion, or release readiness.
+
+### T102 Revoke response Rust trait-artifact exclusions (2026-11-02)
+
+The Rust export inventory observed exactly ten standard-trait paths for `kmipkit_protocol::RevokeResponse`: five direct and five conditional declarations. T102 moves only those ten compiler-visible language artifacts from blocked declarations to approved exclusions under KMIPKIT-0043-FR-010/021 and functional ownership KMIPKIT-0036-FR-001/004. The response type, `unique_identifier`, and `with_ttlv` remain verified; `result` and `try_from_response_item` remain blocked, and no root alias exists. OASIS KMIP v2.1 §6.1.44 Tables 295–297 defines Revoke; Table 296 is the response. The approved operation catalog has no direct Revoke test-case ID. T063 mapping evidence is not an official-vector pass, so this inventory-only slice makes no operation-conformance claim and changes no runtime behavior.
+
+| Phase | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red — pin the exact ten paths, audit classification, candidate count, owner requirements, no-direct-case caveat, and unchanged functional declarations | `fe090f08b` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions -k revoke_response -v` | Four tests ran; three failed as expected before Green: the ten paths remained blocked, the audit had no corresponding exclusions, and the candidate count was 3,988 instead of 3,978. Functional-state and catalog guards passed. |
+| Green — exclude only the ten trait artifacts and regenerate checked-in outputs | `1d5e01850` | `py -B tools/api_manifest/generate.py --write`; Rust export audit report regeneration | Exactly ten paths moved to approved exclusions; all generated outputs and the Rust report reconcile. |
+| Refactor/evidence — synchronize T102 counts, operation traceability, task notes, and verification | This commit | Focused T102, manifest, workflow, generation, Rust/binding audits, owner readiness, traceability, and independent review | T102 remains open with 3,978 blocked KMIPKIT-0043 candidates. |
+
+Verification:
+
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions -v` — 77 passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2 -v` — 150 passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping -v` — 66 passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t042_owner_readiness_matrix -v` — 3 passed.
+- `py -B -m unittest scripts.tests.test_workflow` — 68 passed; `py -B -m unittest scripts.tests.test_requirement_traceability -v` — 2 passed.
+- `py -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
+- `py -B tools/api_manifest/audit_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` — 6,261 declarations and 4,202 exact exclusions reconcile with all 10,463 observed paths; zero missing paths, issues, or mismatches. The successful Windows audit emitted optional `aws-lc-sys` compiler-probe and NASM warnings.
+- `py -B tools/api_manifest/audit_binding_exports.py --check` — no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
+- Independent QA found no blockers. Independent security review found no issues; the change contains no runtime, FFI, TLS, dependency, or secret-handling source changes.
+- `git diff --check` — passed after the documentation update.
+
+The candidate count falls from 3,988 to 3,978. T102 remains open; this slice does not claim Revoke operation conformance, full API parity, profile conformance, PR completion, or release readiness.
