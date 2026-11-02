@@ -8440,3 +8440,24 @@ Verification:
 - Independent QA found no mapping blocker and prompted the exact namespace-wide exclusion assertion; it also confirmed that the large generated Java fixture diff is chunk-boundary churn from the pinned 12,000-character serializer, while the generated JSON fixture contains the semantic manifest changes.
 
 Hosted CI for the final pushed head remains required. The previous run at `f119e9135` was still in progress during this checkpoint and had a failed macOS Python job whose logs were not yet available; no hosted-green claim is made.
+
+### T102 `RuntimeVersion` Rust trait-artifact exclusions (2026-11-02)
+
+The Rust export inventory exposed 19 compiler-visible standard and blanket trait paths for `kmipkit::RuntimeVersion`. These exact paths are now owner-approved exclusions under KMIPKIT-0043-FR-007/010/021; the `RuntimeVersion` type and `product_version`, the C version query, and the synchronized Java/Python numeric components remain represented. The paths are library metadata artifacts, so no OASIS clause applies. This changes only public-API inventory accounting. The blocked KMIPKIT-0043 candidate count falls from 4,227 to 4,208; T102 remains open.
+
+| Phase | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red — pin all 19 exact paths, their owner approval/evidence, and CI selection | `28d2c0a4b` | `py -B -m unittest tools.api_manifest.tests.test_t102_runtime_version_trait_exclusions -v` | Expected failure before the exclusions were recorded and CI invoked the contract. |
+| Green — add 19 exact manifest exclusions, regenerate outputs, and run the contract in CI | `00b0c0f54` | `py -B tools/api_manifest/generate.py --write`; `py -B tools/api_manifest/audit_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` | Generated outputs and Rust export evidence now reconcile exactly; no declaration, kind, or audit issues remain. |
+| Refactor/evidence — synchronize task and traceability documentation | This commit | Full manifest suite and independent QA | Records the exact-set contracts for both Rust and Java runtime-version namespaces; T102 remains open. |
+
+Verification:
+
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2 -v` — 150 passed.
+- The focused T102 component/trait contracts, related T011/T091/T097 inventory checks, Rust/Java/Python inventory checks, and workflow selection — 12 passed.
+- `py -B tools/api_manifest/generate.py --check` — all 12 outputs verified.
+- `py -B tools/api_manifest/audit_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` — passed; 6,491 declarations and 3,972 exact exclusions matched all 10,463 observed paths, with zero missing declarations, kind mismatches, or audit issues.
+- `py -B tools/api_manifest/audit_binding_exports.py --check` — no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
+- Hosted PR #104 checks for published parent `f52498943` all completed successfully across Linux, Windows, macOS, bindings, sanitizers, coverage, and security workflows. Hosted checks for the new head remain pending until push.
+- Independent QA confirmed the exact 19-path set, retained runtime metadata declarations, and the need to regenerate the Java parity fixture and JSON fixture.
+- `git diff --check` — passed for the implementation and documentation changes.
