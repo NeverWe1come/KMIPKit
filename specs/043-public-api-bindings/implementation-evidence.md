@@ -9174,3 +9174,29 @@ Verification:
 - `git diff --check` — passed on the Refactor diff.
 
 The protocol trait exclusion does not change request encoding, secret storage, or redaction behavior and does not claim an OASIS test-case pass.
+
+### T102 Revoke request trait-artifact reconciliation (2026-11-02)
+
+The approved functional owner is `specs/022-object-lifecycle/spec.md` (KMIPKIT-0036-FR-001/004); inventory exclusions are authorized by KMIPKIT-0043-FR-010/021. OASIS KMIP v2.1 §6.1.44 Tables 295–297 define Revoke, with Table 295 as the request; related request context is §4.47 Table 123 and §11.48 Table 481. The approved operation catalog contains no direct Revoke case ID, so this inventory-only checkpoint makes no operation-conformance claim.
+
+The Rust 1.94.0 export audit observes exactly ten compiler-generated standard-trait paths for `kmipkit_protocol::RevokeRequest`: five direct and five conditional. Only those ten protocol paths move from blocked declarations to approved exclusions. The request type, constructor, revocation message, and three `with_*` builders remain verified; `unique_identifier`, `revocation_reason`, `compromise_occurrence_date`, and `into_ttlv_payload` remain blocked. No root-facade RevokeRequest declaration exists. Request encoding, reason preservation, date rules, nested audit-message behavior, redaction, and runtime code are unchanged.
+
+| Phase | Commit | Evidence | Result |
+|---|---|---|---|
+| Red — pin exact paths, approved owner/OASIS evidence, audit classification, candidate count, and preserved protocol/root states | `51f76f84a` | `py -B -m unittest tools.api_manifest.tests.test_t102_revoke_request_trait_exclusions -v` | Three tests failed because the ten trait rows remained blocked declarations, had no exact exclusions, and the candidate count was still 3,888. |
+| Green — exclude only the ten observed protocol trait paths, regenerate outputs, and refresh T102 aggregate counts | `5710b8b09` | Focused T102 contract, generator, and Rust export audit | The exact paths moved; blocked candidates fell from 3,888 to 3,878; generated artifacts and audit output were updated. |
+| Green follow-up — refresh aggregate Rust exclusion count and approved-owner allow-list | `c77c088ca` | Isolated `test_ffi_runtime_metadata_is_owned_and_mapped_in_all_languages` | The expected Rust exclusions changed from 2,844 to 2,854 and the approved KMIPKIT-0036 owner path was included. The isolated test passed. |
+| Refactor/evidence — record the checkpoint, traceability, and final verification | This commit | Checks below | T102 remains open; no production runtime or protocol behavior changed. |
+
+Verification:
+
+- `py -B -m unittest tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions tools.api_manifest.tests.test_t102_rng_seed_request_trait_exclusions tools.api_manifest.tests.test_t102_revoke_request_trait_exclusions -v` — 98 passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2 -v` — 150 passed.
+- `py -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
+- `py -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` — 6,161 declarations and 4,302 exclusions reconcile with all 10,463 observed paths; zero mismatches. Windows emitted optional AWS-LC compiler-probe and missing NASM warnings.
+- `py -B tools/api_manifest/audit_binding_exports.py --check` — no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
+- `py -B -m unittest scripts.tests.test_requirement_traceability -v` — 2 passed. Feature traceability — 30 passed, 1 skipped because Windows did not permit symlink creation.
+- `cargo test -p kmipkit-protocol revoke` — Revoke-filtered protocol tests passed, including `request_encodes_optional_audit_message_inside_revocation_reason_structure` and `request_debug_does_not_expose_identifier_or_request_values`.
+- `git diff --check` — passed after the Refactor/evidence changes.
+
+Independent QA found no issues in the Red/Green code range. The independent Codex Security diff scan found no reportable findings in `628b03731aa9ec8c8d0c55145ff73482658a8781..5710b8b095cad6d52dd072cf8f214a9100f772e6`; the scan is inventory-only and makes no conformance or certification claim.
