@@ -9319,3 +9319,36 @@ Verification:
 - `git diff --check` — passed after the Refactor/evidence changes.
 
 Independent QA found no issues in the Red/Green code range. The independent Codex Security diff scan found no reportable findings in `628b03731aa9ec8c8d0c55145ff73482658a8781..5710b8b095cad6d52dd072cf8f214a9100f772e6`; the scan is inventory-only and makes no conformance or certification claim.
+
+### T102 Interop request trait-artifact reconciliation (2026-11-02)
+
+The functional owner is approved `specs/028-diagnostics-interop/spec.md` (KMIPKIT-0042-FR-001/004). The exclusions are authorized by KMIPKIT-0043-FR-010/021. OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.26 Tables 241–243 defines Interop; Table 241 is the request. The approved catalog has no direct Interop OASIS test case. No OASIS case was run, and this inventory-only checkpoint makes no conformance, interoperability, profile-support, or certification claim.
+
+The Rust 1.94.0 export audit observes exactly ten standard-trait paths for `kmipkit_protocol::InteropRequest`: five direct and five conditional. Only these ten protocol declarations move to exact approved exclusions. The `InteropRequest` type and `new` remain verified; `interop_function`, `into_ttlv_payload`, `with_extension`, and `with_interop_identifier` remain blocked. No root-facade alias exists. Existing `InteropResponse` exclusions and the T051 four-language mapping remain unchanged.
+
+| Phase | Commit | Evidence | Result |
+|---|---|---|---|
+| Red — pin the exact paths, owner/OASIS evidence, five-direct/five-conditional split, preserved states, and candidate count | `9954126c0` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_interop_request_trait_exclusions -v` | Three assertions failed as expected: the ten traits remained declarations, were absent from exact exclusions, and the blocked-candidate count remained 3,838. The preserved-state and synthetic root-trait checks passed. |
+| CI-contract Red — require the InteropRequest contract in the cross-platform script job | `3ed1584f0` | Focused `scripts.tests.test_workflow.WorkflowContractTests.test_script_contract_job_runs_t102_interop_request_trait_exclusion_contract` | Failed as expected because `ci.yml` did not yet invoke the InteropRequest contract. |
+| CI Green — invoke the contract on each supported platform | `bb99e3fd1` | Focused workflow contract test; `scripts.tests.test_workflow` | The workflow contract passed, and all 72 workflow tests passed. The script-contract job's existing matrix covers Ubuntu, Windows, and macOS. |
+| Implementation Green — exclude only the ten audited paths and regenerate manifest-derived artifacts and Rust reports | `41cb0b91f` | Focused T102/parity/aggregate/shared-inventory tests; generators and export audits | The manifest delta is exactly the ten InteropRequest standard traits. The request mapping states and all other manifest records remain unchanged. The current KMIPKIT-0043 candidate count is 3,828. |
+| Refactor/evidence — record the traceability and verification results | This commit | Checks below | T102 remains open; no protocol or runtime behavior changed. |
+
+Verification:
+
+- The focused T102, existing T102 regression, T051 Interop parity, manifest aggregate, and shared Rust inventory test set — 139 passed. This includes all five new InteropRequest contract tests and the aggregate assertions updated for current report totals.
+- Focused test command (139 passed):
+
+  ```powershell
+  uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_interop_request_trait_exclusions tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions tools.api_manifest.tests.test_t102_import_request_trait_exclusions tools.api_manifest.tests.test_t102_join_split_key_request_trait_exclusions tools.api_manifest.tests.test_t102_log_request_trait_exclusions tools.api_manifest.tests.test_t102_pkcs11_response_trait_exclusions tools.api_manifest.tests.test_t102_revoke_request_trait_exclusions tools.api_manifest.tests.test_t102_rng_seed_request_trait_exclusions tools.api_manifest.tests.test_interop_parity_manifest tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_ffi_runtime_metadata_is_owned_and_mapped_in_all_languages tools.api_manifest.tests.test_shared_rust_inventory -v
+  ```
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest scripts.tests.test_workflow -v` — 72 passed, including the cross-platform workflow invocation guard.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest scripts.tests.test_requirement_traceability -v` — 2 passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest discover -s tools/normative_catalog/tests -p test_feature_traceability.py -v` — 30 passed, 1 skipped because Windows denied temporary symlink creation.
+- `py -B tools/api_manifest/generate.py --check` — all 12 generated API outputs verified.
+- `py -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` — 6,111 manifest declarations and 4,352 approved exclusions reconcile with all 10,463 observed paths; zero missing, unobserved, issue, kind, conditional-state, or conditional-condition mismatches.
+- `py -B tools/api_manifest/audit_shared_rust_inventory.py --repo-root . --report specs/043-public-api-bindings/reports/shared-rust-inventory-2026-11-01.json --check` — report current; 10,463 observed paths and 4,352 approved exclusions.
+- `py -B tools/api_manifest/audit_binding_exports.py --check` — no issues: C 757/757, Java 1,014/1,014, and Python 1,140/1,140.
+- `git diff --check` — passed for the Refactor/evidence diff.
+
+The Rust audit emitted optional Windows AWS-LC compiler-probe and missing NASM warnings; the audit completed successfully. The pinned API generator produced the updated JSON and Java parity fixtures. These generated changes contain no new functional API mapping. No OASIS test case ran.
