@@ -9089,3 +9089,37 @@ Verification:
 - `py -B -m unittest scripts.tests.test_requirement_traceability -v` — 2 passed; `git diff --check` — passed after this Refactor documentation update.
 
 The candidate count falls from 3,958 to 3,948. T102 remains open; this slice does not claim RNG Seed operation conformance, full API parity, profile conformance, PR completion, or release readiness.
+
+### T102 Get Usage Allocation and Set Defaults response Rust trait-artifact exclusions (2026-11-02)
+
+This slice removes exactly ten blocked Rust standard-trait paths for each of kmipkit_protocol::GetUsageAllocationResponse and kmipkit_protocol::SetDefaultsResponse from the public declaration inventory and records them as approved exclusions. The compiler audit classifies five paths as direct and five as conditional for each response. The protocol response models and their mapped members remain verified; both try_from_response_item helpers remain blocked. Existing root-facade response rows retain their prior declaration states. No runtime code or behavior changed.
+
+Approved functional ownership is specs/025-policy-controls/spec.md, KMIPKIT-0039-FR-001/003/004. OASIS KMIP v2.1 §6.1.23 Table 233 defines the Get Usage Allocation response; §6.1.53 Table 329 defines the Set Defaults response. The approved catalog and owner spec record no direct operation-specific client test-case IDs for these operations, so this inventory-only slice makes no operation-conformance claim. The exact 20 paths and their evidence are in specification/api/public-api.json and specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.
+
+Get Usage Allocation retains its verified response type, result, unique_identifier, and with_ttlv. Set Defaults retains its verified response type, result, and with_ttlv. Their parser helpers remain blocked, and the root facade is not changed.
+
+The 76 lifecycle response trait rows investigated earlier remain untouched because their manifest candidate owner is KMIPKIT-0018. They are deferred from this T102 slice, whose candidate counter covers KMIPKIT-0043 rows.
+
+| Phase | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red — pin both exact ten-path sets, direct/conditional audit classification, functional/parser/root states, owner requirements, no-direct-case caveat, and resulting aggregate count | 91cd04f74 | uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions.T102PolicyResponseTraitExclusionTests -v | Three tests failed as expected: both ten-path exclusion sets were absent and the aggregate candidate count remained 3,948 instead of 3,928. Functional members, parser state, root-facade rows, owner status, and no-direct-case guards passed. |
+| Green — exclude only the 20 protocol response trait artifacts and regenerate checked-in outputs | 9473b1308 | py -B tools/api_manifest/generate.py --write; regenerate Rust export audit report | Twenty blocked declarations moved to approved exclusions; the generated API fixtures and Rust report agree. The generator wrote 12 output files. The audit found 6,211 declarations and 4,252 exact exclusions matching all 10,463 observed Rust paths, with zero missing, unobserved, issue, kind, or conditional mismatches. |
+| Refactor/evidence — synchronize current aggregate snapshots, operation traceability, task notes, and verification | This commit | Focused/full T102, manifest, parity, generator, Rust/binding audits, and requirement-traceability checks | T102 remains open with 3,928 blocked KMIPKIT-0043 candidates. |
+
+The first full T102 run after Green exposed 18 stale assertions of the current aggregate count 3,948. They were updated to 3,928 while preserving historical before/after evidence. The manifest suite also had one stale Rust-exclusion total (2,784 versus 2,804); after updating that live aggregate assertion, its focused test and full suite passed.
+
+Verification:
+
+- uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions.T102PolicyResponseTraitExclusionTests -v — 3 passed.
+- uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions -v — 92 passed.
+- uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2 -v — 150 passed.
+- uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping -v — 66 passed.
+- uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_get_usage_allocation_parity_manifest tools.api_manifest.tests.test_set_defaults_parity_manifest -v — 4 passed.
+- py -B tools/api_manifest/generate.py --check — all 12 generated outputs verified.
+- py -B tools/api_manifest/audit_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check — 6,211 declarations and 4,252 exact exclusions reconcile with 10,463 observed paths; zero missing paths, issues, or mismatches. The successful Windows audit emitted optional aws-lc-sys compiler-probe and missing NASM warnings.
+- py -B tools/api_manifest/audit_binding_exports.py --check — no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
+- py -B -m unittest scripts.tests.test_requirement_traceability -v — 2 passed.
+- py -B -m unittest discover -s tools/normative_catalog/tests -p test_feature_traceability.py -v — 30 passed, 1 skipped because Windows did not permit symlink creation.
+- git diff --check — passed after the documentation updates.
+
+The candidate count changes from 3,948 to 3,928. T102 remains open. This slice does not claim Get Usage Allocation or Set Defaults operation conformance, full API parity, profile conformance, PR completion, or release readiness.
