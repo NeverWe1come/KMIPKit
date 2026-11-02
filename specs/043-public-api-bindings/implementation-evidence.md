@@ -9389,3 +9389,14 @@ Verification:
 - `git diff --check` - passed before the evidence update; rerun after this documentation change.
 
 The generated changes contain no new functional API mapping. The focused contract verifies the exact UTF-8 OASIS title and section without replacement characters, keeps FR-005 out of trait-exclusion evidence, and preserves `KMIPKIT-026-SOURCE-001`.
+
+
+### T102 PKCS#11 client request state coverage follow-up (2026-11-02)
+
+Independent QA found that the original client-side invariant pinned the type and ten trait paths but did not pin the `new` constructor or five inherent methods. The follow-up strengthens only the manifest contract test; the manifest, generated outputs, and runtime code are unchanged. The seven exact functional declarations are now asserted: `kmipkit_client::Pkcs11Request` and `new` remain verified; `into_ttlv_payload`, `with_correlation_value`, `with_extension`, `with_input_parameters`, and `with_interface` remain blocked. The ten client trait paths continue to be asserted separately as blocked.
+
+| Phase | Commit | Evidence | Result |
+|---|---|---|---|
+| Red - require the exact seven functional client declarations | `fc0c6b259` | Focused client-state contract test | Failed as expected because the broad name filter also included the ten compiler-trait paths; this exposed the need to separate the seven functional declarations from traits. |
+| Green - filter the seven functional declarations and assert exact verified/blocked states | `6facd1c17` | Focused PKCS#11 request trait-exclusion contract | All six contract tests passed, including the exact seven-row client state assertion and the separate ten-trait assertion. |
+| Evidence - record QA follow-up and final range check | This commit | `git diff --check 86ab82610..6facd1c17` | Passed after this evidence update; no production behavior or generated artifact changed. |
