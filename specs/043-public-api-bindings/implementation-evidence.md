@@ -8817,3 +8817,28 @@ Verification:
 - `git diff --check` — passed after documentation review.
 
 The candidate count falls from 4,068 to 4,058. T102 remains open; this slice does not claim PR completion, full API parity, profile conformance, or release readiness.
+
+### T102 Join Split Key response Rust trait-artifact exclusions (2026-11-02)
+
+The Rust export audit observed exactly ten standard-trait paths for `kmipkit_protocol::JoinSplitKeyResponse`. T102 records only those compiler artifacts as approved inventory exclusions under KMIPKIT-0043-FR-010/021 and functional ownership KMIPKIT-0037-FR-001/004. The response type, `unique_identifier`, and `with_ttlv` remain verified; `result` and `try_from_response_item` remain blocked. No root alias exists. OASIS KMIP v2.1 §6.1.27 Tables 244–246, including the Table 245 response, grounds the Join Split Key contract; no normative OASIS clause applies directly to Rust standard traits. The approved catalog records no direct operation test case, so this inventory slice makes no conformance claim and does not change that status. This manifest-only inventory change does not alter KMIP behavior.
+
+| Phase | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red — pin the exact ten Join Split Key response trait paths, audit observations/exclusions, candidate count, and unchanged functional declarations | `b66a89d85` | Focused exact-set, audit, count, and response-state tests in `tools/api_manifest/tests/test_t102_get_constraints_response_trait_exclusions.py` | Expected failure before Green: the ten paths remained blocked and absent from audit exclusions; count remained 4,058 instead of 4,048. The functional type/accessor states already matched. |
+| Green — exclude only the ten trait artifacts and regenerate checked-in output | `22b031153` | `py -B tools/api_manifest/generate.py --write`; Rust export audit report regeneration | Exactly ten compiler-observed paths moved to approved exclusions; the pinned generator refreshed all dependent outputs. |
+| Refactor/evidence — synchronize T102 counts, ownership, normative traceability, and verification | This commit | Focused T102, manifest, workflow, generation, export-audit, traceability checks, and independent QA | T102 remains open with 4,048 blocked KMIPKIT-0043 candidates. |
+
+Verification:
+
+- Red command: `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions -k join_split -v` — 3 expected failures (paths not yet excluded and count still 4,058); the functional-state test passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions -v` — 49 passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2 -v` — 150 passed after updating the aggregate exclusion count to 2,684.
+- `py -B -m unittest scripts.tests.test_workflow -v` — 68 passed; the workflow selects the focused T102 contract.
+- `py -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
+- `py -B tools/api_manifest/audit_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` — 6,331 declarations and 4,132 exact exclusions reconcile with all 10,463 observed paths; zero audit issues. The successful audit build emitted optional `aws-lc-sys` compiler-probe and NASM warnings.
+- `py -B tools/api_manifest/audit_binding_exports.py --check` — no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
+- `py -B -m unittest scripts.tests.test_requirement_traceability -v` — 2 passed; `py -B -m unittest discover -s tools/normative_catalog/tests -p test_feature_traceability.py -v` — 30 passed, 1 Windows symlink permission skip.
+- Independent QA — no blockers; confirmed the exact ten paths are excluded and agree with the Rust audit, approved KMIPKIT-0037 ownership, OASIS §6.1.27/Table 245, preserved functional states, no root alias, no direct catalog test case, candidate count 4,048, 10,463 observed paths, zero audit issues, no runtime changes, and no conformance claim.
+- `git diff --check` — passed after evidence review.
+
+The candidate count falls from 4,058 to 4,048. T102 remains open; this slice does not claim Join Split Key operation conformance, PR completion, full API parity, profile conformance, or release readiness.
