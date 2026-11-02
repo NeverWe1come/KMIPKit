@@ -9150,3 +9150,27 @@ Verification:
 - `git diff --check` — passed on the final Refactor diff.
 
 The inventory does not change secret handling or claim that any OASIS case passed.
+
+### T102 RNG Seed request trait-artifact reconciliation (2026-11-02)
+
+The approved functional owner is `specs/027-rng-operations/spec.md` (KMIPKIT-0041-FR-001/002/004); inventory exclusions are authorized by KMIPKIT-0043-FR-010/021. OASIS KMIP v2.1 §6.1.50 Tables 319–321 define the RNG Seed operation. Table 319 requires request Data, including present-empty Data. The approved operation catalog lists no direct RNG Seed test-case ID, so this inventory-only change makes no operation-conformance claim.
+
+The Rust 1.94.0 export audit observes exactly ten compiler-generated standard-trait paths for `kmipkit_protocol::RngSeedRequest`: five direct and five conditional. Only those ten protocol paths move from blocked declarations to approved exclusions. The request type and `new` constructor remain verified with Rust/C/Java/Python mappings; `to_ttlv_payload` remains blocked. The separate root-facade `kmipkit::RngSeedRequest` type, constructor, serializer helper, and ten trait paths remain blocked. The four-language T065 operation mapping and secret request handling are unchanged.
+
+| Phase | Commit | Evidence | Result |
+|---|---|---|---|
+| Red — pin ten exact paths, owner/OASIS evidence, compiler classification, candidate count, and preserved request/root states | `94911d0eb` | `py -B -m unittest tools.api_manifest.tests.test_t102_rng_seed_request_trait_exclusions -v` | Three tests failed because the ten protocol trait rows remained declarations, were absent from exact exclusions, and the candidate count was still 3,898. |
+| Green — exclude only the ten compiler-observed protocol trait paths and regenerate checked-in API outputs/audit report | `66a060ce4` | Focused T102 contract and Rust export audit | The focused contract passed; exactly ten declarations moved to exclusions and candidate count fell from 3,898 to 3,888. |
+| Refactor/evidence — update aggregate assertions, pin all 13 unchanged root rows, and record traceability and verification | This commit | Full T102, manifest, generator, audits, traceability, and diff checks | All checks below passed. T102 remains open. |
+
+Verification:
+
+- `py -B -m unittest tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions tools.api_manifest.tests.test_t102_rng_seed_request_trait_exclusions -v` — 95 passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2 -v` — 150 passed.
+- `py -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
+- `py -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` — 6,171 manifest declarations and 4,292 exclusions reconcile with all 10,463 observed paths; no missing, unobserved, issue, kind, conditional-state, or conditional-condition mismatches. Windows emitted optional aws-lc compiler-probe and missing NASM warnings.
+- `py -B tools/api_manifest/audit_binding_exports.py --check` — no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
+- `py -B -m unittest scripts.tests.test_requirement_traceability -v` — 2 passed. `py -B -m unittest discover -s tools/normative_catalog/tests -p test_feature_traceability.py -v` — 29 passed, 1 skipped because Windows did not permit symlink creation.
+- `git diff --check` — passed on the Refactor diff.
+
+The protocol trait exclusion does not change request encoding, secret storage, or redaction behavior and does not claim an OASIS test-case pass.

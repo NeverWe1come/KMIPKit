@@ -142,6 +142,10 @@ class T102RngSeedRequestTraitExclusionTests(unittest.TestCase):
                 )
                 self.assertIn("KMIPKIT-0041-FR-001", protocol_rows[name]["requirementIds"])
                 self.assertIn("KMIPKIT-0041-FR-004", protocol_rows[name]["requirementIds"])
+        self.assertEqual(
+            set(protocol_rows["kmipkit_protocol::RngSeedRequest"]["languageMappings"]),
+            {"c", "java", "python", "rust"},
+        )
 
         root_rows = {
             row["exportName"]: row
@@ -156,11 +160,20 @@ class T102RngSeedRequestTraitExclusionTests(unittest.TestCase):
             name.replace("<kmipkit_protocol::RngSeedRequest", "<kmipkit::RngSeedRequest", 1)
             for name in EXPECTED_PROTOCOL_TRAIT_EXPORTS
         }
+        expected_root_declarations = {
+            "kmipkit::RngSeedRequest",
+            "kmipkit::RngSeedRequest::new",
+            "kmipkit::RngSeedRequest::to_ttlv_payload",
+        }
+        self.assertEqual(set(root_rows), expected_root_traits | expected_root_declarations)
         self.assertEqual(
             {name for name in root_rows if name.startswith(ROOT_PREFIX)},
             expected_root_traits,
         )
         self.assertTrue(all(row["declarationState"] == "blocked" for row in root_rows.values()))
+        self.assertTrue(
+            all(row.get("candidateSpecId") == "KMIPKIT-0043" for row in root_rows.values())
+        )
         self.assertEqual(
             sum(
                 row.get("candidateSpecId") == "KMIPKIT-0043"
