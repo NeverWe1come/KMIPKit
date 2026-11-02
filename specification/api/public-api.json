@@ -193360,236 +193360,6 @@
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
-      "declarationId": "rust-observed-a9340e69ba77e064c027",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropRequest as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-c52973d089a9bc4d3503",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropRequest as core::borrow::Borrow<kmipkit_protocol::interop::InteropRequest>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-682847603e6f3a1ac4b2",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropRequest as core::borrow::BorrowMut<kmipkit_protocol::interop::InteropRequest>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-e9c2feec02ccd7a17911",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropRequest as core::convert::From<kmipkit_protocol::interop::InteropRequest>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-02cb43f81ab068586f99",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropRequest as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::interop::InteropRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-c9cf9d5c664053269108",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropRequest as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::interop::InteropRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-4465243e55e431809324",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropRequest as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::interop::InteropRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-3ab3f57b25a52c1614fa",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropRequest as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::interop::InteropRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-6336075c19dd88130e87",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropRequest as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::interop::InteropRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-92deeaa099544f10d398",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropRequest as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
       "declarationId": "rust-observed-36ea87db2673afed6b2c",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
@@ -444883,8 +444653,127 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Import request remains mapped to KMIP v2.1 Section 6.1.25 Tables 238-240, including the Table 238 request. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no operation-conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
-    }
-  ],
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropRequest as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed InteropRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Interop request remains mapped to KMIP v2.1 §6.1.26 Tables 241–243, including the Table 241 request; these standard-trait artifacts do not add separate KMIP behavior. No direct OASIS test case is available for Interop in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropRequest as core::borrow::Borrow<kmipkit_protocol::interop::InteropRequest>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed InteropRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Interop request remains mapped to KMIP v2.1 §6.1.26 Tables 241–243, including the Table 241 request; these standard-trait artifacts do not add separate KMIP behavior. No direct OASIS test case is available for Interop in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropRequest as core::borrow::BorrowMut<kmipkit_protocol::interop::InteropRequest>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed InteropRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Interop request remains mapped to KMIP v2.1 §6.1.26 Tables 241–243, including the Table 241 request; these standard-trait artifacts do not add separate KMIP behavior. No direct OASIS test case is available for Interop in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropRequest as core::convert::From<kmipkit_protocol::interop::InteropRequest>>::from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed InteropRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Interop request remains mapped to KMIP v2.1 §6.1.26 Tables 241–243, including the Table 241 request; these standard-trait artifacts do not add separate KMIP behavior. No direct OASIS test case is available for Interop in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropRequest as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed InteropRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Interop request remains mapped to KMIP v2.1 §6.1.26 Tables 241–243, including the Table 241 request; these standard-trait artifacts do not add separate KMIP behavior. No direct OASIS test case is available for Interop in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropRequest as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed InteropRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Interop request remains mapped to KMIP v2.1 §6.1.26 Tables 241–243, including the Table 241 request; these standard-trait artifacts do not add separate KMIP behavior. No direct OASIS test case is available for Interop in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropRequest as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed InteropRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Interop request remains mapped to KMIP v2.1 §6.1.26 Tables 241–243, including the Table 241 request; these standard-trait artifacts do not add separate KMIP behavior. No direct OASIS test case is available for Interop in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropRequest as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed InteropRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Interop request remains mapped to KMIP v2.1 §6.1.26 Tables 241–243, including the Table 241 request; these standard-trait artifacts do not add separate KMIP behavior. No direct OASIS test case is available for Interop in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropRequest as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed InteropRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Interop request remains mapped to KMIP v2.1 §6.1.26 Tables 241–243, including the Table 241 request; these standard-trait artifacts do not add separate KMIP behavior. No direct OASIS test case is available for Interop in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropRequest as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed InteropRequest wrapper, not a separate KMIP client capability; the request type and constructor remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Interop request remains mapped to KMIP v2.1 §6.1.26 Tables 241–243, including the Table 241 request; these standard-trait artifacts do not add separate KMIP behavior. No direct OASIS test case is available for Interop in the approved catalog; this inventory-only checkpoint does not claim OASIS conformance or interoperability. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    }],
   "apiLevels": [
     {
       "id": "high-level",
