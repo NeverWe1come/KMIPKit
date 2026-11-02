@@ -445104,7 +445104,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-003, KMIPKIT-0040-FR-004, KMIPKIT-0040-FR-005, KMIPKIT-0040-FR-006, KMIPKIT-0040-FR-007, KMIPKIT-0040-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 response remains mapped to KMIP v2.1 Section 6.1.37 Tables 273-275, including Table 274 response. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 response remains mapped to KMIP v2.1 Section 6.1.37 Tables 273-275, including Table 274 response. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -445116,7 +445116,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-003, KMIPKIT-0040-FR-004, KMIPKIT-0040-FR-005, KMIPKIT-0040-FR-006, KMIPKIT-0040-FR-007, KMIPKIT-0040-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 response remains mapped to KMIP v2.1 Section 6.1.37 Tables 273-275, including Table 274 response. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 response remains mapped to KMIP v2.1 Section 6.1.37 Tables 273-275, including Table 274 response. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -445128,7 +445128,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-003, KMIPKIT-0040-FR-004, KMIPKIT-0040-FR-005, KMIPKIT-0040-FR-006, KMIPKIT-0040-FR-007, KMIPKIT-0040-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 response remains mapped to KMIP v2.1 Section 6.1.37 Tables 273-275, including Table 274 response. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 response remains mapped to KMIP v2.1 Section 6.1.37 Tables 273-275, including Table 274 response. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -445140,7 +445140,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-003, KMIPKIT-0040-FR-004, KMIPKIT-0040-FR-005, KMIPKIT-0040-FR-006, KMIPKIT-0040-FR-007, KMIPKIT-0040-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 response remains mapped to KMIP v2.1 Section 6.1.37 Tables 273-275, including Table 274 response. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 response remains mapped to KMIP v2.1 Section 6.1.37 Tables 273-275, including Table 274 response. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -445152,7 +445152,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-003, KMIPKIT-0040-FR-004, KMIPKIT-0040-FR-005, KMIPKIT-0040-FR-006, KMIPKIT-0040-FR-007, KMIPKIT-0040-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 response remains mapped to KMIP v2.1 Section 6.1.37 Tables 273-275, including Table 274 response. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 response remains mapped to KMIP v2.1 Section 6.1.37 Tables 273-275, including Table 274 response. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -445164,7 +445164,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-003, KMIPKIT-0040-FR-004, KMIPKIT-0040-FR-005, KMIPKIT-0040-FR-006, KMIPKIT-0040-FR-007, KMIPKIT-0040-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 response remains mapped to KMIP v2.1 Section 6.1.37 Tables 273-275, including Table 274 response. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 response remains mapped to KMIP v2.1 Section 6.1.37 Tables 273-275, including Table 274 response. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -445176,7 +445176,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-003, KMIPKIT-0040-FR-004, KMIPKIT-0040-FR-005, KMIPKIT-0040-FR-006, KMIPKIT-0040-FR-007, KMIPKIT-0040-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 response remains mapped to KMIP v2.1 Section 6.1.37 Tables 273-275, including Table 274 response. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 response remains mapped to KMIP v2.1 Section 6.1.37 Tables 273-275, including Table 274 response. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -445188,7 +445188,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-003, KMIPKIT-0040-FR-004, KMIPKIT-0040-FR-005, KMIPKIT-0040-FR-006, KMIPKIT-0040-FR-007, KMIPKIT-0040-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 response remains mapped to KMIP v2.1 Section 6.1.37 Tables 273-275, including Table 274 response. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 response remains mapped to KMIP v2.1 Section 6.1.37 Tables 273-275, including Table 274 response. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -445200,7 +445200,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-003, KMIPKIT-0040-FR-004, KMIPKIT-0040-FR-005, KMIPKIT-0040-FR-006, KMIPKIT-0040-FR-007, KMIPKIT-0040-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 response remains mapped to KMIP v2.1 Section 6.1.37 Tables 273-275, including Table 274 response. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 response remains mapped to KMIP v2.1 Section 6.1.37 Tables 273-275, including Table 274 response. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -445212,7 +445212,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-003, KMIPKIT-0040-FR-004, KMIPKIT-0040-FR-005, KMIPKIT-0040-FR-006, KMIPKIT-0040-FR-007, KMIPKIT-0040-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 response remains mapped to KMIP v2.1 Section 6.1.37 Tables 273-275, including Table 274 response. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 response remains mapped to KMIP v2.1 Section 6.1.37 Tables 273-275, including Table 274 response. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     }
   ],
   "apiLevels": [

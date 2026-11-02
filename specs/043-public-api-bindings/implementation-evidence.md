@@ -9175,6 +9175,30 @@ Verification:
 
 The protocol trait exclusion does not change request encoding, secret storage, or redaction behavior and does not claim an OASIS test-case pass.
 
+### T102 PKCS#11 response trait-artifact reconciliation (2026-11-02)
+
+The approved functional owner is `specs/026-pkcs11/spec.md` (KMIPKIT-0040-FR-001/004); the inventory exclusions are authorized by KMIPKIT-0043-FR-010/021. The pinned OASIS KMIP v2.1 source §6.1.37 Tables 273–275 defines PKCS#11, with Table 274 as the response payload. No normative OASIS clause applies directly to compiler-generated Rust standard traits, and this inventory-only change makes no operation-conformance or profile-support claim.
+
+The Rust 1.94.0 export audit observes exactly ten standard-trait paths for `kmipkit_protocol::Pkcs11Response`: five direct and five conditional. Only those ten protocol trait artifacts move from blocked declarations to approved exclusions. The typed response and seven `with_*` builders remain verified; `result` and `try_from_response_item` remain blocked, and no root-facade alias exists. The existing PKCS#11 field-preservation tests, runtime behavior, and four-language capability mapping are unchanged.
+
+| Phase | Commit | Evidence | Result |
+|---|---|---|---|
+| Red — pin the exact paths, owner/OASIS references, compiler split, candidate count, and preserved mapping state | `3e6bbe07f` | `py -B -m unittest tools.api_manifest.tests.test_t102_pkcs11_response_trait_exclusions -v` | Three tests failed as expected: the ten paths remained declarations, were absent from exact exclusions, and the blocked-candidate count was still 3,878. |
+| Green — exclude only the ten observed trait paths and regenerate the API outputs and Rust audit | `b54aac9c3` | Focused T102 contract, generator, and Rust export audit | The focused contract passed; the blocked-candidate count fell from 3,878 to 3,868. The audit reconciles 6,151 declarations and 4,312 exclusions with 10,463 observed paths. |
+| Refactor/evidence — refresh aggregate counts/owner allow-list and record traceability and verification | This commit | Full affected test and audit set | All checks below passed; T102 remains open. |
+
+Verification:
+
+- The combined manifest v2 and focused T102 suites — 251 passed.
+- `py -B -m unittest tools.api_manifest.tests.test_t076_client_mapping` — 66 passed.
+- `py -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
+- `py -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` — 6,151 declarations and 4,312 exclusions reconcile with 10,463 observed paths; zero missing, unobserved, issue, kind, conditional-state, or conditional-condition mismatches. Windows emitted optional AWS-LC compiler-probe and missing NASM warnings.
+- `py -B tools/api_manifest/audit_binding_exports.py --check` — no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
+- `py -B -m unittest scripts.tests.test_requirement_traceability` — 2 passed. `py -B -m unittest discover -s tools/normative_catalog/tests -p test_feature_traceability.py` — 30 passed, 1 skipped because Windows did not permit symlink creation.
+- `git diff --check` — passed on the Refactor/evidence diff.
+
+This inventory-only reconciliation changes no protocol or runtime behavior and does not claim any OASIS test-case pass.
+
 ### T102 Revoke request trait-artifact reconciliation (2026-11-02)
 
 The approved functional owner is `specs/022-object-lifecycle/spec.md` (KMIPKIT-0036-FR-001/004); inventory exclusions are authorized by KMIPKIT-0043-FR-010/021. OASIS KMIP v2.1 §6.1.44 Tables 295–297 define Revoke, with Table 295 as the request; related request context is §4.47 Table 123 and §11.48 Table 481. The approved operation catalog contains no direct Revoke case ID, so this inventory-only checkpoint makes no operation-conformance claim.

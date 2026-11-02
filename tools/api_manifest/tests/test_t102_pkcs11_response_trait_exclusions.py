@@ -65,13 +65,7 @@ class T102Pkcs11ResponseTraitExclusionTests(unittest.TestCase):
                 self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
                 for requirement_id in (
                     "KMIPKIT-0040-FR-001",
-                    "KMIPKIT-0040-FR-002",
-                    "KMIPKIT-0040-FR-003",
                     "KMIPKIT-0040-FR-004",
-                    "KMIPKIT-0040-FR-005",
-                    "KMIPKIT-0040-FR-006",
-                    "KMIPKIT-0040-FR-007",
-                    "KMIPKIT-0040-FR-008",
                     "KMIPKIT-0043-FR-010",
                     "KMIPKIT-0043-FR-021",
                 ):
