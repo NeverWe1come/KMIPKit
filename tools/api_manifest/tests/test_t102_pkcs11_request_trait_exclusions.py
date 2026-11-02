@@ -16,6 +16,7 @@ RUST_REPORT = (
     / "reports"
     / "rust-export-report-2026-11-01.json"
 )
+PKCS11_RESEARCH = ROOT / "specs" / "026-pkcs11" / "research.md"
 APPROVAL_SOURCE = {
     "kind": "feature-specification",
     "path": "specs/026-pkcs11/spec.md",
@@ -101,13 +102,15 @@ class T102Pkcs11RequestTraitExclusionTests(unittest.TestCase):
                     "KMIPKIT-0040-FR-004",
                     "KMIPKIT-0043-FR-010",
                     "KMIPKIT-0043-FR-021",
-                    "OASIS KMIP v2.1 §6.1.37 Tables 273–275",
-                    "Table 273 request",
-                    "No direct OASIS operation test case",
-                    "PKCS11-M-1-21 is unavailable",
-                    "no conformance, interoperability, profile-support, or certification claim",
+                    "OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275",
+                    "Table 273 as request",
+                    "No direct operation Test Case exists in the approved catalog",
+                    "the official fixture and profile case PKCS11-M-1-21 are unavailable",
+                    "makes no conformance, interoperability, profile-support, or certification claim",
                 ):
                     self.assertIn(evidence, row["evidence"])
+                self.assertNotIn(chr(0xFFFD), row["evidence"])
+                self.assertNotIn("KMIPKIT-0040-FR-005", row["evidence"])
                 self.assertIn("standard-trait implementation", row["reason"])
                 self.assertIn("Pkcs11Request", row["reason"])
 
@@ -218,6 +221,12 @@ class T102Pkcs11RequestTraitExclusionTests(unittest.TestCase):
             )
         }
         self.assertEqual(response_traits, EXPECTED_PKCS11_RESPONSE_TRAITS)
+
+    def test_vendor_function_source_interpretation_remains_recorded(self) -> None:
+        research = PKCS11_RESEARCH.read_text(encoding="utf-8")
+        self.assertIn("KMIPKIT-026-SOURCE-001", research)
+        self.assertIn("§7.26 Table 378", research)
+        self.assertIn("vendor-defined functions", research)
 
     def test_t102_manifest_and_rust_audit_totals_reflect_only_this_ten_path_slice(self) -> None:
         self.assertEqual(

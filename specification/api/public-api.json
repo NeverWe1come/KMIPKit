@@ -199373,236 +199373,6 @@
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
-      "declarationId": "rust-observed-56de7d0062e0b2c8f553",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::Pkcs11Request as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-1581eb66ac71cfa30330",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::Pkcs11Request as core::borrow::Borrow<kmipkit_protocol::pkcs11::Pkcs11Request>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-6dc668d1afc4a0e0f23b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::Pkcs11Request as core::borrow::BorrowMut<kmipkit_protocol::pkcs11::Pkcs11Request>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-3dc6e45edfc46c4a4344",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::Pkcs11Request as core::convert::From<kmipkit_protocol::pkcs11::Pkcs11Request>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-07685a411f6b3527a5f3",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::Pkcs11Request as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::pkcs11::Pkcs11Request"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-ab96a7612bcd3c699e0f",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::Pkcs11Request as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::pkcs11::Pkcs11Request"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-4554e3050a07245c8805",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::Pkcs11Request as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::pkcs11::Pkcs11Request"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-0c7cfce0148e28c16055",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::Pkcs11Request as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::pkcs11::Pkcs11Request"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-409363aeeff3bf57604c",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::Pkcs11Request as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::pkcs11::Pkcs11Request"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-c77fdadec9090f2fe991",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::Pkcs11Request as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
       "declarationId": "rust-observed-7edddda77b5d26f0d203",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
@@ -444173,6 +443943,126 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Seed request remains mapped under KMIP v2.1 Section 6.1.50 Tables 319-321, including required Table 319 Data and present-empty Data; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Seed test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::Pkcs11Request as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Pkcs11Request wrapper, not a separate KMIP client capability; the PKCS#11 request shape and supported values remain owned by the approved operation model.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275, with Table 273 as request. No direct operation Test Case exists in the approved catalog; the official fixture and profile case PKCS11-M-1-21 are unavailable. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only checkpoint makes no conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::Pkcs11Request as core::borrow::Borrow<kmipkit_protocol::pkcs11::Pkcs11Request>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Pkcs11Request wrapper, not a separate KMIP client capability; the PKCS#11 request shape and supported values remain owned by the approved operation model.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275, with Table 273 as request. No direct operation Test Case exists in the approved catalog; the official fixture and profile case PKCS11-M-1-21 are unavailable. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only checkpoint makes no conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::Pkcs11Request as core::borrow::BorrowMut<kmipkit_protocol::pkcs11::Pkcs11Request>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Pkcs11Request wrapper, not a separate KMIP client capability; the PKCS#11 request shape and supported values remain owned by the approved operation model.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275, with Table 273 as request. No direct operation Test Case exists in the approved catalog; the official fixture and profile case PKCS11-M-1-21 are unavailable. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only checkpoint makes no conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::Pkcs11Request as core::convert::From<kmipkit_protocol::pkcs11::Pkcs11Request>>::from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Pkcs11Request wrapper, not a separate KMIP client capability; the PKCS#11 request shape and supported values remain owned by the approved operation model.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275, with Table 273 as request. No direct operation Test Case exists in the approved catalog; the official fixture and profile case PKCS11-M-1-21 are unavailable. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only checkpoint makes no conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::Pkcs11Request as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Pkcs11Request wrapper, not a separate KMIP client capability; the PKCS#11 request shape and supported values remain owned by the approved operation model.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275, with Table 273 as request. No direct operation Test Case exists in the approved catalog; the official fixture and profile case PKCS11-M-1-21 are unavailable. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only checkpoint makes no conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::Pkcs11Request as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Pkcs11Request wrapper, not a separate KMIP client capability; the PKCS#11 request shape and supported values remain owned by the approved operation model.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275, with Table 273 as request. No direct operation Test Case exists in the approved catalog; the official fixture and profile case PKCS11-M-1-21 are unavailable. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only checkpoint makes no conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::Pkcs11Request as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Pkcs11Request wrapper, not a separate KMIP client capability; the PKCS#11 request shape and supported values remain owned by the approved operation model.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275, with Table 273 as request. No direct operation Test Case exists in the approved catalog; the official fixture and profile case PKCS11-M-1-21 are unavailable. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only checkpoint makes no conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::Pkcs11Request as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Pkcs11Request wrapper, not a separate KMIP client capability; the PKCS#11 request shape and supported values remain owned by the approved operation model.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275, with Table 273 as request. No direct operation Test Case exists in the approved catalog; the official fixture and profile case PKCS11-M-1-21 are unavailable. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only checkpoint makes no conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::Pkcs11Request as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Pkcs11Request wrapper, not a separate KMIP client capability; the PKCS#11 request shape and supported values remain owned by the approved operation model.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275, with Table 273 as request. No direct operation Test Case exists in the approved catalog; the official fixture and profile case PKCS11-M-1-21 are unavailable. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only checkpoint makes no conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::Pkcs11Request as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Pkcs11Request wrapper, not a separate KMIP client capability; the PKCS#11 request shape and supported values remain owned by the approved operation model.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed PKCS#11 request remains mapped to OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275, with Table 273 as request. No direct operation Test Case exists in the approved catalog; the official fixture and profile case PKCS11-M-1-21 are unavailable. These standard-trait artifacts do not add separate KMIP behavior. This inventory-only checkpoint makes no conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
     {
       "packageId": "rust-kmipkit-protocol",
