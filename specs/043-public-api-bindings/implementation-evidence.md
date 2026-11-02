@@ -9215,11 +9215,13 @@ The Rust 1.94.0 export audit observes exactly ten standard-trait paths for `kmip
 |---|---|---|---|
 | Red — pin the exact paths, owner/OASIS references, compiler split, candidate count, and preserved mapping state | `50918b7ff` | `py -B -m unittest tools.api_manifest.tests.test_t102_log_request_trait_exclusions -v` | Three tests failed as expected: the ten paths remained declarations, were absent from exact exclusions, and the blocked-candidate count was still 3,868. |
 | Green — exclude only the ten observed trait paths and regenerate the API outputs and Rust audit | `a69a00a66` | Focused T102 contract, generator, and Rust export audit | The focused contract passed; the blocked-candidate count fell from 3,868 to 3,858. The audit reconciles 6,141 declarations and 4,322 exclusions with 10,463 observed paths. |
-| Refactor/evidence — refresh aggregate counts/owner allow-list and record traceability and verification | This commit | Full affected test and audit set | All checks below passed; T102 remains open. |
+| QA regression Red — prove the root-export filter recognizes compiler trait paths | `4ffcdbde8` | `py -B -m unittest tools.api_manifest.tests.test_t102_log_request_trait_exclusions.T102LogRequestTraitExclusionTests.test_root_export_filter_recognizes_compiler_trait_path_format -v` | The synthetic `<kmipkit::LogRequest as core::fmt::Debug>::fmt` row was not recognized and the test failed as expected. |
+| QA regression Green — include direct and trait-form paths in the root-export filter | `aaf0fafbe` | `py -B -m unittest tools.api_manifest.tests.test_t102_log_request_trait_exclusions -v` | All four focused tests passed, including the synthetic compiler trait-path regression. |
+| Refactor/evidence — refresh aggregate counts/owner allow-list and record traceability and verification | `a78ce4d26` plus this evidence update | Full affected test and audit set | All checks below passed; T102 remains open. |
 
 Verification:
 
-- The combined manifest v2 and focused T102 suites — 255 passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2 tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions tools.api_manifest.tests.test_t102_rng_seed_request_trait_exclusions tools.api_manifest.tests.test_t102_revoke_request_trait_exclusions tools.api_manifest.tests.test_t102_pkcs11_response_trait_exclusions tools.api_manifest.tests.test_t102_log_request_trait_exclusions` — 256 passed, including the synthetic root trait-path regression.
 - `py -B -m unittest tools.api_manifest.tests.test_t076_client_mapping` — 66 passed.
 - `py -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
 - `py -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` — 6,141 declarations and 4,322 exclusions reconcile with 10,463 observed paths; zero missing, unobserved, issue, kind, conditional-state, or conditional-condition mismatches. Windows emitted optional AWS-LC compiler-probe and missing NASM warnings.
