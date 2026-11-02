@@ -9395,8 +9395,22 @@ The generated changes contain no new functional API mapping. The focused contrac
 
 Independent QA found that the original client-side invariant pinned the type and ten trait paths but did not pin the `new` constructor or five inherent methods. The follow-up strengthens only the manifest contract test; the manifest, generated outputs, and runtime code are unchanged. The seven exact functional declarations are now asserted: `kmipkit_client::Pkcs11Request` and `new` remain verified; `into_ttlv_payload`, `with_correlation_value`, `with_extension`, `with_input_parameters`, and `with_interface` remain blocked. The ten client trait paths continue to be asserted separately as blocked.
 
+Red (`fc0c6b259`) ran this focused test command:
+
+```powershell
+uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions.T102Pkcs11RequestTraitExclusionTests.test_request_methods_root_alias_and_separate_client_request_remain_unchanged -v
+```
+
+It exited 1 as expected because the broad client-name filter also selected the ten compiler-trait paths. Green (`6facd1c17`) ran the full focused contract module:
+
+```powershell
+uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions -v
+```
+
+It exited 0 with all six contract tests passing.
+
 | Phase | Commit | Evidence | Result |
 |---|---|---|---|
-| Red - require the exact seven functional client declarations | `fc0c6b259` | Focused client-state contract test | Failed as expected because the broad name filter also included the ten compiler-trait paths; this exposed the need to separate the seven functional declarations from traits. |
-| Green - filter the seven functional declarations and assert exact verified/blocked states | `6facd1c17` | Focused PKCS#11 request trait-exclusion contract | All six contract tests passed, including the exact seven-row client state assertion and the separate ten-trait assertion. |
-| Evidence - record QA follow-up and final range check | This commit | `git diff --check 86ab82610..6facd1c17` | Passed after this evidence update; no production behavior or generated artifact changed. |
+| Red - require the exact seven functional client declarations | `fc0c6b259` | Focused test command above | Exit 1 as expected; the assertion exposed ten trait paths included by the broad filter. |
+| Green - filter the seven functional declarations and assert exact verified/blocked states | `6facd1c17` | Focused module command above | Exit 0; all six contract tests passed, including the exact seven-row client state assertion and the separate ten-trait assertion. |
+| Evidence - record QA follow-up and final range check | This commit | `git diff --check 86ab82610..38603c6b1` | Exit 0 after this evidence edit; no production behavior or generated artifact changed. |
