@@ -59500,11 +59500,11 @@
   "counts": {
     "conditionalConditionMismatches": 0,
     "conditionalStateMismatches": 0,
-    "excluded": 4162,
+    "excluded": 4172,
     "issues": 0,
     "kindMismatches": 0,
-    "manifest": 6301,
-    "matched": 6301,
+    "manifest": 6291,
+    "matched": 6291,
     "missingFromManifest": 0,
     "notObserved": 0,
     "observed": 10463
@@ -284791,6 +284791,240 @@
     },
     {
       "aliases": [
+        "<kmipkit_protocol::RekeyResponse as core::any::Any>::type_id"
+      ],
+      "exportLocations": [
+        {
+          "column": 43,
+          "line": 181,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::RekeyResponse as core::any::Any>::type_id",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"rekey\",\"RekeyResponse\"],[\"core\",\"any\",\"Any\"],\"kmipkit_protocol::rekey::RekeyResponse\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"rekey\",\"RekeyResponse\"]}}}}]},\"type_id\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::RekeyResponse as core::borrow::Borrow<kmipkit_protocol::rekey::RekeyResponse>>::borrow"
+      ],
+      "exportLocations": [
+        {
+          "column": 43,
+          "line": 181,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::RekeyResponse as core::borrow::Borrow<kmipkit_protocol::rekey::RekeyResponse>>::borrow",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"rekey\",\"RekeyResponse\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_protocol::rekey::RekeyResponse\",\"core::borrow::Borrow<kmipkit_protocol::rekey::RekeyResponse>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"rekey\",\"RekeyResponse\"]}}}}]},\"borrow\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::RekeyResponse as core::borrow::BorrowMut<kmipkit_protocol::rekey::RekeyResponse>>::borrow_mut"
+      ],
+      "exportLocations": [
+        {
+          "column": 43,
+          "line": 181,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::RekeyResponse as core::borrow::BorrowMut<kmipkit_protocol::rekey::RekeyResponse>>::borrow_mut",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"rekey\",\"RekeyResponse\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_protocol::rekey::RekeyResponse\",\"core::borrow::BorrowMut<kmipkit_protocol::rekey::RekeyResponse>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"rekey\",\"RekeyResponse\"]}}}}]},\"borrow_mut\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::RekeyResponse as core::convert::From<kmipkit_protocol::rekey::RekeyResponse>>::from"
+      ],
+      "exportLocations": [
+        {
+          "column": 43,
+          "line": 181,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::RekeyResponse as core::convert::From<kmipkit_protocol::rekey::RekeyResponse>>::from",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"rekey\",\"RekeyResponse\"],[\"core\",\"convert\",\"From\"],\"kmipkit_protocol::rekey::RekeyResponse\",\"core::convert::From<kmipkit_protocol::rekey::RekeyResponse>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::rekey::RekeyResponse"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "From"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::RekeyResponse as core::convert::Into<U>>::into",
+      "implementationId": "10342",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "rekey",
+        "RekeyResponse"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::rekey::RekeyResponse"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::RekeyResponse as core::convert::TryFrom<U>>::Error",
+      "implementationId": "10345",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "rekey",
+        "RekeyResponse"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::rekey::RekeyResponse"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::RekeyResponse as core::convert::TryFrom<U>>::try_from",
+      "implementationId": "10345",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "rekey",
+        "RekeyResponse"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::rekey::RekeyResponse"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::RekeyResponse as core::convert::TryInto<U>>::Error",
+      "implementationId": "10344",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "rekey",
+        "RekeyResponse"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::rekey::RekeyResponse"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::RekeyResponse as core::convert::TryInto<U>>::try_into",
+      "implementationId": "10344",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "rekey",
+        "RekeyResponse"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::RekeyResponse as core::fmt::Debug>::fmt"
+      ],
+      "exportLocations": [
+        {
+          "column": 43,
+          "line": 181,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::RekeyResponse as core::fmt::Debug>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"rekey\",\"RekeyResponse\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_protocol::rekey::RekeyResponse\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 10,
+        "line": 150,
+        "path": "crates/kmipkit-protocol/src/rekey.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
         "<kmipkit_protocol::RequestMessage as alloc::string::ToString>::to_string"
       ],
       "exportLocations": [
@@ -411022,250 +411256,6 @@
       "location": {
         "column": 5,
         "line": 132,
-        "path": "crates/kmipkit-protocol/src/rekey.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::RekeyResponse as core::any::Any>::type_id"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 43,
-          "line": 181,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::RekeyResponse as core::any::Any>::type_id",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"rekey\",\"RekeyResponse\"],[\"core\",\"any\",\"Any\"],\"kmipkit_protocol::rekey::RekeyResponse\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"rekey\",\"RekeyResponse\"]}}}}]},\"type_id\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::RekeyResponse as core::borrow::Borrow<kmipkit_protocol::rekey::RekeyResponse>>::borrow"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 43,
-          "line": 181,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::RekeyResponse as core::borrow::Borrow<kmipkit_protocol::rekey::RekeyResponse>>::borrow",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"rekey\",\"RekeyResponse\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_protocol::rekey::RekeyResponse\",\"core::borrow::Borrow<kmipkit_protocol::rekey::RekeyResponse>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"rekey\",\"RekeyResponse\"]}}}}]},\"borrow\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::RekeyResponse as core::borrow::BorrowMut<kmipkit_protocol::rekey::RekeyResponse>>::borrow_mut"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 43,
-          "line": 181,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::RekeyResponse as core::borrow::BorrowMut<kmipkit_protocol::rekey::RekeyResponse>>::borrow_mut",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"rekey\",\"RekeyResponse\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_protocol::rekey::RekeyResponse\",\"core::borrow::BorrowMut<kmipkit_protocol::rekey::RekeyResponse>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"rekey\",\"RekeyResponse\"]}}}}]},\"borrow_mut\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::RekeyResponse as core::convert::From<kmipkit_protocol::rekey::RekeyResponse>>::from"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 43,
-          "line": 181,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::RekeyResponse as core::convert::From<kmipkit_protocol::rekey::RekeyResponse>>::from",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"rekey\",\"RekeyResponse\"],[\"core\",\"convert\",\"From\"],\"kmipkit_protocol::rekey::RekeyResponse\",\"core::convert::From<kmipkit_protocol::rekey::RekeyResponse>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::rekey::RekeyResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::RekeyResponse as core::convert::Into<U>>::into",
-      "implementationId": "10342",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "rekey",
-        "RekeyResponse"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::rekey::RekeyResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::RekeyResponse as core::convert::TryFrom<U>>::Error",
-      "implementationId": "10345",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "rekey",
-        "RekeyResponse"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::rekey::RekeyResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::RekeyResponse as core::convert::TryFrom<U>>::try_from",
-      "implementationId": "10345",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "rekey",
-        "RekeyResponse"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::rekey::RekeyResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::RekeyResponse as core::convert::TryInto<U>>::Error",
-      "implementationId": "10344",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "rekey",
-        "RekeyResponse"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::rekey::RekeyResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::RekeyResponse as core::convert::TryInto<U>>::try_into",
-      "implementationId": "10344",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "rekey",
-        "RekeyResponse"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::RekeyResponse as core::fmt::Debug>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 43,
-          "line": 181,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::RekeyResponse as core::fmt::Debug>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"rekey\",\"RekeyResponse\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_protocol::rekey::RekeyResponse\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 10,
-        "line": 150,
         "path": "crates/kmipkit-protocol/src/rekey.rs"
       },
       "packageId": "rust-kmipkit-protocol"
