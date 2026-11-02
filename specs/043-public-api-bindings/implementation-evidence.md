@@ -9014,3 +9014,29 @@ Verification:
 - `git diff --check` — passed after the documentation update.
 
 The candidate count falls from 3,988 to 3,978. T102 remains open; this slice does not claim Revoke operation conformance, full API parity, profile conformance, PR completion, or release readiness.
+
+
+### T102 Re-Provision response Rust trait-artifact exclusions (2026-11-02)
+
+The Rust export inventory observed exactly ten standard-trait paths for `kmipkit_protocol::ReProvisionResponse`: five direct and five conditional declarations. T102 moves only those ten compiler-visible language artifacts from blocked declarations to approved exclusions under KMIPKIT-0043-FR-010/021 and functional ownership KMIPKIT-0036-FR-001/004. The response type, optional `unique_identifier`, and `with_ttlv` remain verified; `result` and `try_from_response_item` remain blocked, and no root alias exists. KMIPKIT-DEC-014 preserves the Table 314 optional identifier: an absent field remains absent and a present identifier is preserved. OASIS KMIP v2.1 §6.1.48 Tables 313–315 defines Re-Provision; Table 314 is the response. The approved operation catalog has no direct Re-Provision test-case ID. T061 table-derived checks are not official-vector evidence, so this inventory-only slice makes no conformance claim and changes no runtime behavior.
+
+| Phase | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red — pin the exact ten paths, audit classification, candidate count, owner requirements, DEC-014 optionality, no-direct-case caveat, and unchanged functional declarations | `ad7ede2a1` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions -k reprovision_response -v` | Four tests ran; three failed as expected before Green: the ten paths remained blocked, the audit had no corresponding exclusions, and the candidate count was 3,978 instead of 3,968. Functional-state and optionality guards passed. |
+| Green — exclude only the ten trait artifacts and regenerate checked-in outputs | `c67b3fd06` | `py -B tools/api_manifest/generate.py --write`; Rust export audit report regeneration | Exactly ten paths moved to approved exclusions; all generated outputs and the Rust report reconcile. |
+| Refactor/evidence — synchronize T102 counts, operation traceability, task notes, and verification | This commit | Focused T102, manifest, generator, Rust/binding audits, and independent reviews | T102 remains open with 3,968 blocked KMIPKIT-0043 candidates. |
+
+Verification:
+
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions -k reprovision_response -v` — 4 passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions -v` — 81 passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2 -v` — 150 passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping -v` — 66 passed; Re-Provision mapping parity — 4 passed.
+- `py -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
+- `py -B tools/api_manifest/audit_rust_exports.py --check` — 6,251 declarations and 4,212 exact exclusions reconcile with all 10,463 observed paths; zero missing paths, issues, or mismatches. The successful Windows audit emitted optional `aws-lc-sys` compiler-probe and NASM warnings.
+- `py -B tools/api_manifest/audit_binding_exports.py --check` — no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
+- `py -B -m unittest scripts.tests.test_requirement_traceability -v` — 2 passed.
+- Independent QA found no blockers. Independent security review found no issues; no runtime, FFI, TLS, dependency, or secret-handling source changed.
+- `git diff --check` — passed after the Refactor documentation update.
+
+The candidate count falls from 3,978 to 3,968. T102 remains open; this slice does not claim Re-Provision operation conformance, full API parity, profile conformance, PR completion, or release readiness.
