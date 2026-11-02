@@ -9217,7 +9217,9 @@ The Rust 1.94.0 export audit observes exactly ten standard-trait paths for `kmip
 | Green — exclude only the ten observed trait paths and regenerate the API outputs and Rust audit | `a69a00a66` | Focused T102 contract, generator, and Rust export audit | The focused contract passed; the blocked-candidate count fell from 3,868 to 3,858. The audit reconciles 6,141 declarations and 4,322 exclusions with 10,463 observed paths. |
 | QA regression Red — prove the root-export filter recognizes compiler trait paths | `4ffcdbde8` | `py -B -m unittest tools.api_manifest.tests.test_t102_log_request_trait_exclusions.T102LogRequestTraitExclusionTests.test_root_export_filter_recognizes_compiler_trait_path_format -v` | The synthetic `<kmipkit::LogRequest as core::fmt::Debug>::fmt` row was not recognized and the test failed as expected. |
 | QA regression Green — include direct and trait-form paths in the root-export filter | `aaf0fafbe` | `py -B -m unittest tools.api_manifest.tests.test_t102_log_request_trait_exclusions -v` | All four focused tests passed, including the synthetic compiler trait-path regression. |
-| Refactor/evidence — refresh aggregate counts/owner allow-list and record traceability and verification | `a78ce4d26` plus this evidence update | Full affected test and audit set | All checks below passed; T102 remains open. |
+| CI contract Red — require the LogRequest trait-exclusion contract in the cross-platform script job | `554e94859` | `py -B -m unittest scripts.tests.test_workflow.WorkflowContractTests.test_script_contract_job_runs_t102_log_request_trait_exclusion_contract -v` | Failed as expected because the workflow did not yet execute the LogRequest contract. |
+| CI Green — run the LogRequest contract on each supported platform | `058cdc662` | Workflow contract suite and focused LogRequest suite | The workflow now invokes the test; all 69 workflow tests and all four LogRequest tests passed. |
+| Refactor/evidence — refresh aggregate counts/owner allow-list and record traceability and verification | `a78ce4d26`, `5c4129767`, and this evidence update | Full affected test and audit set | All scoped checks below passed; T102 remains open. |
 
 Verification:
 
@@ -9227,6 +9229,7 @@ Verification:
 - `py -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` — 6,141 declarations and 4,322 exclusions reconcile with 10,463 observed paths; zero missing, unobserved, issue, kind, conditional-state, or conditional-condition mismatches. Windows emitted optional AWS-LC compiler-probe and missing NASM warnings.
 - `py -B tools/api_manifest/audit_binding_exports.py --check` — no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
 - `py -B -m unittest scripts.tests.test_requirement_traceability` — 2 passed. `py -B -m unittest discover -s tools/normative_catalog/tests -p test_feature_traceability.py` — 30 passed, 1 skipped because Windows did not permit symlink creation.
+- `py -B -m unittest scripts.tests.test_workflow` — 69 passed, including the assertion that every supported platform runs the LogRequest trait-exclusion contract.
 - `git diff --check` — passed on the Refactor/evidence diff.
 
 This inventory-only reconciliation changes no protocol or runtime behavior and does not claim any OASIS test-case pass.
