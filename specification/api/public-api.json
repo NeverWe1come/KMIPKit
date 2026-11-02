@@ -186301,16 +186301,6 @@
       "candidateSpecId": "KMIPKIT-0043",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
-
-
-
-
-
-
-
-
-
-
     {
       "declarationId": "rust-observed-d3e7f687fc8e3877923b",
       "packageId": "rust-kmipkit-protocol",
@@ -197501,16 +197491,6 @@
       "candidateSpecId": "KMIPKIT-0043",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
-
-
-
-
-
-
-
-
-
-
     {
       "declarationId": "rust-observed-271b3533e1445558639f",
       "packageId": "rust-kmipkit-protocol",
@@ -198195,16 +198175,6 @@
       "candidateSpecId": "KMIPKIT-0043",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
-
-
-
-
-
-
-
-
-
-
     {
       "declarationId": "rust-observed-ad80ee6ba1d4610ebb97",
       "packageId": "rust-kmipkit-protocol",
@@ -209630,236 +209600,6 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "<kmipkit_protocol::RngSeedError as core::fmt::Display>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-6be1e8d645897d1a49e2",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngSeedRequest as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-842e03cede411580bd49",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngSeedRequest as core::borrow::Borrow<kmipkit_protocol::rng_seed::RngSeedRequest>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-d47d3dab28a498a1561f",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngSeedRequest as core::borrow::BorrowMut<kmipkit_protocol::rng_seed::RngSeedRequest>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-82b3252399ff8be94659",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngSeedRequest as core::convert::From<kmipkit_protocol::rng_seed::RngSeedRequest>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-d2f7097798bdca914187",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngSeedRequest as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::rng_seed::RngSeedRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-98dd3f561c07e404762e",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngSeedRequest as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::rng_seed::RngSeedRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-8f72d8a026b5d399b8e7",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngSeedRequest as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::rng_seed::RngSeedRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-49b30fee46bae2a02dce",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngSeedRequest as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::rng_seed::RngSeedRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-c737b0212850f5f34382",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngSeedRequest as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::rng_seed::RngSeedRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-d5cbde7e62f487f66bf4",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RngSeedRequest as core::fmt::Debug>::fmt",
       "capabilityId": "public_binding_surface",
       "requirementIds": [
         "KMIPKIT-0043-FR-021"
@@ -444974,7 +444714,7 @@
       },
       "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Re-Provision response remains mapped to KMIP v2.1 Section 6.1.48 Tables 313-315, including its Table 314 response; these standard-trait artifacts do not add separate KMIP behavior. KMIPKIT-DEC-014 keeps Unique Identifier optional: an absent field remains absent and a present identifier is preserved. The approved operation catalog lists no direct Re-Provision case ID; T061 table-derived tests are not official-vector evidence, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RngRetrieveResponse as core::any::Any>::type_id",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveResponse wrapper, not a separate KMIP client capability; the secret Data remains mapped through the approved four-language surface.",
@@ -444986,7 +444726,7 @@
       },
       "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve response remains mapped under KMIP v2.1 Section 6.1.49 Tables 316-318, including the Table 317 response; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Retrieve test-case ID; T064 mapping evidence is not an official test-vector pass, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RngRetrieveResponse as core::borrow::Borrow<kmipkit_protocol::rng_retrieve::RngRetrieveResponse>>::borrow",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveResponse wrapper, not a separate KMIP client capability; the secret Data remains mapped through the approved four-language surface.",
@@ -444998,7 +444738,7 @@
       },
       "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve response remains mapped under KMIP v2.1 Section 6.1.49 Tables 316-318, including the Table 317 response; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Retrieve test-case ID; T064 mapping evidence is not an official test-vector pass, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RngRetrieveResponse as core::borrow::BorrowMut<kmipkit_protocol::rng_retrieve::RngRetrieveResponse>>::borrow_mut",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveResponse wrapper, not a separate KMIP client capability; the secret Data remains mapped through the approved four-language surface.",
@@ -445010,7 +444750,7 @@
       },
       "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve response remains mapped under KMIP v2.1 Section 6.1.49 Tables 316-318, including the Table 317 response; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Retrieve test-case ID; T064 mapping evidence is not an official test-vector pass, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RngRetrieveResponse as core::convert::From<kmipkit_protocol::rng_retrieve::RngRetrieveResponse>>::from",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveResponse wrapper, not a separate KMIP client capability; the secret Data remains mapped through the approved four-language surface.",
@@ -445022,7 +444762,7 @@
       },
       "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve response remains mapped under KMIP v2.1 Section 6.1.49 Tables 316-318, including the Table 317 response; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Retrieve test-case ID; T064 mapping evidence is not an official test-vector pass, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RngRetrieveResponse as core::convert::Into<U>>::into",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveResponse wrapper, not a separate KMIP client capability; the secret Data remains mapped through the approved four-language surface.",
@@ -445034,7 +444774,7 @@
       },
       "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve response remains mapped under KMIP v2.1 Section 6.1.49 Tables 316-318, including the Table 317 response; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Retrieve test-case ID; T064 mapping evidence is not an official test-vector pass, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RngRetrieveResponse as core::convert::TryFrom<U>>::Error",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveResponse wrapper, not a separate KMIP client capability; the secret Data remains mapped through the approved four-language surface.",
@@ -445046,7 +444786,7 @@
       },
       "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve response remains mapped under KMIP v2.1 Section 6.1.49 Tables 316-318, including the Table 317 response; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Retrieve test-case ID; T064 mapping evidence is not an official test-vector pass, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RngRetrieveResponse as core::convert::TryFrom<U>>::try_from",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveResponse wrapper, not a separate KMIP client capability; the secret Data remains mapped through the approved four-language surface.",
@@ -445058,7 +444798,7 @@
       },
       "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve response remains mapped under KMIP v2.1 Section 6.1.49 Tables 316-318, including the Table 317 response; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Retrieve test-case ID; T064 mapping evidence is not an official test-vector pass, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RngRetrieveResponse as core::convert::TryInto<U>>::Error",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveResponse wrapper, not a separate KMIP client capability; the secret Data remains mapped through the approved four-language surface.",
@@ -445070,7 +444810,7 @@
       },
       "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve response remains mapped under KMIP v2.1 Section 6.1.49 Tables 316-318, including the Table 317 response; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Retrieve test-case ID; T064 mapping evidence is not an official test-vector pass, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RngRetrieveResponse as core::convert::TryInto<U>>::try_into",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveResponse wrapper, not a separate KMIP client capability; the secret Data remains mapped through the approved four-language surface.",
@@ -445082,7 +444822,7 @@
       },
       "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve response remains mapped under KMIP v2.1 Section 6.1.49 Tables 316-318, including the Table 317 response; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Retrieve test-case ID; T064 mapping evidence is not an official test-vector pass, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RngRetrieveResponse as core::fmt::Debug>::fmt",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveResponse wrapper, not a separate KMIP client capability; the secret Data remains mapped through the approved four-language surface.",
@@ -445573,6 +445313,126 @@
       "exportName": "<kmipkit_protocol::LogoutResponse as core::fmt::Debug>::fmt",
       "packageId": "rust-kmipkit-protocol",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LogoutResponse wrapper, not a separate KMIPKit product capability; the response type and its functional members remain mapped with their current."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngSeedRequest as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngSeedRequest wrapper, not a separate KMIP client capability; required secret Data, including present-empty data, remains preserved by the approved four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Seed request remains mapped under KMIP v2.1 Section 6.1.50 Tables 319-321, including required Table 319 Data and present-empty Data; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Seed test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngSeedRequest as core::borrow::Borrow<kmipkit_protocol::rng_seed::RngSeedRequest>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngSeedRequest wrapper, not a separate KMIP client capability; required secret Data, including present-empty data, remains preserved by the approved four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Seed request remains mapped under KMIP v2.1 Section 6.1.50 Tables 319-321, including required Table 319 Data and present-empty Data; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Seed test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngSeedRequest as core::borrow::BorrowMut<kmipkit_protocol::rng_seed::RngSeedRequest>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngSeedRequest wrapper, not a separate KMIP client capability; required secret Data, including present-empty data, remains preserved by the approved four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Seed request remains mapped under KMIP v2.1 Section 6.1.50 Tables 319-321, including required Table 319 Data and present-empty Data; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Seed test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngSeedRequest as core::convert::From<kmipkit_protocol::rng_seed::RngSeedRequest>>::from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngSeedRequest wrapper, not a separate KMIP client capability; required secret Data, including present-empty data, remains preserved by the approved four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Seed request remains mapped under KMIP v2.1 Section 6.1.50 Tables 319-321, including required Table 319 Data and present-empty Data; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Seed test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngSeedRequest as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngSeedRequest wrapper, not a separate KMIP client capability; required secret Data, including present-empty data, remains preserved by the approved four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Seed request remains mapped under KMIP v2.1 Section 6.1.50 Tables 319-321, including required Table 319 Data and present-empty Data; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Seed test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngSeedRequest as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngSeedRequest wrapper, not a separate KMIP client capability; required secret Data, including present-empty data, remains preserved by the approved four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Seed request remains mapped under KMIP v2.1 Section 6.1.50 Tables 319-321, including required Table 319 Data and present-empty Data; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Seed test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngSeedRequest as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngSeedRequest wrapper, not a separate KMIP client capability; required secret Data, including present-empty data, remains preserved by the approved four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Seed request remains mapped under KMIP v2.1 Section 6.1.50 Tables 319-321, including required Table 319 Data and present-empty Data; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Seed test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngSeedRequest as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngSeedRequest wrapper, not a separate KMIP client capability; required secret Data, including present-empty data, remains preserved by the approved four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Seed request remains mapped under KMIP v2.1 Section 6.1.50 Tables 319-321, including required Table 319 Data and present-empty Data; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Seed test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngSeedRequest as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngSeedRequest wrapper, not a separate KMIP client capability; required secret Data, including present-empty data, remains preserved by the approved four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Seed request remains mapped under KMIP v2.1 Section 6.1.50 Tables 319-321, including required Table 319 Data and present-empty Data; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Seed test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RngSeedRequest as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngSeedRequest wrapper, not a separate KMIP client capability; required secret Data, including present-empty data, remains preserved by the approved four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Seed request remains mapped under KMIP v2.1 Section 6.1.50 Tables 319-321, including required Table 319 Data and present-empty Data; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Seed test-case ID; this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     }
   ],
   "apiLevels": [
