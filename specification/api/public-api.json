@@ -126884,20 +126884,6 @@
       "blockedReason": "This error constant is explicitly exported by the C header, but its owning logical capability and equivalent cross-language declaration mapping have not been reviewed."
     },
     {
-      "declarationId": "t011-observed-java-init",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.RuntimeMetadata.Version.<init>",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This public or protected record member is compiler-generated or declared on RuntimeMetadata.Version, but it has no reviewed cross-language declaration mapping in the current inventory."
-    },
-    {
       "declarationId": "t011-observed-java-abiVersion",
       "packageId": "java-kmipkit",
       "kind": "java-member",
@@ -126933,89 +126919,119 @@
         }
       }
     },
-    {
-      "declarationId": "t011-observed-java-equals",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.RuntimeMetadata.Version.equals",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This public or protected record member is compiler-generated or declared on RuntimeMetadata.Version, but it has no reviewed cross-language declaration mapping in the current inventory."
-    },
-    {
-      "declarationId": "t011-observed-java-hashCode",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.RuntimeMetadata.Version.hashCode",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This public or protected record member is compiler-generated or declared on RuntimeMetadata.Version, but it has no reviewed cross-language declaration mapping in the current inventory."
-    },
-    {
+        {
       "declarationId": "t011-observed-java-major",
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.RuntimeMetadata.Version.major",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "ffi_runtime_metadata",
       "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This public or protected record member is compiler-generated or declared on RuntimeMetadata.Version, but it has no reviewed cross-language declaration mapping in the current inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::RuntimeVersion::product_version"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_version_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.RuntimeMetadata.Version.major"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.metadata.Version.major"
+        }
+      }
     },
-    {
+        {
       "declarationId": "t011-observed-java-minor",
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.RuntimeMetadata.Version.minor",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "ffi_runtime_metadata",
       "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This public or protected record member is compiler-generated or declared on RuntimeMetadata.Version, but it has no reviewed cross-language declaration mapping in the current inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::RuntimeVersion::product_version"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_version_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.RuntimeMetadata.Version.minor"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.metadata.Version.minor"
+        }
+      }
     },
-    {
+        {
       "declarationId": "t011-observed-java-patch",
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.RuntimeMetadata.Version.patch",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "ffi_runtime_metadata",
       "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This public or protected record member is compiler-generated or declared on RuntimeMetadata.Version, but it has no reviewed cross-language declaration mapping in the current inventory."
-    },
-    {
-      "declarationId": "t011-observed-java-toString",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.RuntimeMetadata.Version.toString",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This public or protected record member is compiler-generated or declared on RuntimeMetadata.Version, but it has no reviewed cross-language declaration mapping in the current inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::RuntimeVersion::product_version"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_version_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.RuntimeMetadata.Version.patch"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.metadata.Version.patch"
+        }
+      }
     },
     {
       "declarationId": "t011-observed-java-public-api",
@@ -127207,47 +127223,119 @@
         }
       }
     },
-    {
+        {
       "declarationId": "t011-observed-python-version-major",
       "packageId": "python-kmipkit",
       "kind": "field",
       "exportName": "kmipkit.metadata.Version.major",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "ffi_runtime_metadata",
       "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This public Python package export is observable, but it has no reviewed logical capability or cross-language declaration mapping in the current inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::RuntimeVersion::product_version"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_version_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.RuntimeMetadata.Version.major"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.metadata.Version.major"
+        }
+      }
     },
-    {
+        {
       "declarationId": "t011-observed-python-version-minor",
       "packageId": "python-kmipkit",
       "kind": "field",
       "exportName": "kmipkit.metadata.Version.minor",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "ffi_runtime_metadata",
       "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This public Python package export is observable, but it has no reviewed logical capability or cross-language declaration mapping in the current inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::RuntimeVersion::product_version"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_version_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.RuntimeMetadata.Version.minor"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.metadata.Version.minor"
+        }
+      }
     },
-    {
+        {
       "declarationId": "t011-observed-python-version-patch",
       "packageId": "python-kmipkit",
       "kind": "field",
       "exportName": "kmipkit.metadata.Version.patch",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "ffi_runtime_metadata",
       "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This public Python package export is observable, but it has no reviewed logical capability or cross-language declaration mapping in the current inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::RuntimeVersion::product_version"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_version_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.RuntimeMetadata.Version.patch"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.metadata.Version.patch"
+        }
+      }
     },
     {
       "declarationId": "t011-observed-python-validate-extension-value",
@@ -448944,6 +449032,54 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed against KMIPKIT-0012-FR-010, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. The exact NativeExtensionRegistry member is referenced by a mapped typed Java facade, and the vendor_extension_registry capability retains equivalent Rust, C, Java, and Python mappings; docs/architecture/ffi-and-bindings.md documents the minimal Java-to-C boundary."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.RuntimeMetadata.Version.<init>",
+      "reason": "This exact public record constructor creates a local runtime metadata snapshot; it does not perform the mapped native version query.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed exact declaration `org.kmipkit.RuntimeMetadata.Version.<init>` against KMIPKIT-0043-FR-021. The RuntimeMetadata.Version type, version query, abiVersion, and major/minor/patch components remain mapped; this excludes only the local runtime metadata snapshot constructor."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.RuntimeMetadata.Version.equals",
+      "reason": "This exact generated Java record method provides local value equality, hashing, or presentation behavior, not a separate runtime metadata capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed exact declaration `org.kmipkit.RuntimeMetadata.Version.equals` against KMIPKIT-0043-FR-021. The RuntimeMetadata.Version type, version query, abiVersion, and major/minor/patch components remain mapped; this excludes only generated Java record value behavior."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.RuntimeMetadata.Version.hashCode",
+      "reason": "This exact generated Java record method provides local value equality, hashing, or presentation behavior, not a separate runtime metadata capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed exact declaration `org.kmipkit.RuntimeMetadata.Version.hashCode` against KMIPKIT-0043-FR-021. The RuntimeMetadata.Version type, version query, abiVersion, and major/minor/patch components remain mapped; this excludes only generated Java record value behavior."
+    },
+        {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.RuntimeMetadata.Version.toString",
+      "reason": "This exact generated Java record method provides local value equality, hashing, or presentation behavior, not a separate runtime metadata capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed exact declaration `org.kmipkit.RuntimeMetadata.Version.toString` against KMIPKIT-0043-FR-021. The RuntimeMetadata.Version type, version query, abiVersion, and major/minor/patch components remain mapped; this excludes only generated Java record value behavior."
     }
   ],
   "apiLevels": [
@@ -453993,7 +454129,7 @@
         ]
       }
     },
-    {
+        {
       "capabilityId": "ffi_runtime_metadata",
       "requirementIds": [
         "KMIPKIT-0043-FR-007",
@@ -454029,6 +454165,9 @@
           "org.kmipkit.ResourceLimitException",
           "org.kmipkit.RuntimeMetadata.Version",
           "org.kmipkit.RuntimeMetadata.Version.abiVersion",
+          "org.kmipkit.RuntimeMetadata.Version.major",
+          "org.kmipkit.RuntimeMetadata.Version.minor",
+          "org.kmipkit.RuntimeMetadata.Version.patch",
           "org.kmipkit.RuntimeMetadata.capabilityIsAvailable",
           "org.kmipkit.RuntimeMetadata.version"
         ],
@@ -454036,6 +454175,9 @@
           "kmipkit.errors.ResourceLimitError",
           "kmipkit.metadata.Version",
           "kmipkit.metadata.Version.abi_version",
+          "kmipkit.metadata.Version.major",
+          "kmipkit.metadata.Version.minor",
+          "kmipkit.metadata.Version.patch",
           "kmipkit.metadata.capability_is_available",
           "kmipkit.metadata.get_version"
         ]
