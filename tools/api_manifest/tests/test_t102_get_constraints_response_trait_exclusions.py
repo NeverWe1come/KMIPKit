@@ -271,6 +271,20 @@ RETAINED_EXPORTS = {
 }
 
 
+CANCEL_RESPONSE_PREFIX = "<kmipkit_protocol::CancelResponse<'a> as "
+EXPECTED_CANCEL_RESPONSE_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::CancelResponse<'a> as core::any::Any>::type_id",
+    "<kmipkit_protocol::CancelResponse<'a> as core::borrow::Borrow<kmipkit_protocol::cancel::CancelResponse<'a>>>::borrow",
+    "<kmipkit_protocol::CancelResponse<'a> as core::borrow::BorrowMut<kmipkit_protocol::cancel::CancelResponse<'a>>>::borrow_mut",
+    "<kmipkit_protocol::CancelResponse<'a> as core::convert::From<kmipkit_protocol::cancel::CancelResponse<'a>>>::from",
+    "<kmipkit_protocol::CancelResponse<'a> as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::CancelResponse<'a> as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::CancelResponse<'a> as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::CancelResponse<'a> as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::CancelResponse<'a> as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::CancelResponse<'a> as core::fmt::Debug>::fmt",
+}
+
 class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -1992,6 +2006,130 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 for row in self.manifest["publicDeclarations"]
             ),
             4028,
+        )
+
+
+    def test_cancel_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(CANCEL_RESPONSE_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(CANCEL_RESPONSE_PREFIX)
+        }
+
+        self.assertEqual(declarations, set())
+        self.assertEqual(set(exclusions), EXPECTED_CANCEL_RESPONSE_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0009-FR-001",
+                    "KMIPKIT-0009-FR-004",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 Section 6.1.5 Tables 176-178", row["evidence"])
+                self.assertIn("KMIP v2.1 Section 11.7 Tables 437-438", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("CancelResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_cancel_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(CANCEL_RESPONSE_PREFIX)
+        }
+        direct_paths = {
+            row["exportName"]
+            for row in self.rust_report["declarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(CANCEL_RESPONSE_PREFIX)
+        }
+        conditional_paths = {
+            row["exportName"]
+            for row in self.rust_report["conditionalDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(CANCEL_RESPONSE_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(CANCEL_RESPONSE_PREFIX)
+        }
+        expected_direct = {
+            name for name in EXPECTED_CANCEL_RESPONSE_TRAIT_EXPORTS
+            if " as core::any::Any" not in name
+            and " as core::convert::Into<U>" not in name
+            and " as core::convert::TryFrom<U>" not in name
+            and " as core::convert::TryInto<U>" not in name
+        }
+        expected_conditional = EXPECTED_CANCEL_RESPONSE_TRAIT_EXPORTS - expected_direct
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_CANCEL_RESPONSE_TRAIT_EXPORTS)
+        self.assertEqual(direct_paths, expected_direct)
+        self.assertEqual(conditional_paths, expected_conditional)
+        self.assertEqual(len(direct_paths), 4)
+        self.assertEqual(len(conditional_paths), 6)
+        self.assertEqual(audited_exclusions, EXPECTED_CANCEL_RESPONSE_TRAIT_EXPORTS)
+
+    def test_cancel_response_preserves_mapped_declarations(self) -> None:
+        expected = {
+            "kmipkit_protocol::CancelResponse",
+            "kmipkit_protocol::CancelResponse::try_from_response_item",
+            "kmipkit_protocol::CancelResponse::result",
+            "kmipkit_protocol::CancelResponse::with_asynchronous_correlation_value",
+            "kmipkit_protocol::CancelResponse::cancellation_result",
+        }
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::CancelResponse")
+        }
+
+        self.assertEqual(set(rows), expected)
+        for name, row in rows.items():
+            with self.subTest(export_name=name):
+                self.assertEqual(row["declarationState"], "declared")
+                self.assertEqual(row["capabilityId"], "client_asynchronous_operations")
+                self.assertEqual(
+                    row["approvalSource"]["path"],
+                    "specs/009-asynchronous-operations/spec.md",
+                )
+                self.assertIn("KMIPKIT-0009-FR-001", row["requirementIds"])
+                self.assertIn("KMIPKIT-0009-FR-004", row["requirementIds"])
+
+        root_rows = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::CancelResponse")
+        ]
+        self.assertEqual(root_rows, [])
+
+    def test_cancel_response_slice_has_expected_candidate_count(self) -> None:
+        self.assertEqual(
+            sum(
+                row.get("candidateSpecId") == "KMIPKIT-0043"
+                and row.get("declarationState") == "blocked"
+                for row in self.manifest["publicDeclarations"]
+            ),
+            4018,
         )
 
 
