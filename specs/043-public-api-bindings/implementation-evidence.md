@@ -9477,3 +9477,36 @@ Generation and audit evidence:
 - `py -B tools/api_manifest/audit_shared_rust_inventory.py --repo-root . --report specs/043-public-api-bindings/reports/shared-rust-inventory-2026-11-01.json` regenerated the shared report; the same command with `--check` verified it current at 10,463 observed paths and 4,412 exclusions.
 - `py -B tools/api_manifest/audit_binding_exports.py --check` exited 0 with C 757/757, Java 1,014/1,014, and Python 1,140/1,140; no binding paths changed.
 - `git diff --check` passed for the Green changes; rerun after this evidence update. The Windows Rust audit emitted optional AWS-LC compiler-probe and missing NASM warnings, but completed with exit 0.
+
+
+### T102 lifecycle protocol request trait-artifact reconciliation (2026-11-02)
+
+This inventory-only T102 slice moves exactly 66 compiler-observed `(packageId, exportName)` paths to approved exact exclusions: 11 each for `kmipkit_protocol::{CheckRequest, ObtainLeaseRequest, ReProvisionRequest, RecertifyRequest, RekeyKeyPairRequest, RekeyRequest}`. Rust 1.94.0 observes six direct paths (Any, Borrow, BorrowMut, From, Default, Debug) and five conditional paths (Into, TryFrom associated Error and method, TryInto associated Error and method) per type. The approved functional owner is `specs/022-object-lifecycle/spec.md`, KMIPKIT-0036-FR-001/004; inventory exclusions are under KMIPKIT-0043-FR-010/021. The focused exact-set test also pins the operation's client clause IDs and payload tables as context; no OASIS requirement applies to compiler-generated traits.
+
+| Protocol request | Pinned OASIS context | Stable owner clauses |
+| --- | --- | --- |
+| CheckRequest | §6.1.7 Tables 183-185; Table 183 request | KMIPKIT-REQ-SPEC-6.1.7-001, KMIPKIT-REQ-SPEC-6.1.7-002-001, KMIPKIT-REQ-SPEC-6.1.7-002-002, KMIPKIT-REQ-SPEC-6.1.7-002-003, KMIPKIT-REQ-SPEC-6.1.7-003, KMIPKIT-REQ-SPEC-6.1.7-004-001, KMIPKIT-REQ-SPEC-6.1.7-004-002, KMIPKIT-REQ-SPEC-6.1.7-005 |
+| ObtainLeaseRequest | §6.1.35 Tables 268-270; Table 268 request | KMIPKIT-REQ-SPEC-6.1.35-001-001, KMIPKIT-REQ-SPEC-6.1.35-001-002, KMIPKIT-REQ-SPEC-6.1.35-002, KMIPKIT-REQ-SPEC-6.1.35-005 |
+| ReProvisionRequest | §6.1.48 Tables 313-314; §6.1.48.1 Table 315 | KMIPKIT-REQ-SPEC-6.1.48-001, KMIPKIT-REQ-SPEC-6.1.48-006 |
+| RecertifyRequest | §6.1.45 Tables 300-302; Table 300 request | KMIPKIT-REQ-SPEC-6.1.45-001, KMIPKIT-REQ-SPEC-6.1.45-002-001, KMIPKIT-REQ-SPEC-6.1.45-002-003, KMIPKIT-REQ-SPEC-6.1.45-004, KMIPKIT-REQ-SPEC-6.1.45-006-001, KMIPKIT-REQ-SPEC-6.1.45-008 |
+| RekeyKeyPairRequest | §6.1.47 Tables 310-312; Table 310 request | KMIPKIT-REQ-SPEC-6.1.47-001, KMIPKIT-REQ-SPEC-6.1.47-004-001 |
+| RekeyRequest | §6.1.46 Tables 305-307; Table 305 request | KMIPKIT-REQ-SPEC-6.1.46-001, KMIPKIT-REQ-SPEC-6.1.46-004-001 |
+
+The pinned upstream body places Table 315 after `6.1.48.1 Error Handling – Re-Provision`, with Re-Provision Result Reason rows, immediately before `6.1.49 RNG Retrieve`; the Table 315 caption incorrectly says `RNG Retrieve Errors`. The evidence records that caption typo without modifying the immutable OASIS source. The inventory does not claim operation conformance, profile support, interoperability, or certification.
+
+The baseline comparison is exact: 66 trait declarations were removed and the same 66 exclusions were added; zero declaration/exclusion rows changed outside that set, and all other top-level manifest sections are byte-independent semantically unchanged. The six protocol type declarations remain `verified`; their existing functional API declaration states are pinned by the focused test. No root aliases exist for these six request types. Non-protocol packages, unrelated owner paths, and all other root aliases remain unchanged. Counts: KMIPKIT-0043 blocked candidates 3,768 to 3,702; public declarations 8,966 to 8,900; approved exclusions 5,758 to 5,824. Rust audit totals remain 10,463 observed, with 5,985 matched and 4,478 excluded.
+
+| Phase | Commit | Evidence | Result |
+| --- | --- | --- | --- |
+| Red | `446d4a02a` | `py -B -m unittest tools.api_manifest.tests.test_t102_lifecycle_request_trait_exclusions -v` | Expected failure: the six audited sets still had public declarations instead of exact exclusions and the candidate total was 3,768; the protocol/root state-preservation check passed. |
+| Green | `336433c28` | Pinned generator, updated audit reports, focused and aggregate T102 checks | The manifest delta is exactly 66 paths. The focused lifecycle contract passes 3/3; all T102 contract modules pass 155/155. |
+| Refactor | This evidence commit | Traceability/task records, aggregate guards, generator and export audits | HashPassword's existing T102 contract had selected from `report["matched"]`, omitting already-excluded paths; baseline `42c7ffa51` and current reports both yielded zero there. The test now derives the observed 36-path set from `declarations` plus `conditionalDeclarations` (26+10), leaves its KMIPKIT-0008 exclusions untouched, and passes in isolation. |
+
+Verification:
+
+- `py -B tools/api_manifest/generate.py --write` — generated 12 outputs; `py -B tools/api_manifest/generate.py --check` — all 12 verified.
+- `$modules = Get-ChildItem tools\api_manifest\tests -Filter 'test_t102*.py' | ForEach-Object { 'tools.api_manifest.tests.' + $_.BaseName }; & py -B -m unittest -q $modules; exit $LASTEXITCODE` — 155 passed. `py -B -m unittest tools.api_manifest.tests.test_t102_hashed_password_timestamp_sequence.T102HashedPasswordTimestampSequenceTests.test_exact_sequence_trait_artifacts_are_excluded_by_the_credential_owner -v` — 1 passed.
+- `py -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` — exit 0; 10,463 observed, 5,985 matched, 4,478 excluded; zero missing paths, unobserved paths, issues, kind mismatches, or conditional mismatches. Windows emitted optional AWS-LC compiler-probe/NASM warnings; audit completed successfully.
+- `py -B tools/api_manifest/audit_shared_rust_inventory.py --repo-root . --report specs/043-public-api-bindings/reports/shared-rust-inventory-2026-11-01.json` and the same command with `--check` — report current at 10,463 paths and 4,478 exclusions.
+- `py -B tools/api_manifest/audit_binding_exports.py --check` — zero issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
+- `git diff --check` — passed before this evidence-only Refactor commit.
