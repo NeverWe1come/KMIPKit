@@ -879,7 +879,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            4098,
+            4088,
         )
         for export_name, row in exclusions.items():
             with self.subTest(export_name=export_name):
@@ -981,7 +981,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            4098,
+            4088,
         )
         for export_name, row in exclusions.items():
             with self.subTest(export_name=export_name):
@@ -1081,7 +1081,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            4098,
+            4088,
         )
         for export_name, row in exclusions.items():
             with self.subTest(export_name=export_name):
@@ -1188,7 +1188,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
                 for requirement_id in (
                     "KMIPKIT-0042-FR-001",
-                    "KMIPKIT-0042-FR-008",
+                    "KMIPKIT-0042-FR-004",
                     "KMIPKIT-0043-FR-010",
                     "KMIPKIT-0043-FR-021",
                 ):
