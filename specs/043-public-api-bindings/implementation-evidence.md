@@ -9232,6 +9232,10 @@ Verification:
 - `py -B -m unittest scripts.tests.test_workflow` — 69 passed, including the assertion that every supported platform runs the LogRequest trait-exclusion contract.
 - `git diff --check` — passed on the Refactor/evidence diff.
 
+Independent QA reviewed `c8a0e48887554ab04d58e0390a4713e691985e73..3451d1db5` and found no issues. The review verified the synthetic trait-path assertion fails when the old direct-only filter is substituted, the workflow guard fails if its command is removed, the script-contract matrix includes Ubuntu/Windows/macOS, and exactly ten LogRequest declarations move to exclusions with no other declaration/exclusion changes.
+
+The independent Codex Security diff scan `2d4197c7-e29b-4f56-b1f7-475e6c850722` completed with full coverage and zero reportable findings for `c8a0e48887554ab04d58e0390a4713e691985e73..3451d1db5`. It reviewed all 15 changed paths, confirmed the generated Rust audit and Java/JSON fixtures reconcile, and found no changes to runtime, FFI, functional export implementations, secret handling, or KMIP processing.
+
 This inventory-only reconciliation changes no protocol or runtime behavior and does not claim any OASIS test-case pass.
 
 ### T102 Revoke request trait-artifact reconciliation (2026-11-02)
