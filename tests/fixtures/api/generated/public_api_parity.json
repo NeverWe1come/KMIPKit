@@ -73298,6 +73298,270 @@
       "exportName": "<kmipkit_protocol::RngRetrieveRequest as core::fmt::Debug>::fmt",
       "packageId": "rust-kmipkit-protocol",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveRequest wrapper, not a separate KMIP client capability; the required request value remains covered by the approved four-language operation mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The ExportRequest model remains in its approved owner scope. OASIS KMIP v2.1 Section 6.1.18 Tables 217-219: Table 217 Export Request Payload, Table 218 Export Response Payload, and Table 219 Export Errors. This inventory-only exclusion makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::ExportRequest as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ExportRequest wrapper, not a separate KMIP client capability; explicit Export options remain governed by the approved four-language mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The ExportRequest model remains in its approved owner scope. OASIS KMIP v2.1 Section 6.1.18 Tables 217-219: Table 217 Export Request Payload, Table 218 Export Response Payload, and Table 219 Export Errors. This inventory-only exclusion makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::ExportRequest as core::borrow::Borrow<kmipkit_protocol::export::ExportRequest>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ExportRequest wrapper, not a separate KMIP client capability; explicit Export options remain governed by the approved four-language mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The ExportRequest model remains in its approved owner scope. OASIS KMIP v2.1 Section 6.1.18 Tables 217-219: Table 217 Export Request Payload, Table 218 Export Response Payload, and Table 219 Export Errors. This inventory-only exclusion makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::ExportRequest as core::borrow::BorrowMut<kmipkit_protocol::export::ExportRequest>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ExportRequest wrapper, not a separate KMIP client capability; explicit Export options remain governed by the approved four-language mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The ExportRequest model remains in its approved owner scope. OASIS KMIP v2.1 Section 6.1.18 Tables 217-219: Table 217 Export Request Payload, Table 218 Export Response Payload, and Table 219 Export Errors. This inventory-only exclusion makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::ExportRequest as core::convert::From<kmipkit_protocol::export::ExportRequest>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ExportRequest wrapper, not a separate KMIP client capability; explicit Export options remain governed by the approved four-language mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The ExportRequest model remains in its approved owner scope. OASIS KMIP v2.1 Section 6.1.18 Tables 217-219: Table 217 Export Request Payload, Table 218 Export Response Payload, and Table 219 Export Errors. This inventory-only exclusion makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::ExportRequest as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ExportRequest wrapper, not a separate KMIP client capability; explicit Export options remain governed by the approved four-language mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The ExportRequest model remains in its approved owner scope. OASIS KMIP v2.1 Section 6.1.18 Tables 217-219: Table 217 Export Request Payload, Table 218 Export Response Payload, and Table 219 Export Errors. This inventory-only exclusion makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::ExportRequest as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ExportRequest wrapper, not a separate KMIP client capability; explicit Export options remain governed by the approved four-language mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The ExportRequest model remains in its approved owner scope. OASIS KMIP v2.1 Section 6.1.18 Tables 217-219: Table 217 Export Request Payload, Table 218 Export Response Payload, and Table 219 Export Errors. This inventory-only exclusion makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::ExportRequest as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ExportRequest wrapper, not a separate KMIP client capability; explicit Export options remain governed by the approved four-language mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The ExportRequest model remains in its approved owner scope. OASIS KMIP v2.1 Section 6.1.18 Tables 217-219: Table 217 Export Request Payload, Table 218 Export Response Payload, and Table 219 Export Errors. This inventory-only exclusion makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::ExportRequest as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ExportRequest wrapper, not a separate KMIP client capability; explicit Export options remain governed by the approved four-language mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The ExportRequest model remains in its approved owner scope. OASIS KMIP v2.1 Section 6.1.18 Tables 217-219: Table 217 Export Request Payload, Table 218 Export Response Payload, and Table 219 Export Errors. This inventory-only exclusion makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::ExportRequest as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ExportRequest wrapper, not a separate KMIP client capability; explicit Export options remain governed by the approved four-language mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The ExportRequest model remains in its approved owner scope. OASIS KMIP v2.1 Section 6.1.18 Tables 217-219: Table 217 Export Request Payload, Table 218 Export Response Payload, and Table 219 Export Errors. This inventory-only exclusion makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::ExportRequest as core::default::Default>::default",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ExportRequest wrapper, not a separate KMIP client capability; explicit Export options remain governed by the approved four-language mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The ExportRequest model remains in its approved owner scope. OASIS KMIP v2.1 Section 6.1.18 Tables 217-219: Table 217 Export Request Payload, Table 218 Export Response Payload, and Table 219 Export Errors. This inventory-only exclusion makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::ExportRequest as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ExportRequest wrapper, not a separate KMIP client capability; explicit Export options remain governed by the approved four-language mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-002, KMIPKIT-0017-FR-003, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The GetRequest model remains in its approved owner scope. OASIS KMIP v2.1 Section 6.1.19 Tables 220-222: Table 220 Get Request Payload, Table 221 Get Response Payload, and Table 222 Get Errors. This inventory-only exclusion makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::GetRequest as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetRequest wrapper, not a separate KMIP client capability; explicit Get options and returned object handling remain governed by the approved four-language mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-002, KMIPKIT-0017-FR-003, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The GetRequest model remains in its approved owner scope. OASIS KMIP v2.1 Section 6.1.19 Tables 220-222: Table 220 Get Request Payload, Table 221 Get Response Payload, and Table 222 Get Errors. This inventory-only exclusion makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::GetRequest as core::borrow::Borrow<kmipkit_protocol::get::GetRequest>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetRequest wrapper, not a separate KMIP client capability; explicit Get options and returned object handling remain governed by the approved four-language mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-002, KMIPKIT-0017-FR-003, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The GetRequest model remains in its approved owner scope. OASIS KMIP v2.1 Section 6.1.19 Tables 220-222: Table 220 Get Request Payload, Table 221 Get Response Payload, and Table 222 Get Errors. This inventory-only exclusion makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::GetRequest as core::borrow::BorrowMut<kmipkit_protocol::get::GetRequest>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetRequest wrapper, not a separate KMIP client capability; explicit Get options and returned object handling remain governed by the approved four-language mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-002, KMIPKIT-0017-FR-003, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The GetRequest model remains in its approved owner scope. OASIS KMIP v2.1 Section 6.1.19 Tables 220-222: Table 220 Get Request Payload, Table 221 Get Response Payload, and Table 222 Get Errors. This inventory-only exclusion makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::GetRequest as core::convert::From<kmipkit_protocol::get::GetRequest>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetRequest wrapper, not a separate KMIP client capability; explicit Get options and returned object handling remain governed by the approved four-language mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-002, KMIPKIT-0017-FR-003, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The GetRequest model remains in its approved owner scope. OASIS KMIP v2.1 Section 6.1.19 Tables 220-222: Table 220 Get Request Payload, Table 221 Get Response Payload, and Table 222 Get Errors. This inventory-only exclusion makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::GetRequest as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetRequest wrapper, not a separate KMIP client capability; explicit Get options and returned object handling remain governed by the approved four-language mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-002, KMIPKIT-0017-FR-003, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The GetRequest model remains in its approved owner scope. OASIS KMIP v2.1 Section 6.1.19 Tables 220-222: Table 220 Get Request Payload, Table 221 Get Response Payload, and Table 222 Get Errors. This inventory-only exclusion makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::GetRequest as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetRequest wrapper, not a separate KMIP client capability; explicit Get options and returned object handling remain governed by the approved four-language mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-002, KMIPKIT-0017-FR-003, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The GetRequest model remains in its approved owner scope. OASIS KMIP v2.1 Section 6.1.19 Tables 220-222: Table 220 Get Request Payload, Table 221 Get Response Payload, and Table 222 Get Errors. This inventory-only exclusion makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::GetRequest as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetRequest wrapper, not a separate KMIP client capability; explicit Get options and returned object handling remain governed by the approved four-language mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-002, KMIPKIT-0017-FR-003, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The GetRequest model remains in its approved owner scope. OASIS KMIP v2.1 Section 6.1.19 Tables 220-222: Table 220 Get Request Payload, Table 221 Get Response Payload, and Table 222 Get Errors. This inventory-only exclusion makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::GetRequest as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetRequest wrapper, not a separate KMIP client capability; explicit Get options and returned object handling remain governed by the approved four-language mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-002, KMIPKIT-0017-FR-003, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The GetRequest model remains in its approved owner scope. OASIS KMIP v2.1 Section 6.1.19 Tables 220-222: Table 220 Get Request Payload, Table 221 Get Response Payload, and Table 222 Get Errors. This inventory-only exclusion makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::GetRequest as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetRequest wrapper, not a separate KMIP client capability; explicit Get options and returned object handling remain governed by the approved four-language mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-002, KMIPKIT-0017-FR-003, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The GetRequest model remains in its approved owner scope. OASIS KMIP v2.1 Section 6.1.19 Tables 220-222: Table 220 Get Request Payload, Table 221 Get Response Payload, and Table 222 Get Errors. This inventory-only exclusion makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::GetRequest as core::default::Default>::default",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetRequest wrapper, not a separate KMIP client capability; explicit Get options and returned object handling remain governed by the approved four-language mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-002, KMIPKIT-0017-FR-003, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The GetRequest model remains in its approved owner scope. OASIS KMIP v2.1 Section 6.1.19 Tables 220-222: Table 220 Get Request Payload, Table 221 Get Response Payload, and Table 222 Get Errors. This inventory-only exclusion makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::GetRequest as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetRequest wrapper, not a separate KMIP client capability; explicit Get options and returned object handling remain governed by the approved four-language mapping."
     }
   ],
   "capabilities": [
