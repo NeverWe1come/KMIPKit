@@ -71,7 +71,7 @@ class T102LogRequestTraitExclusionTests(unittest.TestCase):
                 ):
                     self.assertIn(requirement_id, row["evidence"])
                 self.assertIn(
-                    "KMIP v2.1 Section 6.1.29 Tables 250-252, including Table 250 request",
+                    "KMIP v2.1 Section 6.1.29 Tables 250-252, including the Table 250 request",
                     row["evidence"],
                 )
                 self.assertIn("standard-trait implementation", row["reason"])
