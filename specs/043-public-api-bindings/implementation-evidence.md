@@ -8827,7 +8827,7 @@ The Rust 1.94.0 export audit observes exactly ten standard-trait paths for `kmip
 | Phase | Commit | Evidence | Result |
 |---|---|---|---|
 | Red — pin exact paths, owner/OASIS references, direct/conditional split, candidate count, and preserved mapping states | `8b85d897d` | `py -B -m unittest tools.api_manifest.tests.test_t102_import_request_trait_exclusions -v` | Three assertions failed as expected: the ten paths remained declarations, were not exclusions, and the blocked-candidate count remained 3,848. The synthetic root-trait path check passed. |
-| Green — exclude only the ten observed traits, regenerate outputs/report, and update aggregate counts | `911a71cab` | Focused T102 contract, manifest suite, generator, Rust and binding audits | The exact ten exclusions reconcile; candidates fall from 3,848 to 3,838. Rust audit reports 6,111 declarations and 4,352 exclusions for 10,463 observed paths. |
+| Green — exclude only the ten observed traits, regenerate outputs/report, and update aggregate counts | `911a71cab` | Focused T102 contract, manifest suite, generator, Rust and binding audits | The exact ten exclusions reconcile; candidates fall from 3,848 to 3,838. Rust audit reports 6,121 declarations and 4,342 exclusions for 10,463 observed paths. |
 | CI contract Red — require this T102 contract in the cross-platform script job | `63e00e06a` | `py -B -m unittest scripts.tests.test_workflow.WorkflowContractTests.test_script_contract_job_runs_t102_import_request_trait_exclusion_contract -v` | Failed as expected because the workflow did not yet invoke the Import request contract. |
 | CI Green — execute this contract on each supported platform | `a1817cffa` | Workflow contract suite and focused Import request contract | The workflow now invokes the contract; all 71 workflow tests and all four focused request tests passed. |
 | Refactor/evidence — record traceability and verification | This commit | Checks below | T102 remains open; no runtime or protocol behavior changed. |
@@ -8836,12 +8836,14 @@ Verification:
 
 - The configured manifest v2 and focused T102 suite, including ImportRequest — 264 passed.
 - `py -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
-- `py -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` — 6,111 declarations and 4,352 exclusions reconcile with 10,463 observed paths; zero missing, unobserved, issue, kind, conditional-state, or conditional-condition mismatches. Windows emitted optional AWS-LC compiler-probe and missing NASM warnings.
+- `py -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` — 6,121 declarations and 4,342 exclusions reconcile with 10,463 observed paths; zero missing, unobserved, issue, kind, conditional-state, or conditional-condition mismatches. Windows emitted optional AWS-LC compiler-probe and missing NASM warnings.
 - `py -B tools/api_manifest/audit_binding_exports.py --check` — no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
 - `py -B -m unittest scripts.tests.test_workflow` — 71 passed. Requirement traceability — 2 passed. Feature traceability — 30 passed, 1 skipped because Windows did not permit symlink creation.
 - `git diff --check` — passed on the Refactor/evidence diff.
 
 This inventory-only reconciliation changes no protocol or runtime behavior and does not claim any OASIS test-case pass.
+
+Independent QA reviewed the checkpoint and found one documentation issue: the Rust audit totals were copied incorrectly into the Green and verification rows. Both now match the committed report and current audit output (6,121 declarations, 4,342 exclusions, 10,463 observed); QA re-reviewed the correction and confirmed it is resolved with no remaining findings. Codex Security diff scan `83772ca3-74ec-4879-a0c1-0ef9dee1c7fb` covered the exact range `18c9fda705b7bfdebd2da7bc6996a11e8f9cd318..5ec3444b409baf329c0db416e27e78d3abb9c1b5`; all three reviewed surfaces closed with no security findings. This static inventory review is not a qualified human pre-release security review.
 
 ### T102 Join Split Key response Rust trait-artifact exclusions (2026-11-02)
 
