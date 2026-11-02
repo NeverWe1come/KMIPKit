@@ -10,7 +10,6 @@ ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 REPORT = ROOT / "specs" / "043-public-api-bindings" / "reports" / "rust-export-report-2026-11-01.json"
 PACKAGE = "rust-kmipkit-protocol"
-OWNER = "specs/027-rng-operations/spec.md"
 APPROVAL = {
     "kind": "feature-specification",
     "path": "specs/043-public-api-bindings/spec.md",
