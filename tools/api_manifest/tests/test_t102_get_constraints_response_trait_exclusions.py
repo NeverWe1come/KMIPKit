@@ -1,9 +1,9 @@
 """Exact T102 operation-trait exclusion and preservation contracts.
 
 The tests cover Constraints, Check, Certify, Derive Key, Export, Get, Interop,
-Locate, and Validate operations. Each operation's approved owner and OASIS
-citation are asserted by its focused case; compiler-visible Rust traits are
-not separate KMIP capabilities.
+Locate, Log, and Validate operations. Each operation's approved owner and
+OASIS citation are asserted by its focused case; compiler-visible Rust traits
+are not separate KMIP capabilities.
 """
 
 from __future__ import annotations
@@ -41,6 +41,7 @@ GET_PREFIX = "<kmipkit_protocol::GetResponse as "
 LOCATE_PREFIX = "<kmipkit_protocol::LocateResponse as "
 INTEROP_PREFIX = "<kmipkit_protocol::InteropResponse as "
 LOCATE_REQUEST_PREFIX = "<kmipkit_protocol::LocateRequest as "
+LOG_PREFIX = "<kmipkit_protocol::LogResponse as "
 EXPECTED_TRAIT_EXPORTS = {
     "<kmipkit_protocol::GetConstraintsResponse as core::any::Any>::type_id",
     "<kmipkit_protocol::GetConstraintsResponse as core::borrow::Borrow<kmipkit_protocol::get_constraints::GetConstraintsResponse>>::borrow",
@@ -196,6 +197,18 @@ EXPECTED_LOCATE_REQUEST_TRAIT_EXPORTS = {
     "<kmipkit_protocol::LocateRequest as core::convert::TryInto<U>>::Error",
     "<kmipkit_protocol::LocateRequest as core::convert::TryInto<U>>::try_into",
     "<kmipkit_protocol::LocateRequest as core::fmt::Debug>::fmt",
+}
+EXPECTED_LOG_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::LogResponse as core::any::Any>::type_id",
+    "<kmipkit_protocol::LogResponse as core::borrow::Borrow<kmipkit_protocol::log::LogResponse>>::borrow",
+    "<kmipkit_protocol::LogResponse as core::borrow::BorrowMut<kmipkit_protocol::log::LogResponse>>::borrow_mut",
+    "<kmipkit_protocol::LogResponse as core::convert::From<kmipkit_protocol::log::LogResponse>>::from",
+    "<kmipkit_protocol::LogResponse as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::LogResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::LogResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::LogResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::LogResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::LogResponse as core::fmt::Debug>::fmt",
 }
 RETAINED_EXPORTS = {
     "kmipkit_protocol::GetConstraintsResponse",
@@ -1374,6 +1387,103 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             row for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit"
             and row.get("exportName", "").startswith("kmipkit::LocateRequest")
+        ]
+        self.assertEqual(root_rows, [])
+
+    def test_log_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(LOG_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(LOG_PREFIX)
+        }
+
+        self.assertEqual(set(declarations), set())
+        self.assertEqual(set(exclusions), EXPECTED_LOG_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        self.assertEqual(
+            sum(
+                row.get("candidateSpecId") == "KMIPKIT-0043"
+                and row.get("declarationState") == "blocked"
+                for row in self.manifest["publicDeclarations"]
+            ),
+            4078,
+        )
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0042-FR-001",
+                    "KMIPKIT-0042-FR-004",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 §6.1.29 Tables 250–252", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("LogResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_log_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(LOG_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(LOG_PREFIX)
+        }
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_LOG_TRAIT_EXPORTS)
+        self.assertEqual(audited_exclusions, EXPECTED_LOG_TRAIT_EXPORTS)
+
+    def test_log_response_preserves_verified_members_and_blocked_parser(self) -> None:
+        verified = {
+            "kmipkit_protocol::LogResponse",
+            "kmipkit_protocol::LogResponse::result",
+            "kmipkit_protocol::LogResponse::with_ttlv",
+        }
+        blocked = {"kmipkit_protocol::LogResponse::try_from_response_item"}
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::LogResponse")
+        }
+
+        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "verified"},
+            verified,
+        )
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        for name in verified:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-LOG")
+                self.assertIn("KMIPKIT-0042-FR-001", rows[name]["requirementIds"])
+                self.assertIn("KMIPKIT-0042-FR-004", rows[name]["requirementIds"])
+        root_rows = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::LogResponse")
         ]
         self.assertEqual(root_rows, [])
 
