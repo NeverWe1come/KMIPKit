@@ -65426,6 +65426,234 @@
       "exportName": "org.kmipkit.RuntimeMetadata.Version.toString",
       "packageId": "java-kmipkit",
       "reason": "This exact generated Java record method provides local value equality, hashing, or presentation behavior, not a separate runtime metadata capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. `RuntimeVersion` derives Clone, Copy, Debug, Eq, and PartialEq in `crates/kmipkit/src/lib.rs`; these standard/blanket trait artifacts add no fields or wire behavior. The runtime-version capability remains mapped through `kmipkit::RuntimeVersion::product_version`, `kmipkit_version_get`, Java `RuntimeMetadata.Version` components, and Python `metadata.Version` components.",
+      "exportName": "<kmipkit::RuntimeVersion as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the runtime version value (`RuntimeVersion`), not a separate KMIPKit product capability; synchronized metadata remains exposed through the four-language facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. `RuntimeVersion` derives Clone, Copy, Debug, Eq, and PartialEq in `crates/kmipkit/src/lib.rs`; these standard/blanket trait artifacts add no fields or wire behavior. The runtime-version capability remains mapped through `kmipkit::RuntimeVersion::product_version`, `kmipkit_version_get`, Java `RuntimeMetadata.Version` components, and Python `metadata.Version` components.",
+      "exportName": "<kmipkit::RuntimeVersion as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the runtime version value (`RuntimeVersion`), not a separate KMIPKit product capability; synchronized metadata remains exposed through the four-language facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. `RuntimeVersion` derives Clone, Copy, Debug, Eq, and PartialEq in `crates/kmipkit/src/lib.rs`; these standard/blanket trait artifacts add no fields or wire behavior. The runtime-version capability remains mapped through `kmipkit::RuntimeVersion::product_version`, `kmipkit_version_get`, Java `RuntimeMetadata.Version` components, and Python `metadata.Version` components.",
+      "exportName": "<kmipkit::RuntimeVersion as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the runtime version value (`RuntimeVersion`), not a separate KMIPKit product capability; synchronized metadata remains exposed through the four-language facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. `RuntimeVersion` derives Clone, Copy, Debug, Eq, and PartialEq in `crates/kmipkit/src/lib.rs`; these standard/blanket trait artifacts add no fields or wire behavior. The runtime-version capability remains mapped through `kmipkit::RuntimeVersion::product_version`, `kmipkit_version_get`, Java `RuntimeMetadata.Version` components, and Python `metadata.Version` components.",
+      "exportName": "<kmipkit::RuntimeVersion as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the runtime version value (`RuntimeVersion`), not a separate KMIPKit product capability; synchronized metadata remains exposed through the four-language facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. `RuntimeVersion` derives Clone, Copy, Debug, Eq, and PartialEq in `crates/kmipkit/src/lib.rs`; these standard/blanket trait artifacts add no fields or wire behavior. The runtime-version capability remains mapped through `kmipkit::RuntimeVersion::product_version`, `kmipkit_version_get`, Java `RuntimeMetadata.Version` components, and Python `metadata.Version` components.",
+      "exportName": "<kmipkit::RuntimeVersion as core::borrow::Borrow<kmipkit::RuntimeVersion>>::borrow",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the runtime version value (`RuntimeVersion`), not a separate KMIPKit product capability; synchronized metadata remains exposed through the four-language facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. `RuntimeVersion` derives Clone, Copy, Debug, Eq, and PartialEq in `crates/kmipkit/src/lib.rs`; these standard/blanket trait artifacts add no fields or wire behavior. The runtime-version capability remains mapped through `kmipkit::RuntimeVersion::product_version`, `kmipkit_version_get`, Java `RuntimeMetadata.Version` components, and Python `metadata.Version` components.",
+      "exportName": "<kmipkit::RuntimeVersion as core::borrow::BorrowMut<kmipkit::RuntimeVersion>>::borrow_mut",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the runtime version value (`RuntimeVersion`), not a separate KMIPKit product capability; synchronized metadata remains exposed through the four-language facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. `RuntimeVersion` derives Clone, Copy, Debug, Eq, and PartialEq in `crates/kmipkit/src/lib.rs`; these standard/blanket trait artifacts add no fields or wire behavior. The runtime-version capability remains mapped through `kmipkit::RuntimeVersion::product_version`, `kmipkit_version_get`, Java `RuntimeMetadata.Version` components, and Python `metadata.Version` components.",
+      "exportName": "<kmipkit::RuntimeVersion as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the runtime version value (`RuntimeVersion`), not a separate KMIPKit product capability; synchronized metadata remains exposed through the four-language facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. `RuntimeVersion` derives Clone, Copy, Debug, Eq, and PartialEq in `crates/kmipkit/src/lib.rs`; these standard/blanket trait artifacts add no fields or wire behavior. The runtime-version capability remains mapped through `kmipkit::RuntimeVersion::product_version`, `kmipkit_version_get`, Java `RuntimeMetadata.Version` components, and Python `metadata.Version` components.",
+      "exportName": "<kmipkit::RuntimeVersion as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the runtime version value (`RuntimeVersion`), not a separate KMIPKit product capability; synchronized metadata remains exposed through the four-language facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. `RuntimeVersion` derives Clone, Copy, Debug, Eq, and PartialEq in `crates/kmipkit/src/lib.rs`; these standard/blanket trait artifacts add no fields or wire behavior. The runtime-version capability remains mapped through `kmipkit::RuntimeVersion::product_version`, `kmipkit_version_get`, Java `RuntimeMetadata.Version` components, and Python `metadata.Version` components.",
+      "exportName": "<kmipkit::RuntimeVersion as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the runtime version value (`RuntimeVersion`), not a separate KMIPKit product capability; synchronized metadata remains exposed through the four-language facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. `RuntimeVersion` derives Clone, Copy, Debug, Eq, and PartialEq in `crates/kmipkit/src/lib.rs`; these standard/blanket trait artifacts add no fields or wire behavior. The runtime-version capability remains mapped through `kmipkit::RuntimeVersion::product_version`, `kmipkit_version_get`, Java `RuntimeMetadata.Version` components, and Python `metadata.Version` components.",
+      "exportName": "<kmipkit::RuntimeVersion as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the runtime version value (`RuntimeVersion`), not a separate KMIPKit product capability; synchronized metadata remains exposed through the four-language facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. `RuntimeVersion` derives Clone, Copy, Debug, Eq, and PartialEq in `crates/kmipkit/src/lib.rs`; these standard/blanket trait artifacts add no fields or wire behavior. The runtime-version capability remains mapped through `kmipkit::RuntimeVersion::product_version`, `kmipkit_version_get`, Java `RuntimeMetadata.Version` components, and Python `metadata.Version` components.",
+      "exportName": "<kmipkit::RuntimeVersion as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the runtime version value (`RuntimeVersion`), not a separate KMIPKit product capability; synchronized metadata remains exposed through the four-language facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. `RuntimeVersion` derives Clone, Copy, Debug, Eq, and PartialEq in `crates/kmipkit/src/lib.rs`; these standard/blanket trait artifacts add no fields or wire behavior. The runtime-version capability remains mapped through `kmipkit::RuntimeVersion::product_version`, `kmipkit_version_get`, Java `RuntimeMetadata.Version` components, and Python `metadata.Version` components.",
+      "exportName": "<kmipkit::RuntimeVersion as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the runtime version value (`RuntimeVersion`), not a separate KMIPKit product capability; synchronized metadata remains exposed through the four-language facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. `RuntimeVersion` derives Clone, Copy, Debug, Eq, and PartialEq in `crates/kmipkit/src/lib.rs`; these standard/blanket trait artifacts add no fields or wire behavior. The runtime-version capability remains mapped through `kmipkit::RuntimeVersion::product_version`, `kmipkit_version_get`, Java `RuntimeMetadata.Version` components, and Python `metadata.Version` components.",
+      "exportName": "<kmipkit::RuntimeVersion as core::convert::From<kmipkit::RuntimeVersion>>::from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the runtime version value (`RuntimeVersion`), not a separate KMIPKit product capability; synchronized metadata remains exposed through the four-language facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. `RuntimeVersion` derives Clone, Copy, Debug, Eq, and PartialEq in `crates/kmipkit/src/lib.rs`; these standard/blanket trait artifacts add no fields or wire behavior. The runtime-version capability remains mapped through `kmipkit::RuntimeVersion::product_version`, `kmipkit_version_get`, Java `RuntimeMetadata.Version` components, and Python `metadata.Version` components.",
+      "exportName": "<kmipkit::RuntimeVersion as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the runtime version value (`RuntimeVersion`), not a separate KMIPKit product capability; synchronized metadata remains exposed through the four-language facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. `RuntimeVersion` derives Clone, Copy, Debug, Eq, and PartialEq in `crates/kmipkit/src/lib.rs`; these standard/blanket trait artifacts add no fields or wire behavior. The runtime-version capability remains mapped through `kmipkit::RuntimeVersion::product_version`, `kmipkit_version_get`, Java `RuntimeMetadata.Version` components, and Python `metadata.Version` components.",
+      "exportName": "<kmipkit::RuntimeVersion as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the runtime version value (`RuntimeVersion`), not a separate KMIPKit product capability; synchronized metadata remains exposed through the four-language facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. `RuntimeVersion` derives Clone, Copy, Debug, Eq, and PartialEq in `crates/kmipkit/src/lib.rs`; these standard/blanket trait artifacts add no fields or wire behavior. The runtime-version capability remains mapped through `kmipkit::RuntimeVersion::product_version`, `kmipkit_version_get`, Java `RuntimeMetadata.Version` components, and Python `metadata.Version` components.",
+      "exportName": "<kmipkit::RuntimeVersion as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the runtime version value (`RuntimeVersion`), not a separate KMIPKit product capability; synchronized metadata remains exposed through the four-language facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. `RuntimeVersion` derives Clone, Copy, Debug, Eq, and PartialEq in `crates/kmipkit/src/lib.rs`; these standard/blanket trait artifacts add no fields or wire behavior. The runtime-version capability remains mapped through `kmipkit::RuntimeVersion::product_version`, `kmipkit_version_get`, Java `RuntimeMetadata.Version` components, and Python `metadata.Version` components.",
+      "exportName": "<kmipkit::RuntimeVersion as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the runtime version value (`RuntimeVersion`), not a separate KMIPKit product capability; synchronized metadata remains exposed through the four-language facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. `RuntimeVersion` derives Clone, Copy, Debug, Eq, and PartialEq in `crates/kmipkit/src/lib.rs`; these standard/blanket trait artifacts add no fields or wire behavior. The runtime-version capability remains mapped through `kmipkit::RuntimeVersion::product_version`, `kmipkit_version_get`, Java `RuntimeMetadata.Version` components, and Python `metadata.Version` components.",
+      "exportName": "<kmipkit::RuntimeVersion as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the runtime version value (`RuntimeVersion`), not a separate KMIPKit product capability; synchronized metadata remains exposed through the four-language facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. `RuntimeVersion` derives Clone, Copy, Debug, Eq, and PartialEq in `crates/kmipkit/src/lib.rs`; these standard/blanket trait artifacts add no fields or wire behavior. The runtime-version capability remains mapped through `kmipkit::RuntimeVersion::product_version`, `kmipkit_version_get`, Java `RuntimeMetadata.Version` components, and Python `metadata.Version` components.",
+      "exportName": "<kmipkit::RuntimeVersion as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the runtime version value (`RuntimeVersion`), not a separate KMIPKit product capability; synchronized metadata remains exposed through the four-language facade."
     }
   ],
   "capabilities": [
@@ -170794,11 +171022,13 @@
         "KMIPKIT-0021-FR-011",
         "KMIPKIT-0021-FR-012",
         "KMIPKIT-0021-FR-013",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
         "KMIPKIT-0043-FR-009",
         "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
         "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
@@ -170851,11 +171081,13 @@
         "KMIPKIT-0021-FR-011",
         "KMIPKIT-0021-FR-012",
         "KMIPKIT-0021-FR-013",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
         "KMIPKIT-0043-FR-009",
         "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
         "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
@@ -170903,16 +171135,19 @@
         "KMIPKIT-0021-FR-001",
         "KMIPKIT-0021-FR-005",
         "KMIPKIT-0021-FR-006",
+        "KMIPKIT-0021-FR-008",
         "KMIPKIT-0021-FR-009",
         "KMIPKIT-0021-FR-010",
         "KMIPKIT-0021-FR-011",
         "KMIPKIT-0021-FR-012",
         "KMIPKIT-0021-FR-013",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
         "KMIPKIT-0043-FR-009",
         "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
         "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
@@ -170967,11 +171202,13 @@
         "KMIPKIT-0021-FR-011",
         "KMIPKIT-0021-FR-012",
         "KMIPKIT-0021-FR-013",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
         "KMIPKIT-0043-FR-009",
         "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
         "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
@@ -171019,16 +171256,19 @@
         "KMIPKIT-0021-FR-001",
         "KMIPKIT-0021-FR-005",
         "KMIPKIT-0021-FR-007",
+        "KMIPKIT-0021-FR-008",
         "KMIPKIT-0021-FR-009",
         "KMIPKIT-0021-FR-010",
         "KMIPKIT-0021-FR-011",
         "KMIPKIT-0021-FR-012",
         "KMIPKIT-0021-FR-013",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
         "KMIPKIT-0043-FR-009",
         "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
         "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
@@ -181364,11 +181604,13 @@
         "KMIPKIT-0021-FR-011",
         "KMIPKIT-0021-FR-012",
         "KMIPKIT-0021-FR-013",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
         "KMIPKIT-0043-FR-009",
         "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
         "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
@@ -181421,11 +181663,13 @@
         "KMIPKIT-0021-FR-011",
         "KMIPKIT-0021-FR-012",
         "KMIPKIT-0021-FR-013",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
         "KMIPKIT-0043-FR-009",
         "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
         "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
@@ -181473,16 +181717,19 @@
         "KMIPKIT-0021-FR-001",
         "KMIPKIT-0021-FR-005",
         "KMIPKIT-0021-FR-006",
+        "KMIPKIT-0021-FR-008",
         "KMIPKIT-0021-FR-009",
         "KMIPKIT-0021-FR-010",
         "KMIPKIT-0021-FR-011",
         "KMIPKIT-0021-FR-012",
         "KMIPKIT-0021-FR-013",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
         "KMIPKIT-0043-FR-009",
         "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
         "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
@@ -181537,11 +181784,13 @@
         "KMIPKIT-0021-FR-011",
         "KMIPKIT-0021-FR-012",
         "KMIPKIT-0021-FR-013",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
         "KMIPKIT-0043-FR-009",
         "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
         "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
@@ -181589,16 +181838,19 @@
         "KMIPKIT-0021-FR-001",
         "KMIPKIT-0021-FR-005",
         "KMIPKIT-0021-FR-007",
+        "KMIPKIT-0021-FR-008",
         "KMIPKIT-0021-FR-009",
         "KMIPKIT-0021-FR-010",
         "KMIPKIT-0021-FR-011",
         "KMIPKIT-0021-FR-012",
         "KMIPKIT-0021-FR-013",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
         "KMIPKIT-0043-FR-009",
         "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
         "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
