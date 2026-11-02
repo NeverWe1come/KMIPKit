@@ -219787,236 +219787,6 @@
       "parityScope": "four-language"
     },
     {
-      "declarationId": "rust-observed-208fd5d19b3f48ca9268",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateResponse as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-979d50cbbcda074fc03a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateResponse as core::borrow::Borrow<kmipkit_protocol::validate::ValidateResponse>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-645c99c4920e5d5eadfb",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateResponse as core::borrow::BorrowMut<kmipkit_protocol::validate::ValidateResponse>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-d22d59300ed51cd0c370",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateResponse as core::convert::From<kmipkit_protocol::validate::ValidateResponse>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-a38f5401f1a5e409e7db",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateResponse as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::validate::ValidateResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-32ee82c165dbd99ccbba",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateResponse as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::validate::ValidateResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-42b7179d84be29baff64",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateResponse as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::validate::ValidateResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-5c800c851711ce26a1ad",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateResponse as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::validate::ValidateResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-c7355f7047dba8a34abb",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateResponse as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::validate::ValidateResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
-      "declarationId": "rust-observed-a2dcb0266ae6c5cd992b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ValidateResponse as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust trait implementation is not independently mapped by the approved operation facade.",
-      "parityScope": "four-language"
-    },
-    {
       "declarationId": "rust-observed-f355b74a437665bc14d3",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
@@ -448426,6 +448196,126 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Certify response remains mapped to KMIP v2.1 §6.1.6 Tables 179–181; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateResponse as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateResponse wrapper, not a separate KMIP client capability; the response type, result, parser, validity indicator, and TTLV access remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Validate response remains mapped to KMIP v2.1 §6.1.57 Tables 340–342; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateResponse as core::borrow::Borrow<kmipkit_protocol::validate::ValidateResponse>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateResponse wrapper, not a separate KMIP client capability; the response type, result, parser, validity indicator, and TTLV access remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Validate response remains mapped to KMIP v2.1 §6.1.57 Tables 340–342; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateResponse as core::borrow::BorrowMut<kmipkit_protocol::validate::ValidateResponse>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateResponse wrapper, not a separate KMIP client capability; the response type, result, parser, validity indicator, and TTLV access remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Validate response remains mapped to KMIP v2.1 §6.1.57 Tables 340–342; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateResponse as core::convert::From<kmipkit_protocol::validate::ValidateResponse>>::from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateResponse wrapper, not a separate KMIP client capability; the response type, result, parser, validity indicator, and TTLV access remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Validate response remains mapped to KMIP v2.1 §6.1.57 Tables 340–342; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateResponse as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateResponse wrapper, not a separate KMIP client capability; the response type, result, parser, validity indicator, and TTLV access remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Validate response remains mapped to KMIP v2.1 §6.1.57 Tables 340–342; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateResponse as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateResponse wrapper, not a separate KMIP client capability; the response type, result, parser, validity indicator, and TTLV access remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Validate response remains mapped to KMIP v2.1 §6.1.57 Tables 340–342; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateResponse as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateResponse wrapper, not a separate KMIP client capability; the response type, result, parser, validity indicator, and TTLV access remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Validate response remains mapped to KMIP v2.1 §6.1.57 Tables 340–342; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateResponse as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateResponse wrapper, not a separate KMIP client capability; the response type, result, parser, validity indicator, and TTLV access remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Validate response remains mapped to KMIP v2.1 §6.1.57 Tables 340–342; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateResponse as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateResponse wrapper, not a separate KMIP client capability; the response type, result, parser, validity indicator, and TTLV access remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Validate response remains mapped to KMIP v2.1 §6.1.57 Tables 340–342; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ValidateResponse as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateResponse wrapper, not a separate KMIP client capability; the response type, result, parser, validity indicator, and TTLV access remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Validate response remains mapped to KMIP v2.1 §6.1.57 Tables 340–342; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     }
   ],
   "apiLevels": [
