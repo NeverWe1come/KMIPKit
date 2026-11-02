@@ -68539,6 +68539,126 @@
       "approvalSource": {
         "evidence": "**Status**: Approved for implementation",
         "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Revoke request remains mapped to KMIP v2.1 Section 6.1.44 Tables 295-297, including Table 295 request; related request context appears in Section 4.47 Table 123 and Section 11.48 Table 481. These standard-trait artifacts do not add separate KMIP behavior. The approved operation catalog lists no direct Revoke case ID, so this inventory-only mapping slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevokeRequest as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RevokeRequest wrapper, not a separate KMIP client capability; the request model continues to represent the mapped Revoke inputs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Revoke request remains mapped to KMIP v2.1 Section 6.1.44 Tables 295-297, including Table 295 request; related request context appears in Section 4.47 Table 123 and Section 11.48 Table 481. These standard-trait artifacts do not add separate KMIP behavior. The approved operation catalog lists no direct Revoke case ID, so this inventory-only mapping slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevokeRequest as core::borrow::Borrow<kmipkit_protocol::revoke::RevokeRequest>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RevokeRequest wrapper, not a separate KMIP client capability; the request model continues to represent the mapped Revoke inputs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Revoke request remains mapped to KMIP v2.1 Section 6.1.44 Tables 295-297, including Table 295 request; related request context appears in Section 4.47 Table 123 and Section 11.48 Table 481. These standard-trait artifacts do not add separate KMIP behavior. The approved operation catalog lists no direct Revoke case ID, so this inventory-only mapping slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevokeRequest as core::borrow::BorrowMut<kmipkit_protocol::revoke::RevokeRequest>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RevokeRequest wrapper, not a separate KMIP client capability; the request model continues to represent the mapped Revoke inputs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Revoke request remains mapped to KMIP v2.1 Section 6.1.44 Tables 295-297, including Table 295 request; related request context appears in Section 4.47 Table 123 and Section 11.48 Table 481. These standard-trait artifacts do not add separate KMIP behavior. The approved operation catalog lists no direct Revoke case ID, so this inventory-only mapping slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevokeRequest as core::convert::From<kmipkit_protocol::revoke::RevokeRequest>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RevokeRequest wrapper, not a separate KMIP client capability; the request model continues to represent the mapped Revoke inputs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Revoke request remains mapped to KMIP v2.1 Section 6.1.44 Tables 295-297, including Table 295 request; related request context appears in Section 4.47 Table 123 and Section 11.48 Table 481. These standard-trait artifacts do not add separate KMIP behavior. The approved operation catalog lists no direct Revoke case ID, so this inventory-only mapping slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevokeRequest as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RevokeRequest wrapper, not a separate KMIP client capability; the request model continues to represent the mapped Revoke inputs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Revoke request remains mapped to KMIP v2.1 Section 6.1.44 Tables 295-297, including Table 295 request; related request context appears in Section 4.47 Table 123 and Section 11.48 Table 481. These standard-trait artifacts do not add separate KMIP behavior. The approved operation catalog lists no direct Revoke case ID, so this inventory-only mapping slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevokeRequest as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RevokeRequest wrapper, not a separate KMIP client capability; the request model continues to represent the mapped Revoke inputs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Revoke request remains mapped to KMIP v2.1 Section 6.1.44 Tables 295-297, including Table 295 request; related request context appears in Section 4.47 Table 123 and Section 11.48 Table 481. These standard-trait artifacts do not add separate KMIP behavior. The approved operation catalog lists no direct Revoke case ID, so this inventory-only mapping slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevokeRequest as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RevokeRequest wrapper, not a separate KMIP client capability; the request model continues to represent the mapped Revoke inputs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Revoke request remains mapped to KMIP v2.1 Section 6.1.44 Tables 295-297, including Table 295 request; related request context appears in Section 4.47 Table 123 and Section 11.48 Table 481. These standard-trait artifacts do not add separate KMIP behavior. The approved operation catalog lists no direct Revoke case ID, so this inventory-only mapping slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevokeRequest as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RevokeRequest wrapper, not a separate KMIP client capability; the request model continues to represent the mapped Revoke inputs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Revoke request remains mapped to KMIP v2.1 Section 6.1.44 Tables 295-297, including Table 295 request; related request context appears in Section 4.47 Table 123 and Section 11.48 Table 481. These standard-trait artifacts do not add separate KMIP behavior. The approved operation catalog lists no direct Revoke case ID, so this inventory-only mapping slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevokeRequest as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RevokeRequest wrapper, not a separate KMIP client capability; the request model continues to represent the mapped Revoke inputs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Revoke request remains mapped to KMIP v2.1 Section 6.1.44 Tables 295-297, including Table 295 request; related request context appears in Section 4.47 Table 123 and Section 11.48 Table 481. These standard-trait artifacts do not add separate KMIP behavior. The approved operation catalog lists no direct Revoke case ID, so this inventory-only mapping slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevokeRequest as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RevokeRequest wrapper, not a separate KMIP client capability; the request model continues to represent the mapped Revoke inputs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },

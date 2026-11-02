@@ -208256,236 +208256,6 @@
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
-      "declarationId": "rust-observed-d6a58d7c3e6b9ee1cafb",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RevokeRequest as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-667721fbe78766e12106",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RevokeRequest as core::borrow::Borrow<kmipkit_protocol::revoke::RevokeRequest>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-8360883a4a6d2f2e1a96",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RevokeRequest as core::borrow::BorrowMut<kmipkit_protocol::revoke::RevokeRequest>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-044c14a8fde5d55f3e7a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RevokeRequest as core::convert::From<kmipkit_protocol::revoke::RevokeRequest>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-619989a48a896718f922",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RevokeRequest as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::revoke::RevokeRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-ea046a43a720b0af16ff",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RevokeRequest as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::revoke::RevokeRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-7b986a9c09cf41a158be",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RevokeRequest as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::revoke::RevokeRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-4ffcd0718515a20b88df",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RevokeRequest as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::revoke::RevokeRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-aa1cdd7c580108844410",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RevokeRequest as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::revoke::RevokeRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-c641d30baace136f4b2b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RevokeRequest as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
       "declarationId": "rust-observed-84dba699c36979292cdf",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
@@ -444473,6 +444243,126 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Register response remains mapped to KMIP v2.1 Section 6.1.43 Tables 291-294, including its Table 292 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RevokeRequest as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RevokeRequest wrapper, not a separate KMIP client capability; the request model continues to represent the mapped Revoke inputs.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Revoke request remains mapped to KMIP v2.1 Section 6.1.44 Tables 295-297, including Table 295 request; related request context appears in Section 4.47 Table 123 and Section 11.48 Table 481. These standard-trait artifacts do not add separate KMIP behavior. The approved operation catalog lists no direct Revoke case ID, so this inventory-only mapping slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RevokeRequest as core::borrow::Borrow<kmipkit_protocol::revoke::RevokeRequest>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RevokeRequest wrapper, not a separate KMIP client capability; the request model continues to represent the mapped Revoke inputs.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Revoke request remains mapped to KMIP v2.1 Section 6.1.44 Tables 295-297, including Table 295 request; related request context appears in Section 4.47 Table 123 and Section 11.48 Table 481. These standard-trait artifacts do not add separate KMIP behavior. The approved operation catalog lists no direct Revoke case ID, so this inventory-only mapping slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RevokeRequest as core::borrow::BorrowMut<kmipkit_protocol::revoke::RevokeRequest>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RevokeRequest wrapper, not a separate KMIP client capability; the request model continues to represent the mapped Revoke inputs.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Revoke request remains mapped to KMIP v2.1 Section 6.1.44 Tables 295-297, including Table 295 request; related request context appears in Section 4.47 Table 123 and Section 11.48 Table 481. These standard-trait artifacts do not add separate KMIP behavior. The approved operation catalog lists no direct Revoke case ID, so this inventory-only mapping slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RevokeRequest as core::convert::From<kmipkit_protocol::revoke::RevokeRequest>>::from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RevokeRequest wrapper, not a separate KMIP client capability; the request model continues to represent the mapped Revoke inputs.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Revoke request remains mapped to KMIP v2.1 Section 6.1.44 Tables 295-297, including Table 295 request; related request context appears in Section 4.47 Table 123 and Section 11.48 Table 481. These standard-trait artifacts do not add separate KMIP behavior. The approved operation catalog lists no direct Revoke case ID, so this inventory-only mapping slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RevokeRequest as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RevokeRequest wrapper, not a separate KMIP client capability; the request model continues to represent the mapped Revoke inputs.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Revoke request remains mapped to KMIP v2.1 Section 6.1.44 Tables 295-297, including Table 295 request; related request context appears in Section 4.47 Table 123 and Section 11.48 Table 481. These standard-trait artifacts do not add separate KMIP behavior. The approved operation catalog lists no direct Revoke case ID, so this inventory-only mapping slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RevokeRequest as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RevokeRequest wrapper, not a separate KMIP client capability; the request model continues to represent the mapped Revoke inputs.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Revoke request remains mapped to KMIP v2.1 Section 6.1.44 Tables 295-297, including Table 295 request; related request context appears in Section 4.47 Table 123 and Section 11.48 Table 481. These standard-trait artifacts do not add separate KMIP behavior. The approved operation catalog lists no direct Revoke case ID, so this inventory-only mapping slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RevokeRequest as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RevokeRequest wrapper, not a separate KMIP client capability; the request model continues to represent the mapped Revoke inputs.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Revoke request remains mapped to KMIP v2.1 Section 6.1.44 Tables 295-297, including Table 295 request; related request context appears in Section 4.47 Table 123 and Section 11.48 Table 481. These standard-trait artifacts do not add separate KMIP behavior. The approved operation catalog lists no direct Revoke case ID, so this inventory-only mapping slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RevokeRequest as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RevokeRequest wrapper, not a separate KMIP client capability; the request model continues to represent the mapped Revoke inputs.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Revoke request remains mapped to KMIP v2.1 Section 6.1.44 Tables 295-297, including Table 295 request; related request context appears in Section 4.47 Table 123 and Section 11.48 Table 481. These standard-trait artifacts do not add separate KMIP behavior. The approved operation catalog lists no direct Revoke case ID, so this inventory-only mapping slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RevokeRequest as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RevokeRequest wrapper, not a separate KMIP client capability; the request model continues to represent the mapped Revoke inputs.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Revoke request remains mapped to KMIP v2.1 Section 6.1.44 Tables 295-297, including Table 295 request; related request context appears in Section 4.47 Table 123 and Section 11.48 Table 481. These standard-trait artifacts do not add separate KMIP behavior. The approved operation catalog lists no direct Revoke case ID, so this inventory-only mapping slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RevokeRequest as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RevokeRequest wrapper, not a separate KMIP client capability; the request model continues to represent the mapped Revoke inputs.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Revoke request remains mapped to KMIP v2.1 Section 6.1.44 Tables 295-297, including Table 295 request; related request context appears in Section 4.47 Table 123 and Section 11.48 Table 481. These standard-trait artifacts do not add separate KMIP behavior. The approved operation catalog lists no direct Revoke case ID, so this inventory-only mapping slice makes no OASIS conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
     {
       "packageId": "rust-kmipkit-protocol",
