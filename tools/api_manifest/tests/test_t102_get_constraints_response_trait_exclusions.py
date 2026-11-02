@@ -943,7 +943,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            4048,
+            4038,
         )
         for export_name, row in exclusions.items():
             with self.subTest(export_name=export_name):
@@ -1045,7 +1045,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            4048,
+            4038,
         )
         for export_name, row in exclusions.items():
             with self.subTest(export_name=export_name):
@@ -1145,7 +1145,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            4048,
+            4038,
         )
         for export_name, row in exclusions.items():
             with self.subTest(export_name=export_name):
@@ -1245,7 +1245,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            4048,
+            4038,
         )
         for export_name, row in exclusions.items():
             with self.subTest(export_name=export_name):
@@ -1344,7 +1344,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            4048,
+            4038,
         )
         for export_name, row in exclusions.items():
             with self.subTest(export_name=export_name):
@@ -1452,7 +1452,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            4048,
+            4038,
         )
         for export_name, row in exclusions.items():
             with self.subTest(export_name=export_name):
@@ -1549,7 +1549,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            4048,
+            4038,
         )
         for export_name, row in exclusions.items():
             with self.subTest(export_name=export_name):
@@ -1726,7 +1726,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            4048,
+            4038,
         )
 
 

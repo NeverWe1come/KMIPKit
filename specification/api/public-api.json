@@ -200754,236 +200754,6 @@
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
-      "declarationId": "rust-observed-307d82438a92c91fb1e7",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObtainLeaseResponse as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-94214e2d20cd9bd64903",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObtainLeaseResponse as core::borrow::Borrow<kmipkit_protocol::obtain_lease::ObtainLeaseResponse>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-9037b035ad7f33c32bcb",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObtainLeaseResponse as core::borrow::BorrowMut<kmipkit_protocol::obtain_lease::ObtainLeaseResponse>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-63b06a496a4e4f3663da",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObtainLeaseResponse as core::convert::From<kmipkit_protocol::obtain_lease::ObtainLeaseResponse>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-2af8f44ef1cb5ec1f588",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObtainLeaseResponse as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::obtain_lease::ObtainLeaseResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-3cbbd9c7f4a5baf47ed8",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObtainLeaseResponse as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::obtain_lease::ObtainLeaseResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-1fa6810ff6a5390c4095",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObtainLeaseResponse as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::obtain_lease::ObtainLeaseResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-6d19f06b6db89efd6ce4",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObtainLeaseResponse as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::obtain_lease::ObtainLeaseResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-eddb9bf7afd3199d0266",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObtainLeaseResponse as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::obtain_lease::ObtainLeaseResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-dfef0961646672e2754f",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObtainLeaseResponse as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
       "declarationId": "rust-observed-6301c653a527d86db3ea",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
@@ -447097,7 +446867,7 @@
       },
       "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Import response remains mapped to KMIP v2.1 §6.1.25 Tables 238–240, including its Table 239 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::JoinSplitKeyResponse as core::any::Any>::type_id",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed JoinSplitKeyResponse wrapper, not a separate KMIP client capability; the response type, Unique Identifier, and response TTLV remain mapped.",
@@ -447109,7 +446879,7 @@
       },
       "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Join Split Key response remains mapped to KMIP v2.1 §6.1.27 Tables 244–246, including its Table 245 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::JoinSplitKeyResponse as core::borrow::Borrow<kmipkit_protocol::join_split_key::JoinSplitKeyResponse>>::borrow",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed JoinSplitKeyResponse wrapper, not a separate KMIP client capability; the response type, Unique Identifier, and response TTLV remain mapped.",
@@ -447121,7 +446891,7 @@
       },
       "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Join Split Key response remains mapped to KMIP v2.1 §6.1.27 Tables 244–246, including its Table 245 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::JoinSplitKeyResponse as core::borrow::BorrowMut<kmipkit_protocol::join_split_key::JoinSplitKeyResponse>>::borrow_mut",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed JoinSplitKeyResponse wrapper, not a separate KMIP client capability; the response type, Unique Identifier, and response TTLV remain mapped.",
@@ -447133,7 +446903,7 @@
       },
       "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Join Split Key response remains mapped to KMIP v2.1 §6.1.27 Tables 244–246, including its Table 245 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::JoinSplitKeyResponse as core::convert::From<kmipkit_protocol::join_split_key::JoinSplitKeyResponse>>::from",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed JoinSplitKeyResponse wrapper, not a separate KMIP client capability; the response type, Unique Identifier, and response TTLV remain mapped.",
@@ -447145,7 +446915,7 @@
       },
       "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Join Split Key response remains mapped to KMIP v2.1 §6.1.27 Tables 244–246, including its Table 245 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::JoinSplitKeyResponse as core::convert::Into<U>>::into",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed JoinSplitKeyResponse wrapper, not a separate KMIP client capability; the response type, Unique Identifier, and response TTLV remain mapped.",
@@ -447157,7 +446927,7 @@
       },
       "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Join Split Key response remains mapped to KMIP v2.1 §6.1.27 Tables 244–246, including its Table 245 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::JoinSplitKeyResponse as core::convert::TryFrom<U>>::Error",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed JoinSplitKeyResponse wrapper, not a separate KMIP client capability; the response type, Unique Identifier, and response TTLV remain mapped.",
@@ -447169,7 +446939,7 @@
       },
       "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Join Split Key response remains mapped to KMIP v2.1 §6.1.27 Tables 244–246, including its Table 245 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::JoinSplitKeyResponse as core::convert::TryFrom<U>>::try_from",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed JoinSplitKeyResponse wrapper, not a separate KMIP client capability; the response type, Unique Identifier, and response TTLV remain mapped.",
@@ -447181,7 +446951,7 @@
       },
       "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Join Split Key response remains mapped to KMIP v2.1 §6.1.27 Tables 244–246, including its Table 245 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::JoinSplitKeyResponse as core::convert::TryInto<U>>::Error",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed JoinSplitKeyResponse wrapper, not a separate KMIP client capability; the response type, Unique Identifier, and response TTLV remain mapped.",
@@ -447193,7 +446963,7 @@
       },
       "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Join Split Key response remains mapped to KMIP v2.1 §6.1.27 Tables 244–246, including its Table 245 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::JoinSplitKeyResponse as core::convert::TryInto<U>>::try_into",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed JoinSplitKeyResponse wrapper, not a separate KMIP client capability; the response type, Unique Identifier, and response TTLV remain mapped.",
@@ -447205,7 +446975,7 @@
       },
       "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Join Split Key response remains mapped to KMIP v2.1 §6.1.27 Tables 244–246, including its Table 245 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::JoinSplitKeyResponse as core::fmt::Debug>::fmt",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed JoinSplitKeyResponse wrapper, not a separate KMIP client capability; the response type, Unique Identifier, and response TTLV remain mapped.",
@@ -447216,6 +446986,126 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Join Split Key response remains mapped to KMIP v2.1 §6.1.27 Tables 244–246, including its Table 245 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObtainLeaseResponse as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ObtainLeaseResponse wrapper, not a separate KMIP client capability; the response type, last-change date, lease time, Unique Identifier, and response TTLV remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Obtain Lease response remains mapped to KMIP v2.1 §6.1.35 Tables 268–270, including its Table 269 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObtainLeaseResponse as core::borrow::Borrow<kmipkit_protocol::obtain_lease::ObtainLeaseResponse>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ObtainLeaseResponse wrapper, not a separate KMIP client capability; the response type, last-change date, lease time, Unique Identifier, and response TTLV remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Obtain Lease response remains mapped to KMIP v2.1 §6.1.35 Tables 268–270, including its Table 269 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObtainLeaseResponse as core::borrow::BorrowMut<kmipkit_protocol::obtain_lease::ObtainLeaseResponse>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ObtainLeaseResponse wrapper, not a separate KMIP client capability; the response type, last-change date, lease time, Unique Identifier, and response TTLV remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Obtain Lease response remains mapped to KMIP v2.1 §6.1.35 Tables 268–270, including its Table 269 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObtainLeaseResponse as core::convert::From<kmipkit_protocol::obtain_lease::ObtainLeaseResponse>>::from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ObtainLeaseResponse wrapper, not a separate KMIP client capability; the response type, last-change date, lease time, Unique Identifier, and response TTLV remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Obtain Lease response remains mapped to KMIP v2.1 §6.1.35 Tables 268–270, including its Table 269 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObtainLeaseResponse as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ObtainLeaseResponse wrapper, not a separate KMIP client capability; the response type, last-change date, lease time, Unique Identifier, and response TTLV remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Obtain Lease response remains mapped to KMIP v2.1 §6.1.35 Tables 268–270, including its Table 269 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObtainLeaseResponse as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ObtainLeaseResponse wrapper, not a separate KMIP client capability; the response type, last-change date, lease time, Unique Identifier, and response TTLV remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Obtain Lease response remains mapped to KMIP v2.1 §6.1.35 Tables 268–270, including its Table 269 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObtainLeaseResponse as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ObtainLeaseResponse wrapper, not a separate KMIP client capability; the response type, last-change date, lease time, Unique Identifier, and response TTLV remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Obtain Lease response remains mapped to KMIP v2.1 §6.1.35 Tables 268–270, including its Table 269 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObtainLeaseResponse as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ObtainLeaseResponse wrapper, not a separate KMIP client capability; the response type, last-change date, lease time, Unique Identifier, and response TTLV remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Obtain Lease response remains mapped to KMIP v2.1 §6.1.35 Tables 268–270, including its Table 269 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObtainLeaseResponse as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ObtainLeaseResponse wrapper, not a separate KMIP client capability; the response type, last-change date, lease time, Unique Identifier, and response TTLV remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Obtain Lease response remains mapped to KMIP v2.1 §6.1.35 Tables 268–270, including its Table 269 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObtainLeaseResponse as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ObtainLeaseResponse wrapper, not a separate KMIP client capability; the response type, last-change date, lease time, Unique Identifier, and response TTLV remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Obtain Lease response remains mapped to KMIP v2.1 §6.1.35 Tables 268–270, including its Table 269 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     }
   ],
   "apiLevels": [
