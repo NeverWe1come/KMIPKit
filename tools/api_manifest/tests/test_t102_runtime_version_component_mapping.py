@@ -94,7 +94,6 @@ class T102RuntimeVersionComponentMappingTests(unittest.TestCase):
             for row in self.manifest.get("approvedExclusions", [])
             if row.get("packageId") == "java-kmipkit"
             and row.get("exportName", "").startswith("org.kmipkit.RuntimeMetadata.Version.")
-            and row.get("exportName") in EXPECTED_JAVA_RECORD_EXCLUSIONS
         }
         self.assertEqual(declarations, set())
         self.assertEqual(set(exclusions), EXPECTED_JAVA_RECORD_EXCLUSIONS)
@@ -104,7 +103,8 @@ class T102RuntimeVersionComponentMappingTests(unittest.TestCase):
             with self.subTest(export_name=export_name):
                 self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
                 self.assertIn("KMIPKIT-0043-FR-021", row["evidence"])
-                self.assertIn("RuntimeMetadata.Version remains mapped", row["evidence"])
+                self.assertIn("RuntimeMetadata.Version type", row["evidence"])
+                self.assertIn("major/minor/patch components remain mapped", row["evidence"])
                 if export_name.endswith(".<init>"):
                     self.assertIn("local runtime metadata snapshot", row["reason"])
                 else:

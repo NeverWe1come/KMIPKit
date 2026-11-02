@@ -8417,3 +8417,26 @@ Verification:
 - `git diff --check` — passed.
 
 Hosted CI for the corrected head remains pending until these commits are pushed and GitHub runs the workflow again.
+
+### T102 runtime version component mapping (2026-11-02)
+
+This manifest-only slice promotes the six existing Java `RuntimeMetadata.Version` and Python `metadata.Version` major/minor/patch declarations to the approved `ffi_runtime_metadata` capability and records exact exclusions for the Java record's constructor and generated value methods. The capability's type, version query, ABI version, and all numeric components remain represented. Rust exposes the product version string while C, Java, and Python expose numeric components; this documents the established package/ABI facade and changes no KMIP wire or runtime behavior. The KMIPKIT-0043 blocked candidate count decreases from 4,237 to 4,227; T102 remains open.
+
+| Phase | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red — pin all six component mappings, four Java exclusions, retained runtime metadata, and CI invocation | `674ef279b` | `py -B -m unittest tools.api_manifest.tests.test_t102_runtime_version_component_mapping -v` | Expected failures before the mappings and exclusions existed. |
+| Green — map the six components, record exact exclusions, regenerate outputs, and invoke the contract in CI | `269044ed7` | `py -B tools/api_manifest/generate.py --write` | Pinned generator refreshed the manifest outputs; generated files were not edited by hand. |
+| Refactor/evidence — assert the full namespace exclusion set and update traceability/checkpoint | This commit | Focused contracts, export audit, generator, and language metadata tests below | Four exact Java record exclusions; T102 remains open. |
+
+Verification:
+
+- `py -B -m unittest tools.api_manifest.tests.test_t102_runtime_version_component_mapping scripts.tests.test_workflow.WorkflowContractTests.test_script_contract_job_runs_t102_runtime_version_component_contract -v` — 4 passed.
+- `py -B -m unittest tools.api_manifest.tests.test_binding_exports -v` — 51 passed.
+- `py -B tools/api_manifest/generate.py --check` — all 12 outputs verified.
+- `py -B tools/api_manifest/audit_binding_exports.py --check` — no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140; no missing exports or kind mismatches.
+- `cargo test --locked -p kmipkit --test runtime_metadata public_version_matches_the_synchronized_package_version` — 1 passed.
+- From `bindings/java`, `./gradlew.bat --no-daemon --console=plain test --tests 'org.kmipkit.RuntimeMetadataTest.reportsSynchronizedProductAndAbiVersions'` — `BUILD SUCCESSFUL`.
+- `git diff --check` — passed.
+- Independent QA found no mapping blocker and prompted the exact namespace-wide exclusion assertion; it also confirmed that the large generated Java fixture diff is chunk-boundary churn from the pinned 12,000-character serializer, while the generated JSON fixture contains the semantic manifest changes.
+
+Hosted CI for the final pushed head remains required. The previous run at `f119e9135` was still in progress during this checkpoint and had a failed macOS Python job whose logs were not yet available; no hosted-green claim is made.
