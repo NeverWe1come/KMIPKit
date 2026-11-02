@@ -5985,6 +5985,9 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         ]
         self.assertEqual(len(any_lifetime_rows), 13)
         for row in any_lifetime_rows:
+            exclusion_key = (row["packageId"], _canonical_export_name(row["exportName"]))
+            if exclusion_key in approved_exclusion_keys:
+                continue
             with self.subTest(any_lifetime=row["exportName"]):
                 declaration = by_package_and_export[(row["packageId"], row["exportName"])]
                 predicates = row["condition"]["predicates"]
@@ -6218,7 +6221,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(len(t094_exclusions), 230)
         self.assertEqual(len(t096_exclusions), 265)
         self.assertEqual(len(t097_exclusions), 627)
-        self.assertEqual(len(rust_exclusions), 2704)
+        self.assertEqual(len(rust_exclusions), 2714)
         self.assertTrue(
             any(
                 item["exportName"] == "kmipkit_protocol::RegisterRequest::validate_local_shape"

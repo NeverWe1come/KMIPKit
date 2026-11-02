@@ -182391,259 +182391,6 @@
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
-      "declarationId": "rust-observed-519b6b632ef1521b241f",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CancelResponse<'a> as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "kind": "outlives",
-            "lifetime": "'static",
-            "subject": "T"
-          },
-          {
-            "arguments": [],
-            "kind": "traitBound",
-            "modifier": "maybe",
-            "subject": "T",
-            "traitPath": [
-              "core",
-              "marker",
-              "Sized"
-            ]
-          }
-        ],
-        "subjectBindings": {
-          "T": "kmipkit_protocol::CancelResponse<'a>"
-        }
-      }
-    },
-    {
-      "declarationId": "rust-observed-12fe8e55b1b078f32d40",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CancelResponse<'a> as core::borrow::Borrow<kmipkit_protocol::cancel::CancelResponse<'a>>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-ef352ebd6173d01cee8e",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CancelResponse<'a> as core::borrow::BorrowMut<kmipkit_protocol::cancel::CancelResponse<'a>>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-9f98fb976ca0fff222bf",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CancelResponse<'a> as core::convert::From<kmipkit_protocol::cancel::CancelResponse<'a>>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-6b5f1b3f435f718dbf4b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CancelResponse<'a> as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::cancel::CancelResponse<'a>"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-0c30de1af8e579063782",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CancelResponse<'a> as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::cancel::CancelResponse<'a>"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-ebc5354f41ed0407b456",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CancelResponse<'a> as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::cancel::CancelResponse<'a>"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-51519b77714f4cc3d8c7",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CancelResponse<'a> as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::cancel::CancelResponse<'a>"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-487c3e914c2a54a29c79",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CancelResponse<'a> as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::cancel::CancelResponse<'a>"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-1f89dfcfad4fb7a8df22",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CancelResponse<'a> as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
       "declarationId": "rust-observed-a1fd26aea46394438e7f",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
@@ -446877,7 +446624,7 @@
       },
       "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Obtain Lease response remains mapped to KMIP v2.1 §6.1.35 Tables 268–270, including its Table 269 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RekeyKeyPairResponse as core::any::Any>::type_id",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyKeyPairResponse wrapper, not a separate KMIP client capability; the response type, replacement private and public key Unique Identifiers, and response TTLV remain mapped.",
@@ -446889,7 +446636,7 @@
       },
       "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Re-key Key Pair response remains mapped to KMIP v2.1 §6.1.47 Tables 310–312, including its Table 311 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RekeyKeyPairResponse as core::borrow::Borrow<kmipkit_protocol::rekey_key_pair::RekeyKeyPairResponse>>::borrow",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyKeyPairResponse wrapper, not a separate KMIP client capability; the response type, replacement private and public key Unique Identifiers, and response TTLV remain mapped.",
@@ -446901,7 +446648,7 @@
       },
       "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Re-key Key Pair response remains mapped to KMIP v2.1 §6.1.47 Tables 310–312, including its Table 311 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RekeyKeyPairResponse as core::borrow::BorrowMut<kmipkit_protocol::rekey_key_pair::RekeyKeyPairResponse>>::borrow_mut",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyKeyPairResponse wrapper, not a separate KMIP client capability; the response type, replacement private and public key Unique Identifiers, and response TTLV remain mapped.",
@@ -446913,7 +446660,7 @@
       },
       "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Re-key Key Pair response remains mapped to KMIP v2.1 §6.1.47 Tables 310–312, including its Table 311 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RekeyKeyPairResponse as core::convert::From<kmipkit_protocol::rekey_key_pair::RekeyKeyPairResponse>>::from",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyKeyPairResponse wrapper, not a separate KMIP client capability; the response type, replacement private and public key Unique Identifiers, and response TTLV remain mapped.",
@@ -446925,7 +446672,7 @@
       },
       "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Re-key Key Pair response remains mapped to KMIP v2.1 §6.1.47 Tables 310–312, including its Table 311 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RekeyKeyPairResponse as core::convert::Into<U>>::into",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyKeyPairResponse wrapper, not a separate KMIP client capability; the response type, replacement private and public key Unique Identifiers, and response TTLV remain mapped.",
@@ -446937,7 +446684,7 @@
       },
       "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Re-key Key Pair response remains mapped to KMIP v2.1 §6.1.47 Tables 310–312, including its Table 311 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RekeyKeyPairResponse as core::convert::TryFrom<U>>::Error",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyKeyPairResponse wrapper, not a separate KMIP client capability; the response type, replacement private and public key Unique Identifiers, and response TTLV remain mapped.",
@@ -446949,7 +446696,7 @@
       },
       "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Re-key Key Pair response remains mapped to KMIP v2.1 §6.1.47 Tables 310–312, including its Table 311 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RekeyKeyPairResponse as core::convert::TryFrom<U>>::try_from",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyKeyPairResponse wrapper, not a separate KMIP client capability; the response type, replacement private and public key Unique Identifiers, and response TTLV remain mapped.",
@@ -446961,7 +446708,7 @@
       },
       "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Re-key Key Pair response remains mapped to KMIP v2.1 §6.1.47 Tables 310–312, including its Table 311 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RekeyKeyPairResponse as core::convert::TryInto<U>>::Error",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyKeyPairResponse wrapper, not a separate KMIP client capability; the response type, replacement private and public key Unique Identifiers, and response TTLV remain mapped.",
@@ -446973,7 +446720,7 @@
       },
       "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Re-key Key Pair response remains mapped to KMIP v2.1 §6.1.47 Tables 310–312, including its Table 311 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RekeyKeyPairResponse as core::convert::TryInto<U>>::try_into",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyKeyPairResponse wrapper, not a separate KMIP client capability; the response type, replacement private and public key Unique Identifiers, and response TTLV remain mapped.",
@@ -446985,7 +446732,7 @@
       },
       "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Re-key Key Pair response remains mapped to KMIP v2.1 §6.1.47 Tables 310–312, including its Table 311 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::RekeyKeyPairResponse as core::fmt::Debug>::fmt",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RekeyKeyPairResponse wrapper, not a separate KMIP client capability; the response type, replacement private and public key Unique Identifiers, and response TTLV remain mapped.",
@@ -446996,6 +446743,126 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Re-key Key Pair response remains mapped to KMIP v2.1 §6.1.47 Tables 310–312, including its Table 311 response; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CancelResponse<'a> as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed CancelResponse wrapper, not a separate KMIP client capability; the typed response result, echoed asynchronous correlation accessor, and Cancellation Result remain declared.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Cancel response remains declared under KMIP v2.1 Section 6.1.5 Tables 176-178, including the Table 177 response; Cancellation Result values are defined by KMIP v2.1 Section 11.7 Tables 437-438. These standard-trait artifacts add no separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CancelResponse<'a> as core::borrow::Borrow<kmipkit_protocol::cancel::CancelResponse<'a>>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed CancelResponse wrapper, not a separate KMIP client capability; the typed response result, echoed asynchronous correlation accessor, and Cancellation Result remain declared.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Cancel response remains declared under KMIP v2.1 Section 6.1.5 Tables 176-178, including the Table 177 response; Cancellation Result values are defined by KMIP v2.1 Section 11.7 Tables 437-438. These standard-trait artifacts add no separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CancelResponse<'a> as core::borrow::BorrowMut<kmipkit_protocol::cancel::CancelResponse<'a>>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed CancelResponse wrapper, not a separate KMIP client capability; the typed response result, echoed asynchronous correlation accessor, and Cancellation Result remain declared.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Cancel response remains declared under KMIP v2.1 Section 6.1.5 Tables 176-178, including the Table 177 response; Cancellation Result values are defined by KMIP v2.1 Section 11.7 Tables 437-438. These standard-trait artifacts add no separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CancelResponse<'a> as core::convert::From<kmipkit_protocol::cancel::CancelResponse<'a>>>::from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed CancelResponse wrapper, not a separate KMIP client capability; the typed response result, echoed asynchronous correlation accessor, and Cancellation Result remain declared.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Cancel response remains declared under KMIP v2.1 Section 6.1.5 Tables 176-178, including the Table 177 response; Cancellation Result values are defined by KMIP v2.1 Section 11.7 Tables 437-438. These standard-trait artifacts add no separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CancelResponse<'a> as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed CancelResponse wrapper, not a separate KMIP client capability; the typed response result, echoed asynchronous correlation accessor, and Cancellation Result remain declared.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Cancel response remains declared under KMIP v2.1 Section 6.1.5 Tables 176-178, including the Table 177 response; Cancellation Result values are defined by KMIP v2.1 Section 11.7 Tables 437-438. These standard-trait artifacts add no separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CancelResponse<'a> as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed CancelResponse wrapper, not a separate KMIP client capability; the typed response result, echoed asynchronous correlation accessor, and Cancellation Result remain declared.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Cancel response remains declared under KMIP v2.1 Section 6.1.5 Tables 176-178, including the Table 177 response; Cancellation Result values are defined by KMIP v2.1 Section 11.7 Tables 437-438. These standard-trait artifacts add no separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CancelResponse<'a> as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed CancelResponse wrapper, not a separate KMIP client capability; the typed response result, echoed asynchronous correlation accessor, and Cancellation Result remain declared.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Cancel response remains declared under KMIP v2.1 Section 6.1.5 Tables 176-178, including the Table 177 response; Cancellation Result values are defined by KMIP v2.1 Section 11.7 Tables 437-438. These standard-trait artifacts add no separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CancelResponse<'a> as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed CancelResponse wrapper, not a separate KMIP client capability; the typed response result, echoed asynchronous correlation accessor, and Cancellation Result remain declared.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Cancel response remains declared under KMIP v2.1 Section 6.1.5 Tables 176-178, including the Table 177 response; Cancellation Result values are defined by KMIP v2.1 Section 11.7 Tables 437-438. These standard-trait artifacts add no separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CancelResponse<'a> as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed CancelResponse wrapper, not a separate KMIP client capability; the typed response result, echoed asynchronous correlation accessor, and Cancellation Result remain declared.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Cancel response remains declared under KMIP v2.1 Section 6.1.5 Tables 176-178, including the Table 177 response; Cancellation Result values are defined by KMIP v2.1 Section 11.7 Tables 437-438. These standard-trait artifacts add no separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CancelResponse<'a> as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed CancelResponse wrapper, not a separate KMIP client capability; the typed response result, echoed asynchronous correlation accessor, and Cancellation Result remain declared.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Cancel response remains declared under KMIP v2.1 Section 6.1.5 Tables 176-178, including the Table 177 response; Cancellation Result values are defined by KMIP v2.1 Section 11.7 Tables 437-438. These standard-trait artifacts add no separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     }
   ],
   "apiLevels": [
