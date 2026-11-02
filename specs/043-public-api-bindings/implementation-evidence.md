@@ -9356,3 +9356,36 @@ The Rust audit emitted optional Windows AWS-LC compiler-probe and missing NASM w
 The shared Rust inventory report at the base was stale: it recorded 3,612 exclusions while the matching base Rust audit already recorded 4,342. Regeneration reconciles the full report; its five `HashedPasswordTimestampSequence` mapping rows were already present in the base API manifest and do not add a new functional declaration. The report now records 4,352 exclusions after this checkpoint's ten exact trait exclusions.
 
 Independent QA reviewed `23165635b4f0aa77505774dfb2896b9884008757..21b633b88226b762b3d786747acfb0794acbb56e` and found no blockers. Codex Security diff scan `1a0adf90-1793-449e-9874-33755124eba2` completed with four reviewed surfaces, full coverage, and zero findings for the same range. The scan was static and did not run tests or runtime behavior; a qualified human security review remains a release requirement.
+
+
+### T102 PKCS#11 request trait-artifact reconciliation (2026-11-02)
+
+The approved functional owner is `specs/026-pkcs11/spec.md` (KMIPKIT-0040-FR-001/002/004); the inventory exclusions use KMIPKIT-0043-FR-010/021. KMIPKIT-0040-FR-005 remains relevant only to the existing redaction context. The source is OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.37 Tables 273-275, with Table 273 as the request. The approved catalog has no direct operation test case; the official fixture and profile case `PKCS11-M-1-21` are unavailable. No OASIS case was run, and this inventory-only checkpoint makes no conformance, interoperability, profile-support, or certification claim.
+
+The Rust 1.94.0 export audit observes ten standard-trait paths for `kmipkit_protocol::Pkcs11Request`: five direct and five conditional. Only those ten protocol paths move from blocked declarations to exact approved exclusions. The protocol type and `new` remain verified; `into_ttlv_payload`, `with_correlation_value`, `with_extension`, `with_input_parameters`, and `with_interface` remain blocked. There is no root `kmipkit::Pkcs11Request` alias. The separate `kmipkit_client::Pkcs11Request` declaration and all ten blocked client trait paths are unchanged, as are the ten existing `Pkcs11Response` trait exclusions. The source interpretation `KMIPKIT-026-SOURCE-001` for vendor Function Integer in operation context versus Section 7.26 Table 378 remains unchanged.
+
+| Phase | Commit | Evidence | Result |
+|---|---|---|---|
+| Red - pin exact protocol trait paths, five/five classification, owner and OASIS evidence, preserved states, client/response invariants, and aggregate deltas | `c36af688b` | Focused `test_t102_pkcs11_request_trait_exclusions` | Three assertions failed as expected: the ten paths remained declarations, were absent from exact exclusions, and the candidate total was still 3,828. Preserved protocol/client/response states and the vendor Function Integer source interpretation passed. |
+| CI-contract Red - require the new contract in the cross-platform script job | `cbeb8158e` | Focused `test_script_contract_job_runs_t102_pkcs11_request_trait_exclusion_contract` | Failed as expected because the script-contract job did not invoke the new request contract. |
+| CI Green - invoke the contract in the existing three-platform matrix | `d6296bf98` | Focused workflow guard and `scripts.tests.test_workflow` | The guard passed; all 73 workflow tests passed. The script-contract matrix covers Ubuntu, Windows, and macOS. |
+| Implementation Green - exclude only the ten protocol trait paths and regenerate reviewed artifacts and audits | `d6b76d64d` | Focused T102/parity/aggregate/shared-inventory tests, generator, and export audits | The six new contract tests pass. The manifest delta is exactly ten protocol exclusions; the current client request paths and functional request declarations remain unchanged. |
+| Refactor/evidence - update task status, traceability, and verification results | This commit | Checks below | T102 remains open; this inventory checkpoint changes no protocol or runtime behavior. |
+
+The aggregate change is exact: KMIPKIT-0043 blocked candidates 3,828 to 3,818; public declarations 9,026 to 9,016; approved exclusions 5,698 to 5,708; Rust audit declarations/matches 6,111 to 6,101; Rust exclusions 4,352 to 4,362; observed Rust declarations remain 10,463.
+
+Verification:
+
+- Focused T102, PKCS#11 parity, manifest aggregate, and shared inventory command (151 passed):
+
+  ```powershell
+  uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions tools.api_manifest.tests.test_t102_pkcs11_response_trait_exclusions tools.api_manifest.tests.test_t102_interop_request_trait_exclusions tools.api_manifest.tests.test_t102_import_request_trait_exclusions tools.api_manifest.tests.test_t102_join_split_key_request_trait_exclusions tools.api_manifest.tests.test_t102_log_request_trait_exclusions tools.api_manifest.tests.test_t102_revoke_request_trait_exclusions tools.api_manifest.tests.test_t102_rng_seed_request_trait_exclusions tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions tools.api_manifest.tests.test_pkcs11_parity_manifest tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_ffi_runtime_metadata_is_owned_and_mapped_in_all_languages tools.api_manifest.tests.test_shared_rust_inventory -v
+  ```
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest scripts.tests.test_workflow scripts.tests.test_requirement_traceability -v` - 75 passed.
+- `py -B tools/api_manifest/generate.py --check` - all 12 generated API outputs verified.
+- `py -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` - 6,101 matched declarations and 4,362 approved exclusions reconcile with 10,463 observed paths; zero missing, unobserved, issue, kind, conditional-state, or conditional-condition mismatches. Windows emitted optional AWS-LC compiler-probe and missing NASM warnings; the audit completed successfully.
+- `py -B tools/api_manifest/audit_shared_rust_inventory.py --repo-root . --report specs/043-public-api-bindings/reports/shared-rust-inventory-2026-11-01.json --check` - report current; 10,463 observed paths and 4,362 exclusions.
+- `py -B tools/api_manifest/audit_binding_exports.py --check` - no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
+- `git diff --check` - passed before the evidence update; rerun after this documentation change.
+
+The generated changes contain no new functional API mapping. The focused contract verifies the exact UTF-8 OASIS title and section without replacement characters, keeps FR-005 out of trait-exclusion evidence, and preserves `KMIPKIT-026-SOURCE-001`.
