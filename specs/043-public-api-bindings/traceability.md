@@ -494,3 +494,15 @@ The exclusions are authorized by `KMIPKIT-0043-FR-010` and `KMIPKIT-0043-FR-021`
 | `kmipkit_protocol::SplitKeyReference` | `KMIPKIT-0037-FR-001`, `KMIPKIT-0037-FR-004` | Section 6.1.27, Tables 244-246; Table 244 is the Join Split Key request containing the repeated Unique Identifier | `tools/api_manifest/tests/test_t102_protocol_request_trait_exclusions.py` |
 
 The contract pins the exact `(packageId, exportName)` set from the Rust 1.94.0 audit: five direct and five conditional trait paths for each declaration, all under `rust-kmipkit-protocol`. It also preserves the protocol types and inherent-member states, all existing root-facade aliases and their trait paths, and the absence of a root `SplitKeyReference` alias. No OASIS test case ran for this inventory checkpoint; no conformance, interoperability, profile-support, or certification claim is made.
+### T102 - Validate and policy request trait-artifact reconciliation
+
+The exact exclusions are authorized by `KMIPKIT-0043-FR-010` and `KMIPKIT-0043-FR-021`. They inventory compiler-visible Rust standard-trait artifacts only; no OASIS requirement directly applies to those traits. Functional owners and operation references are:
+
+| Protocol declaration | Approved owner requirements | Pinned OASIS KMIP v2.1 reference | Exact trait count and inventory test |
+|---|---|---|---|
+| `kmipkit_protocol::ValidateError` | Approved `specs/028-diagnostics-interop/spec.md` (`KMIPKIT-0042-FR-001/004`) | §6.1.57 Tables 341–342 define Validate response and errors; Table 340 is the request shape | 26 paths (21 direct, five conditional); `tools/api_manifest/tests/test_t102_request_trait_batch_two.py` |
+| `kmipkit_protocol::ValidateRequest` | Approved `specs/028-diagnostics-interop/spec.md` (`KMIPKIT-0042-FR-001/004`) | §6.1.57 Tables 340–342; Table 340 is the request | 11 paths (six direct, five conditional); `tools/api_manifest/tests/test_t102_request_trait_batch_two.py` |
+| `kmipkit_protocol::GetConstraintsRequest` | Approved `specs/025-policy-controls/spec.md` (`KMIPKIT-0039-FR-001/004`) | §6.1.22 Tables 229–231; Table 229 is the request | 20 paths (15 direct, five conditional); `tools/api_manifest/tests/test_t102_request_trait_batch_two.py` |
+| `kmipkit_protocol::SetDefaultsRequest` | Approved `specs/025-policy-controls/spec.md` (`KMIPKIT-0039-FR-001/004`) | §6.1.53 Tables 328–330; Table 328 is the request | 11 paths (six direct, five conditional); `tools/api_manifest/tests/test_t102_request_trait_batch_two.py` |
+
+The pinned Rust 1.94.0 report and the manifest agree on the exact 68 `(packageId, exportName)` pairs, all under `rust-kmipkit-protocol`. `ValidateError` and `ValidateRequest` have no root aliases. Existing `kmipkit::GetConstraintsRequest` and `kmipkit::SetDefaultsRequest` aliases, all blocked root members and trait paths, and all protocol inherent/functional declaration states remain unchanged. No other owner or package path, including PKCS#11, is changed. The 3,702-to-3,634 candidate reduction is inventory reconciliation only; no OASIS conformance, interoperability, profile-support, or certification claim is made.

@@ -9510,3 +9510,45 @@ Verification:
 - `py -B tools/api_manifest/audit_shared_rust_inventory.py --repo-root . --report specs/043-public-api-bindings/reports/shared-rust-inventory-2026-11-01.json` and the same command with `--check` — report current at 10,463 paths and 4,478 exclusions.
 - `py -B tools/api_manifest/audit_binding_exports.py --check` — zero issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
 - `git diff --check` — passed before this evidence-only Refactor commit.
+## T102 Validate and policy request trait exclusions (2026-11-02)
+
+This inventory-only batch excludes exactly 68 compiler-observed Rust standard-trait paths: 26 for `kmipkit_protocol::ValidateError`, 11 for `ValidateRequest`, 20 for `GetConstraintsRequest`, and 11 for `SetDefaultsRequest`. The direct/conditional counts are 21/5, 6/5, 15/5, and 6/5. Every pair is pinned in `test_t102_request_trait_batch_two.py` and reconciles to the Rust 1.94.0 compiler audit under package `rust-kmipkit-protocol`.
+
+The approved owners are `specs/028-diagnostics-interop/spec.md` (KMIPKIT-0042-FR-001/004) for Validate and `specs/025-policy-controls/spec.md` (KMIPKIT-0039-FR-001/004) for Get Constraints and Set Defaults. The pinned OASIS source, SHA-256 `8BF9D914C097E98A6509AA1FFCBF03406F738066E940597AEE93D0A5E07ADDCF`, confirms §6.1.57 Tables 340–342, §6.1.22 Tables 229–231, and §6.1.53 Tables 328–330. ValidateError is a local Rust diagnostic type; Tables 341–342 ground the associated Validate response/error contract, while no OASIS clause requires its compiler-generated traits.
+
+The request/error types and every inherent, field, variant, and functional declaration preserve their prior states. `kmipkit::GetConstraintsRequest` and `kmipkit::SetDefaultsRequest` root aliases and all their blocked root members/trait paths remain unchanged; Validate types have no root aliases. The baseline comparison confirms that all other manifest declarations and exclusions, all non-target top-level manifest values, and all PKCS#11 and other-owner paths are unchanged. This makes no operation-conformance or profile-support claim.
+
+| Phase | Commit | Evidence | Result |
+| --- | --- | --- | --- |
+| Red | `e0e919fdfdd493f22a4e27414d75eb86f74d5ccc` | `python -B -m unittest tools.api_manifest.tests.test_t102_request_trait_batch_two -v` | Expected failure before Green: the exact 68 audit/manifest exclusions were absent and the candidate count was 3,702 instead of 3,634. The functional declaration and root-alias state-preservation test passed. |
+| Green | `cbae314e1b1a5a1e25420b3f0d1b908179929f4e` | Manifest exact-set test; pinned generator; Rust/shared/binding audits; affected T102 aggregate guards | Pass: 68 declarations moved to 68 owner-approved exclusions. Public declarations/exclusions are 8,832/5,892; the blocked candidate count is 3,634. |
+| Refactor | This evidence commit | Traceability/task updates and final commit checks | Records the exact owner/OASIS links, no-conformance boundary, commands, results, and unchanged-state evidence. |
+
+Verification:
+
+- `python -B tools/api_manifest/generate.py --write` — exit 0; generated 12 public API outputs. `python -B tools/api_manifest/generate.py --check` — exit 0; all 12 outputs verified.
+- Focused combined suite — 232 passed in 23.380 seconds:
+
+```powershell
+uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest -v `
+  tools.api_manifest.tests.test_t102_request_trait_batch_two `
+  tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions `
+  tools.api_manifest.tests.test_t102_import_request_trait_exclusions `
+  tools.api_manifest.tests.test_t102_interop_request_trait_exclusions `
+  tools.api_manifest.tests.test_t102_join_split_key_request_trait_exclusions `
+  tools.api_manifest.tests.test_t102_lifecycle_request_trait_exclusions `
+  tools.api_manifest.tests.test_t102_log_request_trait_exclusions `
+  tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions `
+  tools.api_manifest.tests.test_t102_pkcs11_response_trait_exclusions `
+  tools.api_manifest.tests.test_t102_protocol_request_trait_exclusions `
+  tools.api_manifest.tests.test_t102_revoke_request_trait_exclusions `
+  tools.api_manifest.tests.test_t102_rng_seed_request_trait_exclusions `
+  tools.api_manifest.tests.test_t102_set_constraints_request_trait_exclusions `
+  tools.api_manifest.tests.test_shared_rust_inventory `
+  scripts.tests.test_workflow `
+  tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_declaration_and_exclusion_records_are_closed_and_complete
+```
+- `python -B tools/api_manifest/audit_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json` and `python -B tools/api_manifest/audit_rust_exports.py --check` — exit 0; 10,463 observed, 5,917 matched, 4,546 excluded, zero issues/missing/unobserved paths or kind/conditional mismatches. The Windows run emitted optional AWS-LC MSVC compiler-probe and NASM warnings.
+- `python -B tools/api_manifest/audit_shared_rust_inventory.py --report specs/043-public-api-bindings/reports/shared-rust-inventory-2026-11-01.json` and `--check` — exit 0; report current.
+- `python -B tools/api_manifest/audit_binding_exports.py --check` — exit 0; C 757/757, Java 1,014/1,014, Python 1,140/1,140; zero issues.
+- `git diff --check` and `git show --check` for Red, Green, and Refactor — pass. Pre-existing untracked artifacts were not staged. Nothing was pushed or merged.
