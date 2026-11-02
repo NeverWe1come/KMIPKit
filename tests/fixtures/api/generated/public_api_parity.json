@@ -72542,6 +72542,534 @@
       "exportName": "<kmipkit_protocol::ValidateRequest as core::fmt::Debug>::fmt",
       "packageId": "rust-kmipkit-protocol",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ValidateRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed LoginRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.30 Tables 253-255; Table 253 is the Login request payload. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LoginRequest as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed LoginRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.30 Tables 253-255; Table 253 is the Login request payload. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LoginRequest as core::borrow::Borrow<kmipkit_protocol::login::LoginRequest>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed LoginRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.30 Tables 253-255; Table 253 is the Login request payload. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LoginRequest as core::borrow::BorrowMut<kmipkit_protocol::login::LoginRequest>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed LoginRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.30 Tables 253-255; Table 253 is the Login request payload. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LoginRequest as core::convert::From<kmipkit_protocol::login::LoginRequest>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed LoginRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.30 Tables 253-255; Table 253 is the Login request payload. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LoginRequest as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed LoginRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.30 Tables 253-255; Table 253 is the Login request payload. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LoginRequest as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed LoginRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.30 Tables 253-255; Table 253 is the Login request payload. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LoginRequest as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed LoginRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.30 Tables 253-255; Table 253 is the Login request payload. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LoginRequest as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed LoginRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.30 Tables 253-255; Table 253 is the Login request payload. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LoginRequest as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed LoginRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.30 Tables 253-255; Table 253 is the Login request payload. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LoginRequest as core::default::Default>::default",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed LoginRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.30 Tables 253-255; Table 253 is the Login request payload. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::LoginRequest as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Ticket declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.39 Table 391 and Section 11.57 Table 488; Table 391 defines the Ticket Structure with required Ticket Type and Ticket Value. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. The custom Debug and Display redaction remain unchanged under KMIPKIT-0038-FR-005.",
+      "exportName": "<kmipkit_protocol::Ticket as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Ticket model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Ticket declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.39 Table 391 and Section 11.57 Table 488; Table 391 defines the Ticket Structure with required Ticket Type and Ticket Value. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. The custom Debug and Display redaction remain unchanged under KMIPKIT-0038-FR-005.",
+      "exportName": "<kmipkit_protocol::Ticket as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Ticket model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Ticket declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.39 Table 391 and Section 11.57 Table 488; Table 391 defines the Ticket Structure with required Ticket Type and Ticket Value. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. The custom Debug and Display redaction remain unchanged under KMIPKIT-0038-FR-005.",
+      "exportName": "<kmipkit_protocol::Ticket as core::borrow::Borrow<kmipkit_protocol::ticket::Ticket>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Ticket model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Ticket declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.39 Table 391 and Section 11.57 Table 488; Table 391 defines the Ticket Structure with required Ticket Type and Ticket Value. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. The custom Debug and Display redaction remain unchanged under KMIPKIT-0038-FR-005.",
+      "exportName": "<kmipkit_protocol::Ticket as core::borrow::BorrowMut<kmipkit_protocol::ticket::Ticket>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Ticket model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Ticket declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.39 Table 391 and Section 11.57 Table 488; Table 391 defines the Ticket Structure with required Ticket Type and Ticket Value. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. The custom Debug and Display redaction remain unchanged under KMIPKIT-0038-FR-005.",
+      "exportName": "<kmipkit_protocol::Ticket as core::convert::From<kmipkit_protocol::ticket::Ticket>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Ticket model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Ticket declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.39 Table 391 and Section 11.57 Table 488; Table 391 defines the Ticket Structure with required Ticket Type and Ticket Value. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. The custom Debug and Display redaction remain unchanged under KMIPKIT-0038-FR-005.",
+      "exportName": "<kmipkit_protocol::Ticket as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Ticket model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Ticket declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.39 Table 391 and Section 11.57 Table 488; Table 391 defines the Ticket Structure with required Ticket Type and Ticket Value. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. The custom Debug and Display redaction remain unchanged under KMIPKIT-0038-FR-005.",
+      "exportName": "<kmipkit_protocol::Ticket as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Ticket model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Ticket declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.39 Table 391 and Section 11.57 Table 488; Table 391 defines the Ticket Structure with required Ticket Type and Ticket Value. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. The custom Debug and Display redaction remain unchanged under KMIPKIT-0038-FR-005.",
+      "exportName": "<kmipkit_protocol::Ticket as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Ticket model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Ticket declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.39 Table 391 and Section 11.57 Table 488; Table 391 defines the Ticket Structure with required Ticket Type and Ticket Value. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. The custom Debug and Display redaction remain unchanged under KMIPKIT-0038-FR-005.",
+      "exportName": "<kmipkit_protocol::Ticket as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Ticket model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Ticket declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.39 Table 391 and Section 11.57 Table 488; Table 391 defines the Ticket Structure with required Ticket Type and Ticket Value. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. The custom Debug and Display redaction remain unchanged under KMIPKIT-0038-FR-005.",
+      "exportName": "<kmipkit_protocol::Ticket as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Ticket model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Ticket declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.39 Table 391 and Section 11.57 Table 488; Table 391 defines the Ticket Structure with required Ticket Type and Ticket Value. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. The custom Debug and Display redaction remain unchanged under KMIPKIT-0038-FR-005.",
+      "exportName": "<kmipkit_protocol::Ticket as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Ticket model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Ticket declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.39 Table 391 and Section 11.57 Table 488; Table 391 defines the Ticket Structure with required Ticket Type and Ticket Value. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. The custom Debug and Display redaction remain unchanged under KMIPKIT-0038-FR-005.",
+      "exportName": "<kmipkit_protocol::Ticket as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Ticket model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::TicketType as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::TicketType as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::TicketType as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::TicketType as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::TicketType as core::borrow::Borrow<kmipkit_protocol::ticket::TicketType>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::TicketType as core::borrow::BorrowMut<kmipkit_protocol::ticket::TicketType>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::TicketType as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::TicketType as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::TicketType as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::TicketType as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::TicketType as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::TicketType as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::TicketType as core::convert::From<kmipkit_protocol::ticket::TicketType>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::TicketType as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::TicketType as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::TicketType as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::TicketType as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::TicketType as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::TicketType as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::TicketType as core::hash::Hash>::hash",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::TicketType as core::hash::Hash>::hash_slice",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented."
     }
   ],
   "capabilities": [

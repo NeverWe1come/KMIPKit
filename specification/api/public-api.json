@@ -195273,250 +195273,17 @@
       "candidateSpecId": "KMIPKIT-0043",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
-    {
-      "declarationId": "rust-observed-085c8969343fdc10092f",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LoginRequest as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-5d540dd29cefb3177531",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LoginRequest as core::borrow::Borrow<kmipkit_protocol::login::LoginRequest>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-c89834811bc569b08b87",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LoginRequest as core::borrow::BorrowMut<kmipkit_protocol::login::LoginRequest>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-6dcfa3974443eff66296",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LoginRequest as core::convert::From<kmipkit_protocol::login::LoginRequest>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-9c941f6fb8270f3dbb67",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LoginRequest as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::login::LoginRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-3288f4f0bf0cf598d03c",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LoginRequest as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::login::LoginRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-7a86c292cdcd35ac54b9",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LoginRequest as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::login::LoginRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-578816d4249de38f64b5",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LoginRequest as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::login::LoginRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-26e4643e64389faf28ab",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LoginRequest as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::login::LoginRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-b541e54b2eb3b9eacebd",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LoginRequest as core::default::Default>::default",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-f5aacbe4463577c4886a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LoginRequest as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
+
+
+
+
+
+
+
+
+
+
+
     {
       "declarationId": "rust-observed-271b3533e1445558639f",
       "packageId": "rust-kmipkit-protocol",
@@ -206798,648 +206565,39 @@
       "candidateSpecId": "KMIPKIT-0043",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
-    {
-      "declarationId": "rust-observed-b01f637c474649ce169f",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::Ticket as alloc::string::ToString>::to_string",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-ab1c3197dbb7c0fe07f5",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::Ticket as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-9f40c34b56a170809a0f",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::Ticket as core::borrow::Borrow<kmipkit_protocol::ticket::Ticket>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-e1b91380f1010e8d278b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::Ticket as core::borrow::BorrowMut<kmipkit_protocol::ticket::Ticket>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-87b243bf6ff596bd9570",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::Ticket as core::convert::From<kmipkit_protocol::ticket::Ticket>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-fbd0e4ea10a219c8aec9",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::Ticket as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::ticket::Ticket"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-e4f9c6825ee47efa00e1",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::Ticket as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::ticket::Ticket"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-0a24fd404fb54b37f571",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::Ticket as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::ticket::Ticket"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-54188570ba9c1641f0df",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::Ticket as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::ticket::Ticket"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-bda3205bc16e56ffb85c",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::Ticket as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::ticket::Ticket"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-1bc15e245dfb6dc4567c",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::Ticket as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-03a45fb2031acbb24e21",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::Ticket as core::fmt::Display>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-d64bff79e5c5c22e710a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::TicketType as alloc::borrow::ToOwned>::Owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-872be1fcd635102f6640",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::TicketType as alloc::borrow::ToOwned>::clone_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-e60bd0b110ac2a6d9d3f",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::TicketType as alloc::borrow::ToOwned>::to_owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-c1e5ed03bc0083a209a6",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::TicketType as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-2300f7c5a471d74048a1",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::TicketType as core::borrow::Borrow<kmipkit_protocol::ticket::TicketType>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-02e311593a4a2c6e0e1f",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::TicketType as core::borrow::BorrowMut<kmipkit_protocol::ticket::TicketType>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-6916bf292b5198b9dd0b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::TicketType as core::clone::Clone>::clone",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-dd69c05c883b8f0077fd",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::TicketType as core::clone::Clone>::clone_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-7cd5454b1b90d7b38624",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::TicketType as core::clone::CloneToUninit>::clone_to_uninit",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-45136f2db2ec65805ca0",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::TicketType as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-376554c26ab16d60bbf3",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::TicketType as core::cmp::PartialEq>::eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-9b2d4224a52adcba84cc",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::TicketType as core::cmp::PartialEq>::ne",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-64aed7de3c947d4b7b83",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::TicketType as core::convert::From<kmipkit_protocol::ticket::TicketType>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-5ad39142db62e4e2a167",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::TicketType as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::ticket::TicketType"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-5d938d98db525f2eef46",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::TicketType as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::ticket::TicketType"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-39efe9d259bbfb4b9944",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::TicketType as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::ticket::TicketType"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-cb1b85663bc4462e7eca",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::TicketType as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::ticket::TicketType"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-36a3faced328c57936a9",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::TicketType as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::ticket::TicketType"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-035283986970d205876f",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::TicketType as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-1cbfaf9eb975027c0a04",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::TicketType as core::hash::Hash>::hash",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-c761cea4c4c7ea417660",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::TicketType as core::hash::Hash>::hash_slice",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     {
       "declarationId": "rust-observed-af6aee3c0672974ca5ee",
       "packageId": "rust-kmipkit-protocol",
@@ -443013,6 +442171,534 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed ValidateRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342, including Table 340 as request. No OASIS normative clause directly applies to compiler-generated Rust standard-trait artifacts. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. The exact compiler-observed path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LoginRequest as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed LoginRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.30 Tables 253-255; Table 253 is the Login request payload. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LoginRequest as core::borrow::Borrow<kmipkit_protocol::login::LoginRequest>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed LoginRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.30 Tables 253-255; Table 253 is the Login request payload. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LoginRequest as core::borrow::BorrowMut<kmipkit_protocol::login::LoginRequest>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed LoginRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.30 Tables 253-255; Table 253 is the Login request payload. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LoginRequest as core::convert::From<kmipkit_protocol::login::LoginRequest>>::from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed LoginRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.30 Tables 253-255; Table 253 is the Login request payload. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LoginRequest as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed LoginRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.30 Tables 253-255; Table 253 is the Login request payload. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LoginRequest as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed LoginRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.30 Tables 253-255; Table 253 is the Login request payload. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LoginRequest as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed LoginRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.30 Tables 253-255; Table 253 is the Login request payload. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LoginRequest as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed LoginRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.30 Tables 253-255; Table 253 is the Login request payload. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LoginRequest as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed LoginRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.30 Tables 253-255; Table 253 is the Login request payload. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LoginRequest as core::default::Default>::default",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed LoginRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.30 Tables 253-255; Table 253 is the Login request payload. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LoginRequest as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed LoginRequest model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed LoginRequest declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.30 Tables 253-255; Table 253 is the Login request payload. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::Ticket as alloc::string::ToString>::to_string",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Ticket model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Ticket declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.39 Table 391 and Section 11.57 Table 488; Table 391 defines the Ticket Structure with required Ticket Type and Ticket Value. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. The custom Debug and Display redaction remain unchanged under KMIPKIT-0038-FR-005."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::Ticket as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Ticket model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Ticket declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.39 Table 391 and Section 11.57 Table 488; Table 391 defines the Ticket Structure with required Ticket Type and Ticket Value. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. The custom Debug and Display redaction remain unchanged under KMIPKIT-0038-FR-005."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::Ticket as core::borrow::Borrow<kmipkit_protocol::ticket::Ticket>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Ticket model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Ticket declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.39 Table 391 and Section 11.57 Table 488; Table 391 defines the Ticket Structure with required Ticket Type and Ticket Value. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. The custom Debug and Display redaction remain unchanged under KMIPKIT-0038-FR-005."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::Ticket as core::borrow::BorrowMut<kmipkit_protocol::ticket::Ticket>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Ticket model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Ticket declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.39 Table 391 and Section 11.57 Table 488; Table 391 defines the Ticket Structure with required Ticket Type and Ticket Value. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. The custom Debug and Display redaction remain unchanged under KMIPKIT-0038-FR-005."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::Ticket as core::convert::From<kmipkit_protocol::ticket::Ticket>>::from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Ticket model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Ticket declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.39 Table 391 and Section 11.57 Table 488; Table 391 defines the Ticket Structure with required Ticket Type and Ticket Value. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. The custom Debug and Display redaction remain unchanged under KMIPKIT-0038-FR-005."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::Ticket as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Ticket model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Ticket declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.39 Table 391 and Section 11.57 Table 488; Table 391 defines the Ticket Structure with required Ticket Type and Ticket Value. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. The custom Debug and Display redaction remain unchanged under KMIPKIT-0038-FR-005."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::Ticket as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Ticket model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Ticket declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.39 Table 391 and Section 11.57 Table 488; Table 391 defines the Ticket Structure with required Ticket Type and Ticket Value. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. The custom Debug and Display redaction remain unchanged under KMIPKIT-0038-FR-005."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::Ticket as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Ticket model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Ticket declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.39 Table 391 and Section 11.57 Table 488; Table 391 defines the Ticket Structure with required Ticket Type and Ticket Value. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. The custom Debug and Display redaction remain unchanged under KMIPKIT-0038-FR-005."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::Ticket as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Ticket model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Ticket declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.39 Table 391 and Section 11.57 Table 488; Table 391 defines the Ticket Structure with required Ticket Type and Ticket Value. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. The custom Debug and Display redaction remain unchanged under KMIPKIT-0038-FR-005."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::Ticket as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Ticket model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Ticket declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.39 Table 391 and Section 11.57 Table 488; Table 391 defines the Ticket Structure with required Ticket Type and Ticket Value. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. The custom Debug and Display redaction remain unchanged under KMIPKIT-0038-FR-005."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::Ticket as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Ticket model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Ticket declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.39 Table 391 and Section 11.57 Table 488; Table 391 defines the Ticket Structure with required Ticket Type and Ticket Value. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. The custom Debug and Display redaction remain unchanged under KMIPKIT-0038-FR-005."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::Ticket as core::fmt::Display>::fmt",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed Ticket model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed Ticket declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.39 Table 391 and Section 11.57 Table 488; Table 391 defines the Ticket Structure with required Ticket Type and Ticket Value. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. The custom Debug and Display redaction remain unchanged under KMIPKIT-0038-FR-005."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::TicketType as alloc::borrow::ToOwned>::Owned",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::TicketType as alloc::borrow::ToOwned>::clone_into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::TicketType as alloc::borrow::ToOwned>::to_owned",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::TicketType as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::TicketType as core::borrow::Borrow<kmipkit_protocol::ticket::TicketType>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::TicketType as core::borrow::BorrowMut<kmipkit_protocol::ticket::TicketType>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::TicketType as core::clone::Clone>::clone",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::TicketType as core::clone::Clone>::clone_from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::TicketType as core::clone::CloneToUninit>::clone_to_uninit",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::TicketType as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::TicketType as core::cmp::PartialEq>::eq",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::TicketType as core::cmp::PartialEq>::ne",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::TicketType as core::convert::From<kmipkit_protocol::ticket::TicketType>>::from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::TicketType as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::TicketType as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::TicketType as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::TicketType as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::TicketType as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::TicketType as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::TicketType as core::hash::Hash>::hash",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::TicketType as core::hash::Hash>::hash_slice",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed TicketType model, not a separate KMIP client capability; the underlying protocol declaration remains represented.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed TicketType declaration remains represented under OASIS Key Management Interoperability Protocol Specification v2.1 Section 11.57 Table 488; Table 488 assigns Login = 00000001 and Extensions = 8XXXXXXX. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only change and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact path is recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     }
   ],
   "apiLevels": [
