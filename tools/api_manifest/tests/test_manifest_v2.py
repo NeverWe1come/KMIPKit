@@ -6221,7 +6221,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(len(t094_exclusions), 230)
         self.assertEqual(len(t096_exclusions), 265)
         self.assertEqual(len(t097_exclusions), 627)
-        self.assertEqual(len(rust_exclusions), 2844)
+        self.assertEqual(len(rust_exclusions), 2854)
         self.assertTrue(
             any(
                 item["exportName"] == "kmipkit_protocol::RegisterRequest::validate_local_shape"
@@ -6235,6 +6235,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             },
             {
                 "docs/adr/0003-layered-cargo-workspace.md",
+                "specs/022-object-lifecycle/spec.md",
                 "specs/029-opaque-object-context/spec.md",
                 "specs/010-profile-conformance/spec.md",
                 "specs/003-core-types-errors/spec.md",
