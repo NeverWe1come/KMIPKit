@@ -210,6 +210,16 @@ class T102Pkcs11RequestTraitExclusionTests(unittest.TestCase):
             },
             EXPECTED_CLIENT_REQUEST_TRAITS,
         )
+        expected_client_request_declarations = {
+            "kmipkit_client::Pkcs11Request",
+            "kmipkit_client::Pkcs11Request::new",
+            "kmipkit_client::Pkcs11Request::into_ttlv_payload",
+            "kmipkit_client::Pkcs11Request::with_correlation_value",
+            "kmipkit_client::Pkcs11Request::with_extension",
+            "kmipkit_client::Pkcs11Request::with_input_parameters",
+            "kmipkit_client::Pkcs11Request::with_interface",
+        }
+        self.assertEqual(set(client_rows), expected_client_request_declarations)
 
     def test_existing_protocol_response_trait_exclusions_remain_exact(self) -> None:
         response_traits = {
