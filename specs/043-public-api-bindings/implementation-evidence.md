@@ -9201,6 +9201,8 @@ Verification:
 
 Independent QA initially reported a P2 because the root-facade assertion did not recognize Rust trait paths. The QA follow-up Red/Green commits add a synthetic trait-path regression test and widen the filter; the reviewer confirmed the finding is resolved and found no other issues. The final combined manifest/T102 suite passed 252 tests after this correction.
 
+The independent Codex Security diff scan `16574c6d-7c65-4cb3-98b3-31ec4741ed07` completed with full coverage and no reportable findings for this inventory-only range. The reviewer confirmed that the ten exact exclusions do not add or widen exports and that the change touches no runtime, FFI, secret, or KMIP data handling.
+
 This inventory-only reconciliation changes no protocol or runtime behavior and does not claim any OASIS test-case pass.
 
 ### T102 Revoke request trait-artifact reconciliation (2026-11-02)
