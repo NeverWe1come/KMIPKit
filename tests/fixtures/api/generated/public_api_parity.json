@@ -68534,6 +68534,126 @@
       "exportName": "<kmipkit_protocol::ReProvisionResponse as core::fmt::Debug>::fmt",
       "packageId": "rust-kmipkit-protocol",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed ReProvisionResponse wrapper, not a separate KMIP client capability; its optional Unique Identifier and owned response TTLV remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve response remains mapped under KMIP v2.1 Section 6.1.49 Tables 316-318, including the Table 317 response; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Retrieve test-case ID; T064 mapping evidence is not an official test-vector pass, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RngRetrieveResponse as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveResponse wrapper, not a separate KMIP client capability; the secret Data remains mapped through the approved four-language surface."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve response remains mapped under KMIP v2.1 Section 6.1.49 Tables 316-318, including the Table 317 response; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Retrieve test-case ID; T064 mapping evidence is not an official test-vector pass, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RngRetrieveResponse as core::borrow::Borrow<kmipkit_protocol::rng_retrieve::RngRetrieveResponse>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveResponse wrapper, not a separate KMIP client capability; the secret Data remains mapped through the approved four-language surface."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve response remains mapped under KMIP v2.1 Section 6.1.49 Tables 316-318, including the Table 317 response; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Retrieve test-case ID; T064 mapping evidence is not an official test-vector pass, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RngRetrieveResponse as core::borrow::BorrowMut<kmipkit_protocol::rng_retrieve::RngRetrieveResponse>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveResponse wrapper, not a separate KMIP client capability; the secret Data remains mapped through the approved four-language surface."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve response remains mapped under KMIP v2.1 Section 6.1.49 Tables 316-318, including the Table 317 response; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Retrieve test-case ID; T064 mapping evidence is not an official test-vector pass, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RngRetrieveResponse as core::convert::From<kmipkit_protocol::rng_retrieve::RngRetrieveResponse>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveResponse wrapper, not a separate KMIP client capability; the secret Data remains mapped through the approved four-language surface."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve response remains mapped under KMIP v2.1 Section 6.1.49 Tables 316-318, including the Table 317 response; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Retrieve test-case ID; T064 mapping evidence is not an official test-vector pass, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RngRetrieveResponse as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveResponse wrapper, not a separate KMIP client capability; the secret Data remains mapped through the approved four-language surface."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve response remains mapped under KMIP v2.1 Section 6.1.49 Tables 316-318, including the Table 317 response; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Retrieve test-case ID; T064 mapping evidence is not an official test-vector pass, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RngRetrieveResponse as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveResponse wrapper, not a separate KMIP client capability; the secret Data remains mapped through the approved four-language surface."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve response remains mapped under KMIP v2.1 Section 6.1.49 Tables 316-318, including the Table 317 response; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Retrieve test-case ID; T064 mapping evidence is not an official test-vector pass, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RngRetrieveResponse as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveResponse wrapper, not a separate KMIP client capability; the secret Data remains mapped through the approved four-language surface."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve response remains mapped under KMIP v2.1 Section 6.1.49 Tables 316-318, including the Table 317 response; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Retrieve test-case ID; T064 mapping evidence is not an official test-vector pass, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RngRetrieveResponse as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveResponse wrapper, not a separate KMIP client capability; the secret Data remains mapped through the approved four-language surface."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve response remains mapped under KMIP v2.1 Section 6.1.49 Tables 316-318, including the Table 317 response; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Retrieve test-case ID; T064 mapping evidence is not an official test-vector pass, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RngRetrieveResponse as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveResponse wrapper, not a separate KMIP client capability; the secret Data remains mapped through the approved four-language surface."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The typed RNG Retrieve response remains mapped under KMIP v2.1 Section 6.1.49 Tables 316-318, including the Table 317 response; these standard-trait artifacts add no KMIP behavior. The approved operation catalog lists no direct RNG Retrieve test-case ID; T064 mapping evidence is not an official test-vector pass, so this inventory-only slice makes no conformance claim. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`.",
+      "exportName": "<kmipkit_protocol::RngRetrieveResponse as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed RngRetrieveResponse wrapper, not a separate KMIP client capability; the secret Data remains mapped through the approved four-language surface."
     }
   ],
   "capabilities": [
