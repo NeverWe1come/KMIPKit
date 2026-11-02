@@ -8461,3 +8461,24 @@ Verification:
 - Hosted PR #104 checks for published parent `f52498943` all completed successfully across Linux, Windows, macOS, bindings, sanitizers, coverage, and security workflows. Hosted checks for the new head remain pending until push.
 - Independent QA confirmed the exact 19-path set, retained runtime metadata declarations, and the need to regenerate the Java parity fixture and JSON fixture.
 - `git diff --check` — passed for the implementation and documentation changes.
+
+### T102 Get Constraints response Rust trait-artifact exclusions (2026-11-02)
+
+The compiler audit observed ten standard-trait paths for `kmipkit_protocol::GetConstraintsResponse`. T102 now records those exact paths as approved inventory exclusions under KMIPKIT-0043-FR-010/021, with the functional response contract owned by approved KMIPKIT-0039-FR-001/004. This is an API-inventory reconciliation only: the verified response type, `constraints`, `result`, and `with_ttlv` remain mapped. The separate public `try_from_response_item` helper remains blocked under T102 and is untouched by this trait-only slice, so this evidence does not claim complete response-method parity. The underlying operation is grounded in OASIS KMIP v2.1 §6.1.22 Tables 229–231 and §7.7; no OASIS requirement applies to compiler-generated Rust traits. The candidate count falls from 4,208 to 4,198, and T102 remains open.
+
+| Phase | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red — pin the exact ten paths, retained response declarations, audit report, aggregate inventory count, and CI selection | `c84c01354` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest -v tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions scripts.tests.test_workflow.WorkflowContractTests.test_script_contract_job_runs_t102_get_constraints_response_trait_exclusion_contract` | Expected failures before Green: the ten paths were still blocked, the exact audit exclusions and updated aggregate count were absent, and CI did not select the contract. The retained response assertion passed. |
+| Green — move only the ten paths into exact approved exclusions, regenerate outputs and audit evidence, and select the contract in CI | `b157e0e0d` | `py -B tools/api_manifest/generate.py --write`; `py -B tools/api_manifest/audit_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` | Generated outputs and Rust inventory reconcile; no public runtime behavior changed. |
+| Refactor/evidence — update T102 counts, traceability, and verification record | This commit | Focused contracts, full manifest suite, workflow contracts, generated-output checks, and independent QA | T102 remains open with 4,198 blocked KMIPKIT-0043 candidates. |
+
+Verification:
+
+- The focused T102 manifest and CI contract — 4 passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2 -v` — 150 passed. The first run exposed the existing hard-coded Rust exclusion total; the Red commit updates the expected count from 2,544 to 2,554, and the complete rerun passed.
+- `py -B -m unittest scripts.tests.test_workflow -v` — 68 passed.
+- `py -B tools/api_manifest/generate.py --check` — all 12 outputs verified.
+- `py -B tools/api_manifest/audit_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` — 6,481 declarations and 3,982 exact exclusions reconcile with all 10,463 observed paths; zero missing declarations, kind mismatches, incomplete-scope issues, or other audit issues.
+- `py -B tools/api_manifest/audit_binding_exports.py --check` — no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
+- Hosted PR #104 checks for the new head remain pending until these commits are pushed.
+- `git diff --check` — pending after independent QA and documentation review.
