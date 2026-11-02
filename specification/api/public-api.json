@@ -135143,236 +135143,6 @@
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
-      "declarationId": "rust-observed-d992370514fc467455b5",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::SetConstraintsResponse as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-f1c0ed1c443cb14f8d7f",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::SetConstraintsResponse as core::borrow::Borrow<kmipkit_protocol::set_constraints::SetConstraintsResponse>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-a0e5f4d3ae39696b1aa6",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::SetConstraintsResponse as core::borrow::BorrowMut<kmipkit_protocol::set_constraints::SetConstraintsResponse>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-8a39f2a85ce1d351067e",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::SetConstraintsResponse as core::convert::From<kmipkit_protocol::set_constraints::SetConstraintsResponse>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-05d6ba9b4f29f22b16ef",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::SetConstraintsResponse as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::set_constraints::SetConstraintsResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-98659bb82b177ce3b339",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::SetConstraintsResponse as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::set_constraints::SetConstraintsResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-839b0ab4cab75f1726da",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::SetConstraintsResponse as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::set_constraints::SetConstraintsResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-4c9facee5e223a9b78f7",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::SetConstraintsResponse as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::set_constraints::SetConstraintsResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-896b2d2b1c25f3ac96c7",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::SetConstraintsResponse as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::set_constraints::SetConstraintsResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-61298e6a384501e04e70",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::SetConstraintsResponse as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
       "declarationId": "rust-observed-6d3882b9f5efe1e386a2",
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
@@ -448639,6 +448409,126 @@
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::SetConstraintsResponse as core::fmt::Debug>::fmt",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed SetConstraintsResponse wrapper, not a separate KMIP client capability; the response type, result, and TTLV access remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints response remains mapped to KMIP v2.1 §6.1.52 Tables 325–327; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::SetConstraintsResponse as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the root SetConstraintsResponse re-export, not a separate KMIP client capability; the protocol response remains mapped and the root functional declarations retain their existing states.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints response remains mapped to KMIP v2.1 §6.1.52 Tables 325–327; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::SetConstraintsResponse as core::borrow::Borrow<kmipkit_protocol::set_constraints::SetConstraintsResponse>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the root SetConstraintsResponse re-export, not a separate KMIP client capability; the protocol response remains mapped and the root functional declarations retain their existing states.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints response remains mapped to KMIP v2.1 §6.1.52 Tables 325–327; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::SetConstraintsResponse as core::borrow::BorrowMut<kmipkit_protocol::set_constraints::SetConstraintsResponse>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the root SetConstraintsResponse re-export, not a separate KMIP client capability; the protocol response remains mapped and the root functional declarations retain their existing states.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints response remains mapped to KMIP v2.1 §6.1.52 Tables 325–327; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::SetConstraintsResponse as core::convert::From<kmipkit_protocol::set_constraints::SetConstraintsResponse>>::from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the root SetConstraintsResponse re-export, not a separate KMIP client capability; the protocol response remains mapped and the root functional declarations retain their existing states.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints response remains mapped to KMIP v2.1 §6.1.52 Tables 325–327; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::SetConstraintsResponse as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the root SetConstraintsResponse re-export, not a separate KMIP client capability; the protocol response remains mapped and the root functional declarations retain their existing states.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints response remains mapped to KMIP v2.1 §6.1.52 Tables 325–327; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::SetConstraintsResponse as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the root SetConstraintsResponse re-export, not a separate KMIP client capability; the protocol response remains mapped and the root functional declarations retain their existing states.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints response remains mapped to KMIP v2.1 §6.1.52 Tables 325–327; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::SetConstraintsResponse as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the root SetConstraintsResponse re-export, not a separate KMIP client capability; the protocol response remains mapped and the root functional declarations retain their existing states.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints response remains mapped to KMIP v2.1 §6.1.52 Tables 325–327; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::SetConstraintsResponse as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the root SetConstraintsResponse re-export, not a separate KMIP client capability; the protocol response remains mapped and the root functional declarations retain their existing states.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints response remains mapped to KMIP v2.1 §6.1.52 Tables 325–327; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::SetConstraintsResponse as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the root SetConstraintsResponse re-export, not a separate KMIP client capability; the protocol response remains mapped and the root functional declarations retain their existing states.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The underlying Set Constraints response remains mapped to KMIP v2.1 §6.1.52 Tables 325–327; these standard-trait artifacts do not add separate KMIP behavior. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::SetConstraintsResponse as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the root SetConstraintsResponse re-export, not a separate KMIP client capability; the protocol response remains mapped and the root functional declarations retain their existing states.",
       "approvalSource": {
         "kind": "feature-specification",
         "path": "specs/043-public-api-bindings/spec.md",
