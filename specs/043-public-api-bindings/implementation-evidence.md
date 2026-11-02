@@ -9040,3 +9040,28 @@ Verification:
 - `git diff --check` — passed after the Refactor documentation update.
 
 The candidate count falls from 3,978 to 3,968. T102 remains open; this slice does not claim Re-Provision operation conformance, full API parity, profile conformance, PR completion, or release readiness.
+
+
+### T102 RNG Retrieve response Rust trait-artifact exclusions (2026-11-02)
+
+The Rust export inventory observed exactly ten standard-trait paths for `kmipkit_protocol::RngRetrieveResponse`: five direct and five conditional declarations. T102 moves only those ten compiler-visible language artifacts from blocked declarations to approved exclusions under KMIPKIT-0043-FR-010/021 and functional ownership KMIPKIT-0041-FR-001/004. The response type, secret `data`, and `with_ttlv` remain verified; `result`, `try_from_pending_response_item`, and `try_from_response_item` remain blocked. The six root-facade response declarations and its ten traits remain blocked and untouched. `SecretBytes` retains redaction and zeroization; no runtime behavior or secret handling changed. OASIS KMIP v2.1 §6.1.49 Tables 316–318 defines RNG Retrieve; Table 317 is the response. The approved catalog has no direct RNG Retrieve test-case ID, and T064 mapping evidence is not an official-vector pass. This inventory-only slice makes no conformance claim.
+
+| Phase | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red — pin the exact ten paths, audit classification, candidate count, owner requirements, no-direct-case caveat, secret-data mapping, and unchanged functional/root declarations | `a42ec2d43` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions -k rng_retrieve_response -v` | Four tests ran; three failed as expected before Green: the ten paths remained blocked, the audit had no corresponding exclusions, and the candidate count was 3,968 instead of 3,958. Functional, secret-data, and root-blocking guards passed. |
+| Green — exclude only the ten protocol response trait artifacts and regenerate checked-in outputs | `fa0d5a6d4` | `py -B tools/api_manifest/generate.py --write`; Rust export audit report regeneration | Exactly ten paths moved to approved exclusions; generated outputs and the Rust report reconcile. All root-facade declarations and traits remain blocked. |
+| Refactor/evidence — synchronize T102 counts, operation traceability, task notes, and verification | This commit | Focused T102, manifest, parity, generator, Rust/binding audits, and independent reviews | T102 remains open with 3,958 blocked KMIPKIT-0043 candidates. |
+
+Verification:
+
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions -k rng_retrieve_response -v` — 4 passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions -v` — 85 passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2 -v` — 150 passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping -v` — 66 passed; `test_rng_parity_manifest` — 4 passed.
+- `py -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
+- `py -B tools/api_manifest/audit_rust_exports.py --check` — 6,241 declarations and 4,222 exact exclusions reconcile with all 10,463 observed paths; zero missing paths, issues, or mismatches. The successful Windows audit emitted optional `aws-lc-sys` compiler-probe and NASM warnings.
+- `py -B tools/api_manifest/audit_binding_exports.py --check` — no issues: C 757/757, Java 1,014/1,014, Python 1,140/1,140.
+- Independent QA found no blockers. Independent security review found no findings; `SecretBytes` redaction/zeroization and the response's payload-free error path are unchanged.
+- `git diff --check` — passed after the Refactor documentation update.
+
+The candidate count falls from 3,968 to 3,958. T102 remains open; this slice does not claim RNG Retrieve operation conformance, full API parity, profile conformance, PR completion, or release readiness.
