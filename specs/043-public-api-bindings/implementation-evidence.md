@@ -9261,6 +9261,10 @@ Verification:
 - `py -B -m unittest scripts.tests.test_workflow` — 70 passed. `py -B -m unittest scripts.tests.test_requirement_traceability` — 2 passed. Feature traceability — 30 passed, 1 skipped because Windows did not permit symlink creation.
 - `git diff --check` — passed on the Refactor/evidence diff.
 
+Independent QA reviewed `47c6e41d7f0cd4298d99224e96c65f64c26d1531..d34659d1fe94f4a4b014095cd2c1817406d2807a` and found no issues. The review verified the exact ten-path movement, 5/5 direct/conditional split, approved owner and OASIS references, unchanged request/root mapping states, and the cross-platform workflow hook.
+
+The independent Codex Security diff scan `6e91cd57-b3d7-426a-8ec8-5e9b0a380e36` completed with full coverage across four review surfaces and zero reportable findings for the same range. It reviewed all 16 changed paths and the relevant Join Split Key request/redaction source. No runtime, FFI, binding implementation, secret, serialization, or KMIP behavior changed; the CI dependency-fetch setup predates this range.
+
 This inventory-only reconciliation changes no protocol or runtime behavior and does not claim any OASIS test-case pass.
 
 ### T102 Revoke request trait-artifact reconciliation (2026-11-02)
