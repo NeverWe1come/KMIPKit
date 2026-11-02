@@ -479,3 +479,16 @@ The Rust 1.94.0 export audit observes exactly ten standard-trait paths for `kmip
 ### T102 — Set Constraints request trait-artifact reconciliation
 
 `tools/api_manifest/tests/test_t102_set_constraints_request_trait_exclusions.py` pins the ten exact compiler-observed Rust standard-trait paths for `kmipkit_protocol::SetConstraintsRequest`, their approved owner (`specs/025-policy-controls/spec.md`, KMIPKIT-0039-FR-001/004), exclusion authority (KMIPKIT-0043-FR-010/021), and OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.52 Tables 325–327 with Table 325 as request. It also pins the five direct/five conditional audit split, all functional protocol declaration states, the fully blocked root-facade state, and the 3,808 remaining KMIPKIT-0043 candidates. No direct Set Constraints test-case ID appears in the approved catalog; this inventory-only slice makes no conformance or interoperability claim.
+
+### T102 - Approved protocol request trait exclusions
+
+The exclusions are authorized by `KMIPKIT-0043-FR-010` and `KMIPKIT-0043-FR-021`; they inventory Rust standard-trait artifacts and do not create KMIP requirements or claim operation conformance. The functional owner requirement IDs and normative request references are:
+
+| Protocol declaration | Approved functional owner requirements | OASIS KMIP v2.1 normative request reference | Exact inventory verification |
+|---|---|---|---|
+| `kmipkit_protocol::DelegatedLoginRequest` | `KMIPKIT-0038-FR-001`, `KMIPKIT-0038-FR-004` | Section 6.1.12, Tables 199-201; Table 199 is the request | `tools/api_manifest/tests/test_t102_protocol_request_trait_exclusions.py` |
+| `kmipkit_protocol::LogoutRequest` | `KMIPKIT-0038-FR-001`, `KMIPKIT-0038-FR-004` | Section 6.1.31, Tables 256-258; Table 256 is the request | `tools/api_manifest/tests/test_t102_protocol_request_trait_exclusions.py` |
+| `kmipkit_protocol::GetUsageAllocationRequest` | `KMIPKIT-0039-FR-001`, `KMIPKIT-0039-FR-004` | Section 6.1.23, Tables 232-234; Table 232 is the request | `tools/api_manifest/tests/test_t102_protocol_request_trait_exclusions.py` |
+| `kmipkit_protocol::SplitKeyReference` | `KMIPKIT-0037-FR-001`, `KMIPKIT-0037-FR-004` | Section 6.1.27, Tables 244-246; Table 244 is the Join Split Key request containing the repeated Unique Identifier | `tools/api_manifest/tests/test_t102_protocol_request_trait_exclusions.py` |
+
+The contract pins the exact `(packageId, exportName)` set from the Rust 1.94.0 audit: five direct and five conditional trait paths for each declaration, all under `rust-kmipkit-protocol`. It also preserves the protocol types and inherent-member states, all existing root-facade aliases and their trait paths, and the absence of a root `SplitKeyReference` alias. No OASIS test case ran for this inventory checkpoint; no conformance, interoperability, profile-support, or certification claim is made.

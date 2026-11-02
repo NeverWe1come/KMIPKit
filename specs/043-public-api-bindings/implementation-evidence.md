@@ -9443,3 +9443,37 @@ Focused verification:
 - `git diff --check` — passed before the evidence-only Refactor commit.
 
 The Rust audit emitted optional Windows AWS-LC compiler-probe and missing NASM warnings; the audit completed successfully. Generated fixtures and reports were changed only by the pinned API generator or their audit generators. The manifest contract confirms the direct/conditional split and all prior functional/root declaration states. No OASIS test case ran; no conformance, interoperability, profile-support, or certification claim is made.
+
+### T102 protocol request trait-artifact reconciliation (2026-11-02)
+
+The approved functional owners are `specs/024-credential-sessions/spec.md` (KMIPKIT-0038-FR-001/004) for Delegated Login and Logout, `specs/025-policy-controls/spec.md` (KMIPKIT-0039-FR-001/004) for Get Usage Allocation, and `specs/023-key-material-transfer/spec.md` (KMIPKIT-0037-FR-001/004) for Join Split Key. The exact inventory exclusions are authorized by KMIPKIT-0043-FR-010/021. Pinned OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.12 Tables 199-201 defines Delegated Login; Section 6.1.31 Tables 256-258 defines Logout; Section 6.1.23 Tables 232-234 defines Get Usage Allocation; and Section 6.1.27 Tables 244-246 defines Join Split Key. Tables 199, 256, 232, and 244 are the respective request tables. `SplitKeyReference` is a local helper for a Split Key reference; Table 244 represents its repeated Unique Identifier input and does not define a separate wire element.
+
+The Rust 1.94.0 compiler-observed export report identifies exactly ten standard-trait paths per target protocol declaration, five direct and five conditional, for 40 paths total. Only `(rust-kmipkit-protocol, exportName)` pairs for `DelegatedLoginRequest`, `LogoutRequest`, `GetUsageAllocationRequest`, and `SplitKeyReference` moved from public declarations to exact approved exclusions. The request types and their existing protocol methods retain their prior verified/blocked states. The three existing `kmipkit::` root aliases, all root inherent members, and each alias's ten blocked trait paths remain unchanged; `SplitKeyReference` has no root alias. Other owner paths and PKCS#11 declarations remain unchanged. The task adds no protocol or runtime behavior.
+
+The approved catalog lists Delegated Login cases 2.21-2.33, but no OASIS case ran in this inventory checkpoint. The approved catalog has no direct operation case IDs for Logout, Get Usage Allocation, or Join Split Key. No OASIS conformance, interoperability, profile-support, or certification claim is made.
+
+| Phase | Commit | Evidence | Result |
+|---|---|---|---|
+| Red - pin the exact 40 paths, owner and section/table evidence, direct/conditional split, root/protocol state preservation, candidate total, and CI invocation | `912c0d2ea` | Focused command below | Exit 1 as expected: the paths remained declarations, the report/manifest had no matching exclusions, the candidate total was 3,808 rather than 3,768, and CI did not invoke the contract. Functional state preservation passed. |
+| Green - move only the 40 paths, regenerate manifest outputs and audit reports, invoke CI, and update all aggregate guards | `db928b990` | Focused T102, manifest, workflow, export and inventory checks below | Candidate count 3,808 to 3,768; public declarations 9,006 to 8,966; approved exclusions 5,718 to 5,758; Rust report matched paths 6,091 to 6,051 and exclusions 4,372 to 4,412. Observed Rust paths remain 10,463. |
+| Refactor/evidence - record the approved scope, traceability, and final verification | This commit | `git diff --check`; final status review | T102 remains open; no conformance or runtime behavior claim is added. |
+
+Red command (11 expected failing assertion cases):
+
+```powershell
+uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_protocol_request_trait_exclusions scripts.tests.test_workflow.WorkflowContractTests.test_script_contract_job_runs_t102_protocol_request_trait_exclusion_contract -v
+```
+
+The Green verification command ran the T102 request/response regressions, manifest-v2 contract, shared inventory, Rust export and reconciliation suites, workflow contracts, and requirement-traceability checks (416 passed):
+
+```powershell
+uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_protocol_request_trait_exclusions tools.api_manifest.tests.test_t102_credential_response_trait_exclusions tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions tools.api_manifest.tests.test_t102_import_request_trait_exclusions tools.api_manifest.tests.test_t102_interop_request_trait_exclusions tools.api_manifest.tests.test_t102_join_split_key_request_trait_exclusions tools.api_manifest.tests.test_t102_log_request_trait_exclusions tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions tools.api_manifest.tests.test_t102_pkcs11_response_trait_exclusions tools.api_manifest.tests.test_t102_revoke_request_trait_exclusions tools.api_manifest.tests.test_t102_rng_seed_request_trait_exclusions tools.api_manifest.tests.test_t102_set_constraints_request_trait_exclusions tools.api_manifest.tests.test_t102_transport_response_trait_exclusions tools.api_manifest.tests.test_t102_runtime_version_trait_exclusions tools.api_manifest.tests.test_manifest_v2 tools.api_manifest.tests.test_shared_rust_inventory tools.api_manifest.tests.test_rust_export_reconciliation tools.api_manifest.tests.test_rust_exports scripts.tests.test_workflow scripts.tests.test_requirement_traceability -v
+```
+
+Generation and audit evidence:
+
+- `py -B tools/api_manifest/generate.py --write` regenerated all 12 public API outputs; `py -B tools/api_manifest/generate.py --check` verified all 12.
+- `py -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` exited 0: 6,051 matched and 4,412 excluded of 10,463 observed Rust paths, with zero missing, unobserved, issue, kind, conditional-state, or conditional-condition mismatches.
+- `py -B tools/api_manifest/audit_shared_rust_inventory.py --repo-root . --report specs/043-public-api-bindings/reports/shared-rust-inventory-2026-11-01.json` regenerated the shared report; the same command with `--check` verified it current at 10,463 observed paths and 4,412 exclusions.
+- `py -B tools/api_manifest/audit_binding_exports.py --check` exited 0 with C 757/757, Java 1,014/1,014, and Python 1,140/1,140; no binding paths changed.
+- `git diff --check` passed for the Green changes; rerun after this evidence update. The Windows Rust audit emitted optional AWS-LC compiler-probe and missing NASM warnings, but completed with exit 0.
