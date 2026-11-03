@@ -43,6 +43,11 @@ EXPECTED_CONDITIONAL = {
     "<kmipkit::SecretBytes as core::convert::TryInto<U>>::Error",
     "<kmipkit::SecretBytes as core::convert::TryInto<U>>::try_into",
 }
+FORMATTING_TRAITS = {
+    "<kmipkit::SecretBytes as alloc::string::ToString>::to_string",
+    "<kmipkit::SecretBytes as core::fmt::Debug>::fmt",
+    "<kmipkit::SecretBytes as core::fmt::Display>::fmt",
+}
 EXPECTED_FUNCTIONAL_EXPORTS = {
     "kmipkit::SecretBytes",
     "kmipkit::SecretBytes::new",
@@ -110,11 +115,18 @@ class T102SecretBytesTraitExclusionTests(unittest.TestCase):
                 self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
                 self.assertIn("standard-trait implementation artifact", row["reason"])
                 self.assertIn("KMIPKIT-0008-FR-010", row["evidence"])
-                self.assertIn("KMIPKIT-0043-FR-010", row["evidence"])
-                self.assertIn("KMIPKIT-0043-FR-021", row["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-010/021", row["evidence"])
                 self.assertNotIn("KMIPKIT-0043-FR-007", row["evidence"])
                 self.assertIn("No OASIS clause applies", row["evidence"])
+                if export_name in FORMATTING_TRAITS:
+                    self.assertIn(
+                        "KMIPKIT-0043-FR-013 applies only to formatting diagnostics",
+                        row["evidence"],
+                    )
+                else:
+                    self.assertNotIn("KMIPKIT-0043-FR-013", row["evidence"])
                 self.assertIn("inventory-only", row["evidence"])
+                self.assertLessEqual(len(row["evidence"].encode("utf-8")), 400)
 
     def test_secret_bytes_parent_and_lifecycle_surface_remain_mapped(self) -> None:
         protocol_surface = {
@@ -167,7 +179,15 @@ class T102SecretBytesTraitExclusionTests(unittest.TestCase):
                 "<kmipkit_protocol::SecretBytes as "
             )
         }
-        self.assertEqual(len(protocol_traits), 12)
+        expected_protocol_traits = {
+            export_name.replace(
+                "<kmipkit::SecretBytes as ",
+                "<kmipkit_protocol::SecretBytes as ",
+                1,
+            )
+            for export_name in EXPECTED_DIRECT | EXPECTED_CONDITIONAL
+        }
+        self.assertEqual(protocol_traits, expected_protocol_traits)
 
 
 if __name__ == "__main__":

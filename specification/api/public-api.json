@@ -133747,264 +133747,6 @@
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
-      "declarationId": "rust-observed-1891278b922acbd4baf1",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::SecretBytes as alloc::string::ToString>::to_string",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-76343906bdc18af07f49",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::SecretBytes as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-792366111bad4b76cf44",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::SecretBytes as core::borrow::Borrow<kmipkit_protocol::credential::secret::SecretBytes>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-ba000adef92103b395ee",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::SecretBytes as core::borrow::BorrowMut<kmipkit_protocol::credential::secret::SecretBytes>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-e0287581e39b5120ee1a",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::SecretBytes as core::convert::From<kmipkit_protocol::credential::secret::SecretBytes>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-fef9db5124264a5729cd",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::SecretBytes as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::credential::secret::SecretBytes"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-14922938323285076f5f",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::SecretBytes as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::credential::secret::SecretBytes"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-f280cc4e8f2a211a4e8c",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::SecretBytes as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::credential::secret::SecretBytes"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-5150402472733aaa9b7b",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::SecretBytes as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::credential::secret::SecretBytes"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-738a0d77e3cf7b96674c",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::SecretBytes as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::credential::secret::SecretBytes"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-b1d90b9dffdd19e5de98",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::SecretBytes as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-b88197376ea66de63ba8",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::SecretBytes as core::fmt::Display>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
       "declarationId": "rust-observed-0194135b35c9e772f824",
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
@@ -433654,7 +433396,7 @@
       },
       "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.29. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::GetError as alloc::borrow::ToOwned>::Owned",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability.",
@@ -433666,7 +433408,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::GetError as alloc::borrow::ToOwned>::clone_into",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability.",
@@ -433678,7 +433420,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::GetError as alloc::borrow::ToOwned>::to_owned",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability.",
@@ -433690,7 +433432,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::GetError as alloc::string::ToString>::to_string",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability.",
@@ -433702,7 +433444,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::GetError as core::any::Any>::type_id",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability.",
@@ -433714,7 +433456,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::GetError as core::borrow::Borrow<kmipkit_protocol::get::GetError>>::borrow",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability.",
@@ -433726,7 +433468,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::GetError as core::borrow::BorrowMut<kmipkit_protocol::get::GetError>>::borrow_mut",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability.",
@@ -433738,7 +433480,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::GetError as core::clone::Clone>::clone",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability.",
@@ -433750,7 +433492,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::GetError as core::clone::Clone>::clone_from",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability.",
@@ -433762,7 +433504,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::GetError as core::clone::CloneToUninit>::clone_to_uninit",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability.",
@@ -433774,7 +433516,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::GetError as core::cmp::Eq>::assert_receiver_is_total_eq",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability.",
@@ -433786,7 +433528,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::GetError as core::cmp::PartialEq>::eq",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability.",
@@ -433798,7 +433540,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::GetError as core::cmp::PartialEq>::ne",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability.",
@@ -433810,7 +433552,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::GetError as core::convert::From<kmipkit_protocol::get::GetError>>::from",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability.",
@@ -433822,7 +433564,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::GetError as core::convert::Into<U>>::into",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability.",
@@ -433834,7 +433576,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::GetError as core::convert::TryFrom<U>>::Error",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability.",
@@ -433846,7 +433588,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::GetError as core::convert::TryFrom<U>>::try_from",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability.",
@@ -433858,7 +433600,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::GetError as core::convert::TryInto<U>>::Error",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability.",
@@ -433870,7 +433612,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::GetError as core::convert::TryInto<U>>::try_into",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability.",
@@ -433882,7 +433624,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::GetError as core::error::Error>::cause",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability.",
@@ -433894,7 +433636,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::GetError as core::error::Error>::description",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability.",
@@ -433906,7 +433648,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::GetError as core::error::Error>::provide",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability.",
@@ -433918,7 +433660,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::GetError as core::error::Error>::source",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability.",
@@ -433930,7 +433672,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::GetError as core::error::Error>::type_id",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability.",
@@ -433942,7 +433684,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::GetError as core::fmt::Debug>::fmt",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability.",
@@ -433954,7 +433696,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::GetError as core::fmt::Display>::fmt",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability.",
@@ -433966,7 +433708,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::LocateError as alloc::borrow::ToOwned>::Owned",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability.",
@@ -433978,7 +433720,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::LocateError as alloc::borrow::ToOwned>::clone_into",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability.",
@@ -433990,7 +433732,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::LocateError as alloc::borrow::ToOwned>::to_owned",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability.",
@@ -434002,7 +433744,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::LocateError as alloc::string::ToString>::to_string",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability.",
@@ -434014,7 +433756,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::LocateError as core::any::Any>::type_id",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability.",
@@ -434026,7 +433768,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::LocateError as core::borrow::Borrow<kmipkit_protocol::locate::LocateError>>::borrow",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability.",
@@ -434038,7 +433780,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::LocateError as core::borrow::BorrowMut<kmipkit_protocol::locate::LocateError>>::borrow_mut",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability.",
@@ -434050,7 +433792,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::LocateError as core::clone::Clone>::clone",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability.",
@@ -434062,7 +433804,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::LocateError as core::clone::Clone>::clone_from",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability.",
@@ -434074,7 +433816,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::LocateError as core::clone::CloneToUninit>::clone_to_uninit",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability.",
@@ -434086,7 +433828,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::LocateError as core::cmp::Eq>::assert_receiver_is_total_eq",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability.",
@@ -434098,7 +433840,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::LocateError as core::cmp::PartialEq>::eq",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability.",
@@ -434110,7 +433852,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::LocateError as core::cmp::PartialEq>::ne",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability.",
@@ -434122,7 +433864,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::LocateError as core::convert::From<kmipkit_protocol::locate::LocateError>>::from",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability.",
@@ -434134,7 +433876,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::LocateError as core::convert::Into<U>>::into",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability.",
@@ -434146,7 +433888,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::LocateError as core::convert::TryFrom<U>>::Error",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability.",
@@ -434158,7 +433900,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::LocateError as core::convert::TryFrom<U>>::try_from",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability.",
@@ -434170,7 +433912,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::LocateError as core::convert::TryInto<U>>::Error",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability.",
@@ -434182,7 +433924,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::LocateError as core::convert::TryInto<U>>::try_into",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability.",
@@ -434194,7 +433936,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::LocateError as core::error::Error>::cause",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability.",
@@ -434206,7 +433948,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::LocateError as core::error::Error>::description",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability.",
@@ -434218,7 +433960,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::LocateError as core::error::Error>::provide",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability.",
@@ -434230,7 +433972,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::LocateError as core::error::Error>::source",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability.",
@@ -434242,7 +433984,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::LocateError as core::error::Error>::type_id",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability.",
@@ -434254,7 +433996,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::LocateError as core::fmt::Debug>::fmt",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability.",
@@ -434266,7 +434008,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::LocateError as core::fmt::Display>::fmt",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability.",
@@ -434277,6 +434019,162 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error."
+    },
+        {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "rust-export-report-2026-11-01.json: Rust 1.94.0/rustdoc 57 observes exactly 7 direct and 5 conditional root paths. KMIPKIT-0008-FR-010 owns the retained redacted, zeroizing wrapper; KMIPKIT-0043-FR-010/021 authorize this inventory-only exclusion. These paths add no byte access or clone API. No OASIS clause applies. KMIPKIT-0043-FR-013 applies only to formatting diagnostics.",
+      "exportName": "<kmipkit::SecretBytes as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit",
+      "reason": "Exact Rust standard-trait implementation artifact, not a separate four-language capability. Only this trait-qualified inventory item is excluded; the root SecretBytes wrapper and all mapped inherent lifecycle APIs remain declared."
+    },
+        {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "rust-export-report-2026-11-01.json: Rust 1.94.0/rustdoc 57 observes exactly 7 direct and 5 conditional root paths. KMIPKIT-0008-FR-010 owns the retained redacted, zeroizing wrapper; KMIPKIT-0043-FR-010/021 authorize this inventory-only exclusion. These paths add no byte access or clone API. No OASIS clause applies.",
+      "exportName": "<kmipkit::SecretBytes as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "Exact Rust standard-trait implementation artifact, not a separate four-language capability. Only this trait-qualified inventory item is excluded; the root SecretBytes wrapper and all mapped inherent lifecycle APIs remain declared."
+    },
+        {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "rust-export-report-2026-11-01.json: Rust 1.94.0/rustdoc 57 observes exactly 7 direct and 5 conditional root paths. KMIPKIT-0008-FR-010 owns the retained redacted, zeroizing wrapper; KMIPKIT-0043-FR-010/021 authorize this inventory-only exclusion. These paths add no byte access or clone API. No OASIS clause applies.",
+      "exportName": "<kmipkit::SecretBytes as core::borrow::Borrow<kmipkit_protocol::credential::secret::SecretBytes>>::borrow",
+      "packageId": "rust-kmipkit",
+      "reason": "Exact Rust standard-trait implementation artifact, not a separate four-language capability. Only this trait-qualified inventory item is excluded; the root SecretBytes wrapper and all mapped inherent lifecycle APIs remain declared."
+    },
+        {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "rust-export-report-2026-11-01.json: Rust 1.94.0/rustdoc 57 observes exactly 7 direct and 5 conditional root paths. KMIPKIT-0008-FR-010 owns the retained redacted, zeroizing wrapper; KMIPKIT-0043-FR-010/021 authorize this inventory-only exclusion. These paths add no byte access or clone API. No OASIS clause applies.",
+      "exportName": "<kmipkit::SecretBytes as core::borrow::BorrowMut<kmipkit_protocol::credential::secret::SecretBytes>>::borrow_mut",
+      "packageId": "rust-kmipkit",
+      "reason": "Exact Rust standard-trait implementation artifact, not a separate four-language capability. Only this trait-qualified inventory item is excluded; the root SecretBytes wrapper and all mapped inherent lifecycle APIs remain declared."
+    },
+        {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "rust-export-report-2026-11-01.json: Rust 1.94.0/rustdoc 57 observes exactly 7 direct and 5 conditional root paths. KMIPKIT-0008-FR-010 owns the retained redacted, zeroizing wrapper; KMIPKIT-0043-FR-010/021 authorize this inventory-only exclusion. These paths add no byte access or clone API. No OASIS clause applies.",
+      "exportName": "<kmipkit::SecretBytes as core::convert::From<kmipkit_protocol::credential::secret::SecretBytes>>::from",
+      "packageId": "rust-kmipkit",
+      "reason": "Exact Rust standard-trait implementation artifact, not a separate four-language capability. Only this trait-qualified inventory item is excluded; the root SecretBytes wrapper and all mapped inherent lifecycle APIs remain declared."
+    },
+        {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "rust-export-report-2026-11-01.json: Rust 1.94.0/rustdoc 57 observes exactly 7 direct and 5 conditional root paths. KMIPKIT-0008-FR-010 owns the retained redacted, zeroizing wrapper; KMIPKIT-0043-FR-010/021 authorize this inventory-only exclusion. These paths add no byte access or clone API. No OASIS clause applies.",
+      "exportName": "<kmipkit::SecretBytes as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit",
+      "reason": "Exact Rust standard-trait implementation artifact, not a separate four-language capability. Only this trait-qualified inventory item is excluded; the root SecretBytes wrapper and all mapped inherent lifecycle APIs remain declared."
+    },
+        {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "rust-export-report-2026-11-01.json: Rust 1.94.0/rustdoc 57 observes exactly 7 direct and 5 conditional root paths. KMIPKIT-0008-FR-010 owns the retained redacted, zeroizing wrapper; KMIPKIT-0043-FR-010/021 authorize this inventory-only exclusion. These paths add no byte access or clone API. No OASIS clause applies.",
+      "exportName": "<kmipkit::SecretBytes as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "Exact Rust standard-trait implementation artifact, not a separate four-language capability. Only this trait-qualified inventory item is excluded; the root SecretBytes wrapper and all mapped inherent lifecycle APIs remain declared."
+    },
+        {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "rust-export-report-2026-11-01.json: Rust 1.94.0/rustdoc 57 observes exactly 7 direct and 5 conditional root paths. KMIPKIT-0008-FR-010 owns the retained redacted, zeroizing wrapper; KMIPKIT-0043-FR-010/021 authorize this inventory-only exclusion. These paths add no byte access or clone API. No OASIS clause applies.",
+      "exportName": "<kmipkit::SecretBytes as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit",
+      "reason": "Exact Rust standard-trait implementation artifact, not a separate four-language capability. Only this trait-qualified inventory item is excluded; the root SecretBytes wrapper and all mapped inherent lifecycle APIs remain declared."
+    },
+        {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "rust-export-report-2026-11-01.json: Rust 1.94.0/rustdoc 57 observes exactly 7 direct and 5 conditional root paths. KMIPKIT-0008-FR-010 owns the retained redacted, zeroizing wrapper; KMIPKIT-0043-FR-010/021 authorize this inventory-only exclusion. These paths add no byte access or clone API. No OASIS clause applies.",
+      "exportName": "<kmipkit::SecretBytes as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "Exact Rust standard-trait implementation artifact, not a separate four-language capability. Only this trait-qualified inventory item is excluded; the root SecretBytes wrapper and all mapped inherent lifecycle APIs remain declared."
+    },
+        {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "rust-export-report-2026-11-01.json: Rust 1.94.0/rustdoc 57 observes exactly 7 direct and 5 conditional root paths. KMIPKIT-0008-FR-010 owns the retained redacted, zeroizing wrapper; KMIPKIT-0043-FR-010/021 authorize this inventory-only exclusion. These paths add no byte access or clone API. No OASIS clause applies.",
+      "exportName": "<kmipkit::SecretBytes as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit",
+      "reason": "Exact Rust standard-trait implementation artifact, not a separate four-language capability. Only this trait-qualified inventory item is excluded; the root SecretBytes wrapper and all mapped inherent lifecycle APIs remain declared."
+    },
+        {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "rust-export-report-2026-11-01.json: Rust 1.94.0/rustdoc 57 observes exactly 7 direct and 5 conditional root paths. KMIPKIT-0008-FR-010 owns the retained redacted, zeroizing wrapper; KMIPKIT-0043-FR-010/021 authorize this inventory-only exclusion. These paths add no byte access or clone API. No OASIS clause applies. KMIPKIT-0043-FR-013 applies only to formatting diagnostics.",
+      "exportName": "<kmipkit::SecretBytes as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "Exact Rust standard-trait implementation artifact, not a separate four-language capability. Only this trait-qualified inventory item is excluded; the root SecretBytes wrapper and all mapped inherent lifecycle APIs remain declared."
+    },
+        {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "rust-export-report-2026-11-01.json: Rust 1.94.0/rustdoc 57 observes exactly 7 direct and 5 conditional root paths. KMIPKIT-0008-FR-010 owns the retained redacted, zeroizing wrapper; KMIPKIT-0043-FR-010/021 authorize this inventory-only exclusion. These paths add no byte access or clone API. No OASIS clause applies. KMIPKIT-0043-FR-013 applies only to formatting diagnostics.",
+      "exportName": "<kmipkit::SecretBytes as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "Exact Rust standard-trait implementation artifact, not a separate four-language capability. Only this trait-qualified inventory item is excluded; the root SecretBytes wrapper and all mapped inherent lifecycle APIs remain declared."
     }
   ],
   "apiLevels": [

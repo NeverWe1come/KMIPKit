@@ -89450,6 +89450,162 @@
       "exportName": "<kmipkit_protocol::LocateError as core::fmt::Display>::fmt",
       "packageId": "rust-kmipkit-protocol",
       "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "rust-export-report-2026-11-01.json: Rust 1.94.0/rustdoc 57 observes exactly 7 direct and 5 conditional root paths. KMIPKIT-0008-FR-010 owns the retained redacted, zeroizing wrapper; KMIPKIT-0043-FR-010/021 authorize this inventory-only exclusion. These paths add no byte access or clone API. No OASIS clause applies. KMIPKIT-0043-FR-013 applies only to formatting diagnostics.",
+      "exportName": "<kmipkit::SecretBytes as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit",
+      "reason": "Exact Rust standard-trait implementation artifact, not a separate four-language capability. Only this trait-qualified inventory item is excluded; the root SecretBytes wrapper and all mapped inherent lifecycle APIs remain declared."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "rust-export-report-2026-11-01.json: Rust 1.94.0/rustdoc 57 observes exactly 7 direct and 5 conditional root paths. KMIPKIT-0008-FR-010 owns the retained redacted, zeroizing wrapper; KMIPKIT-0043-FR-010/021 authorize this inventory-only exclusion. These paths add no byte access or clone API. No OASIS clause applies.",
+      "exportName": "<kmipkit::SecretBytes as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "Exact Rust standard-trait implementation artifact, not a separate four-language capability. Only this trait-qualified inventory item is excluded; the root SecretBytes wrapper and all mapped inherent lifecycle APIs remain declared."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "rust-export-report-2026-11-01.json: Rust 1.94.0/rustdoc 57 observes exactly 7 direct and 5 conditional root paths. KMIPKIT-0008-FR-010 owns the retained redacted, zeroizing wrapper; KMIPKIT-0043-FR-010/021 authorize this inventory-only exclusion. These paths add no byte access or clone API. No OASIS clause applies.",
+      "exportName": "<kmipkit::SecretBytes as core::borrow::Borrow<kmipkit_protocol::credential::secret::SecretBytes>>::borrow",
+      "packageId": "rust-kmipkit",
+      "reason": "Exact Rust standard-trait implementation artifact, not a separate four-language capability. Only this trait-qualified inventory item is excluded; the root SecretBytes wrapper and all mapped inherent lifecycle APIs remain declared."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "rust-export-report-2026-11-01.json: Rust 1.94.0/rustdoc 57 observes exactly 7 direct and 5 conditional root paths. KMIPKIT-0008-FR-010 owns the retained redacted, zeroizing wrapper; KMIPKIT-0043-FR-010/021 authorize this inventory-only exclusion. These paths add no byte access or clone API. No OASIS clause applies.",
+      "exportName": "<kmipkit::SecretBytes as core::borrow::BorrowMut<kmipkit_protocol::credential::secret::SecretBytes>>::borrow_mut",
+      "packageId": "rust-kmipkit",
+      "reason": "Exact Rust standard-trait implementation artifact, not a separate four-language capability. Only this trait-qualified inventory item is excluded; the root SecretBytes wrapper and all mapped inherent lifecycle APIs remain declared."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "rust-export-report-2026-11-01.json: Rust 1.94.0/rustdoc 57 observes exactly 7 direct and 5 conditional root paths. KMIPKIT-0008-FR-010 owns the retained redacted, zeroizing wrapper; KMIPKIT-0043-FR-010/021 authorize this inventory-only exclusion. These paths add no byte access or clone API. No OASIS clause applies.",
+      "exportName": "<kmipkit::SecretBytes as core::convert::From<kmipkit_protocol::credential::secret::SecretBytes>>::from",
+      "packageId": "rust-kmipkit",
+      "reason": "Exact Rust standard-trait implementation artifact, not a separate four-language capability. Only this trait-qualified inventory item is excluded; the root SecretBytes wrapper and all mapped inherent lifecycle APIs remain declared."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "rust-export-report-2026-11-01.json: Rust 1.94.0/rustdoc 57 observes exactly 7 direct and 5 conditional root paths. KMIPKIT-0008-FR-010 owns the retained redacted, zeroizing wrapper; KMIPKIT-0043-FR-010/021 authorize this inventory-only exclusion. These paths add no byte access or clone API. No OASIS clause applies.",
+      "exportName": "<kmipkit::SecretBytes as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit",
+      "reason": "Exact Rust standard-trait implementation artifact, not a separate four-language capability. Only this trait-qualified inventory item is excluded; the root SecretBytes wrapper and all mapped inherent lifecycle APIs remain declared."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "rust-export-report-2026-11-01.json: Rust 1.94.0/rustdoc 57 observes exactly 7 direct and 5 conditional root paths. KMIPKIT-0008-FR-010 owns the retained redacted, zeroizing wrapper; KMIPKIT-0043-FR-010/021 authorize this inventory-only exclusion. These paths add no byte access or clone API. No OASIS clause applies.",
+      "exportName": "<kmipkit::SecretBytes as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "Exact Rust standard-trait implementation artifact, not a separate four-language capability. Only this trait-qualified inventory item is excluded; the root SecretBytes wrapper and all mapped inherent lifecycle APIs remain declared."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "rust-export-report-2026-11-01.json: Rust 1.94.0/rustdoc 57 observes exactly 7 direct and 5 conditional root paths. KMIPKIT-0008-FR-010 owns the retained redacted, zeroizing wrapper; KMIPKIT-0043-FR-010/021 authorize this inventory-only exclusion. These paths add no byte access or clone API. No OASIS clause applies.",
+      "exportName": "<kmipkit::SecretBytes as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit",
+      "reason": "Exact Rust standard-trait implementation artifact, not a separate four-language capability. Only this trait-qualified inventory item is excluded; the root SecretBytes wrapper and all mapped inherent lifecycle APIs remain declared."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "rust-export-report-2026-11-01.json: Rust 1.94.0/rustdoc 57 observes exactly 7 direct and 5 conditional root paths. KMIPKIT-0008-FR-010 owns the retained redacted, zeroizing wrapper; KMIPKIT-0043-FR-010/021 authorize this inventory-only exclusion. These paths add no byte access or clone API. No OASIS clause applies.",
+      "exportName": "<kmipkit::SecretBytes as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "Exact Rust standard-trait implementation artifact, not a separate four-language capability. Only this trait-qualified inventory item is excluded; the root SecretBytes wrapper and all mapped inherent lifecycle APIs remain declared."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "rust-export-report-2026-11-01.json: Rust 1.94.0/rustdoc 57 observes exactly 7 direct and 5 conditional root paths. KMIPKIT-0008-FR-010 owns the retained redacted, zeroizing wrapper; KMIPKIT-0043-FR-010/021 authorize this inventory-only exclusion. These paths add no byte access or clone API. No OASIS clause applies.",
+      "exportName": "<kmipkit::SecretBytes as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit",
+      "reason": "Exact Rust standard-trait implementation artifact, not a separate four-language capability. Only this trait-qualified inventory item is excluded; the root SecretBytes wrapper and all mapped inherent lifecycle APIs remain declared."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "rust-export-report-2026-11-01.json: Rust 1.94.0/rustdoc 57 observes exactly 7 direct and 5 conditional root paths. KMIPKIT-0008-FR-010 owns the retained redacted, zeroizing wrapper; KMIPKIT-0043-FR-010/021 authorize this inventory-only exclusion. These paths add no byte access or clone API. No OASIS clause applies. KMIPKIT-0043-FR-013 applies only to formatting diagnostics.",
+      "exportName": "<kmipkit::SecretBytes as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "Exact Rust standard-trait implementation artifact, not a separate four-language capability. Only this trait-qualified inventory item is excluded; the root SecretBytes wrapper and all mapped inherent lifecycle APIs remain declared."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/008-credentials-attestation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0008",
+      "evidence": "rust-export-report-2026-11-01.json: Rust 1.94.0/rustdoc 57 observes exactly 7 direct and 5 conditional root paths. KMIPKIT-0008-FR-010 owns the retained redacted, zeroizing wrapper; KMIPKIT-0043-FR-010/021 authorize this inventory-only exclusion. These paths add no byte access or clone API. No OASIS clause applies. KMIPKIT-0043-FR-013 applies only to formatting diagnostics.",
+      "exportName": "<kmipkit::SecretBytes as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "Exact Rust standard-trait implementation artifact, not a separate four-language capability. Only this trait-qualified inventory item is excluded; the root SecretBytes wrapper and all mapped inherent lifecycle APIs remain declared."
     }
   ],
   "capabilities": [
