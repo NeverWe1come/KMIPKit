@@ -5,6 +5,11 @@ mod extension_registry;
 #[allow(dead_code)]
 mod public_api_generated;
 
+#[cfg(test)]
+#[allow(unsafe_code)]
+#[path = "../tests/support/profile_readiness_identifier_parity_tests.rs"]
+mod profile_readiness_identifier_parity_tests;
+
 #[repr(C)]
 pub struct kmipkit_extension_identity_t {
     _private: [u8; 0],

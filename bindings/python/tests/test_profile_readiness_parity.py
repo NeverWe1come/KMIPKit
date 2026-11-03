@@ -129,3 +129,17 @@ def test_standard_utf8_unknown_requirement_is_accepted_and_kept_redacted() -> No
     unknown = next(blocker for blocker in readiness.blockers if blocker.kind == "unknown_requirement_record")
     assert unknown.requirement_id is None
     assert requirement_id not in unknown.message
+
+
+@pytest.mark.parametrize("requirement_id", ["", " \t\r\n"])
+def test_empty_or_whitespace_unknown_requirement_is_redacted(requirement_id: str) -> None:
+    readiness = ProfileReadiness.evaluate(
+        BASELINE_ID, (ProfileEvidenceRecord.passed(requirement_id),)
+    )
+
+    assert readiness is not None
+    unknown = next(blocker for blocker in readiness.blockers if blocker.kind == "unknown_requirement_record")
+    assert unknown.message == "requirement evidence record is unknown"
+    assert unknown.requirement_id is None
+    if requirement_id:
+        assert requirement_id not in unknown.message

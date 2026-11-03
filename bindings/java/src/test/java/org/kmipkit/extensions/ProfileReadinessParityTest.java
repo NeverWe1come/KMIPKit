@@ -182,4 +182,26 @@ final class ProfileReadinessParityTest {
         assertNull(unknown.requirementId());
         assertFalse(unknown.message().contains(requirementId));
     }
+
+    @Test
+    void readinessTreatsEmptyRequirementIdAsRedactedUnknownEvidence() {
+        assertUnknownRequirementIsRedacted("");
+    }
+
+    @Test
+    void readinessTreatsWhitespaceRequirementIdAsRedactedUnknownEvidence() {
+        assertUnknownRequirementIsRedacted(" \t\r\n");
+    }
+
+    private static void assertUnknownRequirementIsRedacted(String requirementId) {
+        ProfileReadiness readiness = ProfileReadiness.evaluate(
+                BASELINE, List.of(ProfileEvidenceRecord.passed(requirementId))).orElseThrow();
+        ProfileReadinessBlocker unknown = readiness.blockers().stream()
+                .filter(item -> item.kind().equals("unknown_requirement_record"))
+                .findFirst().orElseThrow();
+
+        assertEquals("requirement evidence record is unknown", unknown.message());
+        assertNull(unknown.requirementId());
+        if (!requirementId.isEmpty()) assertFalse(unknown.message().contains(requirementId));
+    }
 }
