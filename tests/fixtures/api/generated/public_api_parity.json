@@ -103335,6 +103335,630 @@
       "exportName": "<kmipkit::GetUsageAllocationResponse as core::fmt::Debug>::fmt",
       "packageId": "rust-kmipkit",
       "reason": "This exact Rust standard-trait implementation is compiler-observed language behavior of GetUsageAllocationResponse, not a separate KMIP client capability. It introduces no KMIP operation or runtime path."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.ClientBatchItem.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager entry member only checks that the already-owned wrapper is live and returns it. It adds Python `with` syntax for using the existing handle, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.ClientBatchItem.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python property reports the local wrapper state. It adds no independent KMIPKit capability; cross-language handle ownership and release remain represented by the mapped native-handle lifecycle."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.ClientConfiguration.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager entry member only checks that the already-owned wrapper is live and returns it. It adds Python `with` syntax for using the existing handle, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.ClientConfiguration.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python property reports the local wrapper state. It adds no independent KMIPKit capability; cross-language handle ownership and release remain represented by the mapped native-handle lifecycle."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.ClientExtensionRegistry.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager entry member only checks that the already-owned wrapper is live and returns it. It adds Python `with` syntax for using the existing handle, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.ClientExtensionRegistry.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python property reports the local wrapper state. It adds no independent KMIPKit capability; cross-language handle ownership and release remain represented by the mapped native-handle lifecycle."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.ClientRequestMessageExtension.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager entry member only checks that the already-owned wrapper is live and returns it. It adds Python `with` syntax for using the existing handle, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.ClientRequestMessageExtension.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python property reports the local wrapper state. It adds no independent KMIPKit capability; cross-language handle ownership and release remain represented by the mapped native-handle lifecycle."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.Compatibility.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager entry member only checks that the already-owned wrapper is live and returns it. It adds Python `with` syntax for using the existing handle, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.Compatibility.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python property reports the local wrapper state. It adds no independent KMIPKit capability; cross-language handle ownership and release remain represented by the mapped native-handle lifecycle."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.Discriminator.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager entry member only checks that the already-owned wrapper is live and returns it. It adds Python `with` syntax for using the existing handle, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.Discriminator.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python property reports the local wrapper state. It adds no independent KMIPKit capability; cross-language handle ownership and release remain represented by the mapped native-handle lifecycle."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.ExtensionChildRule.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager entry member only checks that the already-owned wrapper is live and returns it. It adds Python `with` syntax for using the existing handle, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.ExtensionChildRule.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python property reports the local wrapper state. It adds no independent KMIPKit capability; cross-language handle ownership and release remain represented by the mapped native-handle lifecycle."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.ExtensionDefinition.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager entry member only checks that the already-owned wrapper is live and returns it. It adds Python `with` syntax for using the existing handle, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.ExtensionDefinition.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python property reports the local wrapper state. It adds no independent KMIPKit capability; cross-language handle ownership and release remain represented by the mapped native-handle lifecycle."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.ExtensionIdentity.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager entry member only checks that the already-owned wrapper is live and returns it. It adds Python `with` syntax for using the existing handle, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.ExtensionIdentity.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python property reports the local wrapper state. It adds no independent KMIPKit capability; cross-language handle ownership and release remain represented by the mapped native-handle lifecycle."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.ExtensionInformation.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager entry member only checks that the already-owned wrapper is live and returns it. It adds Python `with` syntax for using the existing handle, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.ExtensionInformation.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python property reports the local wrapper state. It adds no independent KMIPKit capability; cross-language handle ownership and release remain represented by the mapped native-handle lifecycle."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.ExtensionOrderConstraint.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager entry member only checks that the already-owned wrapper is live and returns it. It adds Python `with` syntax for using the existing handle, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.ExtensionOrderConstraint.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python property reports the local wrapper state. It adds no independent KMIPKit capability; cross-language handle ownership and release remain represented by the mapped native-handle lifecycle."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.ExtensionRecognition.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager entry member only checks that the already-owned wrapper is live and returns it. It adds Python `with` syntax for using the existing handle, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.ExtensionRecognition.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python property reports the local wrapper state. It adds no independent KMIPKit capability; cross-language handle ownership and release remain represented by the mapped native-handle lifecycle."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.ExtensionSchema.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager entry member only checks that the already-owned wrapper is live and returns it. It adds Python `with` syntax for using the existing handle, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.ExtensionSchema.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python property reports the local wrapper state. It adds no independent KMIPKit capability; cross-language handle ownership and release remain represented by the mapped native-handle lifecycle."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.RegisterRequest.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager entry member only checks that the already-owned wrapper is live and returns it. It adds Python `with` syntax for using the existing handle, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.RegisterRequest.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python property reports the local wrapper state. It adds no independent KMIPKit capability; cross-language handle ownership and release remain represented by the mapped native-handle lifecycle."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.RegisteredExtensionValue.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager entry member only checks that the already-owned wrapper is live and returns it. It adds Python `with` syntax for using the existing handle, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.RegisteredExtensionValue.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python property reports the local wrapper state. It adds no independent KMIPKit capability; cross-language handle ownership and release remain represented by the mapped native-handle lifecycle."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.TtlvPath.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager entry member only checks that the already-owned wrapper is live and returns it. It adds Python `with` syntax for using the existing handle, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.TtlvPath.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python property reports the local wrapper state. It adds no independent KMIPKit capability; cross-language handle ownership and release remain represented by the mapped native-handle lifecycle."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.ValidatedExtensionValue.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager entry member only checks that the already-owned wrapper is live and returns it. It adds Python `with` syntax for using the existing handle, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.extensions.ValidatedExtensionValue.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python property reports the local wrapper state. It adds no independent KMIPKit capability; cross-language handle ownership and release remain represented by the mapped native-handle lifecycle."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.ttlv.CodecLimits.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager entry member only checks that the already-owned wrapper is live and returns it. It adds Python `with` syntax for using the existing handle, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.ttlv.CodecLimits.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python property reports the local wrapper state. It adds no independent KMIPKit capability; cross-language handle ownership and release remain represented by the mapped native-handle lifecycle."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.ttlv.RawTag.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager entry member only checks that the already-owned wrapper is live and returns it. It adds Python `with` syntax for using the existing handle, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.ttlv.RawTag.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python property reports the local wrapper state. It adds no independent KMIPKit capability; cross-language handle ownership and release remain represented by the mapped native-handle lifecycle."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.ttlv.Structure.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager entry member only checks that the already-owned wrapper is live and returns it. It adds Python `with` syntax for using the existing handle, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.ttlv.Structure.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python property reports the local wrapper state. It adds no independent KMIPKit capability; cross-language handle ownership and release remain represented by the mapped native-handle lifecycle."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.ttlv.Tag.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager entry member only checks that the already-owned wrapper is live and returns it. It adds Python `with` syntax for using the existing handle, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.ttlv.Tag.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python property reports the local wrapper state. It adds no independent KMIPKit capability; cross-language handle ownership and release remain represented by the mapped native-handle lifecycle."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.ttlv.TtlvItem.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager entry member only checks that the already-owned wrapper is live and returns it. It adds Python `with` syntax for using the existing handle, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.ttlv.TtlvItem.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python property reports the local wrapper state. It adds no independent KMIPKit capability; cross-language handle ownership and release remain represented by the mapped native-handle lifecycle."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.ttlv.TtlvItemView.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager entry member only checks that the already-owned wrapper is live and returns it. It adds Python `with` syntax for using the existing handle, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.ttlv.TtlvItemView.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python property reports the local wrapper state. It adds no independent KMIPKit capability; cross-language handle ownership and release remain represented by the mapped native-handle lifecycle."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.ttlv.TtlvStructureView.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager entry member only checks that the already-owned wrapper is live and returns it. It adds Python `with` syntax for using the existing handle, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.ttlv.TtlvStructureView.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python property reports the local wrapper state. It adds no independent KMIPKit capability; cross-language handle ownership and release remain represented by the mapped native-handle lifecycle."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.ttlv.TtlvValueView.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager entry member only checks that the already-owned wrapper is live and returns it. It adds Python `with` syntax for using the existing handle, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.ttlv.TtlvValueView.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python property reports the local wrapper state. It adds no independent KMIPKit capability; cross-language handle ownership and release remain represented by the mapped native-handle lifecycle."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.ttlv.Value.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python context-manager entry member only checks that the already-owned wrapper is live and returns it. It adds Python `with` syntax for using the existing handle, not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior.",
+      "exportName": "kmipkit.ttlv.Value.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python property reports the local wrapper state. It adds no independent KMIPKit capability; cross-language handle ownership and release remain represented by the mapped native-handle lifecycle."
     }
   ],
   "capabilities": [
@@ -174173,6 +174797,47 @@
         "status": "Approved"
       },
       "capabilityId": "vendor_extension_registry",
+      "declarationId": "python-observed-1038030129beba16d1ff",
+      "declarationState": "declared",
+      "exportName": "kmipkit.extensions.ClientBatchItem.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.ClientBatchItem.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItem",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests.",
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "vendor_extension_registry",
       "declarationId": "python-observed-23b1c376eb76eb1177f1",
       "declarationState": "declared",
       "exportName": "kmipkit.extensions.ClientBatchItem.close",
@@ -174202,6 +174867,48 @@
         "KMIPKIT-0012-FR-010",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests.",
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "vendor_extension_registry",
+      "declarationId": "python-observed-610fa773b2b0328e90dc",
+      "declarationState": "declared",
+      "exportName": "kmipkit.extensions.ClientConfiguration.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_configuration_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientConfiguration.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.ClientConfiguration.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::extension_registry::ClientConfiguration",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010"
       ]
     },
     {
@@ -174252,6 +174959,48 @@
         "status": "Approved"
       },
       "capabilityId": "vendor_extension_registry",
+      "declarationId": "python-observed-6c612853b05cdf7836e7",
+      "declarationState": "declared",
+      "exportName": "kmipkit.extensions.ClientExtensionRegistry.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_extension_registry_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientExtensionRegistry.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.ClientExtensionRegistry.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::extension_registry::ClientExtensionRegistry",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests.",
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "vendor_extension_registry",
       "declarationId": "python-observed-a00a27362b5b2df859e5",
       "declarationState": "declared",
       "exportName": "kmipkit.extensions.ClientExtensionRegistry.close",
@@ -174282,6 +175031,49 @@
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-009",
         "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests.",
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "vendor_extension_registry",
+      "declarationId": "python-observed-d362a2351406bb99d86f",
+      "declarationState": "declared",
+      "exportName": "kmipkit.extensions.ClientRequestMessageExtension.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_request_message_extension_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientRequestMessageExtension.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.ClientRequestMessageExtension.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::extension_registry::ClientRequestMessageExtension",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-005"
       ]
     },
     {
@@ -174334,6 +175126,49 @@
         "status": "Approved"
       },
       "capabilityId": "vendor_extension_registry",
+      "declarationId": "python-observed-f19f9d07b0a696f4c6a1",
+      "declarationState": "declared",
+      "exportName": "kmipkit.extensions.Compatibility.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_extension_compatibility_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.Compatibility.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.Compatibility.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::extension::Compatibility",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests.",
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "vendor_extension_registry",
       "declarationId": "python-observed-6ec27c79b99b3027ab96",
       "declarationState": "declared",
       "exportName": "kmipkit.extensions.Compatibility.close",
@@ -174366,6 +175201,49 @@
         "KMIPKIT-0043-FR-009",
         "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests.",
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "vendor_extension_registry",
+      "declarationId": "python-observed-fee2946a4465ec0e9fb3",
+      "declarationState": "declared",
+      "exportName": "kmipkit.extensions.Discriminator.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_extension_discriminator_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.Discriminator.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.Discriminator.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::extension::Discriminator",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-005"
       ]
     },
     {
@@ -174418,6 +175296,49 @@
         "status": "Approved"
       },
       "capabilityId": "vendor_extension_registry",
+      "declarationId": "python-observed-285d5cbc6785190e6bac",
+      "declarationState": "declared",
+      "exportName": "kmipkit.extensions.ExtensionChildRule.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_extension_child_rule_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ExtensionChildRule.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.ExtensionChildRule.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::extension::ExtensionChildRule",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests.",
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "vendor_extension_registry",
       "declarationId": "python-observed-b5e87bb6aecc7a4eaa6c",
       "declarationState": "declared",
       "exportName": "kmipkit.extensions.ExtensionChildRule.close",
@@ -174450,6 +175371,49 @@
         "KMIPKIT-0043-FR-009",
         "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests.",
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "vendor_extension_registry",
+      "declarationId": "python-observed-ab3938fcbbb530710497",
+      "declarationState": "declared",
+      "exportName": "kmipkit.extensions.ExtensionDefinition.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_extension_definition_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ExtensionDefinition.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.ExtensionDefinition.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::extension::ExtensionDefinition",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-005"
       ]
     },
     {
@@ -174502,6 +175466,49 @@
         "status": "Approved"
       },
       "capabilityId": "vendor_extension_registry",
+      "declarationId": "python-observed-ec6f895060a20839e4e2",
+      "declarationState": "declared",
+      "exportName": "kmipkit.extensions.ExtensionIdentity.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_extension_identity_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ExtensionIdentity.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.ExtensionIdentity.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::extension::ExtensionIdentity",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests.",
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "vendor_extension_registry",
       "declarationId": "python-observed-653f519d7978bfff56e7",
       "declarationState": "declared",
       "exportName": "kmipkit.extensions.ExtensionIdentity.close",
@@ -174534,6 +175541,49 @@
         "KMIPKIT-0043-FR-009",
         "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests.",
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "vendor_extension_registry",
+      "declarationId": "python-observed-1d52c71ad0aa431592e4",
+      "declarationState": "declared",
+      "exportName": "kmipkit.extensions.ExtensionInformation.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_extension_information_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ExtensionInformation.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.ExtensionInformation.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::extension::ExtensionInformation",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-005"
       ]
     },
     {
@@ -174586,6 +175636,49 @@
         "status": "Approved"
       },
       "capabilityId": "vendor_extension_registry",
+      "declarationId": "python-observed-d26f684858f1574da170",
+      "declarationState": "declared",
+      "exportName": "kmipkit.extensions.ExtensionOrderConstraint.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_extension_order_constraint_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ExtensionOrderConstraint.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.ExtensionOrderConstraint.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::extension::ExtensionOrderConstraint",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests.",
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "vendor_extension_registry",
       "declarationId": "python-observed-87af9303af1d920deb09",
       "declarationState": "declared",
       "exportName": "kmipkit.extensions.ExtensionOrderConstraint.close",
@@ -174618,6 +175711,49 @@
         "KMIPKIT-0043-FR-009",
         "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests.",
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "vendor_extension_registry",
+      "declarationId": "python-observed-3d1d87841ed2dfd69948",
+      "declarationState": "declared",
+      "exportName": "kmipkit.extensions.ExtensionRecognition.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_extension_recognition_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ExtensionRecognition.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.ExtensionRecognition.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::extension_registry::ExtensionRecognition",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-005"
       ]
     },
     {
@@ -175138,6 +176274,49 @@
         "status": "Approved"
       },
       "capabilityId": "vendor_extension_registry",
+      "declarationId": "python-observed-60ec2c23ae9fea4d93d9",
+      "declarationState": "declared",
+      "exportName": "kmipkit.extensions.ExtensionSchema.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_extension_schema_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ExtensionSchema.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.ExtensionSchema.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::extension::ExtensionSchema",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests.",
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "vendor_extension_registry",
       "declarationId": "python-observed-c5ccac6dd47a2b445380",
       "declarationState": "declared",
       "exportName": "kmipkit.extensions.ExtensionSchema.close",
@@ -175170,6 +176349,49 @@
         "KMIPKIT-0043-FR-009",
         "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests.",
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "vendor_extension_registry",
+      "declarationId": "python-observed-e7bee82a8e7c83227d42",
+      "declarationState": "declared",
+      "exportName": "kmipkit.extensions.RegisteredExtensionValue.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_registered_extension_value_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.RegisteredExtensionValue.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.RegisteredExtensionValue.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::extension_registry::RegisteredExtensionValue",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-005"
       ]
     },
     {
@@ -175222,6 +176444,49 @@
         "status": "Approved"
       },
       "capabilityId": "vendor_extension_registry",
+      "declarationId": "python-observed-b6589f8e66ad54ac660b",
+      "declarationState": "declared",
+      "exportName": "kmipkit.extensions.TtlvPath.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_path_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.TtlvPath.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.TtlvPath.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::extension::TtlvPath",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests.",
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "vendor_extension_registry",
       "declarationId": "python-observed-aef29bfb5867c5f031fc",
       "declarationState": "declared",
       "exportName": "kmipkit.extensions.TtlvPath.close",
@@ -175264,6 +176529,49 @@
         "status": "Approved"
       },
       "capabilityId": "vendor_extension_registry",
+      "declarationId": "python-observed-be990b76adb129ce4d0c",
+      "declarationState": "declared",
+      "exportName": "kmipkit.extensions.ValidatedExtensionValue.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_validated_extension_value_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ValidatedExtensionValue.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.ValidatedExtensionValue.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::extension::ValidatedExtensionValue",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests.",
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "vendor_extension_registry",
       "declarationId": "python-observed-675d5977cc13a70ff96e",
       "declarationState": "declared",
       "exportName": "kmipkit.extensions.ValidatedExtensionValue.close",
@@ -175296,6 +176604,48 @@
         "KMIPKIT-0043-FR-009",
         "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "public_binding_surface",
+      "declarationId": "python-observed-fd80c50fa695d32c86bb",
+      "declarationState": "declared",
+      "exportName": "kmipkit.ttlv.CodecLimits.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_codec_limits_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.CodecLimits",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.CodecLimits.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::codec::CodecLimits",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "mappingSemantics": "native-handle-release-managed-java-value",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-005"
       ]
     },
     {
@@ -175787,6 +177137,49 @@
         "status": "Approved"
       },
       "capabilityId": "generic_ttlv_model",
+      "declarationId": "python-observed-a1e65007565c4d5d60ab",
+      "declarationState": "declared",
+      "exportName": "kmipkit.ttlv.RawTag.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_raw_tag_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.RawTag.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.RawTag.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::RawTag",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
       "declarationId": "python-observed-e3d2d55fa67608a242bc",
       "declarationState": "declared",
       "exportName": "kmipkit.ttlv.RawTag.close",
@@ -175829,6 +177222,49 @@
         "status": "Approved"
       },
       "capabilityId": "generic_ttlv_model",
+      "declarationId": "python-observed-64c52a0d955645489d08",
+      "declarationState": "declared",
+      "exportName": "kmipkit.ttlv.Structure.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_structure_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvStructure.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.Structure.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::Structure",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
       "declarationId": "python-observed-55e89771fb3848d3032c",
       "declarationState": "declared",
       "exportName": "kmipkit.ttlv.Structure.close",
@@ -175860,6 +177296,52 @@
         "KMIPKIT-0012-FR-010",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "python-observed-f513ef00aab19449d7a4",
+      "declarationState": "declared",
+      "exportName": "kmipkit.ttlv.Tag.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_tag_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.Tag.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.Tag.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::Tag",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0021-FR-009",
+        "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-005"
       ]
     },
     {
@@ -175915,6 +177397,49 @@
         "status": "Approved"
       },
       "capabilityId": "generic_ttlv_model",
+      "declarationId": "python-observed-cb671b6441b24621e6ca",
+      "declarationState": "declared",
+      "exportName": "kmipkit.ttlv.TtlvItem.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_item_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvItem.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.TtlvItem.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::Item",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
       "declarationId": "python-observed-a5a4244f60f381f8596c",
       "declarationState": "declared",
       "exportName": "kmipkit.ttlv.TtlvItem.close",
@@ -175947,6 +177472,52 @@
         "KMIPKIT-0043-FR-009",
         "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "python-observed-d05eaf78e62f1aeecee6",
+      "declarationState": "declared",
+      "exportName": "kmipkit.ttlv.TtlvItemView.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_item_view_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvItemView.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.TtlvItemView.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::Item",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0021-FR-009",
+        "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-005"
       ]
     },
     {
@@ -176002,6 +177573,46 @@
         "status": "Approved"
       },
       "capabilityId": "generic_ttlv_model",
+      "declarationId": "python-observed-a60d00dc7c87e95bb98c",
+      "declarationState": "declared",
+      "exportName": "kmipkit.ttlv.TtlvStructureView.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_structure_view_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvStructureView.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.TtlvStructureView.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::StructureView",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
       "declarationId": "python-observed-afaa6cb4b5a7e336e9ca",
       "declarationState": "declared",
       "exportName": "kmipkit.ttlv.TtlvStructureView.close",
@@ -176030,6 +177641,52 @@
         "KMIPKIT-0004-FR-012",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "python-observed-29d1280133270b5abda4",
+      "declarationState": "declared",
+      "exportName": "kmipkit.ttlv.TtlvValueView.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_view_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValueView.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.TtlvValueView.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::ValueView",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0021-FR-009",
+        "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-005"
       ]
     },
     {
@@ -176075,6 +177732,49 @@
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "python-observed-1c5cbdd0f06337a06cac",
+      "declarationState": "declared",
+      "exportName": "kmipkit.ttlv.Value.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValue.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.Value.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::Value",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-005"
       ]
     },
     {
@@ -285739,6 +287439,74 @@
       },
       "mappingSemantics": "native-handle-release",
       "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RegisterMappingTest.java",
+        "bindings/python/tests/test_register_operation.py",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+        "tools/api_manifest/tests/test_register_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-007",
+        "KMIPKIT-REQ-SPEC-6.1.43-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-005",
+        "KMIPKIT-REQ-SPEC-6.1.43-007",
+        "KMIPKIT-REQ-SPEC-6.1.43-009-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-009-002",
+        "KMIPKIT-REQ-SPEC-6.1.43-010-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-010-002",
+        "KMIPKIT-REQ-SPEC-6.1.43-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13",
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "opaque_register_context",
+      "declarationId": "KMIPKIT-0043-observed-python-register-lifecycle-02",
+      "declarationState": "declared",
+      "exportName": "kmipkit.extensions.RegisterRequest.__exit__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_register_request_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.RegisterRequest.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.RegisterRequest.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RegisterRequest",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/RegisterMappingTest.java",
