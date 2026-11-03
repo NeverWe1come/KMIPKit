@@ -151,6 +151,8 @@ def expected_direct_paths(owner: str, target: str, direct_count: int) -> set[str
             f"core::convert::From<{target}>>::from",
         }
     )
+    if direct_count == 15:
+        suffixes.add("core::default::Default>::default")
     if direct_count == 27:
         suffixes.update(READINESS_BLOCKER_ORDER_SUFFIXES)
     if len(suffixes) != direct_count:
@@ -283,16 +285,22 @@ class T102ProfileModelTraitExclusionTests(unittest.TestCase):
             OUT_OF_SCOPE_API_SHA256,
             "ProfileObjectState and ProfileValidationContext must remain out of scope.",
         )
-        protocol_debug_paths = {
-            f"<{owner} as core::fmt::Debug>::fmt" for _package, owner in out_of_scope
-        }
+        protocol_profile_trait_paths: set[str] = set()
+        for type_name, direct_count, target in (
+            ("ProfileValidationContext", 15, "kmipkit_protocol::profile::ProfileValidationContext"),
+            ("ProfileObjectState", 14, "kmipkit_protocol::profile::ProfileObjectState"),
+        ):
+            owner = f"kmipkit_protocol::{type_name}"
+            direct = expected_direct_paths(owner, target, direct_count)
+            protocol_profile_trait_paths.update(direct)
+            protocol_profile_trait_paths.update(trait_paths(owner, CONDITIONAL_SUFFIXES))
         observed_protocol_exclusions = {
             row["exportName"]
             for row in self.manifest["approvedExclusions"]
             if row.get("packageId") == "rust-kmipkit-protocol"
             and any(row.get("exportName", "").startswith(f"<{owner} as ") for _, owner in out_of_scope)
         }
-        self.assertEqual(observed_protocol_exclusions, protocol_debug_paths)
+        self.assertEqual(observed_protocol_exclusions, protocol_profile_trait_paths)
 
     def test_manifest_totals_change_only_by_the_exact_profile_model_batch(self) -> None:
         candidates = sum(
@@ -300,9 +308,9 @@ class T102ProfileModelTraitExclusionTests(unittest.TestCase):
             and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(candidates, 1588)
-        self.assertEqual(len(self.manifest["publicDeclarations"]), 6786)
-        self.assertEqual(len(self.manifest["approvedExclusions"]), 7938)
+        self.assertEqual(candidates, 1477)
+        self.assertEqual(len(self.manifest["publicDeclarations"]), 6675)
+        self.assertEqual(len(self.manifest["approvedExclusions"]), 8049)
 
     def _protected_rows(self, owners: object) -> list[dict[str, object]]:
         return sorted(

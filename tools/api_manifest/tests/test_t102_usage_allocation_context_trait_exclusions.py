@@ -218,12 +218,12 @@ class T102UsageAllocationContextTraitExclusionTests(unittest.TestCase):
             and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(candidates, 1588)
-        self.assertEqual(len(self.manifest["publicDeclarations"]), 6786)
-        self.assertEqual(len(self.manifest["approvedExclusions"]), 7938)
-        self.assertEqual(self.report["counts"]["manifest"], 3871)
-        self.assertEqual(self.report["counts"]["matched"], 3871)
-        self.assertEqual(self.report["counts"]["excluded"], 6592)
+        self.assertEqual(candidates, 1477)
+        self.assertEqual(len(self.manifest["publicDeclarations"]), 6675)
+        self.assertEqual(len(self.manifest["approvedExclusions"]), 8049)
+        self.assertEqual(self.report["counts"]["manifest"], 3760)
+        self.assertEqual(self.report["counts"]["matched"], 3760)
+        self.assertEqual(self.report["counts"]["excluded"], 6703)
 
 
 if __name__ == "__main__":

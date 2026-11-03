@@ -10007,9 +10007,9 @@ Warnings and limits:
 
 Preflight verified the six exact `core::fmt::Debug::fmt` paths were current blocked KMIPKIT-0043 candidates: `ProfileValidationContext` and `ProfileObjectState` in `rust-kmipkit-protocol`, `rust-kmipkit-client`, and `rust-kmipkit`. The accepted owner `specs/010-profile-conformance/spec.md` is accepted by merge of PR #49 and has 57/57 tasks complete. KMIPKIT-0010-FR-019 covers exchange-scoped caller-attested state; FR-012 covers diagnostic redaction. T102 authority is KMIPKIT-0043-FR-010/021, with FR-013 for diagnostic redaction. OASIS KMIP Specification v2.1 §§4.38 and 4.59 provide context for caller state; no OASIS requirement is assigned to Rust traits.
 
-Source review confirmed the existing manual Debug implementations redact the `ProfileObjectState` identifier and caller-attested fields, and redact the state map in `ProfileValidationContext`. No formatter or runtime code changed. The protocol/root parent declarations remain blocked; client parents remain declared. `client_profile_validation` remains declared and Baseline remains `evidence_incomplete`. The other 111 compiler-observed trait paths for these types remain blocked candidates, including Clone, Eq, and PartialEq; no traits were reused or cached.
+Source review confirmed the existing manual Debug implementations redact the `ProfileObjectState` identifier and caller-attested fields, and redact the state map in `ProfileValidationContext`. No formatter or runtime code changed. The protocol/root parent declarations remain blocked; client parents remain declared. `client_profile_validation` remains declared and Baseline remains `evidence_incomplete`. At this checkpoint, the other 111 compiler-observed trait paths for these types remained blocked candidates, including Clone, Eq, and PartialEq; they are reconciled by the subsequent KMIPKIT-0043 profile-state trait batch.
 
-The exact-set contract is `tools/api_manifest/tests/test_t102_profile_debug_trait_exclusions.py`. It pins the six target paths, unchanged parent and capability states, owner/exclusion evidence, and the 111 remaining candidates. The manifest delta was applied textually after restoring the original byte representation: exactly the six source rows were removed and inserted as exclusions, and removing those six target slices from the final manifest yields the original bytes elsewhere in the manifest. The final manifest remains under its 20 MiB validator limit. Public declaration/exclusion totals changed from 7,391/7,333 to 7,385/7,339; blocked KMIPKIT-0043 candidates changed from 2,193 to 2,187.
+The exact-set contract is `tools/api_manifest/tests/test_t102_profile_debug_trait_exclusions.py`. It pins the six target paths, unchanged parent and capability states, owner/exclusion evidence, and, at that checkpoint, the 111 then-remaining candidates. Those candidates are reconciled by the subsequent KMIPKIT-0043 profile-state trait batch. The manifest delta was applied textually after restoring the original byte representation: exactly the six source rows were removed and inserted as exclusions, and removing those six target slices from the final manifest yields the original bytes elsewhere in the manifest. The final manifest remains under its 20 MiB validator limit. Public declaration/exclusion totals changed from 7,391/7,333 to 7,385/7,339; blocked KMIPKIT-0043 candidates changed from 2,193 to 2,187.
 
 | Phase | Commit | Evidence | Result |
 |---|---|---|---|
@@ -10155,3 +10155,31 @@ Verification:
 - `git diff --check` passed before the Refactor commit.
 
 T102 remains open. This is manifest inventory and traceability work only; it changes no RNG runtime behavior and makes no protocol-conformance, profile-support, interoperability, or certification claim.
+
+### T102 - KMIPKIT-0010 caller-attested profile-state trait artifacts (2026-11-03)
+
+Preflight was based on `1a78f3d52ed4c15b819335d103d1703d87fde636` with source manifest SHA-256 `87020e9efb4ad178e5c8a98807bc56c78ea0a42cd1318a57a0b78e6b08ae81dd`. The accepted owner is `specs/010-profile-conformance/spec.md` (PR #49); KMIPKIT-0010-FR-012/019 govern redaction and one-exchange caller-state facts. T102 uses KMIPKIT-0043-FR-010/013/021. OASIS KMIP v2.1 §§4.38 and 4.59 provide functional context only and do not define Rust traits.
+
+The exact-set test pins 111 paths: 81 direct and 30 conditional across root, client, and protocol aliases of `ProfileValidationContext` and `ProfileObjectState`. The six previously approved redacted Debug paths remain separately excluded. Client parents remain declared; root/protocol parents remain blocked; `client_profile_validation` remains declared and Baseline remains `evidence_incomplete`. No functional row or runtime behavior changed.
+
+The source manifest moves 111 blocked candidates to approved exclusions. Public declarations/exclusions change from 6,786/7,938 to 6,675/8,049; candidates fall from 1,588 to 1,477. The Rust 1.94.0 report is complete at 10,463 observed, 3,760 matched, and 6,703 excluded, with zero discrepancies. The shared inventory reports 864 mapped and 6,703 approved exclusions; C/Java/Python exports remain exact at 757/757, 1,014/1,014, and 1,140/1,140.
+
+| Phase | Commit | Evidence | Result |
+|---|---|---|---|
+| Red | `b17ef1c2f` | `test_t102_profile_context_state_trait_batch.py` | Expected failure: 111 non-Debug traits were still blocked declarations and lacked approved exclusions; parent-state and capability assertions passed. |
+| Green | This commit | Exact manifest migration, updated aggregate guards, regenerated reports and API outputs, T102 contracts | Moved exactly the 111 compiler-observed paths; retained the six existing Debug exclusions and all parent/capability/profile-claim states. |
+| Refactor | Pending | Final independent reviews and full verification | This entry will be completed after the Green commit and final review. |
+
+Verification completed so far:
+
+- Profile context/state exact-set and neighboring contracts — 9 passed.
+- Full T102 contract suite after the evidence wording corrections — 223 passed in 13.820 seconds.
+- Full manifest-v2 suite — pending rerun after the final wording precision update in the six Debug records and 111 inventory records.
+- `python -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified. The baseline source manifest had two stale generated parity outputs; they were regenerated from the pinned generator, after which this check passed.
+- Rust export audit `--check` — 10,463 observed, 3,760 matched, 6,703 excluded; zero issues, missing paths, unobserved paths, or kind mismatches. The existing optional Windows AWS-LC compiler-probe and missing-NASM warnings were emitted.
+- Shared Rust inventory `--check` passed: 10,463 observed (8,420 direct, 2,043 conditional), 864 mapped, 6,703 approved-excluded.
+- Binding export audit `--check` passed with exact C/Java/Python matches of 757/757, 1,014/1,014, and 1,140/1,140.
+- Independent security review — PASS, no findings; the reviewer confirmed that the traits expose no identifier/state/secret data and change no runtime behavior. Final QA review — pending.
+- `git diff --check` — pending after final wording precision edits.
+
+T102 remains open. This inventory-only checkpoint makes no new KMIP conformance, profile-support, interoperability, or certification claim.

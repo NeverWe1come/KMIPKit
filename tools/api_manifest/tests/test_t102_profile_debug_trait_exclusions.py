@@ -57,14 +57,14 @@ class T102ProfileDebugTraitExclusionTests(unittest.TestCase):
         cls.catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         cls.report = json.loads(REPORT_PATH.read_text(encoding="utf-8"))
 
-    def test_only_six_exact_debug_paths_are_excluded_and_other_traits_stay_candidates(self) -> None:
+    def test_all_compiler_trait_paths_are_excluded_after_the_profile_state_batch(self) -> None:
         self.assertTrue(self.report["complete"])
         self.assertEqual(self.report["toolchain"], "1.94.0")
         self.assertTrue(self.report["matchesManifest"])
         self.assertEqual(self.report["issues"], [])
 
         all_selected: set[tuple[str, str]] = set()
-        retained_path_count = 0
+        newly_excluded_path_count = 0
         for package, (crate, _parent_state) in PACKAGES.items():
             for type_name in TYPE_NAMES:
                 prefix = f"<{crate}::{type_name} as "
@@ -98,8 +98,8 @@ class T102ProfileDebugTraitExclusionTests(unittest.TestCase):
                     if row.get("packageId") == package
                     and row.get("exportName", "").startswith(prefix)
                 }
-                self.assertEqual(set(declarations), observed - {debug_path(crate, type_name)})
-                self.assertEqual(set(exclusions), {debug_path(crate, type_name)})
+                self.assertEqual(set(declarations), set())
+                self.assertEqual(set(exclusions), observed)
 
                 for export_name, row in declarations.items():
                     with self.subTest(package=package, export_name=export_name):
@@ -112,7 +112,7 @@ class T102ProfileDebugTraitExclusionTests(unittest.TestCase):
                             self.assertIn(requirement_id, row["evidence"])
                         citation = f"KMIP Specification v2.1 {chr(0x00A7)}4.38 and {chr(0x00A7)}4.59"
                         self.assertIn(citation, row["evidence"])
-                        self.assertIn("compiler-generated Rust traits", row["evidence"])
+                        self.assertIn("compiler-observed Rust standard-trait paths", row["evidence"])
                         self.assertIn("No OASIS requirement is assigned to these traits", row["evidence"])
                         self.assertIn("inventory-only", row["evidence"])
                         self.assertIn("redacted", row["reason"].lower())
@@ -124,17 +124,17 @@ class T102ProfileDebugTraitExclusionTests(unittest.TestCase):
                     if row.get("packageId") == package
                     and row.get("exportName", "").startswith(prefix)
                 }
-                self.assertEqual(observed_excluded, {debug_path(crate, type_name)})
+                self.assertEqual(observed_excluded, observed)
 
                 all_selected.update((package, path) for path in (observed - (observed - {debug_path(crate, type_name)})))
-                retained_path_count += len(declarations)
+                newly_excluded_path_count += len(exclusions) - 1
 
         self.assertEqual(all_selected, {
             (package, debug_path(crate, type_name))
             for package, (crate, _parent_state) in PACKAGES.items()
             for type_name in TYPE_NAMES
         })
-        self.assertEqual(retained_path_count, 111)
+        self.assertEqual(newly_excluded_path_count, 111)
 
     def test_profile_parent_states_and_capability_readiness_are_preserved(self) -> None:
         for package, (crate, expected_state) in PACKAGES.items():
@@ -161,15 +161,15 @@ class T102ProfileDebugTraitExclusionTests(unittest.TestCase):
         )
         self.assertEqual(baseline["claim_state"], "evidence_incomplete")
 
-    def test_manifest_totals_reflect_only_the_six_debug_exclusions(self) -> None:
+    def test_manifest_totals_reflect_the_debug_and_profile_state_exclusions(self) -> None:
         candidates = sum(
             row.get("candidateSpecId") == "KMIPKIT-0043"
             and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(candidates, 1588)
-        self.assertEqual(len(self.manifest["publicDeclarations"]), 6786)
-        self.assertEqual(len(self.manifest["approvedExclusions"]), 7938)
+        self.assertEqual(candidates, 1477)
+        self.assertEqual(len(self.manifest["publicDeclarations"]), 6675)
+        self.assertEqual(len(self.manifest["approvedExclusions"]), 8049)
 
 
 if __name__ == "__main__":

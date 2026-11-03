@@ -138,8 +138,8 @@ class T102ProfileContextStateTraitBatchTests(unittest.TestCase):
                             continue
                         for requirement_id in (*OWNER_REQUIREMENTS, *T102_REQUIREMENTS):
                             self.assertIn(requirement_id, row["evidence"])
-                        self.assertIn("KMIP Specification v2.1 §§4.38 and 4.59", row["evidence"])
-                        self.assertIn("compiler-generated Rust standard-trait paths", row["evidence"])
+                        self.assertIn("KMIP Specification v2.1 §4.38 and §4.59", row["evidence"])
+                        self.assertIn("compiler-observed Rust standard-trait paths", row["evidence"])
                         self.assertIn("No OASIS requirement is assigned to these traits", row["evidence"])
                         self.assertIn("inventory-only", row["evidence"])
                         self.assertIn("no separate KMIP client capability", row["reason"])
@@ -185,9 +185,9 @@ class T102ProfileContextStateTraitBatchTests(unittest.TestCase):
             and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(candidates, 1588)
-        self.assertEqual(len(self.manifest["publicDeclarations"]), 6786)
-        self.assertEqual(len(self.manifest["approvedExclusions"]), 7938)
+        self.assertEqual(candidates, 1477)
+        self.assertEqual(len(self.manifest["publicDeclarations"]), 6675)
+        self.assertEqual(len(self.manifest["approvedExclusions"]), 8049)
 
 
 if __name__ == "__main__":
