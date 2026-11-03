@@ -117,7 +117,7 @@ OPERATIONS = {
         "reference": "OASIS KMIP v2.1 Section 6.1.48.1, Table 315",
         "caption": "Table 315: RNG Retrieve Errors",
         "caption_note": (
-            "Table 315 has an errant RNG Retrieve Errors caption in the "
+            "Table 315 has an errant RNG Retrieve caption in the "
             "Re-Provision error section"
         ),
     },
