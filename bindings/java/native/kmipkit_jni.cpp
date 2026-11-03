@@ -407,9 +407,17 @@ bool profile_error_text(JNIEnv* env, const uint8_t* data, uint64_t length,
         // unexpected non-ASCII or embedded NUL byte instead of passing unvalidated text to JNI.
         if (bytes[index] == 0 || bytes[index] > 0x7f) return false;
     }
-    std::string text(reinterpret_cast<const char*>(data), static_cast<size_t>(length));
-    *out = env->NewStringUTF(text.c_str());
-    return *out != nullptr && !env->ExceptionCheck();
+    try {
+        std::string text(reinterpret_cast<const char*>(data), static_cast<size_t>(length));
+        *out = env->NewStringUTF(text.c_str());
+        return *out != nullptr && !env->ExceptionCheck();
+    } catch (const std::bad_alloc&) {
+        throw_java(env, "org/kmipkit/ResourceLimitException", "profile detail allocation failed");
+        return false;
+    } catch (...) {
+        throw_java(env, "org/kmipkit/KmipException", "profile detail conversion failed");
+        return false;
+    }
 }
 
 jobject read_profile_validation_details(JNIEnv* env) noexcept {
@@ -4681,20 +4689,98 @@ JNIEXPORT jboolean JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchI
 
 namespace {
 
-bool readiness_java_utf8(JNIEnv* env, jstring value, std::string* output,
-        uint64_t remaining_bytes) noexcept {
-    if (value == nullptr || output == nullptr) return false;
-    const jsize length = env->GetStringUTFLength(value);
-    if (length < 0 || static_cast<uint64_t>(length) > remaining_bytes
-            || static_cast<uint64_t>(length) > kMaximumProfileReadinessEvidenceBytes) {
-        return false;
+class ScopedJavaChars final {
+public:
+    ScopedJavaChars(JNIEnv* env, jstring value) noexcept
+            : env_(env), value_(value), chars_(env->GetStringChars(value, nullptr)) {}
+
+    ~ScopedJavaChars() {
+        if (chars_ != nullptr) env_->ReleaseStringChars(value_, chars_);
     }
-    const char* chars = env->GetStringUTFChars(value, nullptr);
-    if (chars == nullptr) return false;
-    std::string copy(chars, static_cast<size_t>(length));
-    env->ReleaseStringUTFChars(value, chars);
-    for (unsigned char byte : copy) {
-        if (byte == 0 || byte > 0x7f) return false;
+
+    ScopedJavaChars(const ScopedJavaChars&) = delete;
+    ScopedJavaChars& operator=(const ScopedJavaChars&) = delete;
+
+    const jchar* get() const noexcept { return chars_; }
+
+private:
+    JNIEnv* env_;
+    jstring value_;
+    const jchar* chars_;
+};
+
+enum class ReadinessUtf8LengthStatus { valid, invalid, too_long };
+
+ReadinessUtf8LengthStatus readiness_utf8_length(
+        JNIEnv* env, jstring value, uint64_t maximum, uint64_t* output) noexcept {
+    if (value == nullptr || output == nullptr) return ReadinessUtf8LengthStatus::invalid;
+    const jsize length = env->GetStringLength(value);
+    if (length < 0) return ReadinessUtf8LengthStatus::invalid;
+    if (static_cast<uint64_t>(length) > maximum) return ReadinessUtf8LengthStatus::too_long;
+    ScopedJavaChars chars(env, value);
+    if (chars.get() == nullptr) return ReadinessUtf8LengthStatus::invalid;
+
+    uint64_t total = 0;
+    for (jsize index = 0; index < length; ++index) {
+        const uint32_t first = chars.get()[index];
+        uint64_t width = 0;
+        if (first <= 0x7f) {
+            width = 1;
+        } else if (first <= 0x7ff) {
+            width = 2;
+        } else if (first >= 0xd800 && first <= 0xdbff) {
+            if (index + 1 >= length) return ReadinessUtf8LengthStatus::invalid;
+            const uint32_t second = chars.get()[index + 1];
+            if (second < 0xdc00 || second > 0xdfff) return ReadinessUtf8LengthStatus::invalid;
+            width = 4;
+            ++index;
+        } else if (first >= 0xdc00 && first <= 0xdfff) {
+            return ReadinessUtf8LengthStatus::invalid;
+        } else {
+            width = 3;
+        }
+        if (width > maximum - total) return ReadinessUtf8LengthStatus::too_long;
+        total += width;
+    }
+    *output = total;
+    return ReadinessUtf8LengthStatus::valid;
+}
+
+bool readiness_java_utf8(JNIEnv* env, jstring value, std::string* output,
+        uint64_t remaining_bytes) {
+    if (value == nullptr || output == nullptr) return false;
+    uint64_t byte_length = 0;
+    if (readiness_utf8_length(env, value,
+            std::min(remaining_bytes, kMaximumProfileReadinessEvidenceBytes), &byte_length)
+            != ReadinessUtf8LengthStatus::valid) return false;
+    const jsize length = env->GetStringLength(value);
+    if (length < 0) return false;
+    ScopedJavaChars chars(env, value);
+    if (chars.get() == nullptr) return false;
+
+    std::string copy;
+    copy.reserve(static_cast<size_t>(byte_length));
+    for (jsize index = 0; index < length; ++index) {
+        uint32_t codepoint = chars.get()[index];
+        if (codepoint >= 0xd800 && codepoint <= 0xdbff) {
+            const uint32_t second = chars.get()[++index];
+            codepoint = 0x10000 + ((codepoint - 0xd800) << 10) + (second - 0xdc00);
+        }
+        if (codepoint <= 0x7f) {
+            copy.push_back(static_cast<char>(codepoint));
+        } else if (codepoint <= 0x7ff) {
+            copy.push_back(static_cast<char>(0xc0 | (codepoint >> 6)));
+            copy.push_back(static_cast<char>(0x80 | (codepoint & 0x3f)));
+        } else if (codepoint <= 0xffff) {
+            copy.push_back(static_cast<char>(0xe0 | (codepoint >> 12)));
+            copy.push_back(static_cast<char>(0x80 | ((codepoint >> 6) & 0x3f)));
+            copy.push_back(static_cast<char>(0x80 | (codepoint & 0x3f)));
+        } else {
+            copy.push_back(static_cast<char>(0xf0 | (codepoint >> 18)));
+            copy.push_back(static_cast<char>(0x80 | ((codepoint >> 12) & 0x3f)));
+            copy.push_back(static_cast<char>(0x80 | ((codepoint >> 6) & 0x3f)));
+            copy.push_back(static_cast<char>(0x80 | (codepoint & 0x3f)));
+        }
     }
     *output = std::move(copy);
     return true;
@@ -4754,12 +4840,16 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_profileReadines
             return static_cast<jlong>(0);
         }
         uint64_t total_bytes = 0;
-        const jsize profile_length = env->GetStringUTFLength(profile_id);
-        if (profile_length < 0 || static_cast<uint64_t>(profile_length) > kMaximumTextBytes) {
+        const auto profile_length_status = readiness_utf8_length(
+                env, profile_id, kMaximumTextBytes, &total_bytes);
+        if (profile_length_status == ReadinessUtf8LengthStatus::too_long) {
+            throw_java(env, "org/kmipkit/ResourceLimitException", "profile evidence exceeds the configured limit");
+            return static_cast<jlong>(0);
+        }
+        if (profile_length_status != ReadinessUtf8LengthStatus::valid) {
             throw_invalid_input(env);
             return static_cast<jlong>(0);
         }
-        total_bytes = static_cast<uint64_t>(profile_length);
         for (jsize index = 0; index < count; ++index) {
             jstring item = static_cast<jstring>(env->GetObjectArrayElement(raw_requirement_ids, index));
             if (env->ExceptionCheck() || item == nullptr) {
@@ -4767,22 +4857,30 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_profileReadines
                 throw_invalid_input(env);
                 return static_cast<jlong>(0);
             }
-            const jsize length = env->GetStringUTFLength(item);
+            uint64_t length = 0;
+            const auto length_status = readiness_utf8_length(
+                    env, item, kMaximumProfileReadinessEvidenceBytes - total_bytes, &length);
             env->DeleteLocalRef(item);
-            if (length < 0 || static_cast<uint64_t>(length)
-                    > kMaximumProfileReadinessEvidenceBytes - total_bytes) {
+            if (length_status == ReadinessUtf8LengthStatus::too_long) {
                 throw_java(env, "org/kmipkit/ResourceLimitException", "profile evidence exceeds the configured limit");
                 return static_cast<jlong>(0);
             }
-            total_bytes += static_cast<uint64_t>(length);
+            if (length_status != ReadinessUtf8LengthStatus::valid) {
+                throw_invalid_input(env);
+                return static_cast<jlong>(0);
+            }
+            total_bytes += length;
         }
         std::string profile;
         if (!readiness_java_utf8(env, profile_id, &profile, total_bytes)) {
             throw_invalid_input(env);
             return static_cast<jlong>(0);
         }
-        jboolean* passed = count == 0 ? nullptr : env->GetBooleanArrayElements(raw_passed, nullptr);
-        if (count != 0 && passed == nullptr) return static_cast<jlong>(0);
+        std::vector<jboolean> passed(static_cast<size_t>(count));
+        if (count != 0) {
+            env->GetBooleanArrayRegion(raw_passed, 0, count, passed.data());
+            if (env->ExceptionCheck()) return static_cast<jlong>(0);
+        }
         std::vector<std::string> identifiers;
         std::vector<kmipkit_profile_evidence_record_v1_t> records(static_cast<size_t>(count));
         identifiers.reserve(static_cast<size_t>(count));
@@ -4791,7 +4889,6 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_profileReadines
             std::string identifier;
             if (!readiness_java_utf8(env, item, &identifier, total_bytes)) {
                 if (item != nullptr) env->DeleteLocalRef(item);
-                if (passed != nullptr) env->ReleaseBooleanArrayElements(raw_passed, passed, JNI_ABORT);
                 throw_invalid_input(env);
                 return static_cast<jlong>(0);
             }
@@ -4804,9 +4901,8 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_profileReadines
             const auto& text = identifiers.back();
             record.requirement_id.data = reinterpret_cast<const uint8_t*>(text.data());
             record.requirement_id.length = static_cast<uint64_t>(text.size());
-            record.passed = passed[index] == JNI_TRUE ? 1 : 0;
+            record.passed = passed[static_cast<size_t>(index)] == JNI_TRUE ? 1 : 0;
         }
-        if (passed != nullptr) env->ReleaseBooleanArrayElements(raw_passed, passed, JNI_ABORT);
         kmipkit_byte_span_v1_t profile_span{};
         profile_span.data = reinterpret_cast<const uint8_t*>(profile.data());
         profile_span.length = static_cast<uint64_t>(profile.size());
