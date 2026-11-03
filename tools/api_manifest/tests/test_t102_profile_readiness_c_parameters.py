@@ -71,6 +71,14 @@ class T102ProfileReadinessCParameterTests(unittest.TestCase):
             self.manifest, self.schema, catalog, ROOT, require_complete=False
         )
 
+    def test_generated_header_emits_approved_span_before_evidence_record_layout(self) -> None:
+        header = generate.render_c_header(self.manifest)
+        span_layout = "struct kmipkit_byte_span_v1_t {"
+        record_layout = "struct kmipkit_profile_evidence_record_v1_t {"
+        self.assertIn(span_layout, header)
+        self.assertIn(record_layout, header)
+        self.assertLess(header.index(span_layout), header.index(record_layout))
+
 
 if __name__ == "__main__":
     unittest.main()
