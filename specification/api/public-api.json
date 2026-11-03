@@ -188186,460 +188186,6 @@
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
-      "declarationId": "rust-observed-01cb8d2f1c05f418c3ce",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropError as alloc::borrow::ToOwned>::Owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-7c48bb81e6fad33a32d2",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropError as alloc::borrow::ToOwned>::clone_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-f046dbdbf4876c75fec5",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropError as alloc::borrow::ToOwned>::to_owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-42122027a2cc9b340837",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropError as alloc::string::ToString>::to_string",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-b11e256799aaf755d2f4",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropError as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-27f68d0ec771e4fb592e",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropError as core::borrow::Borrow<kmipkit_protocol::interop::InteropError>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-2bf02f39c493b796d1b5",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropError as core::borrow::BorrowMut<kmipkit_protocol::interop::InteropError>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-d2453861db95b15bb97b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropError as core::clone::Clone>::clone",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-ab406d79eea7e550221b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropError as core::clone::Clone>::clone_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-8ce6926170c913118c2f",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropError as core::clone::CloneToUninit>::clone_to_uninit",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-6c71c7418b9c9f188088",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropError as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-0c7b24369aae5b0c00e3",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropError as core::cmp::PartialEq>::eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-1bb86d793e1b66dfa553",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropError as core::cmp::PartialEq>::ne",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-b3e61097e855b06ae8bd",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropError as core::convert::From<kmipkit_protocol::interop::InteropError>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-f734cb52ef8d26e7cd1a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropError as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::interop::InteropError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-f788beb98d2fa0b2eb24",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropError as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::interop::InteropError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-71f7306dbdb2f712d27d",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropError as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::interop::InteropError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-222f157fd6f740fb3412",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropError as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::interop::InteropError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-f7a11a8d1c5144346d4e",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropError as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::interop::InteropError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-ec624b551fb61d400b88",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropError as core::error::Error>::cause",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-81a2c75832dde2559aa2",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropError as core::error::Error>::description",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-f02d1d94912c8ec79785",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropError as core::error::Error>::provide",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-d65439f877d8e584c716",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropError as core::error::Error>::source",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-e8e61fd91acf9b05008b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropError as core::error::Error>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-742c1fed83848f37bdd5",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropError as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-7426a9ad7a6295736058",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::InteropError as core::fmt::Display>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
       "declarationId": "rust-observed-85665fd5048545e71336",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
@@ -190236,460 +189782,6 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "<kmipkit_protocol::LocateError as core::fmt::Display>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-68eada0011c4a2aab63a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogError as alloc::borrow::ToOwned>::Owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-bcb13852e34638954415",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogError as alloc::borrow::ToOwned>::clone_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-21921451a71475afe5a5",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogError as alloc::borrow::ToOwned>::to_owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-6178a7d0d082a287a7f0",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogError as alloc::string::ToString>::to_string",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-ef2d7d5f1824fdc095d7",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogError as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-b5a33a0834d88ee603f2",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogError as core::borrow::Borrow<kmipkit_protocol::log::LogError>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-1a5eace37a754280156b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogError as core::borrow::BorrowMut<kmipkit_protocol::log::LogError>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-e7e5d48ef381c24f436d",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogError as core::clone::Clone>::clone",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-5e76fe9e24d280f84f5a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogError as core::clone::Clone>::clone_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-93a25fdf6d3653268b3b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogError as core::clone::CloneToUninit>::clone_to_uninit",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-54fccc69e415a96d22cd",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogError as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-2011ded84712735d7423",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogError as core::cmp::PartialEq>::eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-0b08e8872e786b2cfcce",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogError as core::cmp::PartialEq>::ne",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-64b3f492c7ed74c7dbc1",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogError as core::convert::From<kmipkit_protocol::log::LogError>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-05ceaa3c831fd6315f1d",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogError as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::log::LogError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-da62f4e0f4d64d97531d",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogError as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::log::LogError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-18b93870b694a3be2eca",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogError as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::log::LogError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-eb3e9024db950dadf009",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogError as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::log::LogError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-bea428295af21e05675b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogError as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::log::LogError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-5e76de9b8f9ce24fd932",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogError as core::error::Error>::cause",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-81662bbeb55ee2a021b0",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogError as core::error::Error>::description",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-a8634fdbc35aef0b4d3d",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogError as core::error::Error>::provide",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-7ca2b57f8437f79621a9",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogError as core::error::Error>::source",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-c766991737b288784090",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogError as core::error::Error>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-b75b4c2160d672cafb74",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogError as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-0ac62e94f2e683a0d605",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::LogError as core::fmt::Display>::fmt",
       "capabilityId": "public_binding_surface",
       "requirementIds": [
         "KMIPKIT-0043-FR-021"
@@ -439695,6 +438787,630 @@
         "evidence": "**Status**: Approved for implementation — 2026-10-11"
       },
       "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropError as alloc::borrow::ToOwned>::Owned",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropError as alloc::borrow::ToOwned>::clone_into",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropError as alloc::borrow::ToOwned>::to_owned",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropError as alloc::string::ToString>::to_string",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropError as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropError as core::borrow::Borrow<kmipkit_protocol::interop::InteropError>>::borrow",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropError as core::borrow::BorrowMut<kmipkit_protocol::interop::InteropError>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropError as core::clone::Clone>::clone",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropError as core::clone::Clone>::clone_from",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropError as core::clone::CloneToUninit>::clone_to_uninit",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropError as core::cmp::PartialEq>::eq",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropError as core::cmp::PartialEq>::ne",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropError as core::convert::From<kmipkit_protocol::interop::InteropError>>::from",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropError as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropError as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropError as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropError as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropError as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropError as core::error::Error>::cause",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropError as core::error::Error>::description",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropError as core::error::Error>::provide",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropError as core::error::Error>::source",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropError as core::error::Error>::type_id",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropError as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::InteropError as core::fmt::Display>::fmt",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LogError as alloc::borrow::ToOwned>::Owned",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LogError as alloc::borrow::ToOwned>::clone_into",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LogError as alloc::borrow::ToOwned>::to_owned",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LogError as alloc::string::ToString>::to_string",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LogError as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LogError as core::borrow::Borrow<kmipkit_protocol::log::LogError>>::borrow",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LogError as core::borrow::BorrowMut<kmipkit_protocol::log::LogError>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LogError as core::clone::Clone>::clone",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LogError as core::clone::Clone>::clone_from",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LogError as core::clone::CloneToUninit>::clone_to_uninit",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LogError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LogError as core::cmp::PartialEq>::eq",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LogError as core::cmp::PartialEq>::ne",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LogError as core::convert::From<kmipkit_protocol::log::LogError>>::from",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LogError as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LogError as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LogError as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LogError as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LogError as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LogError as core::error::Error>::cause",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LogError as core::error::Error>::description",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LogError as core::error::Error>::provide",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LogError as core::error::Error>::source",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LogError as core::error::Error>::type_id",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LogError as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
+    },
+                {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::LogError as core::fmt::Display>::fmt",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim."
     }
   ],
   "apiLevels": [

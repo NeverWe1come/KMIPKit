@@ -237,7 +237,7 @@ class T102TicketLoginRequestTraitExclusionTests(unittest.TestCase):
         self.assertEqual(
             sum(x.get("candidateSpecId") == "KMIPKIT-0043" and x["declarationState"] == "blocked"
                 for x in self.manifest["publicDeclarations"]),
-            3078,
+            3026,
         )
 
 

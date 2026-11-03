@@ -79214,6 +79214,630 @@
       "exportName": "<kmipkit_protocol::JoinSplitKeyError as core::fmt::Display>::fmt",
       "packageId": "rust-kmipkit-protocol",
       "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::InteropError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::InteropError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::InteropError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::InteropError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::InteropError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::InteropError as core::borrow::Borrow<kmipkit_protocol::interop::InteropError>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::InteropError as core::borrow::BorrowMut<kmipkit_protocol::interop::InteropError>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::InteropError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::InteropError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::InteropError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::InteropError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::InteropError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::InteropError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::InteropError as core::convert::From<kmipkit_protocol::interop::InteropError>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::InteropError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::InteropError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::InteropError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::InteropError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::InteropError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::InteropError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::InteropError as core::error::Error>::description",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::InteropError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::InteropError as core::error::Error>::source",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::InteropError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::InteropError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-INTEROP, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.26, Table 243; Table 243: Interop Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::InteropError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for InteropError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::LogError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::LogError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::LogError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::LogError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::LogError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::LogError as core::borrow::Borrow<kmipkit_protocol::log::LogError>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::LogError as core::borrow::BorrowMut<kmipkit_protocol::log::LogError>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::LogError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::LogError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::LogError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::LogError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::LogError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::LogError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::LogError as core::convert::From<kmipkit_protocol::log::LogError>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::LogError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::LogError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::LogError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::LogError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::LogError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::LogError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::LogError as core::error::Error>::description",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::LogError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::LogError as core::error::Error>::source",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::LogError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::LogError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-004, KMIPKIT-ELEM-OP-C2S-LOG, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.29, Table 252; Table 252: Log Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::LogError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for LogError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
     }
   ],
   "capabilities": [
