@@ -174148,816 +174148,6 @@
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
-      "declarationId": "rust-observed-bc57388f348861c79d28",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as alloc::borrow::ToOwned>::Owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-069f9946a081b375b216",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as alloc::borrow::ToOwned>::clone_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-d958aa15f9cd311806bb",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as alloc::borrow::ToOwned>::to_owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-5531f67ce9d231111bd3",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as alloc::string::ToString>::to_string",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-1701ffd75363b4415031",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-8170f284c6eaf1c453a4",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-67c078169da812eaf078",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-844314edef605998a599",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::clone::Clone>::clone",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-26fcc6c8b7580a0a4752",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::clone::Clone>::clone_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-04c45a37b64271e24ca5",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::clone::CloneToUninit>::clone_to_uninit",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-bf1450a50bd66a20ed58",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-910e56ad0ac835d548f6",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::cmp::PartialEq>::eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-e085f68aef8ab31c8a8e",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::cmp::PartialEq>::ne",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-67670b415dcb71528a6d",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-ad88d077047ce9406a0d",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::cryptographic_operation::CryptographicOperationError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-dc6de9137650499c963a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::cryptographic_operation::CryptographicOperationError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-dadd2551681ce93966ba",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::cryptographic_operation::CryptographicOperationError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-0c03eb5a0d70e7ade867",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::cryptographic_operation::CryptographicOperationError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-4442d8d0e5d61eaf1a22",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::cryptographic_operation::CryptographicOperationError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-034d6423a6f484457d9b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::cause",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-1ebc1f9420230320b59a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::description",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-652de61268e658f61a7d",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::provide",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-0c5197383ac66281b695",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::source",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-ad23fe1477546d112325",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-b44b1636cce6b46136ae",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-e69ec1808c84305748af",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::fmt::Display>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-7f7eea166393ef11caf7",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as alloc::borrow::ToOwned>::Owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-9f995e1a89e1bcbac25b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as alloc::borrow::ToOwned>::clone_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-a57f857076b15453eb58",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as alloc::borrow::ToOwned>::to_owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-274cc8a6ea82235ce1ba",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-2e2244a4390ffef63855",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-41e203282ca53b3657d3",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-cacc9ff6b949b5e663ce",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::clone::Clone>::clone",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-2f3d4ded0edcdc0bb730",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::clone::Clone>::clone_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-96f3b7eb7fa1e711075e",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::clone::CloneToUninit>::clone_to_uninit",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-ad019a3ec411edd42b12",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-0ee55fbf1f9ee461a327",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::cmp::PartialEq>::eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-5ec4b2447959f168805d",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::cmp::PartialEq>::ne",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-8dddda7b919dc4fc6e29",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-daac032d0129c29a1837",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-2a51a5fae74c1f2d10b9",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-771fb334053155140a71",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-f1ed890e38e9c620004e",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-1d488c7a9b606883b0bf",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-373d84fa0833bb1f7e35",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
       "declarationId": "rust-observed-447c2a42b30835b4eb5a",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
@@ -429902,6 +429092,546 @@
         "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
       },
       "evidence": "Accepted KMIPKIT-0010 owner by PR #49 merge 045b97dde40e54efbc264d95c1d827c4f7d40415; KMIPKIT-0010-FR-012 and KMIPKIT-0010-FR-019 govern redaction and explicit one-exchange caller state. T102 inventory classification uses KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §4.38 and §4.59 provide functional caller-state context only; No OASIS requirement is assigned to these traits. Existing custom Debug implementations redact identifiers and context contents. Parent states and the client capability remain unchanged; Baseline remains evidence_incomplete. This inventory-only slice changes no runtime/profile behavior or conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as alloc::borrow::ToOwned>::Owned",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as alloc::borrow::ToOwned>::clone_into",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as alloc::borrow::ToOwned>::to_owned",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as alloc::string::ToString>::to_string",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::any::Any>::type_id",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::clone::Clone>::clone",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::clone::Clone>::clone_from",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::clone::CloneToUninit>::clone_to_uninit",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::cmp::PartialEq>::eq",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::cmp::PartialEq>::ne",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::convert::Into<U>>::into",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::convert::TryFrom<U>>::Error",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::convert::TryFrom<U>>::try_from",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::convert::TryInto<U>>::Error",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::convert::TryInto<U>>::try_into",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::cause",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::description",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::provide",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::source",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::type_id",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::fmt::Debug>::fmt",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::fmt::Display>::fmt",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as alloc::borrow::ToOwned>::Owned",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as alloc::borrow::ToOwned>::clone_into",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as alloc::borrow::ToOwned>::to_owned",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::any::Any>::type_id",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind>>::borrow",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind>>::borrow_mut",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::clone::Clone>::clone",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::clone::Clone>::clone_from",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::clone::CloneToUninit>::clone_to_uninit",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::cmp::PartialEq>::eq",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::cmp::PartialEq>::ne",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind>>::from",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::convert::Into<U>>::into",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::convert::TryFrom<U>>::Error",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::convert::TryFrom<U>>::try_from",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::convert::TryInto<U>>::Error",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::convert::TryInto<U>>::try_into",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::fmt::Debug>::fmt",
+      "reason": "These compiler-observed Rust standard-trait paths provide language-level diagnostics and conversions for operation error values, but add no separate KMIP client capability. Their implementation exposes no untrusted TTLV or cryptographic payload; the error types themselves remain blocked pending four-language mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      },
+      "evidence": "Approved KMIPKIT-0019 owner specification; KMIPKIT-0019-FR-007 and KMIPKIT-0019-FR-009 govern operation-result errors and payload redaction. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records these compiler-observed Rust standard-trait paths. KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216 define response behavior; No OASIS requirement is assigned to these traits. CryptographicOperationError retains only a static operation label, a typed payload-free error category, and a boolean; Error::source returns only ResultValidationError. The error types remain blocked and unmapped. This inventory-only slice changes no runtime or cryptographic behavior and makes no conformance claim."
     }
   ],
   "apiLevels": [

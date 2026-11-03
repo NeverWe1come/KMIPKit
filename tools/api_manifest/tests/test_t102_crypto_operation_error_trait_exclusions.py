@@ -175,7 +175,7 @@ class T102CryptoOperationErrorTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
         )
         self.assertEqual(candidates, 1432)
-        self.assertEqual(len(self.manifest["publicDeclarations"]), 6675)
+        self.assertEqual(len(self.manifest["publicDeclarations"]), 6630)
         self.assertEqual(len(self.manifest["approvedExclusions"]), 8094)
 
 

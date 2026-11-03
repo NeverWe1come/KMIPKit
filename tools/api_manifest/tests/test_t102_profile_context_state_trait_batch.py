@@ -179,15 +179,15 @@ class T102ProfileContextStateTraitBatchTests(unittest.TestCase):
         )
         self.assertEqual(baseline["claim_state"], "evidence_incomplete")
 
-    def test_manifest_totals_reflect_only_the_111_trait_batch(self) -> None:
+    def test_manifest_totals_reflect_current_t102_trait_batches(self) -> None:
         candidates = sum(
             row.get("candidateSpecId") == "KMIPKIT-0043"
             and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(candidates, 1477)
-        self.assertEqual(len(self.manifest["publicDeclarations"]), 6675)
-        self.assertEqual(len(self.manifest["approvedExclusions"]), 8049)
+        self.assertEqual(candidates, 1432)
+        self.assertEqual(len(self.manifest["publicDeclarations"]), 6630)
+        self.assertEqual(len(self.manifest["approvedExclusions"]), 8094)
 
 
 if __name__ == "__main__":

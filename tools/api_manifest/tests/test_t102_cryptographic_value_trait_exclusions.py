@@ -321,7 +321,7 @@ class T102CryptographicValueTraitExclusionTests(unittest.TestCase):
             },
         )
 
-        error_prefixes = (
+        error_type_names = (
             "kmipkit_protocol::CryptographicOperationError",
             "kmipkit_protocol::CryptographicOperationErrorKind",
         )
@@ -329,9 +329,9 @@ class T102CryptographicValueTraitExclusionTests(unittest.TestCase):
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
-            and row.get("exportName", "").startswith(error_prefixes)
+            and row.get("exportName") in error_type_names
         }
-        self.assertTrue(error_rows)
+        self.assertEqual(set(error_rows), set(error_type_names))
         self.assertTrue(
             all(
                 row["declarationState"] == "blocked"
@@ -339,10 +339,9 @@ class T102CryptographicValueTraitExclusionTests(unittest.TestCase):
                 for row in error_rows.values()
             )
         )
-        error_names = set(error_rows)
         self.assertTrue(
             all(
-                row.get("exportName") not in error_names
+                row.get("exportName") not in error_type_names
                 for row in self.manifest.get("approvedExclusions", [])
             )
         )

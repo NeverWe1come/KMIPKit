@@ -59500,11 +59500,11 @@
   "counts": {
     "conditionalConditionMismatches": 0,
     "conditionalStateMismatches": 0,
-    "excluded": 6703,
+    "excluded": 6748,
     "issues": 0,
     "kindMismatches": 0,
-    "manifest": 3760,
-    "matched": 3760,
+    "manifest": 3715,
+    "matched": 3715,
     "missingFromManifest": 0,
     "notObserved": 0,
     "observed": 10463
@@ -277143,6 +277143,1110 @@
     },
     {
       "aliases": [
+        "<kmipkit_protocol::CryptographicOperationError as alloc::borrow::ToOwned>::Owned",
+        "<kmipkit_protocol::HashError as alloc::borrow::ToOwned>::Owned",
+        "<kmipkit_protocol::MacError as alloc::borrow::ToOwned>::Owned",
+        "<kmipkit_protocol::MacVerifyError as alloc::borrow::ToOwned>::Owned",
+        "<kmipkit_protocol::RngRetrieveError as alloc::borrow::ToOwned>::Owned",
+        "<kmipkit_protocol::RngSeedError as alloc::borrow::ToOwned>::Owned",
+        "<kmipkit_protocol::SignError as alloc::borrow::ToOwned>::Owned",
+        "<kmipkit_protocol::SignatureVerifyError as alloc::borrow::ToOwned>::Owned"
+      ],
+      "exportLocations": [
+        {
+          "column": 29,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as alloc::borrow::ToOwned>::Owned",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"]}}}}]},\"Owned\",\"assoc_type\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationError as alloc::borrow::ToOwned>::clone_into",
+        "<kmipkit_protocol::HashError as alloc::borrow::ToOwned>::clone_into",
+        "<kmipkit_protocol::MacError as alloc::borrow::ToOwned>::clone_into",
+        "<kmipkit_protocol::MacVerifyError as alloc::borrow::ToOwned>::clone_into",
+        "<kmipkit_protocol::RngRetrieveError as alloc::borrow::ToOwned>::clone_into",
+        "<kmipkit_protocol::RngSeedError as alloc::borrow::ToOwned>::clone_into",
+        "<kmipkit_protocol::SignError as alloc::borrow::ToOwned>::clone_into",
+        "<kmipkit_protocol::SignatureVerifyError as alloc::borrow::ToOwned>::clone_into"
+      ],
+      "exportLocations": [
+        {
+          "column": 29,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as alloc::borrow::ToOwned>::clone_into",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"]}}}}]},\"clone_into\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationError as alloc::borrow::ToOwned>::to_owned",
+        "<kmipkit_protocol::HashError as alloc::borrow::ToOwned>::to_owned",
+        "<kmipkit_protocol::MacError as alloc::borrow::ToOwned>::to_owned",
+        "<kmipkit_protocol::MacVerifyError as alloc::borrow::ToOwned>::to_owned",
+        "<kmipkit_protocol::RngRetrieveError as alloc::borrow::ToOwned>::to_owned",
+        "<kmipkit_protocol::RngSeedError as alloc::borrow::ToOwned>::to_owned",
+        "<kmipkit_protocol::SignError as alloc::borrow::ToOwned>::to_owned",
+        "<kmipkit_protocol::SignatureVerifyError as alloc::borrow::ToOwned>::to_owned"
+      ],
+      "exportLocations": [
+        {
+          "column": 29,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as alloc::borrow::ToOwned>::to_owned",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"]}}}}]},\"to_owned\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationError as alloc::string::ToString>::to_string",
+        "<kmipkit_protocol::HashError as alloc::string::ToString>::to_string",
+        "<kmipkit_protocol::MacError as alloc::string::ToString>::to_string",
+        "<kmipkit_protocol::MacVerifyError as alloc::string::ToString>::to_string",
+        "<kmipkit_protocol::RngRetrieveError as alloc::string::ToString>::to_string",
+        "<kmipkit_protocol::RngSeedError as alloc::string::ToString>::to_string",
+        "<kmipkit_protocol::SignError as alloc::string::ToString>::to_string",
+        "<kmipkit_protocol::SignatureVerifyError as alloc::string::ToString>::to_string"
+      ],
+      "exportLocations": [
+        {
+          "column": 29,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as alloc::string::ToString>::to_string",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"alloc\",\"string\",\"ToString\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"alloc::string::ToString\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"fmt\",\"Display\"]}}},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"]}}}}]},\"to_string\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationError as core::any::Any>::type_id",
+        "<kmipkit_protocol::HashError as core::any::Any>::type_id",
+        "<kmipkit_protocol::MacError as core::any::Any>::type_id",
+        "<kmipkit_protocol::MacVerifyError as core::any::Any>::type_id",
+        "<kmipkit_protocol::RngRetrieveError as core::any::Any>::type_id",
+        "<kmipkit_protocol::RngSeedError as core::any::Any>::type_id",
+        "<kmipkit_protocol::SignError as core::any::Any>::type_id",
+        "<kmipkit_protocol::SignatureVerifyError as core::any::Any>::type_id"
+      ],
+      "exportLocations": [
+        {
+          "column": 29,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::any::Any>::type_id",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"any\",\"Any\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"]}}}}]},\"type_id\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow",
+        "<kmipkit_protocol::HashError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow",
+        "<kmipkit_protocol::MacError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow",
+        "<kmipkit_protocol::MacVerifyError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow",
+        "<kmipkit_protocol::RngRetrieveError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow",
+        "<kmipkit_protocol::RngSeedError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow",
+        "<kmipkit_protocol::SignError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow",
+        "<kmipkit_protocol::SignatureVerifyError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow"
+      ],
+      "exportLocations": [
+        {
+          "column": 29,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"]}}}}]},\"borrow\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut",
+        "<kmipkit_protocol::HashError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut",
+        "<kmipkit_protocol::MacError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut",
+        "<kmipkit_protocol::MacVerifyError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut",
+        "<kmipkit_protocol::RngRetrieveError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut",
+        "<kmipkit_protocol::RngSeedError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut",
+        "<kmipkit_protocol::SignError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut",
+        "<kmipkit_protocol::SignatureVerifyError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut"
+      ],
+      "exportLocations": [
+        {
+          "column": 29,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"]}}}}]},\"borrow_mut\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationError as core::clone::Clone>::clone",
+        "<kmipkit_protocol::HashError as core::clone::Clone>::clone",
+        "<kmipkit_protocol::MacError as core::clone::Clone>::clone",
+        "<kmipkit_protocol::MacVerifyError as core::clone::Clone>::clone",
+        "<kmipkit_protocol::RngRetrieveError as core::clone::Clone>::clone",
+        "<kmipkit_protocol::RngSeedError as core::clone::Clone>::clone",
+        "<kmipkit_protocol::SignError as core::clone::Clone>::clone",
+        "<kmipkit_protocol::SignatureVerifyError as core::clone::Clone>::clone"
+      ],
+      "exportLocations": [
+        {
+          "column": 29,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::clone::Clone>::clone",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 10,
+        "line": 123,
+        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationError as core::clone::Clone>::clone_from",
+        "<kmipkit_protocol::HashError as core::clone::Clone>::clone_from",
+        "<kmipkit_protocol::MacError as core::clone::Clone>::clone_from",
+        "<kmipkit_protocol::MacVerifyError as core::clone::Clone>::clone_from",
+        "<kmipkit_protocol::RngRetrieveError as core::clone::Clone>::clone_from",
+        "<kmipkit_protocol::RngSeedError as core::clone::Clone>::clone_from",
+        "<kmipkit_protocol::SignError as core::clone::Clone>::clone_from",
+        "<kmipkit_protocol::SignatureVerifyError as core::clone::Clone>::clone_from"
+      ],
+      "exportLocations": [
+        {
+          "column": 29,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::clone::Clone>::clone_from",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone_from\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 10,
+        "line": 123,
+        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationError as core::clone::CloneToUninit>::clone_to_uninit",
+        "<kmipkit_protocol::HashError as core::clone::CloneToUninit>::clone_to_uninit",
+        "<kmipkit_protocol::MacError as core::clone::CloneToUninit>::clone_to_uninit",
+        "<kmipkit_protocol::MacVerifyError as core::clone::CloneToUninit>::clone_to_uninit",
+        "<kmipkit_protocol::RngRetrieveError as core::clone::CloneToUninit>::clone_to_uninit",
+        "<kmipkit_protocol::RngSeedError as core::clone::CloneToUninit>::clone_to_uninit",
+        "<kmipkit_protocol::SignError as core::clone::CloneToUninit>::clone_to_uninit",
+        "<kmipkit_protocol::SignatureVerifyError as core::clone::CloneToUninit>::clone_to_uninit"
+      ],
+      "exportLocations": [
+        {
+          "column": 29,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::clone::CloneToUninit>::clone_to_uninit",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"clone\",\"CloneToUninit\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::clone::CloneToUninit\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"]}}}}]},\"clone_to_uninit\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationError as core::cmp::Eq>::assert_receiver_is_total_eq",
+        "<kmipkit_protocol::HashError as core::cmp::Eq>::assert_receiver_is_total_eq",
+        "<kmipkit_protocol::MacError as core::cmp::Eq>::assert_receiver_is_total_eq",
+        "<kmipkit_protocol::MacVerifyError as core::cmp::Eq>::assert_receiver_is_total_eq",
+        "<kmipkit_protocol::RngRetrieveError as core::cmp::Eq>::assert_receiver_is_total_eq",
+        "<kmipkit_protocol::RngSeedError as core::cmp::Eq>::assert_receiver_is_total_eq",
+        "<kmipkit_protocol::SignError as core::cmp::Eq>::assert_receiver_is_total_eq",
+        "<kmipkit_protocol::SignatureVerifyError as core::cmp::Eq>::assert_receiver_is_total_eq"
+      ],
+      "exportLocations": [
+        {
+          "column": 29,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"cmp\",\"Eq\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::cmp::Eq\",{\"params\":[],\"where_predicates\":[]},\"assert_receiver_is_total_eq\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 30,
+        "line": 123,
+        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationError as core::cmp::PartialEq>::eq",
+        "<kmipkit_protocol::HashError as core::cmp::PartialEq>::eq",
+        "<kmipkit_protocol::MacError as core::cmp::PartialEq>::eq",
+        "<kmipkit_protocol::MacVerifyError as core::cmp::PartialEq>::eq",
+        "<kmipkit_protocol::RngRetrieveError as core::cmp::PartialEq>::eq",
+        "<kmipkit_protocol::RngSeedError as core::cmp::PartialEq>::eq",
+        "<kmipkit_protocol::SignError as core::cmp::PartialEq>::eq",
+        "<kmipkit_protocol::SignatureVerifyError as core::cmp::PartialEq>::eq"
+      ],
+      "exportLocations": [
+        {
+          "column": 29,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::cmp::PartialEq>::eq",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"eq\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 34,
+        "line": 123,
+        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationError as core::cmp::PartialEq>::ne",
+        "<kmipkit_protocol::HashError as core::cmp::PartialEq>::ne",
+        "<kmipkit_protocol::MacError as core::cmp::PartialEq>::ne",
+        "<kmipkit_protocol::MacVerifyError as core::cmp::PartialEq>::ne",
+        "<kmipkit_protocol::RngRetrieveError as core::cmp::PartialEq>::ne",
+        "<kmipkit_protocol::RngSeedError as core::cmp::PartialEq>::ne",
+        "<kmipkit_protocol::SignError as core::cmp::PartialEq>::ne",
+        "<kmipkit_protocol::SignatureVerifyError as core::cmp::PartialEq>::ne"
+      ],
+      "exportLocations": [
+        {
+          "column": 29,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::cmp::PartialEq>::ne",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"ne\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 34,
+        "line": 123,
+        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from",
+        "<kmipkit_protocol::HashError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from",
+        "<kmipkit_protocol::MacError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from",
+        "<kmipkit_protocol::MacVerifyError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from",
+        "<kmipkit_protocol::RngRetrieveError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from",
+        "<kmipkit_protocol::RngSeedError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from",
+        "<kmipkit_protocol::SignError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from",
+        "<kmipkit_protocol::SignatureVerifyError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from"
+      ],
+      "exportLocations": [
+        {
+          "column": 29,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"convert\",\"From\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::cryptographic_operation::CryptographicOperationError"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "From"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::convert::Into<U>>::into",
+      "implementationId": "2879",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "cryptographic_operation",
+        "CryptographicOperationError"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::cryptographic_operation::CryptographicOperationError"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::convert::TryFrom<U>>::Error",
+      "implementationId": "2882",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "cryptographic_operation",
+        "CryptographicOperationError"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::cryptographic_operation::CryptographicOperationError"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::convert::TryFrom<U>>::try_from",
+      "implementationId": "2882",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "cryptographic_operation",
+        "CryptographicOperationError"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::cryptographic_operation::CryptographicOperationError"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::convert::TryInto<U>>::Error",
+      "implementationId": "2881",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "cryptographic_operation",
+        "CryptographicOperationError"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::cryptographic_operation::CryptographicOperationError"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::convert::TryInto<U>>::try_into",
+      "implementationId": "2881",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "cryptographic_operation",
+        "CryptographicOperationError"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::cause",
+        "<kmipkit_protocol::HashError as core::error::Error>::cause",
+        "<kmipkit_protocol::MacError as core::error::Error>::cause",
+        "<kmipkit_protocol::MacVerifyError as core::error::Error>::cause",
+        "<kmipkit_protocol::RngRetrieveError as core::error::Error>::cause",
+        "<kmipkit_protocol::RngSeedError as core::error::Error>::cause",
+        "<kmipkit_protocol::SignError as core::error::Error>::cause",
+        "<kmipkit_protocol::SignatureVerifyError as core::error::Error>::cause"
+      ],
+      "exportLocations": [
+        {
+          "column": 29,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::cause",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"cause\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 171,
+        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::description",
+        "<kmipkit_protocol::HashError as core::error::Error>::description",
+        "<kmipkit_protocol::MacError as core::error::Error>::description",
+        "<kmipkit_protocol::MacVerifyError as core::error::Error>::description",
+        "<kmipkit_protocol::RngRetrieveError as core::error::Error>::description",
+        "<kmipkit_protocol::RngSeedError as core::error::Error>::description",
+        "<kmipkit_protocol::SignError as core::error::Error>::description",
+        "<kmipkit_protocol::SignatureVerifyError as core::error::Error>::description"
+      ],
+      "exportLocations": [
+        {
+          "column": 29,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::description",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"description\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 171,
+        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::provide",
+        "<kmipkit_protocol::HashError as core::error::Error>::provide",
+        "<kmipkit_protocol::MacError as core::error::Error>::provide",
+        "<kmipkit_protocol::MacVerifyError as core::error::Error>::provide",
+        "<kmipkit_protocol::RngRetrieveError as core::error::Error>::provide",
+        "<kmipkit_protocol::RngSeedError as core::error::Error>::provide",
+        "<kmipkit_protocol::SignError as core::error::Error>::provide",
+        "<kmipkit_protocol::SignatureVerifyError as core::error::Error>::provide"
+      ],
+      "exportLocations": [
+        {
+          "column": 29,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::provide",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"provide\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 171,
+        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::source",
+        "<kmipkit_protocol::HashError as core::error::Error>::source",
+        "<kmipkit_protocol::MacError as core::error::Error>::source",
+        "<kmipkit_protocol::MacVerifyError as core::error::Error>::source",
+        "<kmipkit_protocol::RngRetrieveError as core::error::Error>::source",
+        "<kmipkit_protocol::RngSeedError as core::error::Error>::source",
+        "<kmipkit_protocol::SignError as core::error::Error>::source",
+        "<kmipkit_protocol::SignatureVerifyError as core::error::Error>::source"
+      ],
+      "exportLocations": [
+        {
+          "column": 29,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::source",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"source\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 172,
+        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::type_id",
+        "<kmipkit_protocol::HashError as core::error::Error>::type_id",
+        "<kmipkit_protocol::MacError as core::error::Error>::type_id",
+        "<kmipkit_protocol::MacVerifyError as core::error::Error>::type_id",
+        "<kmipkit_protocol::RngRetrieveError as core::error::Error>::type_id",
+        "<kmipkit_protocol::RngSeedError as core::error::Error>::type_id",
+        "<kmipkit_protocol::SignError as core::error::Error>::type_id",
+        "<kmipkit_protocol::SignatureVerifyError as core::error::Error>::type_id"
+      ],
+      "exportLocations": [
+        {
+          "column": 29,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::type_id",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"type_id\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 171,
+        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationError as core::fmt::Debug>::fmt",
+        "<kmipkit_protocol::HashError as core::fmt::Debug>::fmt",
+        "<kmipkit_protocol::MacError as core::fmt::Debug>::fmt",
+        "<kmipkit_protocol::MacVerifyError as core::fmt::Debug>::fmt",
+        "<kmipkit_protocol::RngRetrieveError as core::fmt::Debug>::fmt",
+        "<kmipkit_protocol::RngSeedError as core::fmt::Debug>::fmt",
+        "<kmipkit_protocol::SignError as core::fmt::Debug>::fmt",
+        "<kmipkit_protocol::SignatureVerifyError as core::fmt::Debug>::fmt"
+      ],
+      "exportLocations": [
+        {
+          "column": 29,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::fmt::Debug>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 23,
+        "line": 123,
+        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationError as core::fmt::Display>::fmt",
+        "<kmipkit_protocol::HashError as core::fmt::Display>::fmt",
+        "<kmipkit_protocol::MacError as core::fmt::Display>::fmt",
+        "<kmipkit_protocol::MacVerifyError as core::fmt::Display>::fmt",
+        "<kmipkit_protocol::RngRetrieveError as core::fmt::Display>::fmt",
+        "<kmipkit_protocol::RngSeedError as core::fmt::Display>::fmt",
+        "<kmipkit_protocol::SignError as core::fmt::Display>::fmt",
+        "<kmipkit_protocol::SignatureVerifyError as core::fmt::Display>::fmt"
+      ],
+      "exportLocations": [
+        {
+          "column": 29,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::fmt::Display>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"fmt\",\"Display\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::fmt::Display\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 162,
+        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationErrorKind as alloc::borrow::ToOwned>::Owned"
+      ],
+      "exportLocations": [
+        {
+          "column": 58,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as alloc::borrow::ToOwned>::Owned",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"]}}}}]},\"Owned\",\"assoc_type\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationErrorKind as alloc::borrow::ToOwned>::clone_into"
+      ],
+      "exportLocations": [
+        {
+          "column": 58,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as alloc::borrow::ToOwned>::clone_into",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"]}}}}]},\"clone_into\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationErrorKind as alloc::borrow::ToOwned>::to_owned"
+      ],
+      "exportLocations": [
+        {
+          "column": 58,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as alloc::borrow::ToOwned>::to_owned",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"]}}}}]},\"to_owned\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationErrorKind as core::any::Any>::type_id"
+      ],
+      "exportLocations": [
+        {
+          "column": 58,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::any::Any>::type_id",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"core\",\"any\",\"Any\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"]}}}}]},\"type_id\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationErrorKind as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind>>::borrow"
+      ],
+      "exportLocations": [
+        {
+          "column": 58,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind>>::borrow",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"]}}}}]},\"borrow\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationErrorKind as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind>>::borrow_mut"
+      ],
+      "exportLocations": [
+        {
+          "column": 58,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind>>::borrow_mut",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"]}}}}]},\"borrow_mut\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationErrorKind as core::clone::Clone>::clone"
+      ],
+      "exportLocations": [
+        {
+          "column": 58,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::clone::Clone>::clone",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 10,
+        "line": 104,
+        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationErrorKind as core::clone::Clone>::clone_from"
+      ],
+      "exportLocations": [
+        {
+          "column": 58,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::clone::Clone>::clone_from",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone_from\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 10,
+        "line": 104,
+        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationErrorKind as core::clone::CloneToUninit>::clone_to_uninit"
+      ],
+      "exportLocations": [
+        {
+          "column": 58,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::clone::CloneToUninit>::clone_to_uninit",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"core\",\"clone\",\"CloneToUninit\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"core::clone::CloneToUninit\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"]}}}}]},\"clone_to_uninit\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationErrorKind as core::cmp::Eq>::assert_receiver_is_total_eq"
+      ],
+      "exportLocations": [
+        {
+          "column": 58,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"core\",\"cmp\",\"Eq\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"core::cmp::Eq\",{\"params\":[],\"where_predicates\":[]},\"assert_receiver_is_total_eq\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 30,
+        "line": 104,
+        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationErrorKind as core::cmp::PartialEq>::eq"
+      ],
+      "exportLocations": [
+        {
+          "column": 58,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::cmp::PartialEq>::eq",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"eq\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 34,
+        "line": 104,
+        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationErrorKind as core::cmp::PartialEq>::ne"
+      ],
+      "exportLocations": [
+        {
+          "column": 58,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::cmp::PartialEq>::ne",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"ne\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 34,
+        "line": 104,
+        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationErrorKind as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind>>::from"
+      ],
+      "exportLocations": [
+        {
+          "column": 58,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind>>::from",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"core\",\"convert\",\"From\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "From"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::convert::Into<U>>::into",
+      "implementationId": "2842",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "cryptographic_operation",
+        "CryptographicOperationErrorKind"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::convert::TryFrom<U>>::Error",
+      "implementationId": "2845",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "cryptographic_operation",
+        "CryptographicOperationErrorKind"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::convert::TryFrom<U>>::try_from",
+      "implementationId": "2845",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "cryptographic_operation",
+        "CryptographicOperationErrorKind"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::convert::TryInto<U>>::Error",
+      "implementationId": "2844",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "cryptographic_operation",
+        "CryptographicOperationErrorKind"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::convert::TryInto<U>>::try_into",
+      "implementationId": "2844",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_protocol",
+        "cryptographic_operation",
+        "CryptographicOperationErrorKind"
+      ],
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::CryptographicOperationErrorKind as core::fmt::Debug>::fmt"
+      ],
+      "exportLocations": [
+        {
+          "column": 58,
+          "line": 119,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::fmt::Debug>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 23,
+        "line": 104,
+        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
         "<kmipkit_protocol::CryptographicOperationResponseContext as alloc::borrow::ToOwned>::Owned",
         "<kmipkit_protocol::VerificationResponseContext as alloc::borrow::ToOwned>::Owned"
       ],
@@ -414225,1155 +415329,6 @@
         "column": 5,
         "line": 182,
         "path": "crates/kmipkit-protocol/src/credential/authentication.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationError as alloc::borrow::ToOwned>::Owned",
-        "<kmipkit_protocol::HashError as alloc::borrow::ToOwned>::Owned",
-        "<kmipkit_protocol::MacError as alloc::borrow::ToOwned>::Owned",
-        "<kmipkit_protocol::MacVerifyError as alloc::borrow::ToOwned>::Owned",
-        "<kmipkit_protocol::RngRetrieveError as alloc::borrow::ToOwned>::Owned",
-        "<kmipkit_protocol::RngSeedError as alloc::borrow::ToOwned>::Owned",
-        "<kmipkit_protocol::SignError as alloc::borrow::ToOwned>::Owned",
-        "<kmipkit_protocol::SignatureVerifyError as alloc::borrow::ToOwned>::Owned"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 29,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as alloc::borrow::ToOwned>::Owned",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"]}}}}]},\"Owned\",\"assoc_type\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationError as alloc::borrow::ToOwned>::clone_into",
-        "<kmipkit_protocol::HashError as alloc::borrow::ToOwned>::clone_into",
-        "<kmipkit_protocol::MacError as alloc::borrow::ToOwned>::clone_into",
-        "<kmipkit_protocol::MacVerifyError as alloc::borrow::ToOwned>::clone_into",
-        "<kmipkit_protocol::RngRetrieveError as alloc::borrow::ToOwned>::clone_into",
-        "<kmipkit_protocol::RngSeedError as alloc::borrow::ToOwned>::clone_into",
-        "<kmipkit_protocol::SignError as alloc::borrow::ToOwned>::clone_into",
-        "<kmipkit_protocol::SignatureVerifyError as alloc::borrow::ToOwned>::clone_into"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 29,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as alloc::borrow::ToOwned>::clone_into",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"]}}}}]},\"clone_into\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationError as alloc::borrow::ToOwned>::to_owned",
-        "<kmipkit_protocol::HashError as alloc::borrow::ToOwned>::to_owned",
-        "<kmipkit_protocol::MacError as alloc::borrow::ToOwned>::to_owned",
-        "<kmipkit_protocol::MacVerifyError as alloc::borrow::ToOwned>::to_owned",
-        "<kmipkit_protocol::RngRetrieveError as alloc::borrow::ToOwned>::to_owned",
-        "<kmipkit_protocol::RngSeedError as alloc::borrow::ToOwned>::to_owned",
-        "<kmipkit_protocol::SignError as alloc::borrow::ToOwned>::to_owned",
-        "<kmipkit_protocol::SignatureVerifyError as alloc::borrow::ToOwned>::to_owned"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 29,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as alloc::borrow::ToOwned>::to_owned",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"]}}}}]},\"to_owned\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationError as alloc::string::ToString>::to_string",
-        "<kmipkit_protocol::HashError as alloc::string::ToString>::to_string",
-        "<kmipkit_protocol::MacError as alloc::string::ToString>::to_string",
-        "<kmipkit_protocol::MacVerifyError as alloc::string::ToString>::to_string",
-        "<kmipkit_protocol::RngRetrieveError as alloc::string::ToString>::to_string",
-        "<kmipkit_protocol::RngSeedError as alloc::string::ToString>::to_string",
-        "<kmipkit_protocol::SignError as alloc::string::ToString>::to_string",
-        "<kmipkit_protocol::SignatureVerifyError as alloc::string::ToString>::to_string"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 29,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as alloc::string::ToString>::to_string",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"alloc\",\"string\",\"ToString\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"alloc::string::ToString\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"fmt\",\"Display\"]}}},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"]}}}}]},\"to_string\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationError as core::any::Any>::type_id",
-        "<kmipkit_protocol::HashError as core::any::Any>::type_id",
-        "<kmipkit_protocol::MacError as core::any::Any>::type_id",
-        "<kmipkit_protocol::MacVerifyError as core::any::Any>::type_id",
-        "<kmipkit_protocol::RngRetrieveError as core::any::Any>::type_id",
-        "<kmipkit_protocol::RngSeedError as core::any::Any>::type_id",
-        "<kmipkit_protocol::SignError as core::any::Any>::type_id",
-        "<kmipkit_protocol::SignatureVerifyError as core::any::Any>::type_id"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 29,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::any::Any>::type_id",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"any\",\"Any\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"]}}}}]},\"type_id\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow",
-        "<kmipkit_protocol::HashError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow",
-        "<kmipkit_protocol::MacError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow",
-        "<kmipkit_protocol::MacVerifyError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow",
-        "<kmipkit_protocol::RngRetrieveError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow",
-        "<kmipkit_protocol::RngSeedError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow",
-        "<kmipkit_protocol::SignError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow",
-        "<kmipkit_protocol::SignatureVerifyError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 29,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"]}}}}]},\"borrow\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut",
-        "<kmipkit_protocol::HashError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut",
-        "<kmipkit_protocol::MacError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut",
-        "<kmipkit_protocol::MacVerifyError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut",
-        "<kmipkit_protocol::RngRetrieveError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut",
-        "<kmipkit_protocol::RngSeedError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut",
-        "<kmipkit_protocol::SignError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut",
-        "<kmipkit_protocol::SignatureVerifyError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 29,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"]}}}}]},\"borrow_mut\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationError as core::clone::Clone>::clone",
-        "<kmipkit_protocol::HashError as core::clone::Clone>::clone",
-        "<kmipkit_protocol::MacError as core::clone::Clone>::clone",
-        "<kmipkit_protocol::MacVerifyError as core::clone::Clone>::clone",
-        "<kmipkit_protocol::RngRetrieveError as core::clone::Clone>::clone",
-        "<kmipkit_protocol::RngSeedError as core::clone::Clone>::clone",
-        "<kmipkit_protocol::SignError as core::clone::Clone>::clone",
-        "<kmipkit_protocol::SignatureVerifyError as core::clone::Clone>::clone"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 29,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::clone::Clone>::clone",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 10,
-        "line": 123,
-        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationError as core::clone::Clone>::clone_from",
-        "<kmipkit_protocol::HashError as core::clone::Clone>::clone_from",
-        "<kmipkit_protocol::MacError as core::clone::Clone>::clone_from",
-        "<kmipkit_protocol::MacVerifyError as core::clone::Clone>::clone_from",
-        "<kmipkit_protocol::RngRetrieveError as core::clone::Clone>::clone_from",
-        "<kmipkit_protocol::RngSeedError as core::clone::Clone>::clone_from",
-        "<kmipkit_protocol::SignError as core::clone::Clone>::clone_from",
-        "<kmipkit_protocol::SignatureVerifyError as core::clone::Clone>::clone_from"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 29,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::clone::Clone>::clone_from",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone_from\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 10,
-        "line": 123,
-        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationError as core::clone::CloneToUninit>::clone_to_uninit",
-        "<kmipkit_protocol::HashError as core::clone::CloneToUninit>::clone_to_uninit",
-        "<kmipkit_protocol::MacError as core::clone::CloneToUninit>::clone_to_uninit",
-        "<kmipkit_protocol::MacVerifyError as core::clone::CloneToUninit>::clone_to_uninit",
-        "<kmipkit_protocol::RngRetrieveError as core::clone::CloneToUninit>::clone_to_uninit",
-        "<kmipkit_protocol::RngSeedError as core::clone::CloneToUninit>::clone_to_uninit",
-        "<kmipkit_protocol::SignError as core::clone::CloneToUninit>::clone_to_uninit",
-        "<kmipkit_protocol::SignatureVerifyError as core::clone::CloneToUninit>::clone_to_uninit"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 29,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::clone::CloneToUninit>::clone_to_uninit",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"clone\",\"CloneToUninit\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::clone::CloneToUninit\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"]}}}}]},\"clone_to_uninit\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationError as core::cmp::Eq>::assert_receiver_is_total_eq",
-        "<kmipkit_protocol::HashError as core::cmp::Eq>::assert_receiver_is_total_eq",
-        "<kmipkit_protocol::MacError as core::cmp::Eq>::assert_receiver_is_total_eq",
-        "<kmipkit_protocol::MacVerifyError as core::cmp::Eq>::assert_receiver_is_total_eq",
-        "<kmipkit_protocol::RngRetrieveError as core::cmp::Eq>::assert_receiver_is_total_eq",
-        "<kmipkit_protocol::RngSeedError as core::cmp::Eq>::assert_receiver_is_total_eq",
-        "<kmipkit_protocol::SignError as core::cmp::Eq>::assert_receiver_is_total_eq",
-        "<kmipkit_protocol::SignatureVerifyError as core::cmp::Eq>::assert_receiver_is_total_eq"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 29,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"cmp\",\"Eq\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::cmp::Eq\",{\"params\":[],\"where_predicates\":[]},\"assert_receiver_is_total_eq\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 30,
-        "line": 123,
-        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationError as core::cmp::PartialEq>::eq",
-        "<kmipkit_protocol::HashError as core::cmp::PartialEq>::eq",
-        "<kmipkit_protocol::MacError as core::cmp::PartialEq>::eq",
-        "<kmipkit_protocol::MacVerifyError as core::cmp::PartialEq>::eq",
-        "<kmipkit_protocol::RngRetrieveError as core::cmp::PartialEq>::eq",
-        "<kmipkit_protocol::RngSeedError as core::cmp::PartialEq>::eq",
-        "<kmipkit_protocol::SignError as core::cmp::PartialEq>::eq",
-        "<kmipkit_protocol::SignatureVerifyError as core::cmp::PartialEq>::eq"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 29,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::cmp::PartialEq>::eq",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"eq\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 34,
-        "line": 123,
-        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationError as core::cmp::PartialEq>::ne",
-        "<kmipkit_protocol::HashError as core::cmp::PartialEq>::ne",
-        "<kmipkit_protocol::MacError as core::cmp::PartialEq>::ne",
-        "<kmipkit_protocol::MacVerifyError as core::cmp::PartialEq>::ne",
-        "<kmipkit_protocol::RngRetrieveError as core::cmp::PartialEq>::ne",
-        "<kmipkit_protocol::RngSeedError as core::cmp::PartialEq>::ne",
-        "<kmipkit_protocol::SignError as core::cmp::PartialEq>::ne",
-        "<kmipkit_protocol::SignatureVerifyError as core::cmp::PartialEq>::ne"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 29,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::cmp::PartialEq>::ne",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"ne\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 34,
-        "line": 123,
-        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from",
-        "<kmipkit_protocol::HashError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from",
-        "<kmipkit_protocol::MacError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from",
-        "<kmipkit_protocol::MacVerifyError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from",
-        "<kmipkit_protocol::RngRetrieveError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from",
-        "<kmipkit_protocol::RngSeedError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from",
-        "<kmipkit_protocol::SignError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from",
-        "<kmipkit_protocol::SignatureVerifyError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 29,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"convert\",\"From\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::cryptographic_operation::CryptographicOperationError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::convert::Into<U>>::into",
-      "implementationId": "2879",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "cryptographic_operation",
-        "CryptographicOperationError"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::cryptographic_operation::CryptographicOperationError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::convert::TryFrom<U>>::Error",
-      "implementationId": "2882",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "cryptographic_operation",
-        "CryptographicOperationError"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::cryptographic_operation::CryptographicOperationError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::convert::TryFrom<U>>::try_from",
-      "implementationId": "2882",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "cryptographic_operation",
-        "CryptographicOperationError"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::cryptographic_operation::CryptographicOperationError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::convert::TryInto<U>>::Error",
-      "implementationId": "2881",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "cryptographic_operation",
-        "CryptographicOperationError"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::cryptographic_operation::CryptographicOperationError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::convert::TryInto<U>>::try_into",
-      "implementationId": "2881",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "cryptographic_operation",
-        "CryptographicOperationError"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::cause",
-        "<kmipkit_protocol::HashError as core::error::Error>::cause",
-        "<kmipkit_protocol::MacError as core::error::Error>::cause",
-        "<kmipkit_protocol::MacVerifyError as core::error::Error>::cause",
-        "<kmipkit_protocol::RngRetrieveError as core::error::Error>::cause",
-        "<kmipkit_protocol::RngSeedError as core::error::Error>::cause",
-        "<kmipkit_protocol::SignError as core::error::Error>::cause",
-        "<kmipkit_protocol::SignatureVerifyError as core::error::Error>::cause"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 29,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::cause",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"cause\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 171,
-        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::description",
-        "<kmipkit_protocol::HashError as core::error::Error>::description",
-        "<kmipkit_protocol::MacError as core::error::Error>::description",
-        "<kmipkit_protocol::MacVerifyError as core::error::Error>::description",
-        "<kmipkit_protocol::RngRetrieveError as core::error::Error>::description",
-        "<kmipkit_protocol::RngSeedError as core::error::Error>::description",
-        "<kmipkit_protocol::SignError as core::error::Error>::description",
-        "<kmipkit_protocol::SignatureVerifyError as core::error::Error>::description"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 29,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::description",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"description\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 171,
-        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::provide",
-        "<kmipkit_protocol::HashError as core::error::Error>::provide",
-        "<kmipkit_protocol::MacError as core::error::Error>::provide",
-        "<kmipkit_protocol::MacVerifyError as core::error::Error>::provide",
-        "<kmipkit_protocol::RngRetrieveError as core::error::Error>::provide",
-        "<kmipkit_protocol::RngSeedError as core::error::Error>::provide",
-        "<kmipkit_protocol::SignError as core::error::Error>::provide",
-        "<kmipkit_protocol::SignatureVerifyError as core::error::Error>::provide"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 29,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::provide",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"provide\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 171,
-        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::source",
-        "<kmipkit_protocol::HashError as core::error::Error>::source",
-        "<kmipkit_protocol::MacError as core::error::Error>::source",
-        "<kmipkit_protocol::MacVerifyError as core::error::Error>::source",
-        "<kmipkit_protocol::RngRetrieveError as core::error::Error>::source",
-        "<kmipkit_protocol::RngSeedError as core::error::Error>::source",
-        "<kmipkit_protocol::SignError as core::error::Error>::source",
-        "<kmipkit_protocol::SignatureVerifyError as core::error::Error>::source"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 29,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::source",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"source\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 172,
-        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::type_id",
-        "<kmipkit_protocol::HashError as core::error::Error>::type_id",
-        "<kmipkit_protocol::MacError as core::error::Error>::type_id",
-        "<kmipkit_protocol::MacVerifyError as core::error::Error>::type_id",
-        "<kmipkit_protocol::RngRetrieveError as core::error::Error>::type_id",
-        "<kmipkit_protocol::RngSeedError as core::error::Error>::type_id",
-        "<kmipkit_protocol::SignError as core::error::Error>::type_id",
-        "<kmipkit_protocol::SignatureVerifyError as core::error::Error>::type_id"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 29,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::error::Error>::type_id",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"type_id\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 171,
-        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationError as core::fmt::Debug>::fmt",
-        "<kmipkit_protocol::HashError as core::fmt::Debug>::fmt",
-        "<kmipkit_protocol::MacError as core::fmt::Debug>::fmt",
-        "<kmipkit_protocol::MacVerifyError as core::fmt::Debug>::fmt",
-        "<kmipkit_protocol::RngRetrieveError as core::fmt::Debug>::fmt",
-        "<kmipkit_protocol::RngSeedError as core::fmt::Debug>::fmt",
-        "<kmipkit_protocol::SignError as core::fmt::Debug>::fmt",
-        "<kmipkit_protocol::SignatureVerifyError as core::fmt::Debug>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 29,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::fmt::Debug>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 23,
-        "line": 123,
-        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationError as core::fmt::Display>::fmt",
-        "<kmipkit_protocol::HashError as core::fmt::Display>::fmt",
-        "<kmipkit_protocol::MacError as core::fmt::Display>::fmt",
-        "<kmipkit_protocol::MacVerifyError as core::fmt::Display>::fmt",
-        "<kmipkit_protocol::RngRetrieveError as core::fmt::Display>::fmt",
-        "<kmipkit_protocol::RngSeedError as core::fmt::Display>::fmt",
-        "<kmipkit_protocol::SignError as core::fmt::Display>::fmt",
-        "<kmipkit_protocol::SignatureVerifyError as core::fmt::Display>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 29,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationError as core::fmt::Display>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationError\"],[\"core\",\"fmt\",\"Display\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationError\",\"core::fmt::Display\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 162,
-        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationErrorKind as alloc::borrow::ToOwned>::Owned"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 58,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as alloc::borrow::ToOwned>::Owned",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"]}}}}]},\"Owned\",\"assoc_type\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationErrorKind as alloc::borrow::ToOwned>::clone_into"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 58,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as alloc::borrow::ToOwned>::clone_into",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"]}}}}]},\"clone_into\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationErrorKind as alloc::borrow::ToOwned>::to_owned"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 58,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as alloc::borrow::ToOwned>::to_owned",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"]}}}}]},\"to_owned\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationErrorKind as core::any::Any>::type_id"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 58,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::any::Any>::type_id",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"core\",\"any\",\"Any\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"]}}}}]},\"type_id\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationErrorKind as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind>>::borrow"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 58,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind>>::borrow",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"]}}}}]},\"borrow\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationErrorKind as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind>>::borrow_mut"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 58,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind>>::borrow_mut",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"]}}}}]},\"borrow_mut\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationErrorKind as core::clone::Clone>::clone"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 58,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::clone::Clone>::clone",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 10,
-        "line": 104,
-        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationErrorKind as core::clone::Clone>::clone_from"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 58,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::clone::Clone>::clone_from",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone_from\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 10,
-        "line": 104,
-        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationErrorKind as core::clone::CloneToUninit>::clone_to_uninit"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 58,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::clone::CloneToUninit>::clone_to_uninit",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"core\",\"clone\",\"CloneToUninit\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"core::clone::CloneToUninit\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"]}}}}]},\"clone_to_uninit\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationErrorKind as core::cmp::Eq>::assert_receiver_is_total_eq"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 58,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"core\",\"cmp\",\"Eq\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"core::cmp::Eq\",{\"params\":[],\"where_predicates\":[]},\"assert_receiver_is_total_eq\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 30,
-        "line": 104,
-        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationErrorKind as core::cmp::PartialEq>::eq"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 58,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::cmp::PartialEq>::eq",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"eq\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 34,
-        "line": 104,
-        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationErrorKind as core::cmp::PartialEq>::ne"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 58,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::cmp::PartialEq>::ne",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"ne\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 34,
-        "line": 104,
-        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationErrorKind as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind>>::from"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 58,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind>>::from",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"core\",\"convert\",\"From\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::convert::Into<U>>::into",
-      "implementationId": "2842",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "cryptographic_operation",
-        "CryptographicOperationErrorKind"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::convert::TryFrom<U>>::Error",
-      "implementationId": "2845",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "cryptographic_operation",
-        "CryptographicOperationErrorKind"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::convert::TryFrom<U>>::try_from",
-      "implementationId": "2845",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "cryptographic_operation",
-        "CryptographicOperationErrorKind"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::convert::TryInto<U>>::Error",
-      "implementationId": "2844",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "cryptographic_operation",
-        "CryptographicOperationErrorKind"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::convert::TryInto<U>>::try_into",
-      "implementationId": "2844",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_protocol",
-        "cryptographic_operation",
-        "CryptographicOperationErrorKind"
-      ],
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::CryptographicOperationErrorKind as core::fmt::Debug>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 58,
-          "line": 119,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::CryptographicOperationErrorKind as core::fmt::Debug>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"cryptographic_operation\",\"CryptographicOperationErrorKind\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_protocol::cryptographic_operation::CryptographicOperationErrorKind\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 23,
-        "line": 104,
-        "path": "crates/kmipkit-protocol/src/cryptographic_operation.rs"
       },
       "packageId": "rust-kmipkit-protocol"
     },
