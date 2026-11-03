@@ -14,8 +14,8 @@ CATALOG_SHA256 = "d876fc31f19b3b4b63a5b09765dfdac6925d97a2199aac6c88c10a9e5bcb47
 LANGUAGE_MAPPING_SHA256 = {
     "rust": "477d61fb1bf54ce7368fed40271ff6cdeec01113f0314dd3312382af3be477a7",
     "c": "64c6bf7ac45e050c128dc923e58bde968e54b8f187396332a36fd61825e2aa74",
-    "java": "a334c7099208a794dfb239663f78a7dbde0001fffa86bc0cc52b8370ee81547d",
-    "python": "f74b8bb9f2257e2c24cd7a7424a973004a9655873547bded11a636b475e11324",
+    "java": "9d327c449f9cb9c9ac81d2f0c203632c11cef6c3e4388c8101782768358954e8",
+    "python": "bb53f030895362fc20e8bf240822a8871f1c27967c786f2a85f282ee8e89f279",
 }
 OWNER_REQUIREMENTS = {
     "KMIPKIT-0010-FR-001", "KMIPKIT-0010-FR-002", "KMIPKIT-0010-FR-003",
@@ -152,6 +152,28 @@ class T102ProfileReadinessParityTests(unittest.TestCase):
                          "org.kmipkit.extensions.ProfileCatalog.ClientProfile.unresolvedScopeObligations")
         self.assertEqual(unresolved_scope["languageMappings"]["python"]["name"],
                          "kmipkit.profile_catalog.ClientProfile.unresolved_scope_obligations")
+
+        verification_category_members = {
+            "DiscouragedAbsenceOrDeviation": "DISCOURAGED_ABSENCE_OR_DEVIATION",
+            "OptionalCapability": "OPTIONAL_CAPABILITY",
+            "ProhibitedBehavior": "PROHIBITED_BEHAVIOR",
+            "RecommendedBehaviorOrDeviation": "RECOMMENDED_BEHAVIOR_OR_DEVIATION",
+            "RequiredBehavior": "REQUIRED_BEHAVIOR",
+        }
+        for rust_member, facade_member in verification_category_members.items():
+            export_name = (
+                "kmipkit_protocol::profiles_generated::GeneratedVerificationCategory::"
+                f"{rust_member}"
+            )
+            row = next(row for row in rust_rows if row["exportName"] == export_name)
+            self.assertEqual(
+                "org.kmipkit.extensions.ProfileCatalog.VerificationCategory." + facade_member,
+                row["languageMappings"]["java"]["name"],
+            )
+            self.assertEqual(
+                "kmipkit.profile_catalog.VerificationCategory." + facade_member,
+                row["languageMappings"]["python"]["name"],
+            )
 
 
 

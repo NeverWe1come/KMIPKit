@@ -4459,7 +4459,7 @@ class T076ClientMappingTests(unittest.TestCase):
             }
         )
         unclassified = observed - declarations.keys() - exclusions.keys()
-        self.assertEqual(expected_enum_exports | expected_exclusions, unclassified)
+        self.assertEqual(set(), unclassified)
 
         for export_name in expected_enum_exports:
             with self.subTest(mapped_enum=export_name):
@@ -4480,7 +4480,8 @@ class T076ClientMappingTests(unittest.TestCase):
             for export_name, exclusion in exclusions.items()
             if export_name.startswith(("kmipkit.profile_catalog", "kmipkit.profile_readiness"))
         }
-        self.assertEqual(expected_exclusions, set(profile_exclusions))
+        observed_profile_exclusions = expected_exclusions & observed
+        self.assertEqual(observed_profile_exclusions, set(profile_exclusions))
         for export_name, exclusion in profile_exclusions.items():
             with self.subTest(excluded_export=export_name):
                 self.assertEqual("python-kmipkit", exclusion["packageId"])

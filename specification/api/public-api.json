@@ -281182,11 +281182,11 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory._DISCOURAGED_ABSENCE_OR_DEVIATION"
+          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.DISCOURAGED_ABSENCE_OR_DEVIATION"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.profile_catalog.VerificationCategory._DISCOURAGED_ABSENCE_OR_DEVIATION"
+          "name": "kmipkit.profile_catalog.VerificationCategory.DISCOURAGED_ABSENCE_OR_DEVIATION"
         }
       }
     },
@@ -281229,11 +281229,11 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory._OPTIONAL_CAPABILITY"
+          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.OPTIONAL_CAPABILITY"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.profile_catalog.VerificationCategory._OPTIONAL_CAPABILITY"
+          "name": "kmipkit.profile_catalog.VerificationCategory.OPTIONAL_CAPABILITY"
         }
       }
     },
@@ -281276,11 +281276,11 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory._PROHIBITED_BEHAVIOR"
+          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.PROHIBITED_BEHAVIOR"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.profile_catalog.VerificationCategory._PROHIBITED_BEHAVIOR"
+          "name": "kmipkit.profile_catalog.VerificationCategory.PROHIBITED_BEHAVIOR"
         }
       }
     },
@@ -281323,11 +281323,11 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory._RECOMMENDED_BEHAVIOR_OR_DEVIATION"
+          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.RECOMMENDED_BEHAVIOR_OR_DEVIATION"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.profile_catalog.VerificationCategory._RECOMMENDED_BEHAVIOR_OR_DEVIATION"
+          "name": "kmipkit.profile_catalog.VerificationCategory.RECOMMENDED_BEHAVIOR_OR_DEVIATION"
         }
       }
     },
@@ -281370,11 +281370,11 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory._REQUIRED_BEHAVIOR"
+          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.REQUIRED_BEHAVIOR"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.profile_catalog.VerificationCategory._REQUIRED_BEHAVIOR"
+          "name": "kmipkit.profile_catalog.VerificationCategory.REQUIRED_BEHAVIOR"
         }
       }
     },
@@ -335545,11 +335545,11 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory._REQUIRED_BEHAVIOR"
+          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.REQUIRED_BEHAVIOR"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.profile_catalog.VerificationCategory._REQUIRED_BEHAVIOR"
+          "name": "kmipkit.profile_catalog.VerificationCategory.REQUIRED_BEHAVIOR"
         }
       }
     },
@@ -338733,7 +338733,7 @@
       "declarationId": "T102:java:org_kmipkit_extensions_ProfileCatalog_VerificationCategory__DISCOURAGED_ABSENCE_OR_DEVIATION",
       "packageId": "java-kmipkit",
       "kind": "java-member",
-      "exportName": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory._DISCOURAGED_ABSENCE_OR_DEVIATION",
+      "exportName": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.DISCOURAGED_ABSENCE_OR_DEVIATION",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
         "KMIPKIT-0010-FR-001",
@@ -338768,11 +338768,11 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory._DISCOURAGED_ABSENCE_OR_DEVIATION"
+          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.DISCOURAGED_ABSENCE_OR_DEVIATION"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.profile_catalog.VerificationCategory._DISCOURAGED_ABSENCE_OR_DEVIATION"
+          "name": "kmipkit.profile_catalog.VerificationCategory.DISCOURAGED_ABSENCE_OR_DEVIATION"
         }
       }
     },
@@ -338780,7 +338780,7 @@
       "declarationId": "T102:java:org_kmipkit_extensions_ProfileCatalog_VerificationCategory__OPTIONAL_CAPABILITY",
       "packageId": "java-kmipkit",
       "kind": "java-member",
-      "exportName": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory._OPTIONAL_CAPABILITY",
+      "exportName": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.OPTIONAL_CAPABILITY",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
         "KMIPKIT-0010-FR-001",
@@ -338815,11 +338815,11 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory._OPTIONAL_CAPABILITY"
+          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.OPTIONAL_CAPABILITY"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.profile_catalog.VerificationCategory._OPTIONAL_CAPABILITY"
+          "name": "kmipkit.profile_catalog.VerificationCategory.OPTIONAL_CAPABILITY"
         }
       }
     },
@@ -338827,7 +338827,7 @@
       "declarationId": "T102:java:org_kmipkit_extensions_ProfileCatalog_VerificationCategory__PROHIBITED_BEHAVIOR",
       "packageId": "java-kmipkit",
       "kind": "java-member",
-      "exportName": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory._PROHIBITED_BEHAVIOR",
+      "exportName": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.PROHIBITED_BEHAVIOR",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
         "KMIPKIT-0010-FR-001",
@@ -338862,11 +338862,11 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory._PROHIBITED_BEHAVIOR"
+          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.PROHIBITED_BEHAVIOR"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.profile_catalog.VerificationCategory._PROHIBITED_BEHAVIOR"
+          "name": "kmipkit.profile_catalog.VerificationCategory.PROHIBITED_BEHAVIOR"
         }
       }
     },
@@ -338874,7 +338874,7 @@
       "declarationId": "T102:java:org_kmipkit_extensions_ProfileCatalog_VerificationCategory__RECOMMENDED_BEHAVIOR_OR_DEVIATION",
       "packageId": "java-kmipkit",
       "kind": "java-member",
-      "exportName": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory._RECOMMENDED_BEHAVIOR_OR_DEVIATION",
+      "exportName": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.RECOMMENDED_BEHAVIOR_OR_DEVIATION",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
         "KMIPKIT-0010-FR-001",
@@ -338909,11 +338909,11 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory._RECOMMENDED_BEHAVIOR_OR_DEVIATION"
+          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.RECOMMENDED_BEHAVIOR_OR_DEVIATION"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.profile_catalog.VerificationCategory._RECOMMENDED_BEHAVIOR_OR_DEVIATION"
+          "name": "kmipkit.profile_catalog.VerificationCategory.RECOMMENDED_BEHAVIOR_OR_DEVIATION"
         }
       }
     },
@@ -338921,7 +338921,7 @@
       "declarationId": "T102:java:org_kmipkit_extensions_ProfileCatalog_VerificationCategory__REQUIRED_BEHAVIOR",
       "packageId": "java-kmipkit",
       "kind": "java-member",
-      "exportName": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory._REQUIRED_BEHAVIOR",
+      "exportName": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.REQUIRED_BEHAVIOR",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
         "KMIPKIT-0010-FR-001",
@@ -338956,11 +338956,11 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory._REQUIRED_BEHAVIOR"
+          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.REQUIRED_BEHAVIOR"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.profile_catalog.VerificationCategory._REQUIRED_BEHAVIOR"
+          "name": "kmipkit.profile_catalog.VerificationCategory.REQUIRED_BEHAVIOR"
         }
       }
     },
@@ -341694,7 +341694,7 @@
       "declarationId": "T102:python:kmipkit_profile_catalog_VerificationCategory__DISCOURAGED_ABSENCE_OR_DEVIATION",
       "packageId": "python-kmipkit",
       "kind": "python-export",
-      "exportName": "kmipkit.profile_catalog.VerificationCategory._DISCOURAGED_ABSENCE_OR_DEVIATION",
+      "exportName": "kmipkit.profile_catalog.VerificationCategory.DISCOURAGED_ABSENCE_OR_DEVIATION",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
         "KMIPKIT-0010-FR-001",
@@ -341729,11 +341729,11 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory._DISCOURAGED_ABSENCE_OR_DEVIATION"
+          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.DISCOURAGED_ABSENCE_OR_DEVIATION"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.profile_catalog.VerificationCategory._DISCOURAGED_ABSENCE_OR_DEVIATION"
+          "name": "kmipkit.profile_catalog.VerificationCategory.DISCOURAGED_ABSENCE_OR_DEVIATION"
         }
       }
     },
@@ -341741,7 +341741,7 @@
       "declarationId": "T102:python:kmipkit_profile_catalog_VerificationCategory__OPTIONAL_CAPABILITY",
       "packageId": "python-kmipkit",
       "kind": "python-export",
-      "exportName": "kmipkit.profile_catalog.VerificationCategory._OPTIONAL_CAPABILITY",
+      "exportName": "kmipkit.profile_catalog.VerificationCategory.OPTIONAL_CAPABILITY",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
         "KMIPKIT-0010-FR-001",
@@ -341776,11 +341776,11 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory._OPTIONAL_CAPABILITY"
+          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.OPTIONAL_CAPABILITY"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.profile_catalog.VerificationCategory._OPTIONAL_CAPABILITY"
+          "name": "kmipkit.profile_catalog.VerificationCategory.OPTIONAL_CAPABILITY"
         }
       }
     },
@@ -341788,7 +341788,7 @@
       "declarationId": "T102:python:kmipkit_profile_catalog_VerificationCategory__PROHIBITED_BEHAVIOR",
       "packageId": "python-kmipkit",
       "kind": "python-export",
-      "exportName": "kmipkit.profile_catalog.VerificationCategory._PROHIBITED_BEHAVIOR",
+      "exportName": "kmipkit.profile_catalog.VerificationCategory.PROHIBITED_BEHAVIOR",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
         "KMIPKIT-0010-FR-001",
@@ -341823,11 +341823,11 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory._PROHIBITED_BEHAVIOR"
+          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.PROHIBITED_BEHAVIOR"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.profile_catalog.VerificationCategory._PROHIBITED_BEHAVIOR"
+          "name": "kmipkit.profile_catalog.VerificationCategory.PROHIBITED_BEHAVIOR"
         }
       }
     },
@@ -341835,7 +341835,7 @@
       "declarationId": "T102:python:kmipkit_profile_catalog_VerificationCategory__RECOMMENDED_BEHAVIOR_OR_DEVIATION",
       "packageId": "python-kmipkit",
       "kind": "python-export",
-      "exportName": "kmipkit.profile_catalog.VerificationCategory._RECOMMENDED_BEHAVIOR_OR_DEVIATION",
+      "exportName": "kmipkit.profile_catalog.VerificationCategory.RECOMMENDED_BEHAVIOR_OR_DEVIATION",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
         "KMIPKIT-0010-FR-001",
@@ -341870,11 +341870,11 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory._RECOMMENDED_BEHAVIOR_OR_DEVIATION"
+          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.RECOMMENDED_BEHAVIOR_OR_DEVIATION"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.profile_catalog.VerificationCategory._RECOMMENDED_BEHAVIOR_OR_DEVIATION"
+          "name": "kmipkit.profile_catalog.VerificationCategory.RECOMMENDED_BEHAVIOR_OR_DEVIATION"
         }
       }
     },
@@ -341882,7 +341882,7 @@
       "declarationId": "T102:python:kmipkit_profile_catalog_VerificationCategory__REQUIRED_BEHAVIOR",
       "packageId": "python-kmipkit",
       "kind": "python-export",
-      "exportName": "kmipkit.profile_catalog.VerificationCategory._REQUIRED_BEHAVIOR",
+      "exportName": "kmipkit.profile_catalog.VerificationCategory.REQUIRED_BEHAVIOR",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
         "KMIPKIT-0010-FR-001",
@@ -341917,11 +341917,11 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory._REQUIRED_BEHAVIOR"
+          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.REQUIRED_BEHAVIOR"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.profile_catalog.VerificationCategory._REQUIRED_BEHAVIOR"
+          "name": "kmipkit.profile_catalog.VerificationCategory.REQUIRED_BEHAVIOR"
         }
       }
     },
@@ -446896,6 +446896,894 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 against `bindings/python/src/kmipkit/_handles.py`: `__enter__` validates and returns the live wrapper, `closed` reports whether its local native pointer is NULL, and `__exit__` releases the same mapped native handle. These adapter conveniences introduce no KMIP wire behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog",
+      "reason": "This exact Python module is an import namespace that aggregates profile catalog/readiness declarations; it does not add an operation or independent capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. Each public model and function in this namespace is inventoried separately under the four-language client_profile_readiness capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ClientProfile.__dataclass_fields__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ClientProfile and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ClientProfile.__dataclass_params__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ClientProfile and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ClientProfile.__delattr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ClientProfile and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ClientProfile.__eq__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ClientProfile and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ClientProfile.__hash__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ClientProfile and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ClientProfile.__init__",
+      "reason": "This exact dataclass-generated constructor is Python construction syntax for the already mapped ClientProfile model and adds no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ClientProfile.__match_args__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ClientProfile and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ClientProfile.__repr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ClientProfile and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ClientProfile.__setattr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ClientProfile and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ClientProfile.__slots__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ClientProfile and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ClientRequirement.__dataclass_fields__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ClientRequirement and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ClientRequirement.__dataclass_params__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ClientRequirement and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ClientRequirement.__delattr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ClientRequirement and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ClientRequirement.__eq__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ClientRequirement and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ClientRequirement.__hash__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ClientRequirement and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ClientRequirement.__init__",
+      "reason": "This exact dataclass-generated constructor is Python construction syntax for the already mapped ClientRequirement model and adds no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ClientRequirement.__match_args__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ClientRequirement and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ClientRequirement.__repr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ClientRequirement and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ClientRequirement.__setattr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ClientRequirement and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ClientRequirement.__slots__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ClientRequirement and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ProfileScopeBlocker.__dataclass_fields__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileScopeBlocker and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ProfileScopeBlocker.__dataclass_params__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileScopeBlocker and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ProfileScopeBlocker.__delattr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileScopeBlocker and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ProfileScopeBlocker.__eq__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileScopeBlocker and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ProfileScopeBlocker.__hash__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileScopeBlocker and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ProfileScopeBlocker.__init__",
+      "reason": "This exact dataclass-generated constructor is Python construction syntax for the already mapped ProfileScopeBlocker model and adds no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ProfileScopeBlocker.__match_args__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileScopeBlocker and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ProfileScopeBlocker.__repr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileScopeBlocker and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ProfileScopeBlocker.__setattr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileScopeBlocker and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ProfileScopeBlocker.__slots__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileScopeBlocker and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ProfileTestCase.__dataclass_fields__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileTestCase and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ProfileTestCase.__dataclass_params__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileTestCase and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ProfileTestCase.__delattr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileTestCase and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ProfileTestCase.__eq__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileTestCase and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ProfileTestCase.__hash__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileTestCase and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ProfileTestCase.__init__",
+      "reason": "This exact dataclass-generated constructor is Python construction syntax for the already mapped ProfileTestCase model and adds no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ProfileTestCase.__match_args__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileTestCase and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ProfileTestCase.__repr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileTestCase and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ProfileTestCase.__setattr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileTestCase and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_catalog.ProfileTestCase.__slots__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileTestCase and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness",
+      "reason": "This exact Python module is an import namespace that aggregates profile catalog/readiness declarations; it does not add an operation or independent capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. Each public model and function in this namespace is inventoried separately under the four-language client_profile_readiness capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileEvidenceRecord.__dataclass_fields__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileEvidenceRecord and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileEvidenceRecord.__dataclass_params__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileEvidenceRecord and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileEvidenceRecord.__delattr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileEvidenceRecord and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileEvidenceRecord.__eq__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileEvidenceRecord and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileEvidenceRecord.__hash__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileEvidenceRecord and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileEvidenceRecord.__init__",
+      "reason": "This exact dataclass-generated constructor is Python construction syntax for the already mapped ProfileEvidenceRecord model and adds no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileEvidenceRecord.__match_args__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileEvidenceRecord and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileEvidenceRecord.__repr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileEvidenceRecord and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileEvidenceRecord.__setattr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileEvidenceRecord and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileEvidenceRecord.__slots__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileEvidenceRecord and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileEvidenceRecord.passed_value",
+      "reason": "This exact Python dataclass field readback belongs to the caller-supplied, input-only ProfileEvidenceRecord and is not a supported cross-language readback capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against accepted KMIPKIT-0010-FR-017 and KMIPKIT-0043-FR-021. Rust passed/failed factories and all four evaluation surfaces construct and consume the caller evidence record; no Rust field getter or output-record capability exists. This exclusion covers attribute readback only."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileEvidenceRecord.requirement_id",
+      "reason": "This exact Python dataclass field readback belongs to the caller-supplied, input-only ProfileEvidenceRecord and is not a supported cross-language readback capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against accepted KMIPKIT-0010-FR-017 and KMIPKIT-0043-FR-021. Rust passed/failed factories and all four evaluation surfaces construct and consume the caller evidence record; no Rust field getter or output-record capability exists. This exclusion covers attribute readback only."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileReadiness.__dataclass_fields__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileReadiness and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileReadiness.__dataclass_params__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileReadiness and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileReadiness.__delattr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileReadiness and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileReadiness.__eq__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileReadiness and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileReadiness.__hash__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileReadiness and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileReadiness.__init__",
+      "reason": "This exact dataclass-generated constructor is Python construction syntax for the already mapped ProfileReadiness model and adds no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileReadiness.__match_args__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileReadiness and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileReadiness.__repr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileReadiness and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileReadiness.__setattr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileReadiness and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileReadiness.__slots__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileReadiness and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileReadinessBlocker.__dataclass_fields__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileReadinessBlocker and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileReadinessBlocker.__dataclass_params__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileReadinessBlocker and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileReadinessBlocker.__delattr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileReadinessBlocker and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileReadinessBlocker.__eq__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileReadinessBlocker and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileReadinessBlocker.__hash__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileReadinessBlocker and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileReadinessBlocker.__init__",
+      "reason": "This exact dataclass-generated constructor is Python construction syntax for the already mapped ProfileReadinessBlocker model and adds no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileReadinessBlocker.__match_args__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileReadinessBlocker and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileReadinessBlocker.__repr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileReadinessBlocker and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileReadinessBlocker.__setattr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileReadinessBlocker and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.profile_readiness.ProfileReadinessBlocker.__slots__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileReadinessBlocker and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
     }
   ],
   "apiLevels": [
@@ -454857,11 +455745,11 @@
           "org.kmipkit.extensions.ProfileCatalog.ProfileTestCase.officialCaseId",
           "org.kmipkit.extensions.ProfileCatalog.ProfileTestCase.testId",
           "org.kmipkit.extensions.ProfileCatalog.VerificationCategory",
-          "org.kmipkit.extensions.ProfileCatalog.VerificationCategory._DISCOURAGED_ABSENCE_OR_DEVIATION",
-          "org.kmipkit.extensions.ProfileCatalog.VerificationCategory._OPTIONAL_CAPABILITY",
-          "org.kmipkit.extensions.ProfileCatalog.VerificationCategory._PROHIBITED_BEHAVIOR",
-          "org.kmipkit.extensions.ProfileCatalog.VerificationCategory._RECOMMENDED_BEHAVIOR_OR_DEVIATION",
-          "org.kmipkit.extensions.ProfileCatalog.VerificationCategory._REQUIRED_BEHAVIOR",
+          "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.DISCOURAGED_ABSENCE_OR_DEVIATION",
+          "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.OPTIONAL_CAPABILITY",
+          "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.PROHIBITED_BEHAVIOR",
+          "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.RECOMMENDED_BEHAVIOR_OR_DEVIATION",
+          "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.REQUIRED_BEHAVIOR",
           "org.kmipkit.extensions.ProfileCatalog.clientProfiles",
           "org.kmipkit.extensions.ProfileCatalog.clientRequirements",
           "org.kmipkit.extensions.ProfileCatalog.profileTestCases",
@@ -454922,11 +455810,11 @@
           "kmipkit.profile_catalog.ProfileTestCase.official_case_id",
           "kmipkit.profile_catalog.ProfileTestCase.test_id",
           "kmipkit.profile_catalog.VerificationCategory",
-          "kmipkit.profile_catalog.VerificationCategory._DISCOURAGED_ABSENCE_OR_DEVIATION",
-          "kmipkit.profile_catalog.VerificationCategory._OPTIONAL_CAPABILITY",
-          "kmipkit.profile_catalog.VerificationCategory._PROHIBITED_BEHAVIOR",
-          "kmipkit.profile_catalog.VerificationCategory._RECOMMENDED_BEHAVIOR_OR_DEVIATION",
-          "kmipkit.profile_catalog.VerificationCategory._REQUIRED_BEHAVIOR",
+          "kmipkit.profile_catalog.VerificationCategory.DISCOURAGED_ABSENCE_OR_DEVIATION",
+          "kmipkit.profile_catalog.VerificationCategory.OPTIONAL_CAPABILITY",
+          "kmipkit.profile_catalog.VerificationCategory.PROHIBITED_BEHAVIOR",
+          "kmipkit.profile_catalog.VerificationCategory.RECOMMENDED_BEHAVIOR_OR_DEVIATION",
+          "kmipkit.profile_catalog.VerificationCategory.REQUIRED_BEHAVIOR",
           "kmipkit.profile_catalog.client_profiles",
           "kmipkit.profile_catalog.client_requirements",
           "kmipkit.profile_catalog.profile_test_cases",
