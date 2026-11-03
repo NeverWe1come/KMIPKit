@@ -87506,6 +87506,1014 @@
       "exportName": "<kmipkit_protocol::StorageStatusMask as core::hash::Hash>::hash_slice",
       "packageId": "rust-kmipkit-protocol",
       "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.14/Tables 445/446. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only.",
+      "exportName": "<kmipkit_protocol::DerivationMethod as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.14/Tables 445/446. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only.",
+      "exportName": "<kmipkit_protocol::DerivationMethod as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.14/Tables 445/446. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only.",
+      "exportName": "<kmipkit_protocol::DerivationMethod as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.14/Tables 445/446. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only.",
+      "exportName": "<kmipkit_protocol::DerivationMethod as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.14/Tables 445/446. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only.",
+      "exportName": "<kmipkit_protocol::DerivationMethod as core::borrow::Borrow<kmipkit_protocol::derive_key::DerivationMethod>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.14/Tables 445/446. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only.",
+      "exportName": "<kmipkit_protocol::DerivationMethod as core::borrow::BorrowMut<kmipkit_protocol::derive_key::DerivationMethod>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.14/Tables 445/446. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only.",
+      "exportName": "<kmipkit_protocol::DerivationMethod as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.14/Tables 445/446. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only.",
+      "exportName": "<kmipkit_protocol::DerivationMethod as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.14/Tables 445/446. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only.",
+      "exportName": "<kmipkit_protocol::DerivationMethod as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.14/Tables 445/446. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only.",
+      "exportName": "<kmipkit_protocol::DerivationMethod as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.14/Tables 445/446. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only.",
+      "exportName": "<kmipkit_protocol::DerivationMethod as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.14/Tables 445/446. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only.",
+      "exportName": "<kmipkit_protocol::DerivationMethod as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.14/Tables 445/446. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only.",
+      "exportName": "<kmipkit_protocol::DerivationMethod as core::convert::From<kmipkit_protocol::derive_key::DerivationMethod>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.14/Tables 445/446. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only.",
+      "exportName": "<kmipkit_protocol::DerivationMethod as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.14/Tables 445/446. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only.",
+      "exportName": "<kmipkit_protocol::DerivationMethod as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.14/Tables 445/446. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only.",
+      "exportName": "<kmipkit_protocol::DerivationMethod as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.14/Tables 445/446. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only.",
+      "exportName": "<kmipkit_protocol::DerivationMethod as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.14/Tables 445/446. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only.",
+      "exportName": "<kmipkit_protocol::DerivationMethod as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.14/Tables 445/446. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only.",
+      "exportName": "<kmipkit_protocol::DerivationMethod as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.14/Tables 445/446. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only.",
+      "exportName": "<kmipkit_protocol::DerivationMethod as core::hash::Hash>::hash",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.14/Tables 445/446. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only.",
+      "exportName": "<kmipkit_protocol::DerivationMethod as core::hash::Hash>::hash_slice",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.24/Table 459. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyCompressionType as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.24/Table 459. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyCompressionType as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.24/Table 459. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyCompressionType as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.24/Table 459. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyCompressionType as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.24/Table 459. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyCompressionType as core::borrow::Borrow<kmipkit_protocol::get::KeyCompressionType>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.24/Table 459. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyCompressionType as core::borrow::BorrowMut<kmipkit_protocol::get::KeyCompressionType>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.24/Table 459. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyCompressionType as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.24/Table 459. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyCompressionType as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.24/Table 459. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyCompressionType as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.24/Table 459. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyCompressionType as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.24/Table 459. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyCompressionType as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.24/Table 459. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyCompressionType as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.24/Table 459. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyCompressionType as core::convert::From<kmipkit_protocol::get::KeyCompressionType>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.24/Table 459. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyCompressionType as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.24/Table 459. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyCompressionType as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.24/Table 459. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyCompressionType as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.24/Table 459. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyCompressionType as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.24/Table 459. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyCompressionType as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.24/Table 459. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyCompressionType as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.24/Table 459. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyCompressionType as core::hash::Hash>::hash",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.24/Table 459. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyCompressionType as core::hash::Hash>::hash_slice",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.25/Table 461. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyFormatType as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.25/Table 461. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyFormatType as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.25/Table 461. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyFormatType as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.25/Table 461. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyFormatType as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.25/Table 461. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyFormatType as core::borrow::Borrow<kmipkit_protocol::get::KeyFormatType>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.25/Table 461. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyFormatType as core::borrow::BorrowMut<kmipkit_protocol::get::KeyFormatType>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.25/Table 461. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyFormatType as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.25/Table 461. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyFormatType as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.25/Table 461. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyFormatType as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.25/Table 461. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyFormatType as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.25/Table 461. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyFormatType as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.25/Table 461. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyFormatType as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.25/Table 461. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyFormatType as core::convert::From<kmipkit_protocol::get::KeyFormatType>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.25/Table 461. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyFormatType as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.25/Table 461. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyFormatType as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.25/Table 461. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyFormatType as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.25/Table 461. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyFormatType as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.25/Table 461. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyFormatType as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.25/Table 461. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyFormatType as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.25/Table 461. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyFormatType as core::hash::Hash>::hash",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.25/Table 461. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyFormatType as core::hash::Hash>::hash_slice",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.29. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyWrapType as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.29. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyWrapType as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.29. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyWrapType as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.29. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyWrapType as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.29. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyWrapType as core::borrow::Borrow<kmipkit_protocol::get::KeyWrapType>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.29. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyWrapType as core::borrow::BorrowMut<kmipkit_protocol::get::KeyWrapType>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.29. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyWrapType as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.29. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyWrapType as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.29. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyWrapType as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.29. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyWrapType as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.29. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyWrapType as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.29. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyWrapType as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.29. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyWrapType as core::convert::From<kmipkit_protocol::get::KeyWrapType>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.29. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyWrapType as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.29. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyWrapType as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.29. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyWrapType as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.29. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyWrapType as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.29. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyWrapType as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.29. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyWrapType as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.29. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyWrapType as core::hash::Hash>::hash",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/021; KMIPKIT-0037-FR-001/002/004/008 (Approved for implementation 2026-10-11; not Accepted); OASIS KMIP 2.1 §11.29. Trait-only inventory; no OASIS trait requirement or new wire capability. Operation context only. Get: KMIPKIT-0017-FR-003/005.",
+      "exportName": "<kmipkit_protocol::KeyWrapType as core::hash::Hash>::hash_slice",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
     }
   ],
   "capabilities": [

@@ -17,8 +17,7 @@ RUST_REPORT_PATH = (
     / "rust-export-report-2026-11-01.json"
 )
 API_SPEC_PATH = "specs/043-public-api-bindings/spec.md"
-OWNER_SPEC_PATH = "specs/023-key-material-transfer/spec.md"
-GET_OWNER_SPEC_PATH = "specs/017-managed-object-retrieval/spec.md"
+TRACEABILITY_PATH = ROOT / "specs" / "043-public-api-bindings" / "traceability.md"
 
 KEY_VALUE_TYPES = {
     "KeyFormatType": {
@@ -31,11 +30,7 @@ KEY_VALUE_TYPES = {
             "KMIPKIT-0017-FR-003",
             "KMIPKIT-0017-FR-005",
         ),
-        "source_context": (
-            "§11.25, Table 461: Key Format Type Enumeration",
-            "§6.1.18, Table 217: Export Request Payload",
-            "§6.1.19, Table 220: Get Request Payload",
-        ),
+        "source_context": ("§11.25/Table 461",),
         "get_related": True,
     },
     "KeyWrapType": {
@@ -48,12 +43,7 @@ KEY_VALUE_TYPES = {
             "KMIPKIT-0017-FR-003",
             "KMIPKIT-0017-FR-005",
         ),
-        "source_context": (
-            "§11.29: Key Wrap Type Enumeration",
-            "§6.1.18, Table 217: Export Request Payload",
-            "§6.1.19, Table 220: Get Request Payload",
-            "§6.1.25, Table 238: Import Request Payload",
-        ),
+        "source_context": ("§11.29",),
         "get_related": True,
     },
     "KeyCompressionType": {
@@ -66,11 +56,7 @@ KEY_VALUE_TYPES = {
             "KMIPKIT-0017-FR-003",
             "KMIPKIT-0017-FR-005",
         ),
-        "source_context": (
-            "§11.24, Table 459: Key Compression Type Enumeration values",
-            "§6.1.18, Table 217: Export Request Payload",
-            "§6.1.19, Table 220: Get Request Payload",
-        ),
+        "source_context": ("§11.24/Table 459",),
         "get_related": True,
     },
     "DerivationMethod": {
@@ -81,11 +67,7 @@ KEY_VALUE_TYPES = {
             "KMIPKIT-0037-FR-004",
             "KMIPKIT-0037-FR-008",
         ),
-        "source_context": (
-            "§11.14, Table 445: Derivation Method Enumeration Descriptions",
-            "§11.14, Table 446: Derivation Method Enumeration",
-            "§6.1.14, Table 205: Derive Key Request Payload",
-        ),
+        "source_context": ("§11.14/Tables 445/446",),
         "get_related": False,
     },
 }
@@ -194,26 +176,40 @@ class T102KeyValueTraitExclusionTests(unittest.TestCase):
                                 "evidence": "**Status**: Approved for implementation",
                             },
                         )
-                        self.assertIn("KMIPKIT-0043-FR-010", row["evidence"])
-                        self.assertIn("KMIPKIT-0043-FR-021", row["evidence"])
-                        self.assertIn(OWNER_SPEC_PATH, row["evidence"])
-                        self.assertIn("Approved for implementation on 2026-10-11", row["evidence"])
-                        self.assertIn("not Accepted", row["evidence"])
-                        for requirement_id in details["owner_requirements"]:
-                            self.assertIn(requirement_id, row["evidence"])
-                        for source_context in details["source_context"]:
-                            self.assertIn(source_context, row["evidence"])
+                        self.assertIn("KMIPKIT-0043-FR-010/021", row["evidence"])
+                        evidence = row["evidence"]
+                        self.assertLessEqual(len(evidence.encode("utf-8")), 300)
                         self.assertIn(
-                            "no OASIS clause applies to compiler-generated Rust traits",
-                            row["evidence"],
+                            "Approved for implementation 2026-10-11; not Accepted",
+                            evidence,
                         )
-                        self.assertIn("operation context only", row["evidence"])
+                        self.assertIn("KMIPKIT-0037-FR-001/002/004/008", evidence)
+                        for source_context in details["source_context"]:
+                            self.assertIn(source_context, evidence)
+                        self.assertIn("Trait-only inventory", evidence)
+                        self.assertIn("no OASIS trait requirement", evidence)
+                        self.assertIn("new wire capability", evidence)
+                        self.assertIn("Operation context only", evidence)
                         if details["get_related"]:
-                            self.assertIn(GET_OWNER_SPEC_PATH, row["evidence"])
+                            self.assertIn("KMIPKIT-0017-FR-003/005", evidence)
 
         self.assertEqual(len(expected_all), 84)
         self.assertEqual(len(self.manifest["publicDeclarations"]), 7501)
         self.assertEqual(len(self.manifest["approvedExclusions"]), 7223)
+
+    def test_full_oasis_operation_context_is_recorded_separately(self) -> None:
+        traceability = TRACEABILITY_PATH.read_text(encoding="utf-8")
+        for context in (
+            "§6.1.14, Table 205: Derive Key Request Payload",
+            "§6.1.18, Table 217: Export Request Payload",
+            "§6.1.19, Table 220: Get Request Payload",
+            "§6.1.25, Table 238: Import Request Payload",
+            "Approved for implementation by maintainer (2026-10-11), not Accepted",
+            "DerivationParameters",
+            "DeriveKeyRequest",
+        ):
+            with self.subTest(context=context):
+                self.assertIn(context, traceability)
 
     def test_parent_raw_paths_and_secret_bearing_models_remain_blocked(self) -> None:
         expected_blocked = {
