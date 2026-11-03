@@ -10059,3 +10059,37 @@ Warnings and limits:
 
 - The Windows Rust audit and focused Rust test emitted non-fatal aws-lc-sys warnings for its stdalign compiler probe and unavailable NASM. Both commands exited 0; the Rust audit report is complete and matches the manifest.
 - Work is local only. Nothing was pushed or merged.
+
+
+### T102 — Credential-session error and Ticket validation trait exclusions (2026-11-03)
+
+Preflight at head `004e0820f4203b1eff661da6e410be4aca77d14f` found 250 exact blocked KMIPKIT-0043 trait candidates across `rust-kmipkit-protocol` and `rust-kmipkit`: four payload-free operation errors with 26 paths each per package, and `TicketValidationErrorKind` with 21 paths per package. The Rust 1.94.0 report was complete before implementation. No target had a prior exclusion. The approved owner is `specs/024-credential-sessions/spec.md`, status Approved for implementation (2026-10-11). Error types use KMIPKIT-0038-FR-001/002/005/008; the validation kind uses FR-002/005/008. T102 authority is KMIPKIT-0043-FR-010/021.
+
+| Type | Protocol/root paths | Owner requirements | OASIS KMIP v2.1 context |
+|---|---:|---|---|
+| `DelegatedLoginError` | 26 / 26 | KMIPKIT-0038-FR-001/002/005/008 | §6.1.12 Tables 199–201 |
+| `LoginError` | 26 / 26 | KMIPKIT-0038-FR-001/002/005/008 | §6.1.30 Tables 253–255 |
+| `LogoutError` | 26 / 26 | KMIPKIT-0038-FR-001/002/005/008 | §6.1.31 Tables 256–258 |
+| `TicketValidationError` | 26 / 26 | KMIPKIT-0038-FR-001/002/005/008 | §7.39 Table 391; §11.57 Table 488 |
+| `TicketValidationErrorKind` | 21 / 21 | KMIPKIT-0038-FR-002/005/008 | §7.39 Table 391; §11.57 Table 488 |
+
+OASIS tables supply functional context only; no OASIS clause requires these Rust traits. Source review confirmed the operation errors retain only a `ResultValidationError` cause or fixed payload-free variants; `TicketValidationError` retains only its enum kind. Neither root aliases nor protocol types were changed. All non-trait parents and members remain blocked. No TTLV, error behavior, wire behavior, or conformance status changed.
+
+The manifest conversion removes exactly these 250 rows from `publicDeclarations` and adds them to `approvedExclusions`. Counts move from 7,375 declarations / 7,349 exclusions / 2,177 blocked KMIPKIT-0043 candidates to 7,125 / 7,599 / 1,927. Rust `rust-kmipkit-protocol` exclusions move from 4,298 to 4,423. The manifest grows from 20,970,862 to 20,972,176 bytes, 656 bytes past the old 20 MiB input limit. The generator remains bounded at 21 MiB (22,020,096 bytes), enough for the current full T102 inventory; this changes only the local manifest validation tool, not the product decoder or network-input limits. Two affected generated outputs and the pinned Rust audit report were regenerated with their repository tools.
+
+| Phase | Commit | Evidence | Result |
+|---|---|---|---|
+| Red — exact inventory | `d810899ac` | `test_t102_credential_error_trait_exclusions.py` | Expected failure: all ten package/type groups still had blocked candidate paths and no exact exclusions. |
+| Red — bounded input budget | `420b6856b` | `test_manifest_input_limit_reserves_bounded_room_for_the_full_inventory` | Expected failure: the generator limit was 20 MiB instead of the planned 21 MiB. |
+| Green | `c7305dbb8` | Manifest, Rust audit report, generated Java parity fixture and JSON fixture, 21 MiB bound and aggregate guard | Reconciled all 250 pairs; no runtime implementation changed. |
+| Refactor | This commit | Traceability, task/evidence update, final verification | Records owner and OASIS context, measured time, known local baseline-suite failures, and final validation. |
+
+Verification evidence:
+
+- Reused `.venv-t031` with the pinned `jsonschema==4.26.0`; no dependency reinstall. Focused exact-set test — 1 passed in 0.217 seconds. The two bounded manifest-limit tests and the aggregate protocol exclusion guard also passed.
+- `python -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
+- `python -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` — 10,463 observed, 4,210 matched, 6,253 excluded; zero missing/unobserved paths, issues, kind mismatches, or conditional mismatches. Windows emitted the known optional AWS-LC compiler-probe and missing-NASM warnings; audit exited 0.
+- `python -m unittest tools.api_manifest.tests.test_manifest_v2` — 151 tests passed in 300.924 seconds. An earlier full run exposed only the stale 4,298 aggregate guard; it was updated to 4,423 and the complete suite passed on rerun.
+- `git diff --check` passed before the Green commit. The broader `ManifestGeneratorCliTests` subset (63 tests) remains blocked by the already documented baseline fixture/path failures, including the absent `crates/kmipkit-protocol/tests/credential_secret_contract.rs`; it is not reported as passing. The focused limit tests and generator `--check` pass.
+
+This is an inventory and traceability update only; no conformance, interoperability, profile-support, or certification claim is added. T102 remains open.

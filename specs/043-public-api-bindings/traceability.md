@@ -685,3 +685,18 @@ The exact-set contract tools/api_manifest/tests/test_t102_secret_bytes_trait_exc
 The root parent remains declared with Rust, C, Java, and Python mappings; new, with_bytes, and into_ttlv_value remain declared. The protocol crate's separately handled 12 SecretBytes trait exclusions and mapped parent remain unchanged. These root exclusions do not provide byte formatting, Clone, AsRef, Deref, or another byte accessor. Borrow/BorrowMut target the opaque owner, and the conversion paths do not expose its contents. Existing Debug/Display redaction, callback semantics, and zeroization are unchanged.
 
 The focused contract also checks the parent/method states and the separately handled protocol trait set. Public declarations/exclusions changed from 7,423/7,301 to 7,411/7,313; blocked KMIPKIT-0043 candidates changed from 2,225 to 2,213. Rust audit counts changed from 4,508 matched/5,955 excluded to 4,496/5,967. This inventory-only checkpoint makes no runtime or conformance claim; T102 remains open.
+
+
+### T102 — Credential-session errors and Ticket validation trait artifacts
+
+The exact-set contract is `tools/api_manifest/tests/test_t102_credential_error_trait_exclusions.py`. It pins 250 exact Rust 1.94.0 `(packageId, exportName)` pairs in the protocol crate and root facade, checks the 21/5 and 16/5 direct/conditional splits, and verifies that the corresponding functional parents and members remain blocked. T102 exclusions use KMIPKIT-0043-FR-010/021. The approved functional owner is `specs/024-credential-sessions/spec.md`: operation errors use KMIPKIT-0038-FR-001/002/005/008; `TicketValidationErrorKind` uses FR-002/005/008.
+
+| Type | Exact Rust trait paths | OASIS KMIP v2.1 functional context |
+|---|---:|---|
+| `DelegatedLoginError` | 52 (26/package; 21 direct, five conditional) | §6.1.12, Tables 199–201 |
+| `LoginError` | 52 (26/package; 21 direct, five conditional) | §6.1.30, Tables 253–255 |
+| `LogoutError` | 52 (26/package; 21 direct, five conditional) | §6.1.31, Tables 256–258 |
+| `TicketValidationError` | 52 (26/package; 21 direct, five conditional) | §7.39, Table 391; §11.57, Table 488 |
+| `TicketValidationErrorKind` | 42 (21/package; 16 direct, five conditional) | §7.39, Table 391; §11.57, Table 488 |
+
+These OASIS sections define operation and Ticket context; they do not define Rust standard-trait behavior. The four operation errors retain only typed result-validation causes or fixed local categories; Ticket validation errors retain only a payload-free kind. No raw Ticket, response body, or secret value is added to errors or diagnostics. No operation behavior or conformance claim changes.
