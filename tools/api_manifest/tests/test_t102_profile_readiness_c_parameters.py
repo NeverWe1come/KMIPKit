@@ -31,7 +31,6 @@ class T102ProfileReadinessCParameterTests(unittest.TestCase):
             "T102:c:kmipkit_profile_catalog_row_at_v1",
             "T102:c:kmipkit_profile_catalog_relation_count_v1",
             "T102:c:kmipkit_profile_catalog_relation_at_v1",
-            "T102:c:kmipkit_profile_readiness_release",
         )
         for declaration_id in function_ids:
             with self.subTest(declaration_id=declaration_id):
@@ -59,14 +58,12 @@ class T102ProfileReadinessCParameterTests(unittest.TestCase):
         self.assertEqual(parameters["out_readiness"]["ownership"], "library-owned")
         self.assertTrue(parameters["out_readiness"]["nullable"])
 
-        release = self.declarations[function_ids[-1]]["cSignature"]
-        self.assertEqual(release["returnType"], "void")
-        self.assertEqual(release["parameters"], [{
-            "name": "readiness",
-            "kind": "handle",
-            "type": "kmipkit_profile_readiness_t *",
-            "ownership": "consumed",
-        }])
+        release = self.declarations["T102:c:kmipkit_profile_readiness_release"]
+        self.assertNotIn("cSignature", release)
+        handle = next(row for row in self.manifest["types"]
+                      if row["id"] == "ProfileReadinessHandle")
+        self.assertEqual(handle["c"]["ownership"], "library-owned")
+        self.assertEqual(handle["c"]["releaseFunction"], "kmipkit_profile_readiness_release")
 
 
 if __name__ == "__main__":
