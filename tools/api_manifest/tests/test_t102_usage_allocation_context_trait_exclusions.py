@@ -221,9 +221,9 @@ class T102UsageAllocationContextTraitExclusionTests(unittest.TestCase):
         self.assertEqual(candidates, 1432)
         self.assertEqual(len(self.manifest["publicDeclarations"]), 6630)
         self.assertEqual(len(self.manifest["approvedExclusions"]), 8094)
-        self.assertEqual(self.report["counts"]["manifest"], 3760)
-        self.assertEqual(self.report["counts"]["matched"], 3760)
-        self.assertEqual(self.report["counts"]["excluded"], 6703)
+        self.assertEqual(self.report["counts"]["manifest"], 3715)
+        self.assertEqual(self.report["counts"]["matched"], 3715)
+        self.assertEqual(self.report["counts"]["excluded"], 6748)
 
 
 if __name__ == "__main__":

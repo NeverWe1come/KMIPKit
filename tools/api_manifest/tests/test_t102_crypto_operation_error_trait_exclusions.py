@@ -138,11 +138,11 @@ class T102CryptoOperationErrorTraitExclusionTests(unittest.TestCase):
                     for requirement_id in (*OWNER_REQUIREMENTS, *T102_REQUIREMENTS):
                         self.assertIn(requirement_id, row["evidence"])
                     self.assertIn(
-                        "KMIP Specification v2.1 §6.1.11 Table 198 and §6.1.17 Table 216",
+                        "KMIP Specification v2.1 §6.1.11/Table 198 (Decrypt Errors) and §6.1.17/Table 216 (Encrypt Errors)",
                         row["evidence"],
                     )
                     self.assertIn("compiler-observed Rust standard-trait paths", row["evidence"])
-                    self.assertIn("No OASIS requirement is assigned to these traits", row["evidence"])
+                    self.assertIn("No OASIS requirement is assigned to Rust traits", row["evidence"])
                     self.assertIn("inventory-only", row["evidence"])
                     self.assertIn("no separate KMIP client capability", row["reason"])
 

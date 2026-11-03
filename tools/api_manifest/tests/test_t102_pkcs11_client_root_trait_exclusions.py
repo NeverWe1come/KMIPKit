@@ -193,8 +193,8 @@ class T102Pkcs11ClientRootTraitExclusionTests(unittest.TestCase):
         self.assertEqual(candidates, 1432)
         self.assertEqual(len(self.manifest["publicDeclarations"]), 6630)
         self.assertEqual(len(self.manifest["approvedExclusions"]), 8094)
-        self.assertEqual(self.rust_report["counts"]["manifest"], 3760)
-        self.assertEqual(self.rust_report["counts"]["excluded"], 6703)
+        self.assertEqual(self.rust_report["counts"]["manifest"], 3715)
+        self.assertEqual(self.rust_report["counts"]["excluded"], 6748)
 
         pkcs11_tasks = (ROOT / "specs" / "026-pkcs11" / "tasks.md").read_text(
             encoding="utf-8"
