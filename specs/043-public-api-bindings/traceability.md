@@ -591,3 +591,15 @@ The focused test pins each exact `(packageId, exportName)` set against the Rust 
 | `kmipkit_protocol::JoinSplitKeyError` | Approved `specs/023-key-material-transfer/spec.md` (KMIPKIT-0037-FR-001/002/004/005/008); `KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY` | Section 6.1.27, Table 246: Join Split Key Errors; Tables 244-245 are request/response payloads | 26 paths (21 direct, five conditional); same exact-set test |
 
 The exact test pins all 104 `(packageId, exportName)` pairs against the Rust 1.94.0 direct and conditional report paths. The error parent/functional rows, absent root error aliases, request/response models, and operation/client states remain unchanged. T102 inventory reconciliation makes no OASIS conformance claim.
+
+
+### T102 - KMIPKIT-0042 Interop and Log error trait exclusions
+
+The exclusions are authorized by KMIPKIT-0043-FR-010/021; the approved functional owner is `specs/028-diagnostics-interop/spec.md` (KMIPKIT-0042-FR-001/004, approved 2026-10-11). Compiler-generated standard traits have no direct OASIS requirement. The pinned operation error tables identify the normative functional owner and scope.
+
+| Protocol error declaration | Approved owner element | Pinned OASIS KMIP v2.1 error reference | Exact trait inventory |
+|---|---|---|---|
+| `kmipkit_protocol::InteropError` | `KMIPKIT-ELEM-OP-C2S-INTEROP` | Section 6.1.26, Table 243: Interop Errors | 26 paths (21 direct, five conditional); `tools/api_manifest/tests/test_t102_interop_log_error_trait_exclusions.py` |
+| `kmipkit_protocol::LogError` | `KMIPKIT-ELEM-OP-C2S-LOG` | Section 6.1.29, Table 252: Log Errors | 26 paths (21 direct, five conditional); same exact-set test |
+
+The test pins all 52 `(packageId, exportName)` pairs against the Rust 1.94.0 direct and conditional report paths, both blocked error parents and functional/variant declarations, absent root aliases, and related request/response/client states. Public declarations/exclusions change from 8,276/6,448 to 8,224/6,500; T102 candidates change from 3,078 to 3,026. Red `d9168efe3`; Green `08b3705d8`; Refactor evidence is recorded in `implementation-evidence.md`. This inventory-only batch makes no OASIS conformance, profile-support, interoperability, or certification claim.
