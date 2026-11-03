@@ -10029,3 +10029,33 @@ Warnings and limits:
 
 - Windows Rust audit emitted optional AWS-LC `stdalign_check.c` and missing-NASM warnings; the audit exited 0 with a complete matching inventory. The workflow suite emits synthetic failure messages from negative fixture cases; all tests passed.
 - This is inventory reconciliation only. No formatter, runtime, API/ABI capability, KMIP wire behavior, conformance, profile support, or certification claim changed. Work is local only; nothing was pushed or merged.
+
+### T102 - Client UsageAllocationContext trait artifacts (2026-11-03)
+
+Preflight started at published head c152f36304205166956c697619f4f2cfee6f76da with the complete Rust 1.94.0 report rust-export-report-2026-11-01.json. It observed exactly ten paths for kmipkit_client::UsageAllocationContext: five direct paths (Any, Borrow, BorrowMut, From, Debug) and five conditional conversion paths (Into, both TryFrom items, both TryInto items). All ten client rows were blocked KMIPKIT-0043 candidates with no prior exact exclusions. The client parent was declared under usage_allocation_guard. The root kmipkit::UsageAllocationContext parent and its ten paths remain blocked; UsageAllocationContextError is a separate blocked sibling and remains untouched.
+
+The approved functional owner is specs/025-policy-controls/spec.md (KMIPKIT-0039, Approved for implementation 2026-10-11). KMIPKIT-0039-FR-009 owns the explicit local guard; KMIPKIT-0039-FR-005 covers diagnostic redaction. T078 records the completed Rust/C/Java/Python guard mapping and acceptance. T102 exclusions use KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; KMIPKIT-0043-FR-013 applies only to the retained Debug diagnostic. Each exclusion records candidateSpecId KMIPKIT-0039 and approvalSource specs/025-policy-controls/spec.md.
+
+Source review confirmed the context stores only a resolved Unique Identifier, caller-supplied usage unit and allocation count, and local reservation count. Borrow/BorrowMut only borrow the same non-Clone object. From<T> for T and the conditional Into/TryFrom/TryInto identity conversions move the same object; they do not clone, duplicate, reset, or replenish its counters. The existing Debug implementation omits the identifier and reports only safe accounting metadata. The focused redaction test remains green. No functional code or wire behavior changed.
+
+OASIS KMIP Specification v2.1 §6.1.23, Table 234, provides functional owner context only. No OASIS requirement defines or requires these Rust trait paths. This is inventory reconciliation only; no KMIP conformance, profile-support, interoperability, or certification claim is made. No raw TTLV or secret-byte path is in scope.
+
+| Phase | Commit | Evidence | Result |
+|---|---|---|---|
+| Red | f01a82327 | Exact-set test and workflow-contract test | Expected failures: the ten client traits were still public blocked declarations, aggregate counts had not moved, and CI did not yet invoke the new exact-set contract. Root and error-sibling preservation assertions passed. |
+| Green | 5ee12ec6e | Manifest exclusions, generated outputs and reports, exact/aggregate guards, CI command | Excluded only the ten client paths, retained candidateSpecId KMIPKIT-0039 and approved owner evidence, preserved all non-target manifest row bytes/order, and left the root parent/traits and error sibling unchanged. |
+| Refactor | this commit | Traceability, task/evidence record, full verification | Records the accepted scope and verification; no runtime/API behavior changes. |
+
+Verification evidence:
+
+- Focused exact-set contract: python -B -m unittest tools.api_manifest.tests.test_t102_usage_allocation_context_trait_exclusions -v — 3 passed. Combined exact-set and shared inventory contracts — 20 passed. Full T102 suite: python -B -m unittest discover --failfast -s tools/api_manifest/tests -p 'test_t102*.py' -q — 216 passed.
+- Workflow contracts: python -B -m unittest scripts.tests.test_workflow -q — 91 passed, including the new CI invocation contract. Binding export contracts: python -B -m unittest tools.api_manifest.tests.test_binding_exports -q — 51 passed.
+- The pinned generator wrote 12 public API outputs; python -B tools/api_manifest/generate.py --repo-root . --check verified all 12. Rust export audit under Rust 1.94.0 completed with 10,463 observed, 4,460 matched, 6,003 excluded, zero missing/unobserved declarations, and zero issue/kind/conditional mismatches. Shared inventory audit --check passed with 10,463 observed (8,420 direct, 2,043 conditional), 864 mapped, and 6,003 approved exclusions.
+- Binding export audit --check passed: C 757/757, Java 1,014/1,014, Python 1,140/1,140; zero issues or mismatches. The Rust 1.94.0 usage_context_debug_redacts_the_object_identifier test passed 1/1.
+- Manifest-v2: the first pinned-dependency invocation terminated, but the tool response was truncated before stdout/stderr and exit status could be recovered. The single captured rerun of `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2 -q` exited 0: 150 tests passed in 287.688 seconds. No further manifest-v2 run was made.
+- Manifest totals changed from 7,385 declarations / 7,339 exclusions and 2,187 blocked KMIPKIT-0043 candidates to 7,375 / 7,349 and 2,177 candidates. The root alias and its ten blocked paths remain present.
+
+Warnings and limits:
+
+- The Windows Rust audit and focused Rust test emitted non-fatal aws-lc-sys warnings for its stdalign compiler probe and unavailable NASM. Both commands exited 0; the Rust audit report is complete and matches the manifest.
+- Work is local only. Nothing was pushed or merged.
