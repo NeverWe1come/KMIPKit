@@ -200,6 +200,17 @@ class T102RevocationReasonValueMappingTests(unittest.TestCase):
                 with self.subTest(path=relative_path, marker=marker):
                     self.assertIn(marker, content)
 
+    def test_traceability_records_distinct_java_and_python_factory_paths(self) -> None:
+        traceability = (ROOT / "specs/043-public-api-bindings/traceability.md").read_text(
+            encoding="utf-8"
+        )
+        section = traceability.split(
+            "### T102 - Revoke reason-value/factory mappings", 1
+        )[1].split("\n### ", 1)[0]
+
+        self.assertIn("Java uses `org.kmipkit.extensions.RevocationReason.create`", section)
+        self.assertIn("Python uses `kmipkit.extensions.RevocationReason.create`", section)
+
 
 if __name__ == "__main__":
     unittest.main()
