@@ -255,6 +255,18 @@ class T102RemainingResponseViewMappingTests(unittest.TestCase):
                 self.assertEqual(source["approvalSource"], target["approvalSource"])
                 self.assertEqual(source["parityEvidenceIds"], target["parityEvidenceIds"])
 
+    def test_locate_mapping_cites_only_the_normative_response_payload_table(self) -> None:
+        locate = next(item for item in EXPECTED if item.method == "locate")
+        owner_spec = (ROOT / locate.owner_spec_path).read_text(encoding="utf-8")
+        oasis_source = (
+            ROOT
+            / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        ).read_text(encoding="latin-1")
+
+        self.assertEqual("Table 248: Locate Response Payload", locate.table_reference)
+        self.assertIn("Tables 247–249", owner_spec)
+        self.assertIn(locate.table_reference, oasis_source)
+
 
 if __name__ == "__main__":
     unittest.main()
