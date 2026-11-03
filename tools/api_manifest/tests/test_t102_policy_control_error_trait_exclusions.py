@@ -329,9 +329,9 @@ class T102PolicyControlErrorTraitExclusionTests(unittest.TestCase):
             and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(count, 2225)
-        self.assertEqual(len(self.manifest["publicDeclarations"]), 7423)
-        self.assertEqual(len(self.manifest["approvedExclusions"]), 7301)
+        self.assertEqual(count, 2213)
+        self.assertEqual(len(self.manifest["publicDeclarations"]), 7411)
+        self.assertEqual(len(self.manifest["approvedExclusions"]), 7313)
 
 
 if __name__ == "__main__":

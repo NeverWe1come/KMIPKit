@@ -194,8 +194,8 @@ class T102KeyValueTraitExclusionTests(unittest.TestCase):
                             self.assertIn("KMIPKIT-0017-FR-003/005", evidence)
 
         self.assertEqual(len(expected_all), 84)
-        self.assertEqual(len(self.manifest["publicDeclarations"]), 7423)
-        self.assertEqual(len(self.manifest["approvedExclusions"]), 7301)
+        self.assertEqual(len(self.manifest["publicDeclarations"]), 7411)
+        self.assertEqual(len(self.manifest["approvedExclusions"]), 7313)
 
     def test_full_oasis_operation_context_is_recorded_separately(self) -> None:
         traceability = TRACEABILITY_PATH.read_text(encoding="utf-8")
