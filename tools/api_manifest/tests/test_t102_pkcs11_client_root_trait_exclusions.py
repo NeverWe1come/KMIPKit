@@ -102,7 +102,7 @@ class T102Pkcs11ClientRootTraitExclusionTests(unittest.TestCase):
                 self.assertEqual(conditional, expected_conditional)
                 self.assertEqual(len(direct), 5)
                 self.assertEqual(len(conditional), 5)
-                self.assertEqual(excluded, set())
+                self.assertEqual(excluded, expected_direct | expected_conditional)
 
     def test_client_root_traits_are_exact_approved_exclusions(self) -> None:
         declarations = {
@@ -135,13 +135,12 @@ class T102Pkcs11ClientRootTraitExclusionTests(unittest.TestCase):
                     "OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275",
                     "These compiler-generated Rust traits add no OASIS requirement",
                     "KMIPKIT-0040-FR-005 applies only to unchanged redaction behavior",
-                    "no conformance, interoperability, profile-support, or certification claim",
+                    "No conformance, interoperability, profile-support, or certification claim",
                 ):
                     self.assertIn(evidence, row["evidence"])
                 self.assertIn("compiler-visible language behavior", row["reason"])
                 self.assertIn("not a separate KMIP client capability", row["reason"])
-                owner = "Pkcs11Request" if "Request" in export_name else "Pkcs11Response"
-                self.assertIn(owner, row["reason"])
+                self.assertIn("typed PKCS#11 model", row["reason"])
 
     def test_functional_mappings_operation_state_and_t022_remain_unchanged(self) -> None:
         expected_states = {

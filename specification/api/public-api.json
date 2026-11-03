@@ -159034,466 +159034,6 @@
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
-      "declarationId": "rust-observed-54fa932ad61048e3e43c",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::Pkcs11Request as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-36e1b1ca44cbed3b8892",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::Pkcs11Request as core::borrow::Borrow<kmipkit_protocol::pkcs11::Pkcs11Request>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-3252f3200568da529388",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::Pkcs11Request as core::borrow::BorrowMut<kmipkit_protocol::pkcs11::Pkcs11Request>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-b30fb2661c2e17b9db51",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::Pkcs11Request as core::convert::From<kmipkit_protocol::pkcs11::Pkcs11Request>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-f3b9f97775cb111f0a18",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::Pkcs11Request as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::pkcs11::Pkcs11Request"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-ecf3976fc06c8724eb9d",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::Pkcs11Request as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::pkcs11::Pkcs11Request"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-cc9b04207b8f7228d8a1",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::Pkcs11Request as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::pkcs11::Pkcs11Request"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-4099c76c0d936fef7b77",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::Pkcs11Request as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::pkcs11::Pkcs11Request"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-316e5ab8279a26ee6cb6",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::Pkcs11Request as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::pkcs11::Pkcs11Request"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-9f1362607d3960a02b08",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::Pkcs11Request as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-121e562a3b1d9b8fecb0",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::Pkcs11Response as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-1b4e84df6bb1af0dd51a",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::Pkcs11Response as core::borrow::Borrow<kmipkit_protocol::pkcs11::Pkcs11Response>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-1618c03ad9529555a14d",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::Pkcs11Response as core::borrow::BorrowMut<kmipkit_protocol::pkcs11::Pkcs11Response>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-2ea039fd390319f1c71d",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::Pkcs11Response as core::convert::From<kmipkit_protocol::pkcs11::Pkcs11Response>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-4c1c1a7f223dd0a50a4c",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::Pkcs11Response as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::pkcs11::Pkcs11Response"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-6b23a7194c36f433751f",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::Pkcs11Response as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::pkcs11::Pkcs11Response"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-a8e22757c4c5cede944e",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::Pkcs11Response as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::pkcs11::Pkcs11Response"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-ecada1edb0e8ef8f3d67",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::Pkcs11Response as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::pkcs11::Pkcs11Response"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-82cb9d7d8485832a2fd3",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::Pkcs11Response as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::pkcs11::Pkcs11Response"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-ddff0f9bf357ca66e9f8",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::Pkcs11Response as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
       "declarationId": "rust-observed-d1197da70a234b98ce0e",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
@@ -427479,6 +427019,246 @@
         "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
       },
       "evidence": "T102 inventory-only exclusion for exact compiler-observed and compiler-generated Rust standard-trait paths on ProfileValidationSelection; Rust 1.94.0 compiler inventory is pinned in rust-export-report-2026-11-01.json. Approved functional owner: specs/010-profile-conformance/spec.md, accepted via PR #49, with KMIPKIT-0010-FR-003, KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-001, KMIPKIT-0010-FR-002, KMIPKIT-0010-FR-004, KMIPKIT-0010-FR-007, KMIPKIT-0010-FR-008, KMIPKIT-0010-FR-009, KMIPKIT-0010-FR-010, KMIPKIT-0010-FR-011, KMIPKIT-0010-FR-017, KMIPKIT-0010-FR-018. Owner context: OASIS KMIP Specification v2.1 \u00a714.1 and KMIP Profiles v2.1 \u00a7\u00a73.1, 5.1.1, 5.1.3, 5.6.3, and 6.1; these sources govern profile applicability, catalog evidence, and readiness, not compiler-generated Rust traits; no OASIS error-table reference applies. T102 inventory exclusion authority: KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021. This inventory-only slice makes no conformance, profile-support, interoperability, or certification claim."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::Pkcs11Request as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the kmipkit_client crate-root re-export of the typed PKCS#11 model, not a separate KMIP client capability; the approved operation model and its functional declarations remain accounted for separately.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Rust 1.94.0/rustdoc 57 observes exactly ten standard-trait paths for each of `kmipkit_client::Pkcs11Request` and `kmipkit_client::Pkcs11Response` (five direct and five conditional). The functional owner `specs/026-pkcs11/spec.md` is Approved for implementation as of 2026-10-11; this is implementation approval, not formal acceptance. KMIPKIT-0040-FR-001 and KMIPKIT-0040-FR-004 own the typed operation models and language parity. KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 authorize only this exact Rust inventory exclusion. OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275 provide functional operation context only. These compiler-generated Rust traits add no OASIS requirement. KMIPKIT-0040-FR-005 applies only to unchanged redaction behavior. The request Debug chain emits structural TTLV metadata and redacts SecretBytes. No conformance, interoperability, profile-support, or certification claim is made. Exact compiler-observed paths are recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::Pkcs11Request as core::borrow::Borrow<kmipkit_protocol::pkcs11::Pkcs11Request>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the kmipkit_client crate-root re-export of the typed PKCS#11 model, not a separate KMIP client capability; the approved operation model and its functional declarations remain accounted for separately.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Rust 1.94.0/rustdoc 57 observes exactly ten standard-trait paths for each of `kmipkit_client::Pkcs11Request` and `kmipkit_client::Pkcs11Response` (five direct and five conditional). The functional owner `specs/026-pkcs11/spec.md` is Approved for implementation as of 2026-10-11; this is implementation approval, not formal acceptance. KMIPKIT-0040-FR-001 and KMIPKIT-0040-FR-004 own the typed operation models and language parity. KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 authorize only this exact Rust inventory exclusion. OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275 provide functional operation context only. These compiler-generated Rust traits add no OASIS requirement. KMIPKIT-0040-FR-005 applies only to unchanged redaction behavior. The request Debug chain emits structural TTLV metadata and redacts SecretBytes. No conformance, interoperability, profile-support, or certification claim is made. Exact compiler-observed paths are recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::Pkcs11Request as core::borrow::BorrowMut<kmipkit_protocol::pkcs11::Pkcs11Request>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the kmipkit_client crate-root re-export of the typed PKCS#11 model, not a separate KMIP client capability; the approved operation model and its functional declarations remain accounted for separately.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Rust 1.94.0/rustdoc 57 observes exactly ten standard-trait paths for each of `kmipkit_client::Pkcs11Request` and `kmipkit_client::Pkcs11Response` (five direct and five conditional). The functional owner `specs/026-pkcs11/spec.md` is Approved for implementation as of 2026-10-11; this is implementation approval, not formal acceptance. KMIPKIT-0040-FR-001 and KMIPKIT-0040-FR-004 own the typed operation models and language parity. KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 authorize only this exact Rust inventory exclusion. OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275 provide functional operation context only. These compiler-generated Rust traits add no OASIS requirement. KMIPKIT-0040-FR-005 applies only to unchanged redaction behavior. The request Debug chain emits structural TTLV metadata and redacts SecretBytes. No conformance, interoperability, profile-support, or certification claim is made. Exact compiler-observed paths are recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::Pkcs11Request as core::convert::From<kmipkit_protocol::pkcs11::Pkcs11Request>>::from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the kmipkit_client crate-root re-export of the typed PKCS#11 model, not a separate KMIP client capability; the approved operation model and its functional declarations remain accounted for separately.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Rust 1.94.0/rustdoc 57 observes exactly ten standard-trait paths for each of `kmipkit_client::Pkcs11Request` and `kmipkit_client::Pkcs11Response` (five direct and five conditional). The functional owner `specs/026-pkcs11/spec.md` is Approved for implementation as of 2026-10-11; this is implementation approval, not formal acceptance. KMIPKIT-0040-FR-001 and KMIPKIT-0040-FR-004 own the typed operation models and language parity. KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 authorize only this exact Rust inventory exclusion. OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275 provide functional operation context only. These compiler-generated Rust traits add no OASIS requirement. KMIPKIT-0040-FR-005 applies only to unchanged redaction behavior. The request Debug chain emits structural TTLV metadata and redacts SecretBytes. No conformance, interoperability, profile-support, or certification claim is made. Exact compiler-observed paths are recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::Pkcs11Request as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the kmipkit_client crate-root re-export of the typed PKCS#11 model, not a separate KMIP client capability; the approved operation model and its functional declarations remain accounted for separately.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Rust 1.94.0/rustdoc 57 observes exactly ten standard-trait paths for each of `kmipkit_client::Pkcs11Request` and `kmipkit_client::Pkcs11Response` (five direct and five conditional). The functional owner `specs/026-pkcs11/spec.md` is Approved for implementation as of 2026-10-11; this is implementation approval, not formal acceptance. KMIPKIT-0040-FR-001 and KMIPKIT-0040-FR-004 own the typed operation models and language parity. KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 authorize only this exact Rust inventory exclusion. OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275 provide functional operation context only. These compiler-generated Rust traits add no OASIS requirement. KMIPKIT-0040-FR-005 applies only to unchanged redaction behavior. The request Debug chain emits structural TTLV metadata and redacts SecretBytes. No conformance, interoperability, profile-support, or certification claim is made. Exact compiler-observed paths are recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::Pkcs11Request as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the kmipkit_client crate-root re-export of the typed PKCS#11 model, not a separate KMIP client capability; the approved operation model and its functional declarations remain accounted for separately.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Rust 1.94.0/rustdoc 57 observes exactly ten standard-trait paths for each of `kmipkit_client::Pkcs11Request` and `kmipkit_client::Pkcs11Response` (five direct and five conditional). The functional owner `specs/026-pkcs11/spec.md` is Approved for implementation as of 2026-10-11; this is implementation approval, not formal acceptance. KMIPKIT-0040-FR-001 and KMIPKIT-0040-FR-004 own the typed operation models and language parity. KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 authorize only this exact Rust inventory exclusion. OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275 provide functional operation context only. These compiler-generated Rust traits add no OASIS requirement. KMIPKIT-0040-FR-005 applies only to unchanged redaction behavior. The request Debug chain emits structural TTLV metadata and redacts SecretBytes. No conformance, interoperability, profile-support, or certification claim is made. Exact compiler-observed paths are recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::Pkcs11Request as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the kmipkit_client crate-root re-export of the typed PKCS#11 model, not a separate KMIP client capability; the approved operation model and its functional declarations remain accounted for separately.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Rust 1.94.0/rustdoc 57 observes exactly ten standard-trait paths for each of `kmipkit_client::Pkcs11Request` and `kmipkit_client::Pkcs11Response` (five direct and five conditional). The functional owner `specs/026-pkcs11/spec.md` is Approved for implementation as of 2026-10-11; this is implementation approval, not formal acceptance. KMIPKIT-0040-FR-001 and KMIPKIT-0040-FR-004 own the typed operation models and language parity. KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 authorize only this exact Rust inventory exclusion. OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275 provide functional operation context only. These compiler-generated Rust traits add no OASIS requirement. KMIPKIT-0040-FR-005 applies only to unchanged redaction behavior. The request Debug chain emits structural TTLV metadata and redacts SecretBytes. No conformance, interoperability, profile-support, or certification claim is made. Exact compiler-observed paths are recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::Pkcs11Request as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the kmipkit_client crate-root re-export of the typed PKCS#11 model, not a separate KMIP client capability; the approved operation model and its functional declarations remain accounted for separately.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Rust 1.94.0/rustdoc 57 observes exactly ten standard-trait paths for each of `kmipkit_client::Pkcs11Request` and `kmipkit_client::Pkcs11Response` (five direct and five conditional). The functional owner `specs/026-pkcs11/spec.md` is Approved for implementation as of 2026-10-11; this is implementation approval, not formal acceptance. KMIPKIT-0040-FR-001 and KMIPKIT-0040-FR-004 own the typed operation models and language parity. KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 authorize only this exact Rust inventory exclusion. OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275 provide functional operation context only. These compiler-generated Rust traits add no OASIS requirement. KMIPKIT-0040-FR-005 applies only to unchanged redaction behavior. The request Debug chain emits structural TTLV metadata and redacts SecretBytes. No conformance, interoperability, profile-support, or certification claim is made. Exact compiler-observed paths are recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::Pkcs11Request as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the kmipkit_client crate-root re-export of the typed PKCS#11 model, not a separate KMIP client capability; the approved operation model and its functional declarations remain accounted for separately.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Rust 1.94.0/rustdoc 57 observes exactly ten standard-trait paths for each of `kmipkit_client::Pkcs11Request` and `kmipkit_client::Pkcs11Response` (five direct and five conditional). The functional owner `specs/026-pkcs11/spec.md` is Approved for implementation as of 2026-10-11; this is implementation approval, not formal acceptance. KMIPKIT-0040-FR-001 and KMIPKIT-0040-FR-004 own the typed operation models and language parity. KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 authorize only this exact Rust inventory exclusion. OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275 provide functional operation context only. These compiler-generated Rust traits add no OASIS requirement. KMIPKIT-0040-FR-005 applies only to unchanged redaction behavior. The request Debug chain emits structural TTLV metadata and redacts SecretBytes. No conformance, interoperability, profile-support, or certification claim is made. Exact compiler-observed paths are recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::Pkcs11Request as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the kmipkit_client crate-root re-export of the typed PKCS#11 model, not a separate KMIP client capability; the approved operation model and its functional declarations remain accounted for separately.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Rust 1.94.0/rustdoc 57 observes exactly ten standard-trait paths for each of `kmipkit_client::Pkcs11Request` and `kmipkit_client::Pkcs11Response` (five direct and five conditional). The functional owner `specs/026-pkcs11/spec.md` is Approved for implementation as of 2026-10-11; this is implementation approval, not formal acceptance. KMIPKIT-0040-FR-001 and KMIPKIT-0040-FR-004 own the typed operation models and language parity. KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 authorize only this exact Rust inventory exclusion. OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275 provide functional operation context only. These compiler-generated Rust traits add no OASIS requirement. KMIPKIT-0040-FR-005 applies only to unchanged redaction behavior. The request Debug chain emits structural TTLV metadata and redacts SecretBytes. No conformance, interoperability, profile-support, or certification claim is made. Exact compiler-observed paths are recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::Pkcs11Response as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the kmipkit_client crate-root re-export of the typed PKCS#11 model, not a separate KMIP client capability; the approved operation model and its functional declarations remain accounted for separately.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Rust 1.94.0/rustdoc 57 observes exactly ten standard-trait paths for each of `kmipkit_client::Pkcs11Request` and `kmipkit_client::Pkcs11Response` (five direct and five conditional). The functional owner `specs/026-pkcs11/spec.md` is Approved for implementation as of 2026-10-11; this is implementation approval, not formal acceptance. KMIPKIT-0040-FR-001 and KMIPKIT-0040-FR-004 own the typed operation models and language parity. KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 authorize only this exact Rust inventory exclusion. OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275 provide functional operation context only. These compiler-generated Rust traits add no OASIS requirement. KMIPKIT-0040-FR-005 applies only to unchanged redaction behavior. The response Debug chain emits structural TTLV/result metadata and redacts ResultMessage. No conformance, interoperability, profile-support, or certification claim is made. Exact compiler-observed paths are recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::Pkcs11Response as core::borrow::Borrow<kmipkit_protocol::pkcs11::Pkcs11Response>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the kmipkit_client crate-root re-export of the typed PKCS#11 model, not a separate KMIP client capability; the approved operation model and its functional declarations remain accounted for separately.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Rust 1.94.0/rustdoc 57 observes exactly ten standard-trait paths for each of `kmipkit_client::Pkcs11Request` and `kmipkit_client::Pkcs11Response` (five direct and five conditional). The functional owner `specs/026-pkcs11/spec.md` is Approved for implementation as of 2026-10-11; this is implementation approval, not formal acceptance. KMIPKIT-0040-FR-001 and KMIPKIT-0040-FR-004 own the typed operation models and language parity. KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 authorize only this exact Rust inventory exclusion. OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275 provide functional operation context only. These compiler-generated Rust traits add no OASIS requirement. KMIPKIT-0040-FR-005 applies only to unchanged redaction behavior. The response Debug chain emits structural TTLV/result metadata and redacts ResultMessage. No conformance, interoperability, profile-support, or certification claim is made. Exact compiler-observed paths are recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::Pkcs11Response as core::borrow::BorrowMut<kmipkit_protocol::pkcs11::Pkcs11Response>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the kmipkit_client crate-root re-export of the typed PKCS#11 model, not a separate KMIP client capability; the approved operation model and its functional declarations remain accounted for separately.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Rust 1.94.0/rustdoc 57 observes exactly ten standard-trait paths for each of `kmipkit_client::Pkcs11Request` and `kmipkit_client::Pkcs11Response` (five direct and five conditional). The functional owner `specs/026-pkcs11/spec.md` is Approved for implementation as of 2026-10-11; this is implementation approval, not formal acceptance. KMIPKIT-0040-FR-001 and KMIPKIT-0040-FR-004 own the typed operation models and language parity. KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 authorize only this exact Rust inventory exclusion. OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275 provide functional operation context only. These compiler-generated Rust traits add no OASIS requirement. KMIPKIT-0040-FR-005 applies only to unchanged redaction behavior. The response Debug chain emits structural TTLV/result metadata and redacts ResultMessage. No conformance, interoperability, profile-support, or certification claim is made. Exact compiler-observed paths are recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::Pkcs11Response as core::convert::From<kmipkit_protocol::pkcs11::Pkcs11Response>>::from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the kmipkit_client crate-root re-export of the typed PKCS#11 model, not a separate KMIP client capability; the approved operation model and its functional declarations remain accounted for separately.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Rust 1.94.0/rustdoc 57 observes exactly ten standard-trait paths for each of `kmipkit_client::Pkcs11Request` and `kmipkit_client::Pkcs11Response` (five direct and five conditional). The functional owner `specs/026-pkcs11/spec.md` is Approved for implementation as of 2026-10-11; this is implementation approval, not formal acceptance. KMIPKIT-0040-FR-001 and KMIPKIT-0040-FR-004 own the typed operation models and language parity. KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 authorize only this exact Rust inventory exclusion. OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275 provide functional operation context only. These compiler-generated Rust traits add no OASIS requirement. KMIPKIT-0040-FR-005 applies only to unchanged redaction behavior. The response Debug chain emits structural TTLV/result metadata and redacts ResultMessage. No conformance, interoperability, profile-support, or certification claim is made. Exact compiler-observed paths are recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::Pkcs11Response as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the kmipkit_client crate-root re-export of the typed PKCS#11 model, not a separate KMIP client capability; the approved operation model and its functional declarations remain accounted for separately.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Rust 1.94.0/rustdoc 57 observes exactly ten standard-trait paths for each of `kmipkit_client::Pkcs11Request` and `kmipkit_client::Pkcs11Response` (five direct and five conditional). The functional owner `specs/026-pkcs11/spec.md` is Approved for implementation as of 2026-10-11; this is implementation approval, not formal acceptance. KMIPKIT-0040-FR-001 and KMIPKIT-0040-FR-004 own the typed operation models and language parity. KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 authorize only this exact Rust inventory exclusion. OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275 provide functional operation context only. These compiler-generated Rust traits add no OASIS requirement. KMIPKIT-0040-FR-005 applies only to unchanged redaction behavior. The response Debug chain emits structural TTLV/result metadata and redacts ResultMessage. No conformance, interoperability, profile-support, or certification claim is made. Exact compiler-observed paths are recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::Pkcs11Response as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the kmipkit_client crate-root re-export of the typed PKCS#11 model, not a separate KMIP client capability; the approved operation model and its functional declarations remain accounted for separately.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Rust 1.94.0/rustdoc 57 observes exactly ten standard-trait paths for each of `kmipkit_client::Pkcs11Request` and `kmipkit_client::Pkcs11Response` (five direct and five conditional). The functional owner `specs/026-pkcs11/spec.md` is Approved for implementation as of 2026-10-11; this is implementation approval, not formal acceptance. KMIPKIT-0040-FR-001 and KMIPKIT-0040-FR-004 own the typed operation models and language parity. KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 authorize only this exact Rust inventory exclusion. OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275 provide functional operation context only. These compiler-generated Rust traits add no OASIS requirement. KMIPKIT-0040-FR-005 applies only to unchanged redaction behavior. The response Debug chain emits structural TTLV/result metadata and redacts ResultMessage. No conformance, interoperability, profile-support, or certification claim is made. Exact compiler-observed paths are recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::Pkcs11Response as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the kmipkit_client crate-root re-export of the typed PKCS#11 model, not a separate KMIP client capability; the approved operation model and its functional declarations remain accounted for separately.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Rust 1.94.0/rustdoc 57 observes exactly ten standard-trait paths for each of `kmipkit_client::Pkcs11Request` and `kmipkit_client::Pkcs11Response` (five direct and five conditional). The functional owner `specs/026-pkcs11/spec.md` is Approved for implementation as of 2026-10-11; this is implementation approval, not formal acceptance. KMIPKIT-0040-FR-001 and KMIPKIT-0040-FR-004 own the typed operation models and language parity. KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 authorize only this exact Rust inventory exclusion. OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275 provide functional operation context only. These compiler-generated Rust traits add no OASIS requirement. KMIPKIT-0040-FR-005 applies only to unchanged redaction behavior. The response Debug chain emits structural TTLV/result metadata and redacts ResultMessage. No conformance, interoperability, profile-support, or certification claim is made. Exact compiler-observed paths are recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::Pkcs11Response as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the kmipkit_client crate-root re-export of the typed PKCS#11 model, not a separate KMIP client capability; the approved operation model and its functional declarations remain accounted for separately.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Rust 1.94.0/rustdoc 57 observes exactly ten standard-trait paths for each of `kmipkit_client::Pkcs11Request` and `kmipkit_client::Pkcs11Response` (five direct and five conditional). The functional owner `specs/026-pkcs11/spec.md` is Approved for implementation as of 2026-10-11; this is implementation approval, not formal acceptance. KMIPKIT-0040-FR-001 and KMIPKIT-0040-FR-004 own the typed operation models and language parity. KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 authorize only this exact Rust inventory exclusion. OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275 provide functional operation context only. These compiler-generated Rust traits add no OASIS requirement. KMIPKIT-0040-FR-005 applies only to unchanged redaction behavior. The response Debug chain emits structural TTLV/result metadata and redacts ResultMessage. No conformance, interoperability, profile-support, or certification claim is made. Exact compiler-observed paths are recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::Pkcs11Response as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the kmipkit_client crate-root re-export of the typed PKCS#11 model, not a separate KMIP client capability; the approved operation model and its functional declarations remain accounted for separately.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Rust 1.94.0/rustdoc 57 observes exactly ten standard-trait paths for each of `kmipkit_client::Pkcs11Request` and `kmipkit_client::Pkcs11Response` (five direct and five conditional). The functional owner `specs/026-pkcs11/spec.md` is Approved for implementation as of 2026-10-11; this is implementation approval, not formal acceptance. KMIPKIT-0040-FR-001 and KMIPKIT-0040-FR-004 own the typed operation models and language parity. KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 authorize only this exact Rust inventory exclusion. OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275 provide functional operation context only. These compiler-generated Rust traits add no OASIS requirement. KMIPKIT-0040-FR-005 applies only to unchanged redaction behavior. The response Debug chain emits structural TTLV/result metadata and redacts ResultMessage. No conformance, interoperability, profile-support, or certification claim is made. Exact compiler-observed paths are recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::Pkcs11Response as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the kmipkit_client crate-root re-export of the typed PKCS#11 model, not a separate KMIP client capability; the approved operation model and its functional declarations remain accounted for separately.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Rust 1.94.0/rustdoc 57 observes exactly ten standard-trait paths for each of `kmipkit_client::Pkcs11Request` and `kmipkit_client::Pkcs11Response` (five direct and five conditional). The functional owner `specs/026-pkcs11/spec.md` is Approved for implementation as of 2026-10-11; this is implementation approval, not formal acceptance. KMIPKIT-0040-FR-001 and KMIPKIT-0040-FR-004 own the typed operation models and language parity. KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 authorize only this exact Rust inventory exclusion. OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273–275 provide functional operation context only. These compiler-generated Rust traits add no OASIS requirement. KMIPKIT-0040-FR-005 applies only to unchanged redaction behavior. The response Debug chain emits structural TTLV/result metadata and redacts ResultMessage. No conformance, interoperability, profile-support, or certification claim is made. Exact compiler-observed paths are recorded in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
