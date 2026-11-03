@@ -4,6 +4,12 @@ from __future__ import annotations
 
 import json
 import unittest
+
+from tools.api_manifest.tests.t102_manifest_totals import (
+    T102_APPROVED_EXCLUSIONS,
+    T102_BLOCKED_CANDIDATES,
+    T102_PUBLIC_DECLARATIONS,
+)
 from pathlib import Path
 
 
@@ -174,7 +180,7 @@ class T102LogRequestTraitExclusionTests(unittest.TestCase):
                 and row["declarationState"] == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            841,
+            T102_BLOCKED_CANDIDATES,
         )
 
 

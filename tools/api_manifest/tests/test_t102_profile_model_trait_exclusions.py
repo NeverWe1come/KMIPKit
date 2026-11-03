@@ -5,6 +5,12 @@ from __future__ import annotations
 import hashlib
 import json
 import unittest
+
+from tools.api_manifest.tests.t102_manifest_totals import (
+    T102_APPROVED_EXCLUSIONS,
+    T102_BLOCKED_CANDIDATES,
+    T102_PUBLIC_DECLARATIONS,
+)
 from pathlib import Path
 
 
@@ -308,9 +314,9 @@ class T102ProfileModelTraitExclusionTests(unittest.TestCase):
             and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(candidates, 841)
-        self.assertEqual(len(self.manifest["publicDeclarations"]), 6470)
-        self.assertEqual(len(self.manifest["approvedExclusions"]), 8480)
+        self.assertEqual(candidates, T102_BLOCKED_CANDIDATES)
+        self.assertEqual(len(self.manifest["publicDeclarations"]), T102_PUBLIC_DECLARATIONS)
+        self.assertEqual(len(self.manifest["approvedExclusions"]), T102_APPROVED_EXCLUSIONS)
 
     def _protected_rows(self, owners: object) -> list[dict[str, object]]:
         return sorted(

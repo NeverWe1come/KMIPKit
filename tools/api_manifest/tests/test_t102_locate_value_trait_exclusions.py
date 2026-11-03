@@ -4,6 +4,12 @@ from __future__ import annotations
 
 import json
 import unittest
+
+from tools.api_manifest.tests.t102_manifest_totals import (
+    T102_APPROVED_EXCLUSIONS,
+    T102_BLOCKED_CANDIDATES,
+    T102_PUBLIC_DECLARATIONS,
+)
 from pathlib import Path
 
 
@@ -157,7 +163,7 @@ class T102LocateValueTraitExclusionTests(unittest.TestCase):
             row.get("candidateSpecId") == "KMIPKIT-0043"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(total_candidates, 841)
+        self.assertEqual(total_candidates, T102_BLOCKED_CANDIDATES)
 
     def test_locate_value_parents_and_raw_accessors_keep_their_states(self) -> None:
         rows = {

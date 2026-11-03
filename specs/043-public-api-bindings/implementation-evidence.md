@@ -10328,3 +10328,22 @@ Post-fix verification before the single final `manifest-v2` run:
 - `cargo fmt --all --check`, `git diff --check`, and `cargo clippy --message-format short -p kmipkit-ffi --all-targets --all-features --no-deps -- -D warnings` — exit 0. Clippy emitted no lint diagnostics; optional AWS-LC compiler-probe/NASM warnings remain environmental.
 
 The single final stabilized-state command was `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2 -q` — exit 0; output: `Ran 151 tests in 328.187s` and `OK`.
+
+### T102 — Python native-handle lifecycle and readiness metadata (2026-11-03)
+
+Red commits `7fd464cb4` and `d124a9542` add exact tests for all 78 inherited Python lifecycle exports across 26 wrappers and assert Rust/C parity for `client_profile_readiness`. Green commit `a85028648` maps the 26 `__exit__` exports to existing cross-language `native-handle-release` declarations, records the 26 `__enter__` and 26 `closed` convenience exports as exact approved exclusions, and includes the Rust runtime metadata correction. No OASIS clause governs these local binding lifecycle helpers. Baseline profile readiness remains `evidence_incomplete`; no conformance or support claim is added.
+
+The Refactor centralizes `T102_BLOCKED_CANDIDATES`, `T102_PUBLIC_DECLARATIONS`, and `T102_APPROVED_EXCLUSIONS` in `tools/api_manifest/tests/t102_manifest_totals.py`; 33 T102 test modules now import these checkpoint values instead of duplicating literals. This does not change inventory behavior or generated outputs.
+
+Final verification for this checkpoint:
+
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest discover --failfast -s tools/api_manifest/tests -p 'test_t102*.py' -q` — 242 passed in 47.497s.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2` — 151 passed in 424.942s.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
+- `bindings/java`: `gradlew.bat test --offline --no-daemon --tests org.kmipkit.extensions.ProfileReadinessParityTest` — `BUILD SUCCESSFUL`.
+- `bindings/python`, with `KMIPKIT_NATIVE_LIBRARY=../../target/debug/kmipkit_ffi.dll`: `python -m pytest -q tests/test_shared_parity_fixtures.py -k test_client_batch_and_result_context_exit_closes_once` — 6 passed.
+- `cargo test -p kmipkit --test runtime_metadata capability_query_matches_manifest_ready_capabilities` — 1 passed; `cargo test -p kmipkit-ffi --all-features --lib capability_query_only_reports_c_mapped_nonblocked_capabilities` — 1 passed.
+- The full workspace `cargo test --workspace --all-features`, `cargo clippy --workspace --all-targets --all-features -- -D warnings`, and `cargo fmt --all --check` passed after Green. Windows emitted optional AWS-LC compiler-probe/NASM warnings; both focused Rust tests also passed on this checkpoint.
+- `git diff --check` passed; generator check confirmed generated output is current.
+
+One initial Python invocation omitted `KMIPKIT_NATIVE_LIBRARY` and failed during module collection because the local DLL was not selected. Re-running with the repository-local DLL path passed; no test or product defect was found. T102 remains open with 841 blocked candidates.

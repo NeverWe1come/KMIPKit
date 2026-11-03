@@ -6372,13 +6372,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     else "specs/005-ttlv-wire-codec/spec.md",
                 )
         self.assertTrue(ttlv_declarations)
-        self.assertEqual(len(ttlv_declarations), 372)
+        self.assertEqual(len(ttlv_declarations), 380)
         self.assertEqual(
             sum(
                 declaration["capabilityId"] == "generic_ttlv_model"
                 for declaration in ttlv_declarations
             ),
-            255,
+            263,
         )
         self.assertEqual(
             sum(
@@ -6712,15 +6712,28 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "org.kmipkit.extensions.OpaqueObjectContext.values": "java-member",
             "org.kmipkit.ttlv.TtlvItem.nativeHandleOwner": "java-member",
             "org.kmipkit.ttlv.TtlvStructure.nativeHandleOwner": "java-member",
-            "kmipkit.extensions.RegisterRequest.closed": "python-export",
-            "kmipkit.extensions.RegisterRequest.__enter__": "python-export",
-            "kmipkit.extensions.RegisterRequest.__exit__": "python-export",
         }
         for export_name, kind in blocked_paths.items():
             with self.subTest(export_name=export_name):
                 declaration = by_name[export_name]
                 self.assertEqual(declaration["kind"], kind)
                 self.assertEqual(declaration["declarationState"], "blocked")
+
+        exclusions = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.checked_in_manifest["approvedExclusions"]
+        }
+        for export_name in (
+            "kmipkit.extensions.RegisterRequest.closed",
+            "kmipkit.extensions.RegisterRequest.__enter__",
+        ):
+            with self.subTest(export_name=export_name):
+                exclusion = exclusions[("python-kmipkit", export_name)]
+                self.assertEqual(
+                    exclusion["approvalSource"]["path"],
+                    "specs/043-public-api-bindings/spec.md",
+                )
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
 
         lifecycle_exports = (
             ("kmipkit_register_request_release", "c-symbol"),
@@ -6739,6 +6752,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     declaration["languageMappings"]["rust"]["name"],
                     "kmipkit_protocol::RegisterRequest",
                 )
+
+        context_exit = by_name["kmipkit.extensions.RegisterRequest.__exit__"]
+        python_close = by_name["kmipkit.extensions.RegisterRequest.close"]
+        self.assertEqual(context_exit["kind"], "python-export")
+        self.assertEqual(context_exit["declarationState"], "declared")
+        self.assertEqual(context_exit["mappingSemantics"], "native-handle-release")
+        self.assertEqual(context_exit["languageMappings"], python_close["languageMappings"])
 
         for export_name in (
             "KMIPKIT_OPAQUE_OBJECT_CONTEXT_GENERIC",

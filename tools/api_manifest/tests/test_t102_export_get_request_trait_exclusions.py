@@ -4,6 +4,12 @@ from __future__ import annotations
 
 import json
 import unittest
+
+from tools.api_manifest.tests.t102_manifest_totals import (
+    T102_APPROVED_EXCLUSIONS,
+    T102_BLOCKED_CANDIDATES,
+    T102_PUBLIC_DECLARATIONS,
+)
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -187,7 +193,7 @@ class T102ExportGetRequestTraitExclusionTests(unittest.TestCase):
             row.get("candidateSpecId") == "KMIPKIT-0043" and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(count, 841)
+        self.assertEqual(count, T102_BLOCKED_CANDIDATES)
 
 
 if __name__ == "__main__":

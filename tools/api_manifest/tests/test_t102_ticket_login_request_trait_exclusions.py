@@ -4,6 +4,12 @@ from __future__ import annotations
 
 import json
 import unittest
+
+from tools.api_manifest.tests.t102_manifest_totals import (
+    T102_APPROVED_EXCLUSIONS,
+    T102_BLOCKED_CANDIDATES,
+    T102_PUBLIC_DECLARATIONS,
+)
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -239,7 +245,7 @@ class T102TicketLoginRequestTraitExclusionTests(unittest.TestCase):
         self.assertEqual(
             sum(x.get("candidateSpecId") == "KMIPKIT-0043" and x["declarationState"] == "blocked"
                 for x in self.manifest["publicDeclarations"]),
-            841,
+            T102_BLOCKED_CANDIDATES,
         )
 
 
