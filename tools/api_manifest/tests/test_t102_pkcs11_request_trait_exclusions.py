@@ -193,23 +193,22 @@ class T102Pkcs11RequestTraitExclusionTests(unittest.TestCase):
             and "Pkcs11Request" in row.get("exportName", "")
         }
         self.assertIn("kmipkit_client::Pkcs11Request", client_rows)
-        self.assertEqual(
+        self.assertFalse(
             {
                 name
                 for name in client_rows
                 if name.startswith("<kmipkit_client::Pkcs11Request as ")
-            },
-            EXPECTED_CLIENT_REQUEST_TRAITS,
+            }
         )
-        self.assertEqual(
-            {
-                name
-                for name, row in client_rows.items()
-                if row["declarationState"] == "blocked"
-                and name.startswith("<kmipkit_client::Pkcs11Request as ")
-            },
-            EXPECTED_CLIENT_REQUEST_TRAITS,
-        )
+        client_trait_exclusions = {
+            row["exportName"]
+            for row in self.manifest["approvedExclusions"]
+            if row.get("packageId") == "rust-kmipkit-client"
+            and row.get("exportName", "").startswith(
+                "<kmipkit_client::Pkcs11Request as "
+            )
+        }
+        self.assertEqual(client_trait_exclusions, EXPECTED_CLIENT_REQUEST_TRAITS)
         expected_client_request_declarations = {
             "kmipkit_client::Pkcs11Request",
             "kmipkit_client::Pkcs11Request::new",
@@ -275,12 +274,12 @@ class T102Pkcs11RequestTraitExclusionTests(unittest.TestCase):
                 and row["declarationState"] == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            2213,
+            2193,
         )
-        self.assertEqual(len(self.manifest["publicDeclarations"]), 7411)
-        self.assertEqual(len(self.manifest["approvedExclusions"]), 7313)
-        self.assertEqual(self.rust_report["counts"]["manifest"], 4496)
-        self.assertEqual(self.rust_report["counts"]["excluded"], 5967)
+        self.assertEqual(len(self.manifest["publicDeclarations"]), 7391)
+        self.assertEqual(len(self.manifest["approvedExclusions"]), 7333)
+        self.assertEqual(self.rust_report["counts"]["manifest"], 4476)
+        self.assertEqual(self.rust_report["counts"]["excluded"], 5987)
         self.assertEqual(self.rust_report["counts"]["observed"], 10463)
 
 

@@ -185,6 +185,16 @@ class T102Pkcs11ClientRootTraitExclusionTests(unittest.TestCase):
         )
         self.assertEqual(operation["scope"], "client_1_0")
         self.assertEqual(operation["section"], "6.1.37")
+        candidates = sum(
+            row.get("candidateSpecId") == "KMIPKIT-0043"
+            and row["declarationState"] == "blocked"
+            for row in self.manifest["publicDeclarations"]
+        )
+        self.assertEqual(candidates, 2193)
+        self.assertEqual(len(self.manifest["publicDeclarations"]), 7391)
+        self.assertEqual(len(self.manifest["approvedExclusions"]), 7333)
+        self.assertEqual(self.rust_report["counts"]["manifest"], 4476)
+        self.assertEqual(self.rust_report["counts"]["excluded"], 5987)
 
         pkcs11_tasks = (ROOT / "specs" / "026-pkcs11" / "tasks.md").read_text(
             encoding="utf-8"

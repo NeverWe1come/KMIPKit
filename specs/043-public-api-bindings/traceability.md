@@ -477,6 +477,16 @@ The Rust 1.94.0 export audit observes exactly ten standard-trait paths for `kmip
 
 `tools/api_manifest/tests/test_t102_pkcs11_request_trait_exclusions.py` pins the exact paths, owner/evidence, direct/conditional classification, preserved declarations, response exclusions, candidate and audit deltas, and the stable `KMIPKIT-026-SOURCE-001` vendor Function Integer interpretation against Section 7.26 Table 378. FR-005 is used only for the unchanged redaction context. The T102 candidate count changes from 3,828 to 3,818.
 
+### T102 — PKCS#11 client-root request/response trait-artifact reconciliation
+
+The targeted paths are the `kmipkit_client` crate-root re-exports `Pkcs11Request` and `Pkcs11Response`; the outer `kmipkit::` facade has no alias and remains untouched. The approved functional owner is `specs/026-pkcs11/spec.md` (KMIPKIT-0040-FR-001/004); KMIPKIT-0043-FR-010/021 authorize these exact inventory exclusions. Owner approval is **Approved for implementation** (2026-10-11), not formal acceptance. KMIPKIT-0040-FR-005 appears only as context for the already redacted Debug behavior.
+
+Rust 1.94.0/rustdoc 57 observes exactly 10 trait paths per client-root type: five direct (`Any::type_id`, `Borrow::borrow`, `BorrowMut::borrow_mut`, `From::from`, and `Debug::fmt`) and five conditional (`Into::into`, `TryFrom::{Error,try_from}`, and `TryInto::{Error,try_into}`). Only these 20 paths are excluded. The request/response parent and every functional method retain their pre-change state. The PKCS#11 operation remains `verified` under its approved KMIPKIT-0040 owner, and T022 remains open.
+
+The transitive Debug implementations remain payload-safe: `Structure` emits only `child_count`; `Item` emits `tag` and item type; `Value` emits type and structural child count; `SecretBytes` formats as redacted; `KmipOperationResult` delegates `ResultMessage` formatting to its redacted Debug implementation; and the retained response TTLV formats structurally. No raw TTLV, request/response body, secret bytes, or result message text is formatted. OASIS KMIP v2.1 §6.1.37 Tables 273–275 are operation context only and add no requirement for compiler-generated Rust traits. The approved catalog has no direct PKCS#11 operation test case and the official fixture/profile case `PKCS11-M-1-21` is unavailable; this inventory slice makes no conformance, interoperability, profile-support, or certification claim.
+
+`tools/api_manifest/tests/test_t102_pkcs11_client_root_trait_exclusions.py` pins the exact set, ownership/approval evidence, direct/conditional split, functional mapping state, operation state, T022 status, and aggregate counts.
+
 
 ### T102 — Set Constraints request trait-artifact reconciliation
 
