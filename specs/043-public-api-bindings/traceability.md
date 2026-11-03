@@ -539,3 +539,14 @@ The exact exclusions are authorized by `KMIPKIT-0043-FR-010` and `KMIPKIT-0043-F
 | `kmipkit_protocol::GetRequest` | Approved `specs/017-managed-object-retrieval/spec.md` (KMIPKIT-0017-FR-001/002/003) | Section 6.1.19; Table 220 Get Request Payload, Table 221 Get Response Payload, Table 222 Get Errors | 11 paths (six direct, five conditional); same exact-set test |
 
 The pinned upstream OASIS KMIP v2.1 source SHA-256 is `8BF9D914C097E98A6509AA1FFCBF03406F738066E940597AEE93D0A5E07ADDCF`. The Rust 1.94.0 report and manifest reconcile the exact 22 `(packageId, exportName)` pairs under `rust-kmipkit-protocol`. Both protocol type declarations remain verified and their existing functional members remain blocked. Neither type has a `kmipkit::` root alias. This inventory-only batch makes no conformance, profile-support, interoperability, or certification claim.
+
+### T102 - RevocationReason and RegisterRequest trait-artifact reconciliation
+
+The exact exclusions are authorized by `KMIPKIT-0043-FR-010` and `KMIPKIT-0043-FR-021`; no OASIS requirement directly applies to compiler-generated Rust standard traits.
+
+| Protocol declaration | Approved functional owner requirements | Pinned OASIS KMIP v2.1 reference | Exact trait count and inventory test |
+|---|---|---|---|
+| `kmipkit_protocol::RevocationReason` | Approved `specs/022-object-lifecycle/spec.md` (KMIPKIT-0036-FR-001/004/006; KMIPKIT-REQ-SPEC-6.1.44-001, -003-001, -003-002) | Section 11.48, Table 481: Revocation Reason Code Enumeration; Section 4.47, Table 123: Revocation Reason Attribute Structure; Section 6.1.44, Tables 295-297: Revoke request, response, errors | 19 paths (14 direct, five conditional); `tools/api_manifest/tests/test_t102_revocation_register_request_trait_exclusions.py` |
+| `kmipkit_protocol::RegisterRequest` | Approved `specs/029-opaque-object-context/spec.md` (KMIPKIT-0044-FR-001/007; KMIPKIT-REQ-SPEC-6.1.43-001) | Section 6.1.43, Table 291: Register Request Payload | 10 paths (five direct, five conditional); same exact-set test |
+
+The pinned table captions are `Table 481: Revocation Reason Code Enumeration`, `Table 123: Revocation Reason Attribute Structure`, `Table 295: Revoke Request Payload`, `Table 296: Revoke Response Payload`, `Table 297: Revoke Errors`, and `Table 291: Register Request Payload`. The Rust 1.94.0 report and manifest reconcile exactly 29 `(packageId, exportName)` pairs under `rust-kmipkit-protocol`. `RevocationReason` remains verified, its seven constants remain blocked, and `from_raw`/`raw` remain verified. `RegisterRequest` remains verified, `new` remains declared, `with_opaque_object_context` remains verified, and its other five functional methods remain blocked. Neither type has a root-facade alias. This inventory-only batch makes no OASIS conformance, profile-support, interoperability, or certification claim.

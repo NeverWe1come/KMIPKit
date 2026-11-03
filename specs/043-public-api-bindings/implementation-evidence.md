@@ -9642,3 +9642,31 @@ uv run --offline --no-project --with-requirements tools/api_manifest/requirement
 
   Result: 244 tests passed in 23.172 seconds, exit 0.
 - Exact baseline comparison: 22 target declaration rows removed and the same 22 exclusions added; all 8,747 retained declarations, 5,955 prior exclusions, other top-level manifest values, and unrelated adjacent separators are byte-identical. `git diff --check` and `git show --check` for Red, Green, and Refactor pass. Pre-existing untracked artifacts were not staged. Nothing was pushed or merged.
+
+### T102 - RevocationReason and RegisterRequest trait exclusions (2026-11-03)
+
+This inventory-only batch excludes exactly 29 compiler-observed Rust standard-trait paths in `rust-kmipkit-protocol`: 19 for `kmipkit_protocol::RevocationReason` and 10 for `kmipkit_protocol::RegisterRequest`. The Rust 1.94.0 export report classifies the paths as 14 direct plus five conditional for RevocationReason, and five direct plus five conditional for RegisterRequest. T102 exclusion authority is KMIPKIT-0043-FR-010/021.
+
+The approved functional owner for RevocationReason is `specs/022-object-lifecycle/spec.md` (KMIPKIT-0036; FR-001/004/006 and KMIPKIT-REQ-SPEC-6.1.44-001, -003-001, -003-002). The approved functional owner for RegisterRequest is `specs/029-opaque-object-context/spec.md` (KMIPKIT-0044; FR-001/007 and KMIPKIT-REQ-SPEC-6.1.43-001). The Register owner is approved under the maintainer's autonomous roadmap instruction dated 2026-10-13.
+
+The pinned upstream source `specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html` has SHA-256 `8BF9D914C097E98A6509AA1FFCBF03406F738066E940597AEE93D0A5E07ADDCF`. Direct inspection confirms the exact captions: Section 11.48, Table 481 `Revocation Reason Code Enumeration`; Section 4.47, Table 123 `Revocation Reason Attribute Structure`; Section 6.1.44, Tables 295-297 `Revoke Request Payload`, `Revoke Response Payload`, and `Revoke Errors`; and Section 6.1.43, Table 291 `Register Request Payload`. The RevocationReason type represents the raw-preserving Revocation Reason Code enumeration; the enclosing Revocation Reason is a structure.
+
+Only those exact 29 `(packageId, exportName)` pairs moved from public declarations to approved exclusions. Red-baseline comparison against `5cd8d92ac` confirms 29 removals and the same 29 additions, with all non-target object bytes, pre-existing exclusion bytes, unaffected declaration separators, and unrelated top-level values unchanged. Totals are 8,747 to 8,718 public declarations, 5,977 to 6,006 approved exclusions, and 3,549 to 3,520 blocked KMIPKIT-0043 candidates. Target evidence contains no replacement-character or section-sign encoding corruption.
+
+`kmipkit_protocol::RevocationReason` remains verified; its seven constants remain blocked, while `from_raw` and `raw` remain verified. `kmipkit_protocol::RegisterRequest` remains verified; `new` remains declared, `with_opaque_object_context` remains verified, and `attributes`, `into_ttlv_payload`, `object`, `object_type`, and `with_protection_storage_masks` remain blocked. Neither type has a root facade alias. No protocol/runtime source or behavior changed. This inventory change makes no OASIS conformance, profile-support, interoperability, or certification claim.
+
+| Phase | Commit | Evidence | Result |
+|---|---|---|---|
+| Red | `5cd8d92ac` | `python -B -m unittest tools.api_manifest.tests.test_t102_revocation_register_request_trait_exclusions -v` | Expected failure before Green: three tests ran; the functional/root state test passed, while the exact exclusion set was absent and the candidate count was 3,549 instead of 3,520. |
+| Green | `a9512dfcd00aa0f578233a6d58bd763a21e1a8c7` | Exact-set manifest change, generated outputs/reports, focused and aggregate guards | Pass: exactly 29 paths moved; all unrelated declarations and functional states remain unchanged. |
+| Refactor | This evidence commit | Task and traceability updates, final commit checks | Records the approved owners, exact pinned captions, byte-delta evidence, commands, results, and inventory-only boundary. |
+
+Verification:
+
+- `python -B tools/api_manifest/generate.py --write` — exit 0; generated 12 outputs. After reapplying the exact manifest delta from Red while preserving unrelated separators, `python -B tools/api_manifest/generate.py --check` — exit 0; all 12 outputs verified current.
+- `python -B tools/api_manifest/audit_rust_exports.py --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json` — completed with 10,463 observed, 5,803 matched/manifest, and 4,660 approved exclusions; zero issues, missing/unobserved paths, kind mismatches, or conditional mismatches. The Windows run emitted optional AWS-LC compiler-probe and NASM warnings.
+- `python -B tools/api_manifest/audit_shared_rust_inventory.py --report specs/043-public-api-bindings/reports/shared-rust-inventory-2026-11-01.json` — exit 0; report records 10,463 observed, 864 mapped, and 4,660 approved-excluded Rust declarations.
+- `python -B tools/api_manifest/audit_binding_exports.py --report specs/043-public-api-bindings/reports/binding-export-report-2026-11-01.json` — exit 0; no issues; C 757/757, Java 1,014/1,014, Python 1,140/1,140.
+- Focused exact-set test `python -B -m unittest tools.api_manifest.tests.test_t102_revocation_register_request_trait_exclusions -v` — 3 passed. The focused aggregate `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest discover -s tools/api_manifest/tests -p 'test_t102*.py' -q` — 170 passed in 6.049 seconds.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2 -q` — 150 passed in 232.867 seconds. `python -B -m unittest scripts.tests.test_workflow -q` — 80 passed in 0.088 seconds. The shared inventory and binding-export test modules also passed in the combined manifest/shared/binding run; its only initial failure was a stale manifest total assertion, which was updated from 2,964 to the verified 3,212 protocol exclusions.
+- `git diff --check`, `git show --check` for Red/Green/Refactor, and tracked status checks — pass. Pre-existing untracked artifacts were not staged. Nothing was pushed or merged.
