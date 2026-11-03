@@ -10093,3 +10093,36 @@ Verification evidence:
 - `git diff --check` passed before the Green commit. The broader `ManifestGeneratorCliTests` subset (63 tests) remains blocked by the already documented baseline fixture/path failures, including the absent `crates/kmipkit-protocol/tests/credential_secret_contract.rs`; it is not reported as passing. The focused limit tests and generator `--check` pass.
 
 This is an inventory and traceability update only; no conformance, interoperability, profile-support, or certification claim is added. T102 remains open.
+
+
+### T102 - KMIPKIT-0039 root/client policy-control trait artifacts (2026-11-03)
+
+The preflight baseline was commit `4f4a1e896f3e41a3e984953025800d1ecde2020a`; the source manifest SHA-256 was `70F67AFF5972BF9572F0433F2BFCE6B9166F7043333F53D0CA4C2353C9A6A359`. The approved functional owner is `specs/025-policy-controls/spec.md` (KMIPKIT-0039, Approved for implementation by the maintainer on 2026-10-11, not Accepted). T021-T023 remain open for C, Java, and Python parity; this Rust inventory batch does not close them. Exact exclusions use KMIPKIT-0043-FR-010/021, with FR-013 applying to the selected formatter paths.
+
+| Group | Exact paths | Owner requirements | OASIS KMIP v2.1 functional context |
+|---|---:|---|---|
+| Root `GetConstraintsError`, `GetUsageAllocationError`, `SetConstraintsError`, `SetDefaultsError` | 26 each; 104 total | KMIPKIT-0039-FR-001/003/005/006/007 | Sections 6.1.22/Table 231, 6.1.23/Table 234, 6.1.52/Table 327, and 6.1.53/Table 330 |
+| Root `GetConstraintsRequest`, `GetUsageAllocationRequest`, `SetConstraintsRequest`, `SetDefaultsRequest` | 20, 9, 10, and 11; 50 total | KMIPKIT-0039-FR-001/002/004/008 | Sections 6.1.22/Table 229, 6.1.23/Table 232, 6.1.52/Table 325, and 6.1.53/Table 328 |
+| Root and client `UsageAllocationContextError` | 26 each; 52 total | KMIPKIT-0039-FR-005/009 | Section 6.1.23/Table 234 gives Usage Allocation context only |
+
+The exact-set contract `tools/api_manifest/tests/test_t102_policy_root_trait_batch.py` verifies all 206 paths against the complete Rust 1.94.0 report: 156 direct and 50 conditional. All rows were blocked KMIPKIT-0043 candidates with no prior exact exclusions. The parents and non-trait functional rows remain blocked. The UID-printing `kmipkit::GetUsageAllocationRequest::Debug` path is deliberately retained as a blocked candidate. Source review found payload-free local error categories and no retained raw response TTLV/body, Result Message text, identifier, or secret. `GetConstraintsRequest` is empty; `SetConstraintsRequest` redacts its generic structure in Debug; `SetDefaultsRequest` reports only whether Defaults Information is present. OASIS tables describe operation behavior, not Rust traits. This change makes no protocol-conformance, profile-support, interoperability, or certification claim.
+
+The manifest moves exactly 206 rows from declarations to exclusions: public declaration/exclusion totals change from 7,125/7,599 to 6,919/7,805, and blocked KMIPKIT-0043 candidates fall from 1,927 to 1,721. The Rust audit changes from 4,210 matched / 6,253 excluded to 4,004 matched / 6,459 excluded out of 10,463 observed; missing paths, unobserved paths, issues, kind mismatches, and conditional mismatches remain zero. The pinned generator regenerated its 12 public API outputs and `--check` verified them; the Rust and shared-inventory reports were regenerated. No generated output was edited manually.
+
+| Phase | Commit | Evidence | Result |
+|---|---|---|---|
+| Red | `631ee25e1` | New exact-set test `test_t102_policy_root_trait_batch.py` | Expected failure: 206 compiler-observed candidates had no matching exclusions. The test includes the UID Debug holdout and blocked-parent/functional-state assertions. |
+| Green | `ed9418c7c` | Manifest exclusions, generated API fixtures, Rust/shared inventory reports, updated aggregate guards | Reconciled the 206 exact paths; runtime and protocol behavior unchanged. Added an oversized-input rejection regression for the bounded 21 MiB manifest limit after QA noted the previous test asserted only the limit value and current file size. |
+| Refactor | This commit | Traceability, task inventory, evidence, final checks | Records owner/OASIS context, security boundaries, and batch results. |
+
+Verification:
+
+- Reused the offline `uv` test environment; no package reinstall. Focused root policy exact-set, prior policy-error/context contracts, and shared Rust inventory tests — 25 passed.
+- Full T102 contract suite `python -B -m unittest discover --failfast -s tools/api_manifest/tests -p 'test_t102*.py' -q` — 218 passed.
+- Diagnosis of prior PR CI run `41610430766`: all 19 Python contract failures were stale aggregate T102 guards expecting 2,177 while the manifest had 1,927 candidates. The batch advanced those guards to 1,721; the complete local T102 suite now passes 218/218.
+- Full manifest-v2 suite using the pinned offline requirements — 151 passed in 310.610 seconds. The separate oversized-input boundary regression passed 1/1.
+- `python -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
+- Rust export audit `--check` — 10,463 observed, 4,004 matched, 6,459 excluded; zero mismatches or unobserved/missing paths. Windows emitted the existing optional AWS-LC compiler-probe and missing-NASM warnings; the audit exited 0.
+- Shared Rust inventory `--check` passed. Binding export audit `--check` exited 0. `git diff --check` passed.
+
+T102 remains open. This checkpoint is inventory and traceability work only.
