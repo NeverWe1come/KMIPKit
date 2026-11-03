@@ -12,6 +12,7 @@ use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
 const REVOKE_OPERATION: u32 = 0x0000_0013;
 const SUCCESS: u32 = 0;
 const OPERATION_FAILED: u32 = 1;
+const PENDING: u32 = 2;
 const OBJECT_NOT_FOUND: u32 = 0x0000_0037;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const REVOCATION_REASON: u32 = 0x0042_0081;
@@ -264,6 +265,34 @@ fn failure_preserves_common_result_without_success_identifier() {
         Some(OBJECT_NOT_FOUND)
     );
     assert!(response.unique_identifier().is_none());
+}
+
+#[test]
+fn failure_and_pending_do_not_expose_response_ttlv() {
+    let failure = typed_response(
+        REVOKE_OPERATION,
+        OPERATION_FAILED,
+        Some(OBJECT_NOT_FOUND),
+        None,
+    )
+    .expect("Table 297 failure remains a typed common result");
+    assert_eq!(failure.result().status().raw(), OPERATION_FAILED);
+    assert_eq!(failure.with_ttlv(|_| Some(())), None);
+
+    let message = response_message(
+        REVOKE_OPERATION,
+        PENDING,
+        None,
+        Some(b"pending-correlation"),
+        Some(structure([item(
+            UNIQUE_IDENTIFIER,
+            Value::text_string("pending-revoke-response".to_owned()),
+        )])),
+    );
+    let pending = RevokeResponse::try_from_response_item(response_item(&message))
+        .expect("Pending remains a typed common result");
+    assert_eq!(pending.result().status().raw(), PENDING);
+    assert_eq!(pending.with_ttlv(|_| Some(())), None);
 }
 
 #[test]

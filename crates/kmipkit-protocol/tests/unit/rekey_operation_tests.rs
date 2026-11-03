@@ -13,6 +13,7 @@ use kmipkit_ttlv::{Item, RawTag, Structure, StructureView, Value, ValueView};
 const REKEY_OPERATION: u32 = 0x0000_0004;
 const SUCCESS: u32 = 0;
 const OPERATION_FAILED: u32 = 1;
+const PENDING: u32 = 2;
 const KEY_VALUE_NOT_PRESENT: u32 = 0x0000_0013;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const OFFSET: u32 = 0x0042_0058;
@@ -195,6 +196,33 @@ fn failure_preserves_table_307_reason_without_success_identifier() {
         Some(KEY_VALUE_NOT_PRESENT)
     );
     assert!(response.unique_identifier().is_none());
+}
+
+#[test]
+fn failure_and_pending_do_not_expose_response_ttlv() {
+    let failure = typed_response(
+        OPERATION_FAILED,
+        Some(0x0000_0001),
+        None,
+    )
+    .expect("Table 307 remains a typed common result");
+    assert_eq!(failure.result().status().raw(), OPERATION_FAILED);
+    assert_eq!(failure.with_ttlv(|_| Some(())), None);
+
+    let message = response_message(
+        REKEY_OPERATION,
+        PENDING,
+        None,
+        Some(b"pending-correlation"),
+        Some(structure([item(
+            UNIQUE_IDENTIFIER,
+            Value::text_string("pending-rekey-response".to_owned()),
+        )])),
+    );
+    let pending = RekeyResponse::try_from_response_item(response_item(&message))
+        .expect("Pending remains a typed common result");
+    assert_eq!(pending.result().status().raw(), PENDING);
+    assert_eq!(pending.with_ttlv(|_| Some(())), None);
 }
 
 #[test]

@@ -12,6 +12,7 @@ use kmipkit_ttlv::{Item, RawTag, Structure, StructureView, Value, ValueView};
 const REKEY_KEY_PAIR_OPERATION: u32 = 0x0000_001d;
 const SUCCESS: u32 = 0;
 const OPERATION_FAILED: u32 = 1;
+const PENDING: u32 = 2;
 const KEY_VALUE_NOT_PRESENT: u32 = 0x0000_0013;
 const PRIVATE_KEY_UNIQUE_IDENTIFIER: u32 = 0x0042_0066;
 const PUBLIC_KEY_UNIQUE_IDENTIFIER: u32 = 0x0042_006f;
@@ -326,6 +327,33 @@ fn failure_preserves_table_312_reason_without_success_identifiers() {
     );
     assert!(response.private_key_unique_identifier().is_none());
     assert!(response.public_key_unique_identifier().is_none());
+}
+
+#[test]
+fn failure_and_pending_do_not_expose_response_ttlv() {
+    let failure = typed_response(
+        OPERATION_FAILED,
+        Some(0x0000_0001),
+        None,
+    )
+    .expect("Table 312 remains a typed common result");
+    assert_eq!(failure.result().status().raw(), OPERATION_FAILED);
+    assert_eq!(failure.with_ttlv(|_| Some(())), None);
+
+    let message = response_message(
+        REKEY_KEY_PAIR_OPERATION,
+        PENDING,
+        None,
+        Some(b"pending-correlation"),
+        Some(structure([item(
+            PRIVATE_KEY_UNIQUE_IDENTIFIER,
+            Value::text_string("pending-rekey-key-pair-response".to_owned()),
+        )])),
+    );
+    let pending = RekeyKeyPairResponse::try_from_response_item(response_item(&message))
+        .expect("Pending remains a typed common result");
+    assert_eq!(pending.result().status().raw(), PENDING);
+    assert_eq!(pending.with_ttlv(|_| Some(())), None);
 }
 
 #[test]
