@@ -85,16 +85,18 @@ class T102ProfileReadinessCParameterTests(unittest.TestCase):
         self.assertEqual(header, generate.render_c_header(self.manifest))
         contracts = {
             "kmipkit_profile_readiness_evaluate_v1": (
-                "The output handle slot must not overlap the profile span, record array, or any requirement span.",
-                "Inputs must remain readable and unmodified until the call returns.",
+                "The output handle slot must be aligned writable storage and must not overlap the profile span, record array, or any requirement span.",
+                "Profile and evidence inputs must remain readable and unmodified until the call returns.",
             ),
             "kmipkit_profile_readiness_view_get_v1": (
                 "The handle must remain live without concurrent release during the call and while returned spans are read.",
-                "The output view must be aligned writable storage and must not overlap the handle or borrowed spans.",
+                "The output view must be aligned, readable, and writable storage initialized with the exact size and ABI version 1.",
+                "The output view must not overlap the handle's owned storage or any borrowed span.",
             ),
             "kmipkit_profile_readiness_blocker_at_v1": (
                 "The handle must remain live without concurrent release during the call and while returned spans are read.",
-                "The output blocker view must be aligned writable storage and must not overlap the handle or borrowed spans.",
+                "The output blocker view must be aligned, readable, and writable storage initialized with the exact size and ABI version 1.",
+                "The output blocker view must not overlap the handle's owned storage or any borrowed span.",
             ),
         }
         for symbol, expected_documentation in contracts.items():
