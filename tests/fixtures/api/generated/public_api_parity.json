@@ -77966,6 +77966,1254 @@
       "exportName": "<kmipkit_protocol::SetDefaultsError as core::fmt::Display>::fmt",
       "packageId": "rust-kmipkit-protocol",
       "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-DERIVE-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.14, Tables 205-207; Table 205: Derive Key Request Payload; Table 206: Derive Key Response Payload; Table 207: Derive Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for DeriveKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-DERIVE-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.14, Tables 205-207; Table 205: Derive Key Request Payload; Table 206: Derive Key Response Payload; Table 207: Derive Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for DeriveKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-DERIVE-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.14, Tables 205-207; Table 205: Derive Key Request Payload; Table 206: Derive Key Response Payload; Table 207: Derive Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for DeriveKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-DERIVE-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.14, Tables 205-207; Table 205: Derive Key Request Payload; Table 206: Derive Key Response Payload; Table 207: Derive Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for DeriveKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-DERIVE-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.14, Tables 205-207; Table 205: Derive Key Request Payload; Table 206: Derive Key Response Payload; Table 207: Derive Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for DeriveKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-DERIVE-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.14, Tables 205-207; Table 205: Derive Key Request Payload; Table 206: Derive Key Response Payload; Table 207: Derive Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyError as core::borrow::Borrow<kmipkit_protocol::derive_key::DeriveKeyError>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for DeriveKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-DERIVE-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.14, Tables 205-207; Table 205: Derive Key Request Payload; Table 206: Derive Key Response Payload; Table 207: Derive Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyError as core::borrow::BorrowMut<kmipkit_protocol::derive_key::DeriveKeyError>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for DeriveKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-DERIVE-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.14, Tables 205-207; Table 205: Derive Key Request Payload; Table 206: Derive Key Response Payload; Table 207: Derive Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for DeriveKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-DERIVE-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.14, Tables 205-207; Table 205: Derive Key Request Payload; Table 206: Derive Key Response Payload; Table 207: Derive Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for DeriveKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-DERIVE-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.14, Tables 205-207; Table 205: Derive Key Request Payload; Table 206: Derive Key Response Payload; Table 207: Derive Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for DeriveKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-DERIVE-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.14, Tables 205-207; Table 205: Derive Key Request Payload; Table 206: Derive Key Response Payload; Table 207: Derive Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for DeriveKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-DERIVE-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.14, Tables 205-207; Table 205: Derive Key Request Payload; Table 206: Derive Key Response Payload; Table 207: Derive Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for DeriveKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-DERIVE-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.14, Tables 205-207; Table 205: Derive Key Request Payload; Table 206: Derive Key Response Payload; Table 207: Derive Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for DeriveKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-DERIVE-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.14, Tables 205-207; Table 205: Derive Key Request Payload; Table 206: Derive Key Response Payload; Table 207: Derive Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyError as core::convert::From<kmipkit_protocol::derive_key::DeriveKeyError>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for DeriveKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-DERIVE-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.14, Tables 205-207; Table 205: Derive Key Request Payload; Table 206: Derive Key Response Payload; Table 207: Derive Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for DeriveKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-DERIVE-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.14, Tables 205-207; Table 205: Derive Key Request Payload; Table 206: Derive Key Response Payload; Table 207: Derive Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for DeriveKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-DERIVE-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.14, Tables 205-207; Table 205: Derive Key Request Payload; Table 206: Derive Key Response Payload; Table 207: Derive Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for DeriveKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-DERIVE-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.14, Tables 205-207; Table 205: Derive Key Request Payload; Table 206: Derive Key Response Payload; Table 207: Derive Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for DeriveKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-DERIVE-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.14, Tables 205-207; Table 205: Derive Key Request Payload; Table 206: Derive Key Response Payload; Table 207: Derive Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for DeriveKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-DERIVE-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.14, Tables 205-207; Table 205: Derive Key Request Payload; Table 206: Derive Key Response Payload; Table 207: Derive Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for DeriveKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-DERIVE-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.14, Tables 205-207; Table 205: Derive Key Request Payload; Table 206: Derive Key Response Payload; Table 207: Derive Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyError as core::error::Error>::description",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for DeriveKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-DERIVE-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.14, Tables 205-207; Table 205: Derive Key Request Payload; Table 206: Derive Key Response Payload; Table 207: Derive Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for DeriveKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-DERIVE-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.14, Tables 205-207; Table 205: Derive Key Request Payload; Table 206: Derive Key Response Payload; Table 207: Derive Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyError as core::error::Error>::source",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for DeriveKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-DERIVE-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.14, Tables 205-207; Table 205: Derive Key Request Payload; Table 206: Derive Key Response Payload; Table 207: Derive Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for DeriveKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-DERIVE-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.14, Tables 205-207; Table 205: Derive Key Request Payload; Table 206: Derive Key Response Payload; Table 207: Derive Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for DeriveKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-DERIVE-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.14, Tables 205-207; Table 205: Derive Key Request Payload; Table 206: Derive Key Response Payload; Table 207: Derive Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for DeriveKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-EXPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.18, Tables 217-219; Table 217: Export Request Payload; Table 218: Export Response Payload; Table 219: Export Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ExportError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ExportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-EXPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.18, Tables 217-219; Table 217: Export Request Payload; Table 218: Export Response Payload; Table 219: Export Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ExportError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ExportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-EXPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.18, Tables 217-219; Table 217: Export Request Payload; Table 218: Export Response Payload; Table 219: Export Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ExportError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ExportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-EXPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.18, Tables 217-219; Table 217: Export Request Payload; Table 218: Export Response Payload; Table 219: Export Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ExportError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ExportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-EXPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.18, Tables 217-219; Table 217: Export Request Payload; Table 218: Export Response Payload; Table 219: Export Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ExportError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ExportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-EXPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.18, Tables 217-219; Table 217: Export Request Payload; Table 218: Export Response Payload; Table 219: Export Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ExportError as core::borrow::Borrow<kmipkit_protocol::export::ExportError>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ExportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-EXPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.18, Tables 217-219; Table 217: Export Request Payload; Table 218: Export Response Payload; Table 219: Export Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ExportError as core::borrow::BorrowMut<kmipkit_protocol::export::ExportError>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ExportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-EXPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.18, Tables 217-219; Table 217: Export Request Payload; Table 218: Export Response Payload; Table 219: Export Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ExportError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ExportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-EXPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.18, Tables 217-219; Table 217: Export Request Payload; Table 218: Export Response Payload; Table 219: Export Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ExportError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ExportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-EXPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.18, Tables 217-219; Table 217: Export Request Payload; Table 218: Export Response Payload; Table 219: Export Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ExportError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ExportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-EXPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.18, Tables 217-219; Table 217: Export Request Payload; Table 218: Export Response Payload; Table 219: Export Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ExportError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ExportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-EXPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.18, Tables 217-219; Table 217: Export Request Payload; Table 218: Export Response Payload; Table 219: Export Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ExportError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ExportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-EXPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.18, Tables 217-219; Table 217: Export Request Payload; Table 218: Export Response Payload; Table 219: Export Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ExportError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ExportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-EXPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.18, Tables 217-219; Table 217: Export Request Payload; Table 218: Export Response Payload; Table 219: Export Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ExportError as core::convert::From<kmipkit_protocol::export::ExportError>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ExportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-EXPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.18, Tables 217-219; Table 217: Export Request Payload; Table 218: Export Response Payload; Table 219: Export Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ExportError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ExportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-EXPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.18, Tables 217-219; Table 217: Export Request Payload; Table 218: Export Response Payload; Table 219: Export Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ExportError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ExportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-EXPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.18, Tables 217-219; Table 217: Export Request Payload; Table 218: Export Response Payload; Table 219: Export Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ExportError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ExportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-EXPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.18, Tables 217-219; Table 217: Export Request Payload; Table 218: Export Response Payload; Table 219: Export Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ExportError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ExportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-EXPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.18, Tables 217-219; Table 217: Export Request Payload; Table 218: Export Response Payload; Table 219: Export Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ExportError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ExportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-EXPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.18, Tables 217-219; Table 217: Export Request Payload; Table 218: Export Response Payload; Table 219: Export Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ExportError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ExportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-EXPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.18, Tables 217-219; Table 217: Export Request Payload; Table 218: Export Response Payload; Table 219: Export Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ExportError as core::error::Error>::description",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ExportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-EXPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.18, Tables 217-219; Table 217: Export Request Payload; Table 218: Export Response Payload; Table 219: Export Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ExportError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ExportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-EXPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.18, Tables 217-219; Table 217: Export Request Payload; Table 218: Export Response Payload; Table 219: Export Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ExportError as core::error::Error>::source",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ExportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-EXPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.18, Tables 217-219; Table 217: Export Request Payload; Table 218: Export Response Payload; Table 219: Export Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ExportError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ExportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-EXPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.18, Tables 217-219; Table 217: Export Request Payload; Table 218: Export Response Payload; Table 219: Export Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ExportError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ExportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-EXPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.18, Tables 217-219; Table 217: Export Request Payload; Table 218: Export Response Payload; Table 219: Export Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ExportError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ExportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-IMPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.25, Tables 238-240; Table 238: Import Request Payload; Table 239: Import Response Payload; Table 240: Import Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ImportError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ImportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-IMPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.25, Tables 238-240; Table 238: Import Request Payload; Table 239: Import Response Payload; Table 240: Import Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ImportError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ImportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-IMPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.25, Tables 238-240; Table 238: Import Request Payload; Table 239: Import Response Payload; Table 240: Import Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ImportError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ImportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-IMPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.25, Tables 238-240; Table 238: Import Request Payload; Table 239: Import Response Payload; Table 240: Import Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ImportError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ImportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-IMPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.25, Tables 238-240; Table 238: Import Request Payload; Table 239: Import Response Payload; Table 240: Import Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ImportError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ImportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-IMPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.25, Tables 238-240; Table 238: Import Request Payload; Table 239: Import Response Payload; Table 240: Import Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ImportError as core::borrow::Borrow<kmipkit_protocol::import::ImportError>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ImportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-IMPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.25, Tables 238-240; Table 238: Import Request Payload; Table 239: Import Response Payload; Table 240: Import Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ImportError as core::borrow::BorrowMut<kmipkit_protocol::import::ImportError>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ImportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-IMPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.25, Tables 238-240; Table 238: Import Request Payload; Table 239: Import Response Payload; Table 240: Import Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ImportError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ImportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-IMPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.25, Tables 238-240; Table 238: Import Request Payload; Table 239: Import Response Payload; Table 240: Import Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ImportError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ImportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-IMPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.25, Tables 238-240; Table 238: Import Request Payload; Table 239: Import Response Payload; Table 240: Import Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ImportError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ImportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-IMPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.25, Tables 238-240; Table 238: Import Request Payload; Table 239: Import Response Payload; Table 240: Import Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ImportError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ImportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-IMPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.25, Tables 238-240; Table 238: Import Request Payload; Table 239: Import Response Payload; Table 240: Import Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ImportError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ImportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-IMPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.25, Tables 238-240; Table 238: Import Request Payload; Table 239: Import Response Payload; Table 240: Import Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ImportError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ImportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-IMPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.25, Tables 238-240; Table 238: Import Request Payload; Table 239: Import Response Payload; Table 240: Import Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ImportError as core::convert::From<kmipkit_protocol::import::ImportError>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ImportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-IMPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.25, Tables 238-240; Table 238: Import Request Payload; Table 239: Import Response Payload; Table 240: Import Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ImportError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ImportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-IMPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.25, Tables 238-240; Table 238: Import Request Payload; Table 239: Import Response Payload; Table 240: Import Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ImportError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ImportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-IMPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.25, Tables 238-240; Table 238: Import Request Payload; Table 239: Import Response Payload; Table 240: Import Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ImportError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ImportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-IMPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.25, Tables 238-240; Table 238: Import Request Payload; Table 239: Import Response Payload; Table 240: Import Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ImportError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ImportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-IMPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.25, Tables 238-240; Table 238: Import Request Payload; Table 239: Import Response Payload; Table 240: Import Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ImportError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ImportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-IMPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.25, Tables 238-240; Table 238: Import Request Payload; Table 239: Import Response Payload; Table 240: Import Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ImportError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ImportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-IMPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.25, Tables 238-240; Table 238: Import Request Payload; Table 239: Import Response Payload; Table 240: Import Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ImportError as core::error::Error>::description",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ImportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-IMPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.25, Tables 238-240; Table 238: Import Request Payload; Table 239: Import Response Payload; Table 240: Import Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ImportError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ImportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-IMPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.25, Tables 238-240; Table 238: Import Request Payload; Table 239: Import Response Payload; Table 240: Import Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ImportError as core::error::Error>::source",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ImportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-IMPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.25, Tables 238-240; Table 238: Import Request Payload; Table 239: Import Response Payload; Table 240: Import Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ImportError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ImportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-IMPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.25, Tables 238-240; Table 238: Import Request Payload; Table 239: Import Response Payload; Table 240: Import Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ImportError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ImportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-IMPORT, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.25, Tables 238-240; Table 238: Import Request Payload; Table 239: Import Response Payload; Table 240: Import Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ImportError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for ImportError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::JoinSplitKeyError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::JoinSplitKeyError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::JoinSplitKeyError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::JoinSplitKeyError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::JoinSplitKeyError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::JoinSplitKeyError as core::borrow::Borrow<kmipkit_protocol::join_split_key::JoinSplitKeyError>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::JoinSplitKeyError as core::borrow::BorrowMut<kmipkit_protocol::join_split_key::JoinSplitKeyError>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::JoinSplitKeyError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::JoinSplitKeyError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::JoinSplitKeyError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::JoinSplitKeyError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::JoinSplitKeyError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::JoinSplitKeyError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::JoinSplitKeyError as core::convert::From<kmipkit_protocol::join_split_key::JoinSplitKeyError>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::JoinSplitKeyError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::JoinSplitKeyError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::JoinSplitKeyError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::JoinSplitKeyError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::JoinSplitKeyError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::JoinSplitKeyError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::JoinSplitKeyError as core::error::Error>::description",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::JoinSplitKeyError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::JoinSplitKeyError as core::error::Error>::source",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::JoinSplitKeyError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::JoinSplitKeyError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008, KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.27, Tables 244-246; Table 244: Join Split Key Request Payload; Table 245: Join Split Key Response Payload; Table 246: Join Split Key Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::JoinSplitKeyError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for JoinSplitKeyError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
     }
   ],
   "capabilities": [
