@@ -814,6 +814,24 @@ The exact 25 Rust `::result` declarations map to the existing common batch-resul
 
 The section/table assertions reuse the existing approved operation response-view references and pinned KMIP v2.1 source. PKCS#11 has no separate §6.1.37 normative client clause; Table 274 supplies the response shape only. The operation rows retain their verified owner/section and existing typed response mappings. The batch has 6,470 public declarations, 8,554 approved exclusions, and 715 blocked KMIPKIT-0043 candidates. Red `0f4ce676b0a009b472491f9ae72f35299188addf` pins the candidate batch, Green `81b9850bfabca58646de0dcd3a8594ed657c67b0` maps it, and Refactor/evidence `334765b32cf3548ea65dc2481e06f6920f3c7073` records the results in `implementation-evidence.md`. It adds no foreign-language function and makes no runtime or conformance change.
 
+### T102 - LocateRequest builder mappings
+
+The five exact Rust declarations map to one existing four-language Locate builder surface:
+
+| Declaration ID | Rust export | Existing C mapping | Existing Java mapping | Existing Python mapping |
+|---|---|---|---|---|
+| `rust-observed-e07fce825be9d33278e1` | `kmipkit_protocol::LocateRequest::new` | `kmipkit_client_batch_item_locate` | `org.kmipkit.extensions.ClientBatchItem.locate` | `kmipkit.extensions.client_batch_item_locate` |
+| `rust-observed-8fff50bdd49a09ae00bf` | `kmipkit_protocol::LocateRequest::with_maximum_items` | `kmipkit_client_batch_item_locate` | `org.kmipkit.extensions.ClientBatchItem.locate` | `kmipkit.extensions.client_batch_item_locate` |
+| `rust-observed-aa9a474fd92d1503b86d` | `kmipkit_protocol::LocateRequest::with_offset_items` | `kmipkit_client_batch_item_locate` | `org.kmipkit.extensions.ClientBatchItem.locate` | `kmipkit.extensions.client_batch_item_locate` |
+| `rust-observed-8d60104e0b52b30f3496` | `kmipkit_protocol::LocateRequest::with_storage_status_mask` | `kmipkit_client_batch_item_locate` | `org.kmipkit.extensions.ClientBatchItem.locate` | `kmipkit.extensions.client_batch_item_locate` |
+| `rust-observed-feb2e57f6cbe856a8fa1` | `kmipkit_protocol::LocateRequest::with_object_group_member` | `kmipkit_client_batch_item_locate` | `org.kmipkit.extensions.ClientBatchItem.locate` | `kmipkit.extensions.client_batch_item_locate` |
+
+The owner is the approved KMIPKIT-0017 operation `KMIPKIT-ELEM-OP-C2S-LOCATE`, specified in `specs/017-managed-object-retrieval/spec.md`. OASIS KMIP Specification v2.1 §6.1.28, Table 247 (“Locate Request Payload”) orders optional Maximum Items (Integer), Offset Items (Integer), Storage Status Mask (Integer bit mask), and Object Group Member (Enumeration), followed by required Attributes (Structure). The table permits an empty Attributes structure. The mapped declarations carry direct owner requirements KMIPKIT-0017-FR-001/002/006/007/009/013 and `KMIPKIT-REQ-SPEC-6.1.28-001`, `-002`, `-007`, `-013-001`, `-013-002`. They also retain the same API requirement IDs as the verified LocateRequest type: KMIPKIT-0043-FR-004/005/006/007/008/009/010/011/012/013/015/017/018/021/022.
+
+`tools/api_manifest/tests/test_t102_locate_request_builder_mapping.py` pins the exact IDs, mappings, and Table 247 title/field order against the immutable upstream HTML. Its Java check verifies that `ClientBatchItem.locate` forwards each value and presence flag, in order, to `NativeExtensionRegistry.clientBatchItemLocate`. The existing `GetLocateResponseMappingTest` invokes explicit zero/unknown and omitted options; the existing FFI/C tests inspect the shared native builder’s resulting values and omission flags. This is a source-level forwarding check into the common native builder, not a distinct Java TTLV serialization test. No server-only matching, ordering, storage-filter, or ID Placeholder requirement is claimed or implemented here. The five GetRequest methods remain blocked.
+
+Red `012f51dc525ad01753e1d78318df9a1659e43cb0`; Green `6284d66ef9077af25163fc293c45584f3f3290b5`; Refactor/evidence this commit. The mapping adds no foreign-language function or runtime behavior.
+
 ### T102 - Revoke reason-value/factory mappings
 
 The seven Rust `kmipkit_protocol::RevocationReason` constants are mapped to their pinned KMIP 2.1 §11.48 Table 481 values: `UNSPECIFIED` 1, `KEY_COMPROMISE` 2, `CA_COMPROMISE` 3, `AFFILIATION_CHANGED` 4, `SUPERSEDED` 5, `CESSATION_OF_OPERATION` 6, and `PRIVILEGE_WITHDRAWN` 7. The immutable `specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html` also confirms §6.1.44 Table 296's success response carries the Unique Identifier. The approved owner is KMIPKIT-0036, `specs/022-object-lifecycle/spec.md`; each mapped declaration inherits the exact approved requirement IDs, approval source, and parity evidence from `tools/api_manifest/tests/test_revoke_parity_manifest.py`.
