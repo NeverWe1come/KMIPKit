@@ -23,6 +23,10 @@ macro_rules! test_pointer_ffi_call {
 #[path = "../tests/support/ffi_pointer_safety_tests.rs"]
 mod ffi_pointer_safety_tests;
 
+#[cfg(test)]
+#[path = "../tests/support/profile_readiness_abi_tests.rs"]
+mod profile_readiness_abi_tests;
+
 use crate::{
     kmipkit_add_attribute_request_t, kmipkit_adjust_attribute_request_t,
     kmipkit_attestation_credential_t, kmipkit_attribute_set_t, kmipkit_authentication_t,

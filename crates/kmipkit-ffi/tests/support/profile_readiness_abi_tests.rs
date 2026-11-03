@@ -1,0 +1,600 @@
+use super::*;
+use crate::{
+    kmipkit_byte_span_v1_t, kmipkit_profile_evidence_record_v1_t,
+    kmipkit_profile_readiness_blocker_view_v1_t, kmipkit_profile_readiness_t,
+    kmipkit_profile_readiness_view_v1_t,
+};
+use kmipkit_protocol::ProfileReadinessBlocker;
+use std::mem::size_of;
+use std::ptr;
+
+fn span_text(span: kmipkit_byte_span_v1_t) -> Option<String> {
+    if span.length == 0 {
+        return Some(String::new());
+    }
+    if span.data.is_null() || span.length > usize::MAX as u64 {
+        return None;
+    }
+    // SAFETY: Callers invoke this only on views while the readiness owner is live, and the FFI
+    // contract guarantees each returned span points to initialized UTF-8 bytes of `length`.
+    let bytes = unsafe { std::slice::from_raw_parts(span.data, span.length as usize) };
+    std::str::from_utf8(bytes).ok().map(str::to_owned)
+}
+
+fn initialized_blocker_view() -> kmipkit_profile_readiness_blocker_view_v1_t {
+    kmipkit_profile_readiness_blocker_view_v1_t {
+        struct_size: size_of::<kmipkit_profile_readiness_blocker_view_v1_t>() as u32,
+        abi_version: 1,
+        ..Default::default()
+    }
+}
+
+fn assert_blocker_view(
+    blocker: ProfileReadinessBlocker,
+    expected_kind: &str,
+    requirement_id: Option<&str>,
+    profile_id: Option<&str>,
+    test_id: Option<&str>,
+    source_clause_id: Option<&str>,
+) {
+    let mut view = initialized_blocker_view();
+    populate_profile_readiness_blocker_view(blocker, &mut view);
+    assert_eq!(span_text(view.kind), Some(expected_kind.to_owned()));
+    assert_eq!(span_text(view.message), Some(blocker.as_str().to_owned()));
+    assert_eq!(view.requirement_id_present != 0, requirement_id.is_some());
+    assert_eq!(view.profile_id_present != 0, profile_id.is_some());
+    assert_eq!(view.test_id_present != 0, test_id.is_some());
+    assert_eq!(
+        view.source_clause_id_present != 0,
+        source_clause_id.is_some()
+    );
+    assert_eq!(
+        requirement_id.map(str::to_owned),
+        (view.requirement_id_present != 0).then(|| span_text(view.requirement_id).unwrap())
+    );
+    assert_eq!(
+        profile_id.map(str::to_owned),
+        (view.profile_id_present != 0).then(|| span_text(view.profile_id).unwrap())
+    );
+    assert_eq!(
+        test_id.map(str::to_owned),
+        (view.test_id_present != 0).then(|| span_text(view.test_id).unwrap())
+    );
+    assert_eq!(
+        source_clause_id.map(str::to_owned),
+        (view.source_clause_id_present != 0).then(|| span_text(view.source_clause_id).unwrap())
+    );
+}
+
+#[test]
+fn readiness_blocker_view_preserves_all_thirteen_kinds_and_optional_ids() {
+    assert_blocker_view(
+        ProfileReadinessBlocker::MissingRequirementRecord {
+            requirement_id: "req-1",
+        },
+        "missing_requirement_record",
+        Some("req-1"),
+        None,
+        None,
+        None,
+    );
+    assert_blocker_view(
+        ProfileReadinessBlocker::FailedRequirementRecord {
+            requirement_id: "req-2",
+        },
+        "failed_requirement_record",
+        Some("req-2"),
+        None,
+        None,
+        None,
+    );
+    assert_blocker_view(
+        ProfileReadinessBlocker::UnresolvedRequirementScope {
+            requirement_id: "req-3",
+            source_clause_id: "clause-3",
+        },
+        "unresolved_requirement_scope",
+        Some("req-3"),
+        None,
+        None,
+        Some("clause-3"),
+    );
+    assert_blocker_view(
+        ProfileReadinessBlocker::DuplicateRequirementRecord {
+            requirement_id: "req-4",
+        },
+        "duplicate_requirement_record",
+        Some("req-4"),
+        None,
+        None,
+        None,
+    );
+    assert_blocker_view(
+        ProfileReadinessBlocker::UnknownRequirementRecord,
+        "unknown_requirement_record",
+        None,
+        None,
+        None,
+        None,
+    );
+    assert_blocker_view(
+        ProfileReadinessBlocker::RuntimeValidationUnavailable,
+        "runtime_validation_unavailable",
+        None,
+        None,
+        None,
+        None,
+    );
+    assert_blocker_view(
+        ProfileReadinessBlocker::MandatoryFixtureUnavailable { test_id: "test-1" },
+        "mandatory_fixture_unavailable",
+        None,
+        None,
+        Some("test-1"),
+        None,
+    );
+    assert_blocker_view(
+        ProfileReadinessBlocker::ConditionalProfileUnsatisfied,
+        "conditional_profile_unsatisfied",
+        None,
+        None,
+        None,
+        None,
+    );
+    assert_blocker_view(
+        ProfileReadinessBlocker::DependencyEvidenceIncomplete {
+            profile_id: "profile-1",
+        },
+        "dependency_evidence_incomplete",
+        None,
+        Some("profile-1"),
+        None,
+        None,
+    );
+    assert_blocker_view(
+        ProfileReadinessBlocker::VerificationManifestUnavailable,
+        "verification_manifest_unavailable",
+        None,
+        None,
+        None,
+        None,
+    );
+    assert_blocker_view(
+        ProfileReadinessBlocker::StaleCatalogEvidenceState,
+        "stale_catalog_evidence_state",
+        None,
+        None,
+        None,
+        None,
+    );
+    assert_blocker_view(
+        ProfileReadinessBlocker::CatalogEvidenceReviewRequired,
+        "catalog_evidence_review_required",
+        None,
+        None,
+        None,
+        None,
+    );
+    assert_blocker_view(
+        ProfileReadinessBlocker::ProfileUnavailable,
+        "profile_unavailable",
+        None,
+        None,
+        None,
+        None,
+    );
+}
+
+#[test]
+fn readiness_ffi_preflights_versions_limits_and_invalid_flags() {
+    let profile_id = b"KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let mut out = ptr::null_mut::<kmipkit_profile_readiness_t>();
+    let too_many = test_pointer_ffi_call!(kmipkit_profile_readiness_evaluate_v1(
+        kmipkit_byte_span_v1_t {
+            data: profile_id.as_ptr(),
+            length: profile_id.len() as u64
+        },
+        ptr::NonNull::<kmipkit_profile_evidence_record_v1_t>::dangling().as_ptr(),
+        100_001,
+        &mut out,
+    ));
+    assert_eq!(too_many, ERROR_RESOURCE_LIMIT);
+    assert!(out.is_null());
+
+    let mut oversized = kmipkit_profile_evidence_record_v1_t {
+        struct_size: size_of::<kmipkit_profile_evidence_record_v1_t>() as u32,
+        abi_version: 1,
+        requirement_id: kmipkit_byte_span_v1_t {
+            data: ptr::NonNull::<u8>::dangling().as_ptr(),
+            length: 16 * 1024 * 1024 + 1,
+        },
+        passed: 1,
+        reserved: [0; 7],
+    };
+    let limited = test_pointer_ffi_call!(kmipkit_profile_readiness_evaluate_v1(
+        kmipkit_byte_span_v1_t {
+            data: profile_id.as_ptr(),
+            length: profile_id.len() as u64
+        },
+        &raw const oversized,
+        1,
+        &mut out,
+    ));
+    assert_eq!(limited, ERROR_RESOURCE_LIMIT);
+    assert!(out.is_null());
+
+    oversized.requirement_id.length = 0;
+    oversized.passed = 2;
+    let invalid_flag = test_pointer_ffi_call!(kmipkit_profile_readiness_evaluate_v1(
+        kmipkit_byte_span_v1_t {
+            data: profile_id.as_ptr(),
+            length: profile_id.len() as u64
+        },
+        &raw const oversized,
+        1,
+        &mut out,
+    ));
+    assert_eq!(invalid_flag, ERROR_INVALID_INPUT);
+    assert!(out.is_null());
+
+    oversized.passed = 1;
+    oversized.abi_version = 2;
+    let invalid_version = test_pointer_ffi_call!(kmipkit_profile_readiness_evaluate_v1(
+        kmipkit_byte_span_v1_t {
+            data: profile_id.as_ptr(),
+            length: profile_id.len() as u64
+        },
+        &raw const oversized,
+        1,
+        &mut out,
+    ));
+    assert_eq!(invalid_version, ERROR_INVALID_INPUT);
+    assert!(out.is_null());
+}
+
+#[test]
+fn readiness_views_borrow_from_the_live_handle_and_baseline_stays_unclaimed() {
+    let profile_id = b"KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let mut readiness = ptr::null_mut::<kmipkit_profile_readiness_t>();
+    let status = test_pointer_ffi_call!(kmipkit_profile_readiness_evaluate_v1(
+        kmipkit_byte_span_v1_t {
+            data: profile_id.as_ptr(),
+            length: profile_id.len() as u64
+        },
+        ptr::null(),
+        0,
+        &mut readiness,
+    ));
+    assert_eq!(status, 0);
+    assert!(!readiness.is_null());
+
+    let mut view = kmipkit_profile_readiness_view_v1_t {
+        struct_size: size_of::<kmipkit_profile_readiness_view_v1_t>() as u32,
+        abi_version: 1,
+        ..Default::default()
+    };
+    let status =
+        test_pointer_ffi_call!(kmipkit_profile_readiness_view_get_v1(readiness, &mut view));
+    assert_eq!(status, 0);
+    assert_eq!(
+        span_text(view.profile_id).as_deref(),
+        Some("KMIPKIT-PROFILE-BASELINE-CLIENT")
+    );
+    assert_eq!(
+        span_text(view.effective_state).as_deref(),
+        Some("evidence_incomplete")
+    );
+    assert_eq!(view.published_claim, 0);
+    assert!(view.target_selected != 0);
+    assert!(!view.profile_id.data.is_null());
+    kmipkit_profile_readiness_release(readiness);
+}
+
+fn assert_catalog_strings(table: u32, row_index: u64, relation: u32, expected: &[&str]) {
+    let mut count = u64::MAX;
+    assert_eq!(
+        kmipkit_profile_catalog_relation_count_v1(table, row_index, relation, &mut count),
+        0
+    );
+    assert_eq!(count as usize, expected.len());
+    for (index, expected_value) in expected.iter().enumerate() {
+        let mut row = crate::kmipkit_profile_catalog_row_view_v1_t {
+            struct_size: size_of::<crate::kmipkit_profile_catalog_row_view_v1_t>() as u32,
+            abi_version: 1,
+            ..Default::default()
+        };
+        assert_eq!(
+            kmipkit_profile_catalog_relation_at_v1(
+                table,
+                row_index,
+                relation,
+                index as u64,
+                &mut row
+            ),
+            0
+        );
+        assert_eq!(span_text(row.text_value).as_deref(), Some(*expected_value));
+    }
+}
+
+fn expected_category(
+    value: kmipkit_protocol::profiles_generated::GeneratedVerificationCategory,
+) -> &'static str {
+    use kmipkit_protocol::profiles_generated::GeneratedVerificationCategory as Category;
+    match value {
+        Category::RequiredBehavior => "required_behavior",
+        Category::ProhibitedBehavior => "prohibited_behavior",
+        Category::RecommendedBehaviorOrDeviation => "recommended_behavior_or_deviation",
+        Category::DiscouragedAbsenceOrDeviation => "discouraged_absence_or_deviation",
+        Category::OptionalCapability => "optional_capability",
+    }
+}
+
+#[test]
+fn catalog_ffi_matches_every_generated_rust_row_and_ordered_relation() {
+    use kmipkit_protocol::profiles_generated::{
+        CLIENT_PROFILES, CLIENT_REQUIREMENTS, PROFILE_TEST_CASES,
+    };
+    const PROFILE_TABLE: u32 = KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES;
+    const REQUIREMENT_TABLE: u32 = KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_REQUIREMENTS;
+    const TEST_CASE_TABLE: u32 = KMIPKIT_PROFILE_CATALOG_TABLE_PROFILE_TEST_CASES;
+
+    for (table, expected_count) in [
+        (PROFILE_TABLE, CLIENT_PROFILES.len()),
+        (REQUIREMENT_TABLE, CLIENT_REQUIREMENTS.len()),
+        (TEST_CASE_TABLE, PROFILE_TEST_CASES.len()),
+    ] {
+        let mut actual_count = 0;
+        assert_eq!(
+            kmipkit_profile_catalog_table_count_v1(table, &mut actual_count),
+            0
+        );
+        assert_eq!(actual_count as usize, expected_count);
+    }
+
+    for (index, expected) in CLIENT_PROFILES.iter().enumerate() {
+        let mut row = crate::kmipkit_profile_catalog_row_view_v1_t {
+            struct_size: size_of::<crate::kmipkit_profile_catalog_row_view_v1_t>() as u32,
+            abi_version: 1,
+            ..Default::default()
+        };
+        assert_eq!(
+            kmipkit_profile_catalog_row_at_v1(PROFILE_TABLE, index as u64, &mut row),
+            0
+        );
+        assert_eq!(
+            span_text(row.profile_id).as_deref(),
+            Some(expected.profile_id)
+        );
+        assert_eq!(span_text(row.name).as_deref(), Some(expected.name));
+        assert_eq!(
+            span_text(row.applicability).as_deref(),
+            Some(expected.applicability)
+        );
+        assert_eq!(
+            span_text(row.claim_state).as_deref(),
+            Some(expected.claim_state)
+        );
+        assert_eq!(row.selected_target != 0, expected.selected_target);
+        assert_catalog_strings(
+            PROFILE_TABLE,
+            index as u64,
+            KMIPKIT_PROFILE_CATALOG_RELATION_DIRECT_SOURCE_CLAUSE_IDS,
+            expected.direct_source_clause_ids,
+        );
+        assert_catalog_strings(
+            PROFILE_TABLE,
+            index as u64,
+            KMIPKIT_PROFILE_CATALOG_RELATION_SOURCE_CLAUSE_IDS,
+            expected.source_clause_ids,
+        );
+        assert_catalog_strings(
+            PROFILE_TABLE,
+            index as u64,
+            KMIPKIT_PROFILE_CATALOG_RELATION_REQUIREMENT_IDS,
+            expected.requirement_ids,
+        );
+        assert_catalog_strings(
+            PROFILE_TABLE,
+            index as u64,
+            KMIPKIT_PROFILE_CATALOG_RELATION_DEPENDENCY_PROFILE_IDS,
+            expected.dependency_profile_ids,
+        );
+        assert_catalog_strings(
+            PROFILE_TABLE,
+            index as u64,
+            KMIPKIT_PROFILE_CATALOG_RELATION_TRANSPORT_REQUIREMENTS,
+            expected.transport_requirements,
+        );
+        assert_catalog_strings(
+            PROFILE_TABLE,
+            index as u64,
+            KMIPKIT_PROFILE_CATALOG_RELATION_ENCODING_REQUIREMENTS,
+            expected.encoding_requirements,
+        );
+        let mut count = 0;
+        assert_eq!(
+            kmipkit_profile_catalog_relation_count_v1(
+                PROFILE_TABLE,
+                index as u64,
+                KMIPKIT_PROFILE_CATALOG_RELATION_UNRESOLVED_SCOPE_OBLIGATIONS,
+                &mut count
+            ),
+            0
+        );
+        assert_eq!(count as usize, expected.unresolved_scope_obligations.len());
+        for (nested_index, blocker) in expected.unresolved_scope_obligations.iter().enumerate() {
+            let mut nested = crate::kmipkit_profile_catalog_row_view_v1_t {
+                struct_size: size_of::<crate::kmipkit_profile_catalog_row_view_v1_t>() as u32,
+                abi_version: 1,
+                ..Default::default()
+            };
+            assert_eq!(
+                kmipkit_profile_catalog_relation_at_v1(
+                    PROFILE_TABLE,
+                    index as u64,
+                    KMIPKIT_PROFILE_CATALOG_RELATION_UNRESOLVED_SCOPE_OBLIGATIONS,
+                    nested_index as u64,
+                    &mut nested
+                ),
+                0
+            );
+            assert_eq!(
+                span_text(nested.requirement_id).as_deref(),
+                Some(blocker.requirement_id)
+            );
+            assert_eq!(
+                span_text(nested.source_clause_id).as_deref(),
+                Some(blocker.source_clause_id)
+            );
+            assert_eq!(
+                span_text(nested.scope_state).as_deref(),
+                Some(blocker.scope_state)
+            );
+        }
+        let mut tests_count = 0;
+        assert_eq!(
+            kmipkit_profile_catalog_relation_count_v1(
+                PROFILE_TABLE,
+                index as u64,
+                KMIPKIT_PROFILE_CATALOG_RELATION_TEST_CASES,
+                &mut tests_count
+            ),
+            0
+        );
+        assert_eq!(tests_count as usize, expected.test_cases.len());
+        for (nested_index, test) in expected.test_cases.iter().enumerate() {
+            let mut nested = crate::kmipkit_profile_catalog_row_view_v1_t {
+                struct_size: size_of::<crate::kmipkit_profile_catalog_row_view_v1_t>() as u32,
+                abi_version: 1,
+                ..Default::default()
+            };
+            assert_eq!(
+                kmipkit_profile_catalog_relation_at_v1(
+                    PROFILE_TABLE,
+                    index as u64,
+                    KMIPKIT_PROFILE_CATALOG_RELATION_TEST_CASES,
+                    nested_index as u64,
+                    &mut nested
+                ),
+                0
+            );
+            assert_eq!(span_text(nested.test_id).as_deref(), Some(test.test_id));
+            assert_eq!(
+                span_text(nested.official_case_id).as_deref(),
+                Some(test.official_case_id)
+            );
+            assert_eq!(
+                span_text(nested.mandatory_status).as_deref(),
+                Some(test.mandatory_status)
+            );
+            assert_eq!(
+                span_text(nested.fixture_availability).as_deref(),
+                Some(test.fixture_availability)
+            );
+        }
+    }
+
+    for (index, expected) in CLIENT_REQUIREMENTS.iter().enumerate() {
+        let mut row = crate::kmipkit_profile_catalog_row_view_v1_t {
+            struct_size: size_of::<crate::kmipkit_profile_catalog_row_view_v1_t>() as u32,
+            abi_version: 1,
+            ..Default::default()
+        };
+        assert_eq!(
+            kmipkit_profile_catalog_row_at_v1(REQUIREMENT_TABLE, index as u64, &mut row),
+            0
+        );
+        assert_eq!(
+            span_text(row.requirement_id).as_deref(),
+            Some(expected.requirement_id)
+        );
+        assert_eq!(
+            row.source_keyword_present != 0,
+            expected.source_keyword.is_some()
+        );
+        assert_eq!(
+            span_text(row.source_keyword).as_deref(),
+            expected.source_keyword
+        );
+        assert_eq!(
+            row.source_force_present != 0,
+            expected.source_force.is_some()
+        );
+        assert_eq!(
+            span_text(row.source_force).as_deref(),
+            expected.source_force
+        );
+        assert_eq!(
+            row.source_gap_id_present != 0,
+            expected.source_gap_id.is_some()
+        );
+        assert_eq!(
+            span_text(row.source_gap_id).as_deref(),
+            expected.source_gap_id
+        );
+        assert_eq!(
+            row.source_locator_present != 0,
+            expected.source_locator.is_some()
+        );
+        assert_eq!(
+            span_text(row.source_locator).as_deref(),
+            expected.source_locator
+        );
+        assert_eq!(
+            span_text(row.verification_category).as_deref(),
+            Some(expected_category(expected.verification_category))
+        );
+        assert_eq!(
+            span_text(row.scope_state).as_deref(),
+            Some(expected.scope_state)
+        );
+        assert_eq!(
+            row.has_accepted_deviation != 0,
+            expected.has_accepted_deviation
+        );
+        assert_catalog_strings(
+            REQUIREMENT_TABLE,
+            index as u64,
+            KMIPKIT_PROFILE_CATALOG_RELATION_SOURCE_CLAUSE_IDS,
+            expected.source_clause_ids,
+        );
+        assert_catalog_strings(
+            REQUIREMENT_TABLE,
+            index as u64,
+            KMIPKIT_PROFILE_CATALOG_RELATION_PROFILE_IDS,
+            expected.profile_ids,
+        );
+        assert_catalog_strings(
+            REQUIREMENT_TABLE,
+            index as u64,
+            KMIPKIT_PROFILE_CATALOG_RELATION_OFFICIAL_TEST_CASE_IDS,
+            expected.official_test_case_ids,
+        );
+    }
+
+    for (index, expected) in PROFILE_TEST_CASES.iter().enumerate() {
+        let mut row = crate::kmipkit_profile_catalog_row_view_v1_t {
+            struct_size: size_of::<crate::kmipkit_profile_catalog_row_view_v1_t>() as u32,
+            abi_version: 1,
+            ..Default::default()
+        };
+        assert_eq!(
+            kmipkit_profile_catalog_row_at_v1(TEST_CASE_TABLE, index as u64, &mut row),
+            0
+        );
+        assert_eq!(span_text(row.test_id).as_deref(), Some(expected.test_id));
+        assert_eq!(
+            span_text(row.official_case_id).as_deref(),
+            Some(expected.official_case_id)
+        );
+        assert_eq!(
+            span_text(row.mandatory_status).as_deref(),
+            Some(expected.mandatory_status)
+        );
+        assert_eq!(
+            span_text(row.fixture_availability).as_deref(),
+            Some(expected.fixture_availability)
+        );
+    }
+}

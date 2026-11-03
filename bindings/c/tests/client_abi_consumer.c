@@ -8761,3 +8761,80 @@ cleanup:
     kmipkit_codec_limits_release(limits);
     return result;
 }
+
+
+static int profile_span_equals(kmipkit_byte_span_v1_t span, const char *expected) {
+    size_t length = strlen(expected);
+    return span.data != 0 && span.length == (uint64_t)length &&
+        memcmp(span.data, expected, length) == 0;
+}
+
+int kmipkit_client_abi_c_consumer_profile_readiness_contract(void) {
+    kmipkit_profile_readiness_t *readiness = 0;
+    kmipkit_profile_readiness_t *unknown = (kmipkit_profile_readiness_t *)(uintptr_t)1;
+    kmipkit_profile_readiness_view_v1_t readiness_view = {0};
+    kmipkit_profile_readiness_blocker_view_v1_t blocker = {0};
+    kmipkit_profile_catalog_row_view_v1_t row = {0};
+    kmipkit_profile_catalog_row_view_v1_t relation = {0};
+    uint64_t profile_count = 0;
+    uint64_t requirement_count = 0;
+    uint64_t test_case_count = 0;
+    uint64_t baseline_requirement_count = 0;
+    int result = 0;
+    static const uint8_t baseline[] = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    static const uint8_t unknown_id[] = "KMIPKIT-PROFILE-UNKNOWN";
+    const kmipkit_byte_span_v1_t baseline_span = {baseline, sizeof(baseline) - 1};
+    const kmipkit_byte_span_v1_t unknown_span = {unknown_id, sizeof(unknown_id) - 1};
+
+    readiness_view.struct_size = (uint32_t)sizeof(readiness_view);
+    readiness_view.abi_version = 1;
+    blocker.struct_size = (uint32_t)sizeof(blocker);
+    blocker.abi_version = 1;
+    row.struct_size = (uint32_t)sizeof(row);
+    row.abi_version = 1;
+    relation.struct_size = (uint32_t)sizeof(relation);
+    relation.abi_version = 1;
+    if (kmipkit_profile_readiness_evaluate_v1(
+            baseline_span, 0, 0, &readiness) != 0 ||
+        readiness == 0 ||
+        kmipkit_profile_readiness_view_get_v1(readiness, &readiness_view) != 0 ||
+        !profile_span_equals(readiness_view.profile_id, "KMIPKIT-PROFILE-BASELINE-CLIENT") ||
+        !profile_span_equals(readiness_view.effective_state, "evidence_incomplete") ||
+        readiness_view.target_selected != 1 || readiness_view.runtime_validation_available != 0 ||
+        readiness_view.published_claim != 0 || readiness_view.blocker_count == 0 ||
+        kmipkit_profile_readiness_blocker_at_v1(
+            readiness, readiness_view.blocker_count, &blocker) != T076_ERROR_INVALID_INPUT ||
+        kmipkit_profile_catalog_table_count_v1(
+            KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES, &profile_count) != 0 || profile_count != 18 ||
+        kmipkit_profile_catalog_table_count_v1(
+            KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_REQUIREMENTS, &requirement_count) != 0 || requirement_count != 483 ||
+        kmipkit_profile_catalog_table_count_v1(
+            KMIPKIT_PROFILE_CATALOG_TABLE_PROFILE_TEST_CASES, &test_case_count) != 0 || test_case_count != 94 ||
+        kmipkit_profile_catalog_row_at_v1(
+            KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES, 2, &row) != 0 ||
+        !profile_span_equals(row.profile_id, "KMIPKIT-PROFILE-BASELINE-CLIENT") ||
+        !profile_span_equals(row.claim_state, "evidence_incomplete") || row.selected_target != 1 ||
+        kmipkit_profile_catalog_relation_count_v1(
+            KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES, 2,
+            KMIPKIT_PROFILE_CATALOG_RELATION_REQUIREMENT_IDS, &baseline_requirement_count) != 0 ||
+        baseline_requirement_count == 0 ||
+        kmipkit_profile_catalog_relation_at_v1(
+            KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES, 2,
+            KMIPKIT_PROFILE_CATALOG_RELATION_REQUIREMENT_IDS, baseline_requirement_count - 1,
+            &relation) != 0 || relation.text_value.length == 0 || relation.text_value.data == 0 ||
+        kmipkit_profile_catalog_row_at_v1(
+            KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES, profile_count, &row) != T076_ERROR_INVALID_INPUT ||
+        kmipkit_profile_readiness_evaluate_v1(
+            unknown_span, 0, 0, &unknown) != 0 ||
+        unknown != 0) {
+        goto cleanup;
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_profile_readiness_release(readiness);
+    if (unknown != 0 && unknown != (kmipkit_profile_readiness_t *)(uintptr_t)1) {
+        kmipkit_profile_readiness_release(unknown);
+    }
+    return result;
+}

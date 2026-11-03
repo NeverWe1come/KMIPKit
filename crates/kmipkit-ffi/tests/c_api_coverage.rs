@@ -280,6 +280,7 @@ unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_batch_item_readback() -> i32;
     fn kmipkit_client_abi_c_consumer_async_output_errors_clear() -> i32;
     fn kmipkit_client_abi_c_consumer_async_request_models() -> i32;
+    fn kmipkit_client_abi_c_consumer_profile_readiness_contract() -> i32;
     fn shared_ttlv_fixture_preserves_open_values_and_order(
         raw_tags: *const u32,
         enumeration_value: u32,
@@ -331,6 +332,14 @@ fn compiled_c_consumer_builds_typed_async_payloads_without_network_execution() {
     // SAFETY: The C helper owns its request and TTLV handles and only reads borrowed spans while
     // their source request handle is alive.
     let result = unsafe { kmipkit_client_abi_c_consumer_async_request_models() };
+    assert_eq!(result, 1);
+}
+
+#[test]
+fn compiled_c_consumer_exposes_profile_readiness_and_catalog_contract() {
+    // SAFETY: The C helper allocates and releases its own readiness handles and only reads spans
+    // borrowed from a live handle. Catalog spans point to static generated rows.
+    let result = unsafe { kmipkit_client_abi_c_consumer_profile_readiness_contract() };
     assert_eq!(result, 1);
 }
 
