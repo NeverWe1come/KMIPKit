@@ -184,9 +184,9 @@ class T102ProfileContextStateTraitBatchTests(unittest.TestCase):
             and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(candidates, 919)
-        self.assertEqual(len(self.manifest["publicDeclarations"]), 6522)
-        self.assertEqual(len(self.manifest["approvedExclusions"]), 8428)
+        self.assertEqual(candidates, 841)
+        self.assertEqual(len(self.manifest["publicDeclarations"]), 6470)
+        self.assertEqual(len(self.manifest["approvedExclusions"]), 8480)
 
 
 if __name__ == "__main__":

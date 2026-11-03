@@ -184,7 +184,7 @@ class T102RngRootTraitBatchTests(unittest.TestCase):
             and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(candidate_count, 919)
+        self.assertEqual(candidate_count, 841)
 
     def test_root_parents_and_non_trait_rng_paths_remain_blocked(self) -> None:
         declarations = {

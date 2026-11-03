@@ -10,6 +10,10 @@ fn public_version_matches_the_synchronized_package_version() {
 #[test]
 fn capability_query_matches_manifest_ready_capabilities() {
     assert_eq!(
+        kmipkit::capability_is_available("client_profile_readiness"),
+        Ok(true)
+    );
+    assert_eq!(
         kmipkit::capability_is_available("ffi_runtime_metadata"),
         Ok(true)
     );

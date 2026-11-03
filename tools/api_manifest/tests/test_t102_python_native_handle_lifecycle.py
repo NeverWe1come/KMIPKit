@@ -81,12 +81,11 @@ class T102PythonNativeHandleLifecycleTests(unittest.TestCase):
             self.assertEqual(close["capabilityId"], row["capabilityId"])
             self.assertEqual("four-language", row["parityScope"])
             self.assertEqual(LANGUAGES, set(row["languageMappings"]))
-            for language in ("rust", "c", "java"):
+            for language in LANGUAGES:
                 self.assertEqual(
                     close["languageMappings"][language],
                     row["languageMappings"][language],
                 )
-            self.assertEqual(exit_name, row["languageMappings"]["python"]["name"])
             self.assertEqual(close["approvalSource"], row["approvalSource"])
             self.assertTrue(
                 {
@@ -123,7 +122,8 @@ class T102PythonNativeHandleLifecycleTests(unittest.TestCase):
                 name = f"{python_type}.{member}"
                 exclusion = self.exclusions[("python-kmipkit", name)]
                 self.assertEqual(APPROVAL, exclusion["approvalSource"])
-                self.assertIn("python-only native-handle convenience", exclusion["reason"])
+                self.assertIn("This exact Python", exclusion["reason"])
+                self.assertIn("independent KMIPKit capability", exclusion["reason"])
                 self.assertIn("KMIPKIT-0043-FR-010", exclusion["evidence"])
                 self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
                 self.assertIn("bindings/python/src/kmipkit/_handles.py", exclusion["evidence"])
