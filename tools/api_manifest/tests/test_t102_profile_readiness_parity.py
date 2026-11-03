@@ -52,7 +52,10 @@ class T102ProfileReadinessParityTests(unittest.TestCase):
         self.assertEqual(len(catalog_names), 44)
         self.assertEqual(stable_names_sha256(catalog_names), CATALOG_SHA256)
         self.assertEqual(
-            len([row for row in declarations if row.get("capabilityId") == "client_profile_readiness"]),
+            len([row for row in declarations if row.get("capabilityId") == "client_profile_readiness"
+                 and row["packageId"] == "rust-kmipkit-protocol"
+                 and row.get("candidateSpecId") in (None, "KMIPKIT-0043")
+                 and (row["exportName"] in readiness_names | catalog_names)]),
             89,
         )
         for name in readiness_names | catalog_names:
