@@ -65,6 +65,24 @@ typedef uint32_t kmipkit_credential_validation_error_kind_t;
 
 #define KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG ((uint32_t)1)
 #define KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME ((uint32_t)2)
+#define KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES ((uint32_t)1)
+#define KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_REQUIREMENTS ((uint32_t)2)
+#define KMIPKIT_PROFILE_CATALOG_TABLE_PROFILE_TEST_CASES ((uint32_t)3)
+#define KMIPKIT_PROFILE_CATALOG_ROW_PROFILE ((uint32_t)1)
+#define KMIPKIT_PROFILE_CATALOG_ROW_REQUIREMENT ((uint32_t)2)
+#define KMIPKIT_PROFILE_CATALOG_ROW_TEST_CASE ((uint32_t)3)
+#define KMIPKIT_PROFILE_CATALOG_ROW_SCOPE_BLOCKER ((uint32_t)4)
+#define KMIPKIT_PROFILE_CATALOG_ROW_STRING ((uint32_t)5)
+#define KMIPKIT_PROFILE_CATALOG_RELATION_DIRECT_SOURCE_CLAUSE_IDS ((uint32_t)1)
+#define KMIPKIT_PROFILE_CATALOG_RELATION_SOURCE_CLAUSE_IDS ((uint32_t)2)
+#define KMIPKIT_PROFILE_CATALOG_RELATION_REQUIREMENT_IDS ((uint32_t)3)
+#define KMIPKIT_PROFILE_CATALOG_RELATION_UNRESOLVED_SCOPE_OBLIGATIONS ((uint32_t)4)
+#define KMIPKIT_PROFILE_CATALOG_RELATION_DEPENDENCY_PROFILE_IDS ((uint32_t)5)
+#define KMIPKIT_PROFILE_CATALOG_RELATION_TRANSPORT_REQUIREMENTS ((uint32_t)6)
+#define KMIPKIT_PROFILE_CATALOG_RELATION_ENCODING_REQUIREMENTS ((uint32_t)7)
+#define KMIPKIT_PROFILE_CATALOG_RELATION_TEST_CASES ((uint32_t)8)
+#define KMIPKIT_PROFILE_CATALOG_RELATION_PROFILE_IDS ((uint32_t)9)
+#define KMIPKIT_PROFILE_CATALOG_RELATION_OFFICIAL_TEST_CASE_IDS ((uint32_t)10)
 
 typedef struct kmipkit_extension_identity_t kmipkit_extension_identity_t;
 typedef struct kmipkit_extension_compatibility_t kmipkit_extension_compatibility_t;
@@ -148,6 +166,11 @@ typedef struct kmipkit_set_attribute_request_t kmipkit_set_attribute_request_t;
 typedef struct kmipkit_get_attributes_request_t kmipkit_get_attributes_request_t;
 typedef struct kmipkit_get_attribute_list_request_t kmipkit_get_attribute_list_request_t;
 typedef struct kmipkit_attribute_set_t kmipkit_attribute_set_t;
+typedef struct kmipkit_profile_readiness_t kmipkit_profile_readiness_t;
+typedef struct kmipkit_profile_evidence_record_v1_t kmipkit_profile_evidence_record_v1_t;
+typedef struct kmipkit_profile_readiness_view_v1_t kmipkit_profile_readiness_view_v1_t;
+typedef struct kmipkit_profile_readiness_blocker_view_v1_t kmipkit_profile_readiness_blocker_view_v1_t;
+typedef struct kmipkit_profile_catalog_row_view_v1_t kmipkit_profile_catalog_row_view_v1_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -327,6 +350,87 @@ struct kmipkit_byte_span_v1_t {
     uint64_t length;
 };
 
+struct kmipkit_profile_evidence_record_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    kmipkit_byte_span_v1_t requirement_id;
+    uint8_t passed;
+    uint8_t reserved_0;
+    uint8_t reserved_1;
+    uint8_t reserved_2;
+    uint8_t reserved_3;
+    uint8_t reserved_4;
+    uint8_t reserved_5;
+    uint8_t reserved_6;
+};
+
+struct kmipkit_profile_readiness_view_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    kmipkit_byte_span_v1_t profile_id;
+    kmipkit_byte_span_v1_t effective_state;
+    uint8_t target_selected;
+    uint8_t runtime_validation_available;
+    uint8_t requirement_records_complete;
+    uint8_t published_claim;
+    uint8_t reserved_0;
+    uint8_t reserved_1;
+    uint8_t reserved_2;
+    uint8_t reserved_3;
+    uint64_t blocker_count;
+};
+
+struct kmipkit_profile_readiness_blocker_view_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    kmipkit_byte_span_v1_t kind;
+    kmipkit_byte_span_v1_t message;
+    uint8_t requirement_id_present;
+    uint8_t profile_id_present;
+    uint8_t test_id_present;
+    uint8_t source_clause_id_present;
+    uint8_t reserved_0;
+    uint8_t reserved_1;
+    uint8_t reserved_2;
+    uint8_t reserved_3;
+    kmipkit_byte_span_v1_t requirement_id;
+    kmipkit_byte_span_v1_t profile_id;
+    kmipkit_byte_span_v1_t test_id;
+    kmipkit_byte_span_v1_t source_clause_id;
+};
+
+struct kmipkit_profile_catalog_row_view_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t row_kind;
+    uint32_t reserved;
+    kmipkit_byte_span_v1_t profile_id;
+    kmipkit_byte_span_v1_t name;
+    kmipkit_byte_span_v1_t applicability;
+    kmipkit_byte_span_v1_t claim_state;
+    uint8_t selected_target;
+    uint8_t has_accepted_deviation;
+    uint8_t source_keyword_present;
+    uint8_t source_force_present;
+    uint8_t source_gap_id_present;
+    uint8_t source_locator_present;
+    uint8_t reserved_flag_0;
+    uint8_t reserved_flag_1;
+    kmipkit_byte_span_v1_t requirement_id;
+    kmipkit_byte_span_v1_t source_clause_id;
+    kmipkit_byte_span_v1_t source_keyword;
+    kmipkit_byte_span_v1_t source_force;
+    kmipkit_byte_span_v1_t source_gap_id;
+    kmipkit_byte_span_v1_t source_locator;
+    kmipkit_byte_span_v1_t verification_category;
+    kmipkit_byte_span_v1_t scope_state;
+    kmipkit_byte_span_v1_t test_id;
+    kmipkit_byte_span_v1_t official_case_id;
+    kmipkit_byte_span_v1_t mandatory_status;
+    kmipkit_byte_span_v1_t fixture_availability;
+    kmipkit_byte_span_v1_t text_value;
+};
+
 struct kmipkit_client_batch_item_metadata_v1_t {
     uint32_t struct_size;
     uint32_t abi_version;
@@ -437,6 +541,7 @@ void kmipkit_set_attribute_request_release(kmipkit_set_attribute_request_t *hand
 void kmipkit_get_attributes_request_release(kmipkit_get_attributes_request_t *handle);
 void kmipkit_get_attribute_list_request_release(kmipkit_get_attribute_list_request_t *handle);
 void kmipkit_attribute_set_release(kmipkit_attribute_set_t *handle);
+void kmipkit_profile_readiness_release(kmipkit_profile_readiness_t *handle);
 #define KMIPKIT_ERROR_COMPATIBILITY_MISMATCH ((int32_t)1)
 #define KMIPKIT_ERROR_DUPLICATE_KEY ((int32_t)2)
 #define KMIPKIT_ERROR_INVALID_IDENTITY ((int32_t)3)
@@ -2007,6 +2112,34 @@ int32_t kmipkit_last_error_profile_validation_error_get_v1(kmipkit_profile_valid
  */
 /* KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_profile_validation_error_view_get_v1(kmipkit_profile_validation_error_t * error, kmipkit_profile_validation_error_view_v1_t * out_view);
+/* Canonical Rust evaluator; unknown profiles return success with a null handle. Bounded to 100,000 records and 16 MiB aggregate UTF-8 input.
+ */
+/* KMIPKIT-0010-FR-010, KMIPKIT-0010-FR-017, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_readiness_evaluate_v1(const kmipkit_byte_span_v1_t * profile_id, const kmipkit_profile_evidence_record_v1_t * records, uint64_t record_count, kmipkit_profile_readiness_t ** out_readiness);
+/* Borrowed spans remain valid until handle release.
+ */
+/* KMIPKIT-0010-FR-010, KMIPKIT-0010-FR-017, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_readiness_view_get_v1(kmipkit_profile_readiness_t * readiness, kmipkit_profile_readiness_view_v1_t * out_view);
+/* Fixed redacted messages; borrowed spans remain valid until handle release.
+ */
+/* KMIPKIT-0010-FR-010, KMIPKIT-0010-FR-017, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_readiness_blocker_at_v1(kmipkit_profile_readiness_t * readiness, uint64_t index, kmipkit_profile_readiness_blocker_view_v1_t * out_view);
+/* Returns one generated table row count.
+ */
+/* KMIPKIT-0010-FR-010, KMIPKIT-0010-FR-017, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_catalog_table_count_v1(uint32_t table, uint64_t * out_count);
+/* Catalog spans borrow static generated data.
+ */
+/* KMIPKIT-0010-FR-010, KMIPKIT-0010-FR-017, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_catalog_row_at_v1(uint32_t table, uint64_t index, kmipkit_profile_catalog_row_view_v1_t * out_row);
+/* Returns ordered child count.
+ */
+/* KMIPKIT-0010-FR-010, KMIPKIT-0010-FR-017, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_catalog_relation_count_v1(uint32_t table, uint64_t row_index, uint32_t relation, uint64_t * out_count);
+/* Copies ordered child row; strings use text_value.
+ */
+/* KMIPKIT-0010-FR-010, KMIPKIT-0010-FR-017, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_catalog_relation_at_v1(uint32_t table, uint64_t row_index, uint32_t relation, uint64_t relation_index, kmipkit_profile_catalog_row_view_v1_t * out_row);
 /* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
 /* Executes one KMIP batch and returns an owned generic ResponseMessage TTLV only for an approved missing, repeated, or malformed Unique Identifier in a successful MAC, MAC Verify, Sign, or Signature Verify response.

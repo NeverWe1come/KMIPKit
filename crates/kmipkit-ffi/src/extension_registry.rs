@@ -47,7 +47,7 @@ use crate::{
     kmipkit_hashed_password_credential_t, kmipkit_hashed_password_timestamp_sequence_t,
     kmipkit_message_extension_view_t, kmipkit_message_validation_error_t,
     kmipkit_modify_attribute_request_t, kmipkit_nonce_t, kmipkit_poll_request_t,
-    kmipkit_process_request_t, kmipkit_profile_object_state_v1_t,
+    kmipkit_process_request_t, kmipkit_profile_object_state_v1_t, kmipkit_profile_readiness_t,
     kmipkit_profile_validation_context_v1_t, kmipkit_profile_validation_error_t,
     kmipkit_profile_validation_error_view_v1_t, kmipkit_profile_validation_selection_v1_t,
     kmipkit_query_async_requests_request_t, kmipkit_raw_tag_t, kmipkit_register_request_t,
@@ -96,7 +96,7 @@ use kmipkit_protocol::{
 };
 use kmipkit_protocol::{MessageValidationError, MessageValidationErrorKind, RequestMessage};
 use kmipkit_protocol::{
-    ProfileObjectState, ProfileValidationContext, ProfileValidationError,
+    ProfileObjectState, ProfileReadiness, ProfileValidationContext, ProfileValidationError,
     ProfileValidationSelection,
 };
 use kmipkit_transport::{
@@ -243,6 +243,27 @@ const BATCH_OUTCOME_PENDING: u32 = 2;
 const PROFILE_ERROR_SOURCE_NONE: u32 = 0;
 const PROFILE_ERROR_SOURCE_CLAUSE: u32 = 1;
 const PROFILE_ERROR_SOURCE_GAP: u32 = 2;
+const MAX_PROFILE_READINESS_RECORDS: u64 = 100_000;
+const MAX_PROFILE_READINESS_BYTES: u64 = 16 * 1024 * 1024;
+const MAX_PROFILE_READINESS_IDENTIFIER_BYTES: u64 = 4_096;
+const KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES: u32 = 1;
+const KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_REQUIREMENTS: u32 = 2;
+const KMIPKIT_PROFILE_CATALOG_TABLE_PROFILE_TEST_CASES: u32 = 3;
+const KMIPKIT_PROFILE_CATALOG_ROW_PROFILE: u32 = 1;
+const KMIPKIT_PROFILE_CATALOG_ROW_REQUIREMENT: u32 = 2;
+const KMIPKIT_PROFILE_CATALOG_ROW_TEST_CASE: u32 = 3;
+const KMIPKIT_PROFILE_CATALOG_ROW_SCOPE_BLOCKER: u32 = 4;
+const KMIPKIT_PROFILE_CATALOG_ROW_STRING: u32 = 5;
+const KMIPKIT_PROFILE_CATALOG_RELATION_DIRECT_SOURCE_CLAUSE_IDS: u32 = 1;
+const KMIPKIT_PROFILE_CATALOG_RELATION_SOURCE_CLAUSE_IDS: u32 = 2;
+const KMIPKIT_PROFILE_CATALOG_RELATION_REQUIREMENT_IDS: u32 = 3;
+const KMIPKIT_PROFILE_CATALOG_RELATION_UNRESOLVED_SCOPE_OBLIGATIONS: u32 = 4;
+const KMIPKIT_PROFILE_CATALOG_RELATION_DEPENDENCY_PROFILE_IDS: u32 = 5;
+const KMIPKIT_PROFILE_CATALOG_RELATION_TRANSPORT_REQUIREMENTS: u32 = 6;
+const KMIPKIT_PROFILE_CATALOG_RELATION_ENCODING_REQUIREMENTS: u32 = 7;
+const KMIPKIT_PROFILE_CATALOG_RELATION_TEST_CASES: u32 = 8;
+const KMIPKIT_PROFILE_CATALOG_RELATION_PROFILE_IDS: u32 = 9;
+const KMIPKIT_PROFILE_CATALOG_RELATION_OFFICIAL_TEST_CASE_IDS: u32 = 10;
 
 enum DelegatedLoginLeaseTime {
     Interval(u32),
@@ -462,6 +483,7 @@ enum Kind {
     ResponseBatchItemView,
     MessageValidationError,
     ProfileValidationError,
+    ProfileReadiness,
     TransportConfig,
     Client,
     ClientBatch,
@@ -574,6 +596,7 @@ enum HandleValue {
     },
     MessageValidationError(MessageValidationError),
     ProfileValidationError(ProfileValidationError),
+    ProfileReadiness(ProfileReadiness),
     TransportConfig(TransportConfig),
     Client(Box<std::sync::Mutex<Client>>),
     ClientBatch(Arc<Mutex<Option<ClientBatchBuilder>>>),
@@ -2497,6 +2520,625 @@ pub unsafe extern "C" fn kmipkit_profile_validation_error_view_get_v1(
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         *view = try_ffi!(profile_validation_error_view(error, expected_size, 1,));
+        SUCCESS
+    })
+}
+
+fn profile_catalog_span(value: &str) -> crate::kmipkit_byte_span_v1_t {
+    crate::kmipkit_byte_span_v1_t {
+        data: value.as_ptr(),
+        length: value.len() as u64,
+    }
+}
+
+fn profile_catalog_optional_span(
+    value: Option<&str>,
+    present: &mut u8,
+) -> crate::kmipkit_byte_span_v1_t {
+    match value {
+        Some(value) => {
+            *present = 1;
+            profile_catalog_span(value)
+        }
+        None => crate::kmipkit_byte_span_v1_t::default(),
+    }
+}
+
+fn profile_readiness_blocker_kind(
+    blocker: kmipkit_protocol::ProfileReadinessBlocker,
+) -> &'static str {
+    use kmipkit_protocol::ProfileReadinessBlocker as Blocker;
+    match blocker {
+        Blocker::MissingRequirementRecord { .. } => "missing_requirement_record",
+        Blocker::FailedRequirementRecord { .. } => "failed_requirement_record",
+        Blocker::UnresolvedRequirementScope { .. } => "unresolved_requirement_scope",
+        Blocker::DuplicateRequirementRecord { .. } => "duplicate_requirement_record",
+        Blocker::UnknownRequirementRecord => "unknown_requirement_record",
+        Blocker::RuntimeValidationUnavailable => "runtime_validation_unavailable",
+        Blocker::MandatoryFixtureUnavailable { .. } => "mandatory_fixture_unavailable",
+        Blocker::ConditionalProfileUnsatisfied => "conditional_profile_unsatisfied",
+        Blocker::DependencyEvidenceIncomplete { .. } => "dependency_evidence_incomplete",
+        Blocker::VerificationManifestUnavailable => "verification_manifest_unavailable",
+        Blocker::StaleCatalogEvidenceState => "stale_catalog_evidence_state",
+        Blocker::CatalogEvidenceReviewRequired => "catalog_evidence_review_required",
+        Blocker::ProfileUnavailable => "profile_unavailable",
+    }
+}
+
+fn populate_profile_readiness_blocker_view(
+    blocker: kmipkit_protocol::ProfileReadinessBlocker,
+    view: &mut crate::kmipkit_profile_readiness_blocker_view_v1_t,
+) {
+    use kmipkit_protocol::ProfileReadinessBlocker as Blocker;
+    view.kind = profile_catalog_span(profile_readiness_blocker_kind(blocker));
+    view.message = profile_catalog_span(blocker.as_str());
+    let (requirement_id, profile_id, test_id, source_clause_id) = match blocker {
+        Blocker::MissingRequirementRecord { requirement_id }
+        | Blocker::FailedRequirementRecord { requirement_id }
+        | Blocker::DuplicateRequirementRecord { requirement_id } => {
+            (Some(requirement_id), None, None, None)
+        }
+        Blocker::UnresolvedRequirementScope {
+            requirement_id,
+            source_clause_id,
+        } => (Some(requirement_id), None, None, Some(source_clause_id)),
+        Blocker::MandatoryFixtureUnavailable { test_id } => (None, None, Some(test_id), None),
+        Blocker::DependencyEvidenceIncomplete { profile_id } => {
+            (None, Some(profile_id), None, None)
+        }
+        Blocker::UnknownRequirementRecord
+        | Blocker::RuntimeValidationUnavailable
+        | Blocker::ConditionalProfileUnsatisfied
+        | Blocker::VerificationManifestUnavailable
+        | Blocker::StaleCatalogEvidenceState
+        | Blocker::CatalogEvidenceReviewRequired
+        | Blocker::ProfileUnavailable => (None, None, None, None),
+    };
+    view.requirement_id =
+        profile_catalog_optional_span(requirement_id, &mut view.requirement_id_present);
+    view.profile_id = profile_catalog_optional_span(profile_id, &mut view.profile_id_present);
+    view.test_id = profile_catalog_optional_span(test_id, &mut view.test_id_present);
+    view.source_clause_id =
+        profile_catalog_optional_span(source_clause_id, &mut view.source_clause_id_present);
+}
+
+fn profile_readiness_view(
+    readiness: &ProfileReadiness,
+    struct_size: u32,
+    abi_version: u32,
+) -> FfiResult<crate::kmipkit_profile_readiness_view_v1_t> {
+    let blocker_count =
+        u64::try_from(readiness.blockers().len()).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    Ok(crate::kmipkit_profile_readiness_view_v1_t {
+        struct_size,
+        abi_version,
+        profile_id: profile_catalog_span(readiness.profile_id()),
+        effective_state: profile_catalog_span(readiness.effective_state()),
+        target_selected: u8::from(readiness.target_selected()),
+        runtime_validation_available: u8::from(readiness.runtime_validation_available()),
+        requirement_records_complete: u8::from(readiness.requirement_records_complete()),
+        published_claim: u8::from(readiness.published_claim()),
+        blocker_count,
+        ..Default::default()
+    })
+}
+
+/// Evaluates caller-local evidence using the canonical Rust profile readiness evaluator.
+///
+/// The profile span and every record span are bounded and validated before the records are cloned.
+/// An unknown profile succeeds with a null output handle. The readiness handle owns its snapshot;
+/// all view spans remain borrowed until `kmipkit_profile_readiness_release`.
+///
+/// # Safety
+///
+/// `profile_id` must be null or point to an aligned, readable byte-span record. For a nonzero
+/// span, its `data` must point to that many readable bytes. `records` must be null or point to an
+/// aligned array of `record_count` readable versioned records when the count is nonzero; every
+/// nested requirement span follows the same readable-byte rule. `out_readiness` must point to an
+/// aligned, writable handle slot.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_profile_readiness_evaluate_v1(
+    profile_id: *const crate::kmipkit_byte_span_v1_t,
+    records: *const crate::kmipkit_profile_evidence_record_v1_t,
+    record_count: u64,
+    out_readiness: *mut *mut kmipkit_profile_readiness_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_readiness);
+        if profile_id.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: the caller promises a readable fixed-width profile span for this ABI call.
+        let profile_id = unsafe { &*profile_id };
+        let profile_bytes = try_ffi!(input_span(
+            profile_id.data,
+            profile_id.length,
+            MAX_PROFILE_READINESS_IDENTIFIER_BYTES,
+        ));
+        let profile_id =
+            try_ffi!(std::str::from_utf8(profile_bytes).map_err(|_| ERROR_INVALID_INPUT));
+        let records = try_ffi!(input_array(
+            records,
+            record_count,
+            MAX_PROFILE_READINESS_RECORDS
+        ));
+        let mut total_bytes = u64::try_from(profile_bytes.len()).unwrap_or(u64::MAX);
+        for record in records {
+            let expected_size =
+                u32::try_from(size_of::<crate::kmipkit_profile_evidence_record_v1_t>())
+                    .unwrap_or(u32::MAX);
+            if record.struct_size != expected_size
+                || record.abi_version != 1
+                || record.passed > 1
+                || record.reserved_0 != 0
+                || record.reserved_1 != 0
+                || record.reserved_2 != 0
+                || record.reserved_3 != 0
+                || record.reserved_4 != 0
+                || record.reserved_5 != 0
+                || record.reserved_6 != 0
+            {
+                return record_ffi_error(ERROR_INVALID_INPUT);
+            }
+            total_bytes = match total_bytes.checked_add(record.requirement_id.length) {
+                Some(value) if value <= MAX_PROFILE_READINESS_BYTES => value,
+                _ => return record_ffi_error(ERROR_RESOURCE_LIMIT),
+            };
+        }
+        let mut evidence = Vec::with_capacity(records.len());
+        for record in records {
+            let bytes = try_ffi!(input_span(
+                record.requirement_id.data,
+                record.requirement_id.length,
+                MAX_PROFILE_READINESS_BYTES,
+            ));
+            let requirement_id =
+                try_ffi!(std::str::from_utf8(bytes).map_err(|_| ERROR_INVALID_INPUT));
+            evidence.push(if record.passed == 1 {
+                kmipkit_protocol::ProfileEvidenceRecord::passed(requirement_id)
+            } else {
+                kmipkit_protocol::ProfileEvidenceRecord::failed(requirement_id)
+            });
+        }
+        let Some(readiness) = ProfileReadiness::evaluate(profile_id, &evidence) else {
+            return SUCCESS;
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::ProfileReadiness,
+            HandleValue::ProfileReadiness(readiness),
+        ));
+        SUCCESS
+    })
+}
+
+/// Copies readiness fields into a versioned view borrowed from a live handle.
+///
+/// # Safety
+///
+/// `readiness` must be a live handle returned by `kmipkit_profile_readiness_evaluate_v1`; `out_view`
+/// must point to an aligned, readable and writable view record initialized with the exact current
+/// size and ABI version 1.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_profile_readiness_view_get_v1(
+    readiness: *mut kmipkit_profile_readiness_t,
+    out_view: *mut crate::kmipkit_profile_readiness_view_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_view.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: the caller promises a writable view record for this ABI call.
+        let view = unsafe { &mut *out_view };
+        let expected_size = size_of::<crate::kmipkit_profile_readiness_view_v1_t>() as u32;
+        if view.struct_size != expected_size || view.abi_version != 1 {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let handle = match reference_handle(readiness, Kind::ProfileReadiness) {
+            Ok(handle) => handle,
+            Err(status) => return record_ffi_error(status),
+        };
+        let HandleValue::ProfileReadiness(readiness) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *view = try_ffi!(profile_readiness_view(readiness, expected_size as u32, 1));
+        SUCCESS
+    })
+}
+
+/// Copies one blocker into a versioned redacted view borrowed from the readiness handle.
+///
+/// # Safety
+///
+/// `readiness` must remain live for this call; `out_view` must point to an aligned, readable and
+/// writable blocker view initialized with the exact current size and ABI version 1.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_profile_readiness_blocker_at_v1(
+    readiness: *mut kmipkit_profile_readiness_t,
+    index: u64,
+    out_view: *mut crate::kmipkit_profile_readiness_blocker_view_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_view.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: the caller promises a writable blocker view record for this ABI call.
+        let view = unsafe { &mut *out_view };
+        let expected_size = size_of::<crate::kmipkit_profile_readiness_blocker_view_v1_t>() as u32;
+        if view.struct_size != expected_size || view.abi_version != 1 {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let handle = match reference_handle(readiness, Kind::ProfileReadiness) {
+            Ok(handle) => handle,
+            Err(status) => return record_ffi_error(status),
+        };
+        let HandleValue::ProfileReadiness(readiness) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(index) = usize::try_from(index) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(blocker) = readiness.blockers().get(index).copied() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *view = crate::kmipkit_profile_readiness_blocker_view_v1_t {
+            struct_size: expected_size,
+            abi_version: 1,
+            ..Default::default()
+        };
+        populate_profile_readiness_blocker_view(blocker, view);
+        SUCCESS
+    })
+}
+
+/// Releases a readiness snapshot and invalidates every view span borrowed from it.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_profile_readiness_release(readiness: *mut kmipkit_profile_readiness_t) {
+    ffi_entrypoint(|| release(readiness, Kind::ProfileReadiness));
+}
+
+fn profile_catalog_verification_category(
+    category: kmipkit_protocol::profiles_generated::GeneratedVerificationCategory,
+) -> &'static str {
+    use kmipkit_protocol::profiles_generated::GeneratedVerificationCategory as Category;
+    match category {
+        Category::RequiredBehavior => "required_behavior",
+        Category::ProhibitedBehavior => "prohibited_behavior",
+        Category::RecommendedBehaviorOrDeviation => "recommended_behavior_or_deviation",
+        Category::DiscouragedAbsenceOrDeviation => "discouraged_absence_or_deviation",
+        Category::OptionalCapability => "optional_capability",
+    }
+}
+
+fn profile_catalog_row(
+    table: u32,
+    index: u64,
+    struct_size: u32,
+    abi_version: u32,
+) -> FfiResult<crate::kmipkit_profile_catalog_row_view_v1_t> {
+    use kmipkit_protocol::profiles_generated::{
+        CLIENT_PROFILES, CLIENT_REQUIREMENTS, PROFILE_TEST_CASES,
+    };
+    let index = usize::try_from(index).map_err(|_| ERROR_INVALID_INPUT)?;
+    let mut view = crate::kmipkit_profile_catalog_row_view_v1_t {
+        struct_size,
+        abi_version,
+        ..Default::default()
+    };
+    match table {
+        KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES => {
+            let row = CLIENT_PROFILES.get(index).ok_or(ERROR_INVALID_INPUT)?;
+            view.row_kind = KMIPKIT_PROFILE_CATALOG_ROW_PROFILE;
+            view.profile_id = profile_catalog_span(row.profile_id);
+            view.name = profile_catalog_span(row.name);
+            view.applicability = profile_catalog_span(row.applicability);
+            view.claim_state = profile_catalog_span(row.claim_state);
+            view.selected_target = u8::from(row.selected_target);
+        }
+        KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_REQUIREMENTS => {
+            let row = CLIENT_REQUIREMENTS.get(index).ok_or(ERROR_INVALID_INPUT)?;
+            view.row_kind = KMIPKIT_PROFILE_CATALOG_ROW_REQUIREMENT;
+            view.requirement_id = profile_catalog_span(row.requirement_id);
+            view.source_keyword =
+                profile_catalog_optional_span(row.source_keyword, &mut view.source_keyword_present);
+            view.source_force =
+                profile_catalog_optional_span(row.source_force, &mut view.source_force_present);
+            view.source_gap_id =
+                profile_catalog_optional_span(row.source_gap_id, &mut view.source_gap_id_present);
+            view.source_locator =
+                profile_catalog_optional_span(row.source_locator, &mut view.source_locator_present);
+            view.verification_category = profile_catalog_span(
+                profile_catalog_verification_category(row.verification_category),
+            );
+            view.scope_state = profile_catalog_span(row.scope_state);
+            view.has_accepted_deviation = u8::from(row.has_accepted_deviation);
+        }
+        KMIPKIT_PROFILE_CATALOG_TABLE_PROFILE_TEST_CASES => {
+            let row = PROFILE_TEST_CASES.get(index).ok_or(ERROR_INVALID_INPUT)?;
+            view.row_kind = KMIPKIT_PROFILE_CATALOG_ROW_TEST_CASE;
+            view.test_id = profile_catalog_span(row.test_id);
+            view.official_case_id = profile_catalog_span(row.official_case_id);
+            view.mandatory_status = profile_catalog_span(row.mandatory_status);
+            view.fixture_availability = profile_catalog_span(row.fixture_availability);
+        }
+        _ => return Err(ERROR_INVALID_INPUT),
+    }
+    Ok(view)
+}
+
+#[derive(Clone, Copy)]
+enum ProfileCatalogRelationItem {
+    Text(&'static str),
+    ScopeBlocker(kmipkit_protocol::profiles_generated::GeneratedProfileScopeBlocker),
+    TestCase(kmipkit_protocol::profiles_generated::GeneratedProfileTestCase),
+}
+
+enum ProfileCatalogRelation {
+    Text(&'static [&'static str]),
+    ScopeBlockers(&'static [kmipkit_protocol::profiles_generated::GeneratedProfileScopeBlocker]),
+    TestCases(&'static [kmipkit_protocol::profiles_generated::GeneratedProfileTestCase]),
+}
+
+impl ProfileCatalogRelation {
+    fn len(&self) -> usize {
+        match self {
+            Self::Text(values) => values.len(),
+            Self::ScopeBlockers(values) => values.len(),
+            Self::TestCases(values) => values.len(),
+        }
+    }
+
+    fn get(&self, index: usize) -> Option<ProfileCatalogRelationItem> {
+        match self {
+            Self::Text(values) => values
+                .get(index)
+                .copied()
+                .map(ProfileCatalogRelationItem::Text),
+            Self::ScopeBlockers(values) => values
+                .get(index)
+                .copied()
+                .map(ProfileCatalogRelationItem::ScopeBlocker),
+            Self::TestCases(values) => values
+                .get(index)
+                .copied()
+                .map(ProfileCatalogRelationItem::TestCase),
+        }
+    }
+}
+
+fn profile_catalog_relation_items(
+    table: u32,
+    row_index: u64,
+    relation: u32,
+) -> FfiResult<ProfileCatalogRelation> {
+    use kmipkit_protocol::profiles_generated::{CLIENT_PROFILES, CLIENT_REQUIREMENTS};
+    let index = usize::try_from(row_index).map_err(|_| ERROR_INVALID_INPUT)?;
+    match (table, relation) {
+        (
+            KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES,
+            KMIPKIT_PROFILE_CATALOG_RELATION_DIRECT_SOURCE_CLAUSE_IDS,
+        ) => CLIENT_PROFILES
+            .get(index)
+            .ok_or(ERROR_INVALID_INPUT)
+            .map(|row| ProfileCatalogRelation::Text(row.direct_source_clause_ids)),
+        (
+            KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES,
+            KMIPKIT_PROFILE_CATALOG_RELATION_SOURCE_CLAUSE_IDS,
+        ) => CLIENT_PROFILES
+            .get(index)
+            .ok_or(ERROR_INVALID_INPUT)
+            .map(|row| ProfileCatalogRelation::Text(row.source_clause_ids)),
+        (
+            KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES,
+            KMIPKIT_PROFILE_CATALOG_RELATION_REQUIREMENT_IDS,
+        ) => CLIENT_PROFILES
+            .get(index)
+            .ok_or(ERROR_INVALID_INPUT)
+            .map(|row| ProfileCatalogRelation::Text(row.requirement_ids)),
+        (
+            KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES,
+            KMIPKIT_PROFILE_CATALOG_RELATION_UNRESOLVED_SCOPE_OBLIGATIONS,
+        ) => CLIENT_PROFILES
+            .get(index)
+            .ok_or(ERROR_INVALID_INPUT)
+            .map(|row| ProfileCatalogRelation::ScopeBlockers(row.unresolved_scope_obligations)),
+        (
+            KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES,
+            KMIPKIT_PROFILE_CATALOG_RELATION_DEPENDENCY_PROFILE_IDS,
+        ) => CLIENT_PROFILES
+            .get(index)
+            .ok_or(ERROR_INVALID_INPUT)
+            .map(|row| ProfileCatalogRelation::Text(row.dependency_profile_ids)),
+        (
+            KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES,
+            KMIPKIT_PROFILE_CATALOG_RELATION_TRANSPORT_REQUIREMENTS,
+        ) => CLIENT_PROFILES
+            .get(index)
+            .ok_or(ERROR_INVALID_INPUT)
+            .map(|row| ProfileCatalogRelation::Text(row.transport_requirements)),
+        (
+            KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES,
+            KMIPKIT_PROFILE_CATALOG_RELATION_ENCODING_REQUIREMENTS,
+        ) => CLIENT_PROFILES
+            .get(index)
+            .ok_or(ERROR_INVALID_INPUT)
+            .map(|row| ProfileCatalogRelation::Text(row.encoding_requirements)),
+        (
+            KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES,
+            KMIPKIT_PROFILE_CATALOG_RELATION_TEST_CASES,
+        ) => CLIENT_PROFILES
+            .get(index)
+            .ok_or(ERROR_INVALID_INPUT)
+            .map(|row| ProfileCatalogRelation::TestCases(row.test_cases)),
+        (
+            KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_REQUIREMENTS,
+            KMIPKIT_PROFILE_CATALOG_RELATION_SOURCE_CLAUSE_IDS,
+        ) => CLIENT_REQUIREMENTS
+            .get(index)
+            .ok_or(ERROR_INVALID_INPUT)
+            .map(|row| ProfileCatalogRelation::Text(row.source_clause_ids)),
+        (
+            KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_REQUIREMENTS,
+            KMIPKIT_PROFILE_CATALOG_RELATION_PROFILE_IDS,
+        ) => CLIENT_REQUIREMENTS
+            .get(index)
+            .ok_or(ERROR_INVALID_INPUT)
+            .map(|row| ProfileCatalogRelation::Text(row.profile_ids)),
+        (
+            KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_REQUIREMENTS,
+            KMIPKIT_PROFILE_CATALOG_RELATION_OFFICIAL_TEST_CASE_IDS,
+        ) => CLIENT_REQUIREMENTS
+            .get(index)
+            .ok_or(ERROR_INVALID_INPUT)
+            .map(|row| ProfileCatalogRelation::Text(row.official_test_case_ids)),
+        _ => Err(ERROR_INVALID_INPUT),
+    }
+}
+
+fn profile_catalog_relation_view(
+    item: ProfileCatalogRelationItem,
+    struct_size: u32,
+    abi_version: u32,
+) -> crate::kmipkit_profile_catalog_row_view_v1_t {
+    let mut view = crate::kmipkit_profile_catalog_row_view_v1_t {
+        struct_size,
+        abi_version,
+        ..Default::default()
+    };
+    match item {
+        ProfileCatalogRelationItem::Text(value) => {
+            view.row_kind = KMIPKIT_PROFILE_CATALOG_ROW_STRING;
+            view.text_value = profile_catalog_span(value);
+        }
+        ProfileCatalogRelationItem::ScopeBlocker(row) => {
+            view.row_kind = KMIPKIT_PROFILE_CATALOG_ROW_SCOPE_BLOCKER;
+            view.requirement_id = profile_catalog_span(row.requirement_id);
+            view.source_clause_id = profile_catalog_span(row.source_clause_id);
+            view.scope_state = profile_catalog_span(row.scope_state);
+        }
+        ProfileCatalogRelationItem::TestCase(row) => {
+            view.row_kind = KMIPKIT_PROFILE_CATALOG_ROW_TEST_CASE;
+            view.test_id = profile_catalog_span(row.test_id);
+            view.official_case_id = profile_catalog_span(row.official_case_id);
+            view.mandatory_status = profile_catalog_span(row.mandatory_status);
+            view.fixture_availability = profile_catalog_span(row.fixture_availability);
+        }
+    }
+    view
+}
+
+/// Returns the number of static generated rows in one profile catalog table.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_profile_catalog_table_count_v1(
+    table: u32,
+    out_count: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let count = scalar_out!(out_count);
+        *count = 0;
+        *count = match table {
+            KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES => {
+                kmipkit_protocol::profiles_generated::CLIENT_PROFILES.len()
+            }
+            KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_REQUIREMENTS => {
+                kmipkit_protocol::profiles_generated::CLIENT_REQUIREMENTS.len()
+            }
+            KMIPKIT_PROFILE_CATALOG_TABLE_PROFILE_TEST_CASES => {
+                kmipkit_protocol::profiles_generated::PROFILE_TEST_CASES.len()
+            }
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        } as u64;
+        SUCCESS
+    })
+}
+
+/// Copies one catalog row by stable table index; returned spans borrow static generated data.
+///
+/// # Safety
+///
+/// `out_row` must point to an aligned, readable and writable catalog row initialized with the exact
+/// size and ABI version 1.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_profile_catalog_row_at_v1(
+    table: u32,
+    index: u64,
+    out_row: *mut crate::kmipkit_profile_catalog_row_view_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_row.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: the caller promises a writable versioned catalog row for this call.
+        let row = unsafe { &mut *out_row };
+        let expected_size = size_of::<crate::kmipkit_profile_catalog_row_view_v1_t>() as u32;
+        if row.struct_size != expected_size || row.abi_version != 1 {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        *row = match profile_catalog_row(table, index, expected_size, 1) {
+            Ok(value) => value,
+            Err(status) => return record_ffi_error(status),
+        };
+        SUCCESS
+    })
+}
+
+/// Returns the number of ordered child rows associated with one catalog row.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_profile_catalog_relation_count_v1(
+    table: u32,
+    row_index: u64,
+    relation: u32,
+    out_count: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let count = scalar_out!(out_count);
+        *count = 0;
+        let items = match profile_catalog_relation_items(table, row_index, relation) {
+            Ok(items) => items,
+            Err(status) => return record_ffi_error(status),
+        };
+        *count = match u64::try_from(items.len()) {
+            Ok(count) => count,
+            Err(_) => return record_ffi_error(ERROR_RESOURCE_LIMIT),
+        };
+        SUCCESS
+    })
+}
+
+/// Copies one ordered catalog child row; string relations use `text_value`.
+///
+/// # Safety
+///
+/// `out_row` must point to an aligned, readable and writable catalog row initialized with the exact
+/// size and ABI version 1.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_profile_catalog_relation_at_v1(
+    table: u32,
+    row_index: u64,
+    relation: u32,
+    relation_index: u64,
+    out_row: *mut crate::kmipkit_profile_catalog_row_view_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_row.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: the caller promises a writable versioned catalog row for this call.
+        let row = unsafe { &mut *out_row };
+        let expected_size = size_of::<crate::kmipkit_profile_catalog_row_view_v1_t>() as u32;
+        if row.struct_size != expected_size || row.abi_version != 1 {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let items = match profile_catalog_relation_items(table, row_index, relation) {
+            Ok(items) => items,
+            Err(status) => return record_ffi_error(status),
+        };
+        let Ok(index) = usize::try_from(relation_index) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = items.get(index) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *row = profile_catalog_relation_view(item, expected_size, 1);
         SUCCESS
     })
 }

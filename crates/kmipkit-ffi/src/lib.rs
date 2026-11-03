@@ -69,6 +69,10 @@ pub struct kmipkit_client_async_operation_outcome_t {
 pub struct kmipkit_profile_validation_error_t {
     _private: [u8; 0],
 }
+#[repr(C)]
+pub struct kmipkit_profile_readiness_t {
+    _private: [u8; 0],
+}
 
 /// Common result fields for one explicit asynchronous follow-up operation.
 #[repr(C)]
@@ -377,7 +381,7 @@ pub struct kmipkit_extension_registry_limits_v1_t {
 
 /// A non-owning byte span supplied for one ABI call.
 #[repr(C)]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Default)]
 pub struct kmipkit_byte_span_v1_t {
     pub data: *const u8,
     pub length: u64,
@@ -407,6 +411,101 @@ pub struct kmipkit_profile_validation_error_view_v1_t {
     /// Catalogued locator for source kind 2, otherwise an empty span.
     pub source_locator_data: *const u8,
     pub source_locator_length: u64,
+}
+
+/// One local evidence record accepted by the profile readiness evaluator.
+#[repr(C)]
+#[derive(Clone, Copy, Default)]
+pub struct kmipkit_profile_evidence_record_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub requirement_id: kmipkit_byte_span_v1_t,
+    /// 0 reports failure and 1 reports pass. Other values are rejected.
+    pub passed: u8,
+    pub reserved_0: u8,
+    pub reserved_1: u8,
+    pub reserved_2: u8,
+    pub reserved_3: u8,
+    pub reserved_4: u8,
+    pub reserved_5: u8,
+    pub reserved_6: u8,
+}
+
+/// Versioned snapshot view. Its spans borrow from the readiness handle until release.
+#[repr(C)]
+#[derive(Clone, Copy, Default)]
+pub struct kmipkit_profile_readiness_view_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub profile_id: kmipkit_byte_span_v1_t,
+    pub effective_state: kmipkit_byte_span_v1_t,
+    pub target_selected: u8,
+    pub runtime_validation_available: u8,
+    pub requirement_records_complete: u8,
+    pub published_claim: u8,
+    pub reserved_0: u8,
+    pub reserved_1: u8,
+    pub reserved_2: u8,
+    pub reserved_3: u8,
+    pub blocker_count: u64,
+}
+
+/// One redacted readiness blocker with presence-tagged stable identifiers.
+#[repr(C)]
+#[derive(Clone, Copy, Default)]
+pub struct kmipkit_profile_readiness_blocker_view_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub kind: kmipkit_byte_span_v1_t,
+    pub message: kmipkit_byte_span_v1_t,
+    pub requirement_id_present: u8,
+    pub profile_id_present: u8,
+    pub test_id_present: u8,
+    pub source_clause_id_present: u8,
+    pub reserved_0: u8,
+    pub reserved_1: u8,
+    pub reserved_2: u8,
+    pub reserved_3: u8,
+    pub requirement_id: kmipkit_byte_span_v1_t,
+    pub profile_id: kmipkit_byte_span_v1_t,
+    pub test_id: kmipkit_byte_span_v1_t,
+    pub source_clause_id: kmipkit_byte_span_v1_t,
+}
+
+/// Generic versioned view over one generated profile catalog row or nested string relation.
+#[repr(C)]
+#[derive(Clone, Copy, Default)]
+pub struct kmipkit_profile_catalog_row_view_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub row_kind: u32,
+    pub reserved: u32,
+    pub profile_id: kmipkit_byte_span_v1_t,
+    pub name: kmipkit_byte_span_v1_t,
+    pub applicability: kmipkit_byte_span_v1_t,
+    pub claim_state: kmipkit_byte_span_v1_t,
+    pub selected_target: u8,
+    pub has_accepted_deviation: u8,
+    pub source_keyword_present: u8,
+    pub source_force_present: u8,
+    pub source_gap_id_present: u8,
+    pub source_locator_present: u8,
+    pub reserved_flag_0: u8,
+    pub reserved_flag_1: u8,
+    pub requirement_id: kmipkit_byte_span_v1_t,
+    pub source_clause_id: kmipkit_byte_span_v1_t,
+    pub source_keyword: kmipkit_byte_span_v1_t,
+    pub source_force: kmipkit_byte_span_v1_t,
+    pub source_gap_id: kmipkit_byte_span_v1_t,
+    pub source_locator: kmipkit_byte_span_v1_t,
+    pub verification_category: kmipkit_byte_span_v1_t,
+    pub scope_state: kmipkit_byte_span_v1_t,
+    pub test_id: kmipkit_byte_span_v1_t,
+    pub official_case_id: kmipkit_byte_span_v1_t,
+    pub mandatory_status: kmipkit_byte_span_v1_t,
+    pub fixture_availability: kmipkit_byte_span_v1_t,
+    /// Text payload for nested string relations; empty for compound relation rows.
+    pub text_value: kmipkit_byte_span_v1_t,
 }
 
 /// Exact wire value for the three Unique Identifier forms accepted by KMIP

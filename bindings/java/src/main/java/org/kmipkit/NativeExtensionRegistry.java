@@ -98,6 +98,10 @@ public final class NativeExtensionRegistry {
     public static final int ATTRIBUTE_FIELD_CURRENT = 0;
     public static final int ATTRIBUTE_FIELD_NEW = 1;
 
+    public static final int PROFILE_CATALOG_CLIENT_PROFILES = 1;
+    public static final int PROFILE_CATALOG_CLIENT_REQUIREMENTS = 2;
+    public static final int PROFILE_CATALOG_PROFILE_TEST_CASES = 3;
+
     private static volatile boolean loaded;
 
     static {
@@ -626,4 +630,15 @@ public final class NativeExtensionRegistry {
     public static native long responseBatchItemExtensionAt(long item, long extensionIndex);
     public static native long messageExtensionViewTtlv(long extension);
     public static native long codecLimitsCreate(long maxMessageBytes, long maxStructureDepth, long maxElements);
+
+    public static native long profileReadinessCreate(
+            String profileId, String[] requirementIds, boolean[] passed);
+    public static native String[] profileReadinessView(long readiness);
+    public static native String[] profileReadinessBlockerAt(long readiness, long index);
+    public static native void profileReadinessRelease(long readiness);
+    public static native long profileCatalogTableCount(int table);
+    public static native String[] profileCatalogRow(int table, long index);
+    public static native long profileCatalogRelationCount(int table, long rowIndex, int relation);
+    public static native String[] profileCatalogRelationRow(
+            int table, long rowIndex, int relation, long relationIndex);
 }

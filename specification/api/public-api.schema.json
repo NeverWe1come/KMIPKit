@@ -899,21 +899,30 @@
             "type": {
               "type": "string",
               "pattern": "^const (?:int8_t|uint8_t|int16_t|uint16_t|int32_t|uint32_t|int64_t|uint64_t|kmipkit_[a-z0-9_]+_t) \\*$",
-              "description": "Borrowed pointer to a caller-owned array of fixed-width scalar or byte-span carrier values."
+              "description": "Borrowed pointer to a caller-owned array of fixed-width scalar, byte-span carrier, or declared versioned fixed-width value records."
             },
             "elementType": {
-              "type": "string",
-              "enum": [
-                "int8_t",
-                "uint8_t",
-                "int16_t",
-                "uint16_t",
-                "int32_t",
-                "uint32_t",
-                "int64_t",
-                "uint64_t",
-                "kmipkit_byte_span_v1_t",
-                "kmipkit_attribute_reference_v1_t"
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "int8_t",
+                    "uint8_t",
+                    "int16_t",
+                    "uint16_t",
+                    "int32_t",
+                    "uint32_t",
+                    "int64_t",
+                    "uint64_t",
+                    "kmipkit_byte_span_v1_t",
+                    "kmipkit_attribute_reference_v1_t"
+                  ]
+                },
+                {
+                  "type": "string",
+                  "pattern": "^kmipkit_[a-z0-9_]+_v[1-9][0-9]*_t$",
+                  "description": "Versioned fixed-width C value layouts declared in the public API manifest."
+                }
               ]
             },
             "ownership": {

@@ -31,7 +31,7 @@ SCHEMA_PATH = "specification/api/public-api.schema.json"
 CATALOG_PATH = "specification/catalog/kmip-2.1.json"
 # Public API parity records include exact declarations in all four languages;
 # keep parsing bounded while leaving room for the complete generated inventory.
-MAX_MANIFEST_BYTES = 21 * 1024 * 1024
+MAX_MANIFEST_BYTES = 22 * 1024 * 1024
 MAX_SCHEMA_BYTES = 4 * 1024 * 1024
 MAX_CATALOG_BYTES = 16 * 1024 * 1024
 MAX_RELEASE_METADATA_BYTES = 1024 * 1024
@@ -1732,7 +1732,7 @@ def _validate_references(manifest: dict[str, Any]) -> None:
     _require_unique(manifest["functions"], "id", "function IDs")
     _require_unique(manifest["errorCategories"], "cValue", "C error values")
     _require_unique(manifest["errorCategories"], "cCode", "C error codes")
-    _ordered_approved_c_type_layouts(manifest)
+    approved_c_layouts = _ordered_approved_c_type_layouts(manifest)
     if "publicDeclarations" in manifest:
         declarations_by_path = {
             (record["packageId"], record["exportName"]): record
@@ -1841,7 +1841,10 @@ def _validate_references(manifest: dict[str, Any]) -> None:
         if limit["errorCategory"] not in error_ids:
             raise ManifestError("limit references an unknown error category")
 
-    c_type_names = {record["c"]["name"] for record in manifest["types"]}
+    c_type_names = {
+        *(record["c"]["name"] for record in manifest["types"]),
+        *(layout["name"] for layout in approved_c_layouts),
+    }
     for type_record in manifest["types"]:
         _validate_c_value_layout(type_record["c"], c_type_names)
     for record in manifest["functions"]:
@@ -1974,7 +1977,22 @@ def _validate_references(manifest: dict[str, Any]) -> None:
                     "kmipkit_attribute_reference_v1_t",
                 }
                 if element_type not in supported_elements:
-                    raise ManifestError("function input array references an unsupported element type")
+                    element_layout = next(
+                        (
+                            record["c"]
+                            for record in manifest["types"]
+                            if record["c"]["name"] == element_type
+                        ),
+                        None,
+                    )
+                    if not (
+                        element_layout is not None
+                        and element_layout.get("kind") == "fixed-width-value"
+                        and element_layout.get("versioned") is True
+                    ):
+                        raise ManifestError(
+                            "function input array must reference a declared versioned fixed-width value"
+                        )
                 if param["type"] != f"const {element_type} *" or param["ownership"] != "borrowed":
                     raise ManifestError("function input array must match its borrowed const element layout")
                 count = param_by_name.get(param["countParameter"])
@@ -2139,12 +2157,27 @@ def _validate_ready_c_value_layouts(
 ) -> None:
     declarations = manifest["types"]
     types_by_name = {record["c"]["name"]: record for record in declarations}
+    approved_layouts = _ordered_approved_c_type_layouts(
+        manifest,
+        include_blocked=include_blocked,
+    )
+    approved_types = {
+        layout["name"]: {"c": layout}
+        for layout in approved_layouts
+    }
+    types_by_name.update(approved_types)
     all_fields_ready = include_blocked or ready_c_exports is None
 
     def type_is_ready(name: str) -> bool:
-        return ready_c_exports is None or name in ready_c_exports
+        return (
+            ready_c_exports is None
+            or name in ready_c_exports
+            or name in approved_types
+        )
 
     def layout_is_complete(record: dict[str, Any]) -> bool:
+        if record["c"]["name"] in approved_types:
+            return True
         return _c_value_layout_is_complete(
             record,
             manifest["limits"],
@@ -2205,6 +2238,7 @@ def _ordered_ready_c_value_layouts(
     declared_c_fields: set[str],
     *,
     include_blocked: bool,
+    approved_layouts: list[dict[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     all_fields_ready = include_blocked or ready_c_exports is None
     records = {
@@ -2221,6 +2255,15 @@ def _ordered_ready_c_value_layouts(
         )
     }
     types_by_name = {record["c"]["name"]: record for record in manifest["types"]}
+    if approved_layouts is None:
+        approved_layouts = _ordered_approved_c_type_layouts(
+            manifest,
+            include_blocked=include_blocked,
+        )
+    for layout in approved_layouts:
+        record = {"c": layout}
+        records[layout["name"]] = record
+        types_by_name[layout["name"]] = record
     ordered: list[dict[str, Any]] = []
     visiting: set[str] = set()
     visited: set[str] = set()
@@ -2629,6 +2672,7 @@ def render_c_header(
         ready_c_exports,
         declared_c_fields,
         include_blocked=include_blocked,
+        approved_layouts=c_layouts,
     ):
         c_type = declaration["c"]
         lines.append(f"struct {c_type['name']} {{")
@@ -2651,12 +2695,6 @@ def render_c_header(
                     and base_type not in carrier_layout_names
                 ):
                     raise ManifestError("approved C carrier references a blocked C type")
-    for c_type in c_layouts:
-        lines.append(f"struct {c_type['name']} {{")
-        for field in c_type["fields"]:
-            lines.append(f"    {field['type']} {field['name']};")
-        lines.append("};")
-        lines.append("")
     for declaration in manifest["types"]:
         c_type = declaration["c"]
         if (

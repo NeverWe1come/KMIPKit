@@ -11,6 +11,12 @@ ROOT = Path(__file__).resolve().parents[3]
 MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
 READINESS_SHA256 = "ce0632e2dadf8ed79064c88becc07cf3f1bc1cfba76ce4ce3f5cf8cc3c5dff06"
 CATALOG_SHA256 = "d876fc31f19b3b4b63a5b09765dfdac6925d97a2199aac6c88c10a9e5bcb47cb"
+LANGUAGE_MAPPING_SHA256 = {
+    "rust": "477d61fb1bf54ce7368fed40271ff6cdeec01113f0314dd3312382af3be477a7",
+    "c": "64c6bf7ac45e050c128dc923e58bde968e54b8f187396332a36fd61825e2aa74",
+    "java": "a334c7099208a794dfb239663f78a7dbde0001fffa86bc0cc52b8370ee81547d",
+    "python": "f74b8bb9f2257e2c24cd7a7424a973004a9655873547bded11a636b475e11324",
+}
 OWNER_REQUIREMENTS = {
     "KMIPKIT-0010-FR-001", "KMIPKIT-0010-FR-002", "KMIPKIT-0010-FR-003",
     "KMIPKIT-0010-FR-010", "KMIPKIT-0010-FR-011", "KMIPKIT-0010-FR-012",
@@ -76,6 +82,76 @@ class T102ProfileReadinessParityTests(unittest.TestCase):
         self.assertTrue({"rust", "c", "java", "python"}.issubset(capability["mappings"]))
         for language in ("rust", "c", "java", "python"):
             self.assertTrue(capability["mappings"][language], language)
+
+    def test_all_89_rust_exports_map_to_exact_declared_cross_language_targets(self) -> None:
+        declarations = self.manifest["publicDeclarations"]
+        readiness_names = {
+            row["exportName"] for row in declarations
+            if row["packageId"] == "rust-kmipkit-protocol"
+            and (row["exportName"].startswith("kmipkit_protocol::ProfileEvidenceRecord")
+                 or row["exportName"].startswith("kmipkit_protocol::ProfileReadiness")
+                 or row["exportName"].startswith("kmipkit_protocol::ProfileEvidenceReadiness"))
+        }
+        catalog_names = {
+            row["exportName"] for row in declarations
+            if row["packageId"] == "rust-kmipkit-protocol"
+            and (row["exportName"].startswith("kmipkit_protocol::profiles_generated::Generated")
+                 or row["exportName"] in {
+                    "kmipkit_protocol::profiles_generated::CLIENT_PROFILES",
+                    "kmipkit_protocol::profiles_generated::CLIENT_REQUIREMENTS",
+                    "kmipkit_protocol::profiles_generated::PROFILE_TEST_CASES",
+                 })
+        }
+        rust_rows = [
+            row for row in declarations
+            if row["packageId"] == "rust-kmipkit-protocol"
+            and row["exportName"] in readiness_names | catalog_names
+        ]
+        self.assertEqual(len(rust_rows), 89)
+        targets = {
+            (row["packageId"], row["exportName"]): row
+            for row in declarations
+        }
+        for language, expected_hash in LANGUAGE_MAPPING_SHA256.items():
+            mapping_rows = []
+            mapping_targets = set()
+            for row in rust_rows:
+                mapping = row["languageMappings"].get(language)
+                self.assertIsNotNone(mapping, f"{row['exportName']} has no {language} mapping")
+                mapping_rows.append(
+                    f"{row['exportName']}\t{mapping['packageId']}:{mapping['name']}"
+                )
+                mapping_targets.add((mapping["packageId"], mapping["name"]))
+                target = targets.get((mapping["packageId"], mapping["name"]))
+                self.assertIsNotNone(target, f"{row['exportName']} target is not declared in {language}")
+                self.assertEqual(target["declarationState"], "declared", row["exportName"])
+                self.assertEqual(target["capabilityId"], "client_profile_readiness", row["exportName"])
+            if language in {"java", "python"}:
+                self.assertEqual(len(mapping_targets), 63, language)
+            self.assertEqual(
+                hashlib.sha256("\n".join(sorted(mapping_rows)).encode("utf-8")).hexdigest(),
+                expected_hash,
+                language,
+            )
+
+        evaluate = next(row for row in rust_rows
+                        if row["exportName"] == "kmipkit_protocol::ProfileReadiness::evaluate")
+        self.assertEqual(evaluate["languageMappings"]["java"]["name"],
+                         "org.kmipkit.extensions.ProfileReadiness.evaluate")
+        self.assertEqual(evaluate["languageMappings"]["python"]["name"],
+                         "kmipkit.profile_readiness.ProfileReadiness.evaluate")
+        blocker = next(row for row in rust_rows
+                       if row["exportName"] == "kmipkit_protocol::ProfileReadinessBlocker::ProfileUnavailable")
+        self.assertEqual(blocker["languageMappings"]["java"]["name"],
+                         "org.kmipkit.extensions.ProfileReadinessBlocker.kind")
+        self.assertEqual(blocker["languageMappings"]["python"]["name"],
+                         "kmipkit.profile_readiness.ProfileReadinessBlocker.kind")
+        unresolved_scope = next(row for row in rust_rows
+                                if row["exportName"] == "kmipkit_protocol::profiles_generated::GeneratedClientProfile::unresolved_scope_obligations")
+        self.assertEqual(unresolved_scope["languageMappings"]["java"]["name"],
+                         "org.kmipkit.extensions.ProfileCatalog.ClientProfile.unresolvedScopeObligations")
+        self.assertEqual(unresolved_scope["languageMappings"]["python"]["name"],
+                         "kmipkit.profile_catalog.ClientProfile.unresolved_scope_obligations")
 
 
 

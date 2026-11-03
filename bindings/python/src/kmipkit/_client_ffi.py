@@ -71,6 +71,7 @@ ffi.cdef(
     typedef struct kmipkit_message_extension_view_t kmipkit_message_extension_view_t;
     typedef struct kmipkit_message_validation_error_t kmipkit_message_validation_error_t;
     typedef struct kmipkit_profile_validation_error_t kmipkit_profile_validation_error_t;
+    typedef struct kmipkit_profile_readiness_t kmipkit_profile_readiness_t;
 
     typedef struct {
         const uint8_t *data;
@@ -1335,6 +1336,92 @@ ffi.cdef(
         kmipkit_profile_validation_error_t *error,
         kmipkit_profile_validation_error_view_v1_t *out_view);
     void kmipkit_profile_validation_error_release(kmipkit_profile_validation_error_t *error);
+    typedef struct {
+        uint32_t struct_size;
+        uint32_t abi_version;
+        kmipkit_byte_span_v1_t requirement_id;
+        uint8_t passed;
+        uint8_t reserved_0; uint8_t reserved_1; uint8_t reserved_2; uint8_t reserved_3;
+        uint8_t reserved_4; uint8_t reserved_5; uint8_t reserved_6;
+    } kmipkit_profile_evidence_record_v1_t;
+    typedef struct {
+        uint32_t struct_size;
+        uint32_t abi_version;
+        kmipkit_byte_span_v1_t profile_id;
+        kmipkit_byte_span_v1_t effective_state;
+        uint8_t target_selected;
+        uint8_t runtime_validation_available;
+        uint8_t requirement_records_complete;
+        uint8_t published_claim;
+        uint8_t reserved_0; uint8_t reserved_1; uint8_t reserved_2; uint8_t reserved_3;
+        uint64_t blocker_count;
+    } kmipkit_profile_readiness_view_v1_t;
+    typedef struct {
+        uint32_t struct_size;
+        uint32_t abi_version;
+        kmipkit_byte_span_v1_t kind;
+        kmipkit_byte_span_v1_t message;
+        uint8_t requirement_id_present;
+        uint8_t profile_id_present;
+        uint8_t test_id_present;
+        uint8_t source_clause_id_present;
+        uint8_t reserved_0; uint8_t reserved_1; uint8_t reserved_2; uint8_t reserved_3;
+        kmipkit_byte_span_v1_t requirement_id;
+        kmipkit_byte_span_v1_t profile_id;
+        kmipkit_byte_span_v1_t test_id;
+        kmipkit_byte_span_v1_t source_clause_id;
+    } kmipkit_profile_readiness_blocker_view_v1_t;
+    typedef struct {
+        uint32_t struct_size;
+        uint32_t abi_version;
+        uint32_t row_kind;
+        uint32_t reserved;
+        kmipkit_byte_span_v1_t profile_id;
+        kmipkit_byte_span_v1_t name;
+        kmipkit_byte_span_v1_t applicability;
+        kmipkit_byte_span_v1_t claim_state;
+        uint8_t selected_target;
+        uint8_t has_accepted_deviation;
+        uint8_t source_keyword_present;
+        uint8_t source_force_present;
+        uint8_t source_gap_id_present;
+        uint8_t source_locator_present;
+        uint8_t reserved_flag_0; uint8_t reserved_flag_1;
+        kmipkit_byte_span_v1_t requirement_id;
+        kmipkit_byte_span_v1_t source_clause_id;
+        kmipkit_byte_span_v1_t source_keyword;
+        kmipkit_byte_span_v1_t source_force;
+        kmipkit_byte_span_v1_t source_gap_id;
+        kmipkit_byte_span_v1_t source_locator;
+        kmipkit_byte_span_v1_t verification_category;
+        kmipkit_byte_span_v1_t scope_state;
+        kmipkit_byte_span_v1_t test_id;
+        kmipkit_byte_span_v1_t official_case_id;
+        kmipkit_byte_span_v1_t mandatory_status;
+        kmipkit_byte_span_v1_t fixture_availability;
+        kmipkit_byte_span_v1_t text_value;
+    } kmipkit_profile_catalog_row_view_v1_t;
+    int32_t kmipkit_profile_readiness_evaluate_v1(
+        const kmipkit_byte_span_v1_t *profile_id,
+        const kmipkit_profile_evidence_record_v1_t *records,
+        uint64_t record_count,
+        kmipkit_profile_readiness_t **out_readiness);
+    int32_t kmipkit_profile_readiness_view_get_v1(
+        kmipkit_profile_readiness_t *readiness,
+        kmipkit_profile_readiness_view_v1_t *out_view);
+    int32_t kmipkit_profile_readiness_blocker_at_v1(
+        kmipkit_profile_readiness_t *readiness,
+        uint64_t index,
+        kmipkit_profile_readiness_blocker_view_v1_t *out_view);
+    void kmipkit_profile_readiness_release(kmipkit_profile_readiness_t *readiness);
+    int32_t kmipkit_profile_catalog_table_count_v1(uint32_t table, uint64_t *out_count);
+    int32_t kmipkit_profile_catalog_row_at_v1(
+        uint32_t table, uint64_t index, kmipkit_profile_catalog_row_view_v1_t *out_row);
+    int32_t kmipkit_profile_catalog_relation_count_v1(
+        uint32_t table, uint64_t row_index, uint32_t relation, uint64_t *out_count);
+    int32_t kmipkit_profile_catalog_relation_at_v1(
+        uint32_t table, uint64_t row_index, uint32_t relation, uint64_t relation_index,
+        kmipkit_profile_catalog_row_view_v1_t *out_row);
     int32_t kmipkit_last_error_clear(void);
 
     int32_t kmipkit_cancel_request_create(

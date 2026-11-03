@@ -16,6 +16,7 @@ from . import (
     extensions,
     messages,
     metadata,
+    profile_catalog,
     ttlv,
 )
 from .extensions import with_extension
@@ -32,6 +33,7 @@ __all__ = [
     "extensions",
     "messages",
     "metadata",
+    "profile_catalog",
     "ttlv",
     "with_extension",
 ]

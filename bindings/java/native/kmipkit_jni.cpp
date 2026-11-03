@@ -377,6 +377,7 @@ constexpr uint64_t kMaximumTransportInputBytes = 16 * 1024 * 1024;
 constexpr uint64_t kMaximumTransportInputCount = 4096;
 
 constexpr uint64_t kMaximumTextBytes = 4096;
+constexpr uint64_t kMaximumProfileReadinessEvidenceBytes = 16 * 1024 * 1024;
 constexpr uint64_t kMaximumNativeInputArrayElements = 100000;
 constexpr uint64_t kMaximumTtlvItemLength = std::numeric_limits<uint32_t>::max();
 
@@ -4674,6 +4675,242 @@ JNIEXPORT jboolean JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchI
         }
         return static_cast<jboolean>(criticality == 1 ? JNI_TRUE : JNI_FALSE);
     });
+}
+
+} // extern "C"
+
+namespace {
+
+bool readiness_java_utf8(JNIEnv* env, jstring value, std::string* output,
+        uint64_t remaining_bytes) noexcept {
+    if (value == nullptr || output == nullptr) return false;
+    const jsize length = env->GetStringUTFLength(value);
+    if (length < 0 || static_cast<uint64_t>(length) > remaining_bytes
+            || static_cast<uint64_t>(length) > kMaximumProfileReadinessEvidenceBytes) {
+        return false;
+    }
+    const char* chars = env->GetStringUTFChars(value, nullptr);
+    if (chars == nullptr) return false;
+    std::string copy(chars, static_cast<size_t>(length));
+    env->ReleaseStringUTFChars(value, chars);
+    for (unsigned char byte : copy) {
+        if (byte == 0 || byte > 0x7f) return false;
+    }
+    *output = std::move(copy);
+    return true;
+}
+
+jstring readiness_string(JNIEnv* env, kmipkit_byte_span_v1_t span,
+        bool present, bool required) noexcept {
+    if (!present && !required) return nullptr;
+    if (span.length == 0) return env->NewStringUTF("");
+    jstring result = nullptr;
+    if (!profile_error_text(env, span.data, span.length, required, &result)) return nullptr;
+    return result;
+}
+
+jobjectArray readiness_string_array(JNIEnv* env, jsize length) noexcept {
+    jclass string_class = env->FindClass("java/lang/String");
+    if (string_class == nullptr) return nullptr;
+    jobjectArray result = env->NewObjectArray(length, string_class, nullptr);
+    env->DeleteLocalRef(string_class);
+    return result;
+}
+
+bool readiness_set_string(JNIEnv* env, jobjectArray array, jsize index,
+        kmipkit_byte_span_v1_t span, bool present, bool required) noexcept {
+    jstring value = readiness_string(env, span, present, required);
+    if (env->ExceptionCheck() || (required && value == nullptr)) return false;
+    env->SetObjectArrayElement(array, index, value);
+    if (value != nullptr) env->DeleteLocalRef(value);
+    return !env->ExceptionCheck();
+}
+
+bool readiness_set_text(JNIEnv* env, jobjectArray array, jsize index,
+        const char* value) noexcept {
+    jstring text = env->NewStringUTF(value);
+    if (text == nullptr || env->ExceptionCheck()) return false;
+    env->SetObjectArrayElement(array, index, text);
+    env->DeleteLocalRef(text);
+    return !env->ExceptionCheck();
+}
+
+} // namespace
+
+extern "C" {
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_profileReadinessCreate(
+        JNIEnv* env, jclass, jstring profile_id, jobjectArray raw_requirement_ids,
+        jbooleanArray raw_passed) {
+    return guarded<jlong>(env, 0, [&] {
+        if (profile_id == nullptr || raw_requirement_ids == nullptr || raw_passed == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        const jsize count = env->GetArrayLength(raw_requirement_ids);
+        if (count < 0 || static_cast<uint64_t>(count) > kMaximumNativeInputArrayElements
+                || env->GetArrayLength(raw_passed) != count) {
+            throw_java(env, "org/kmipkit/ResourceLimitException", "profile evidence exceeds the configured limit");
+            return static_cast<jlong>(0);
+        }
+        uint64_t total_bytes = 0;
+        const jsize profile_length = env->GetStringUTFLength(profile_id);
+        if (profile_length < 0 || static_cast<uint64_t>(profile_length) > kMaximumTextBytes) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        total_bytes = static_cast<uint64_t>(profile_length);
+        for (jsize index = 0; index < count; ++index) {
+            jstring item = static_cast<jstring>(env->GetObjectArrayElement(raw_requirement_ids, index));
+            if (env->ExceptionCheck() || item == nullptr) {
+                if (item != nullptr) env->DeleteLocalRef(item);
+                throw_invalid_input(env);
+                return static_cast<jlong>(0);
+            }
+            const jsize length = env->GetStringUTFLength(item);
+            env->DeleteLocalRef(item);
+            if (length < 0 || static_cast<uint64_t>(length)
+                    > kMaximumProfileReadinessEvidenceBytes - total_bytes) {
+                throw_java(env, "org/kmipkit/ResourceLimitException", "profile evidence exceeds the configured limit");
+                return static_cast<jlong>(0);
+            }
+            total_bytes += static_cast<uint64_t>(length);
+        }
+        std::string profile;
+        if (!readiness_java_utf8(env, profile_id, &profile, total_bytes)) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        jboolean* passed = count == 0 ? nullptr : env->GetBooleanArrayElements(raw_passed, nullptr);
+        if (count != 0 && passed == nullptr) return static_cast<jlong>(0);
+        std::vector<std::string> identifiers;
+        std::vector<kmipkit_profile_evidence_record_v1_t> records(static_cast<size_t>(count));
+        identifiers.reserve(static_cast<size_t>(count));
+        for (jsize index = 0; index < count; ++index) {
+            jstring item = static_cast<jstring>(env->GetObjectArrayElement(raw_requirement_ids, index));
+            std::string identifier;
+            if (!readiness_java_utf8(env, item, &identifier, total_bytes)) {
+                if (item != nullptr) env->DeleteLocalRef(item);
+                if (passed != nullptr) env->ReleaseBooleanArrayElements(raw_passed, passed, JNI_ABORT);
+                throw_invalid_input(env);
+                return static_cast<jlong>(0);
+            }
+            env->DeleteLocalRef(item);
+            total_bytes -= static_cast<uint64_t>(identifier.size());
+            identifiers.push_back(std::move(identifier));
+            auto& record = records[static_cast<size_t>(index)];
+            record.struct_size = static_cast<uint32_t>(sizeof(record));
+            record.abi_version = 1;
+            const auto& text = identifiers.back();
+            record.requirement_id.data = reinterpret_cast<const uint8_t*>(text.data());
+            record.requirement_id.length = static_cast<uint64_t>(text.size());
+            record.passed = passed[index] == JNI_TRUE ? 1 : 0;
+        }
+        if (passed != nullptr) env->ReleaseBooleanArrayElements(raw_passed, passed, JNI_ABORT);
+        kmipkit_byte_span_v1_t profile_span{};
+        profile_span.data = reinterpret_cast<const uint8_t*>(profile.data());
+        profile_span.length = static_cast<uint64_t>(profile.size());
+        kmipkit_profile_readiness_t* handle = nullptr;
+        if (!check_status(env, [&] {
+            return kmipkit_profile_readiness_evaluate_v1(
+                    &profile_span, records.data(), static_cast<uint64_t>(records.size()), &handle);
+        })) return static_cast<jlong>(0);
+        return to_java_handle(handle);
+    });
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_profileReadinessView(
+        JNIEnv* env, jclass, jlong raw_handle) {
+    return guarded<jobjectArray>(env, nullptr, [&] {
+        auto* handle = from_java_handle<kmipkit_profile_readiness_t>(raw_handle);
+        kmipkit_profile_readiness_view_v1_t view{};
+        view.struct_size = static_cast<uint32_t>(sizeof(view));
+        view.abi_version = 1;
+        if (!check_status(env, [&] { return kmipkit_profile_readiness_view_get_v1(handle, &view); })) {
+            return static_cast<jobjectArray>(nullptr);
+        }
+        if (view.target_selected > 1 || view.runtime_validation_available > 1
+                || view.requirement_records_complete > 1 || view.published_claim > 1
+                || view.blocker_count > static_cast<uint64_t>(std::numeric_limits<jsize>::max())) {
+            throw_invalid_input(env);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jobjectArray result = readiness_string_array(env, 7);
+        if (result == nullptr) return static_cast<jobjectArray>(nullptr);
+        const bool ok = readiness_set_string(env, result, 0, view.profile_id, true, true)
+                && readiness_set_string(env, result, 1, view.effective_state, true, true)
+                && readiness_set_text(env, result, 2, view.target_selected ? "true" : "false")
+                && readiness_set_text(env, result, 3, view.runtime_validation_available ? "true" : "false")
+                && readiness_set_text(env, result, 4, view.requirement_records_complete ? "true" : "false")
+                && readiness_set_text(env, result, 5, view.published_claim ? "true" : "false");
+        if (!ok) return static_cast<jobjectArray>(nullptr);
+        const std::string count = std::to_string(view.blocker_count);
+        readiness_set_text(env, result, 6, count.c_str());
+        return result;
+    });
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_profileReadinessBlockerAt(
+        JNIEnv* env, jclass, jlong raw_handle, jlong raw_index) {
+    return guarded<jobjectArray>(env, nullptr, [&] {
+        if (raw_index < 0) { throw_invalid_input(env); return static_cast<jobjectArray>(nullptr); }
+        auto* handle = from_java_handle<kmipkit_profile_readiness_t>(raw_handle);
+        kmipkit_profile_readiness_blocker_view_v1_t view{};
+        view.struct_size = static_cast<uint32_t>(sizeof(view)); view.abi_version = 1;
+        if (!check_status(env, [&] { return kmipkit_profile_readiness_blocker_at_v1(handle, static_cast<uint64_t>(raw_index), &view); })) return static_cast<jobjectArray>(nullptr);
+        jobjectArray result = readiness_string_array(env, 6);
+        if (result == nullptr) return static_cast<jobjectArray>(nullptr);
+        if (!readiness_set_string(env,result,0,view.kind,true,true) || !readiness_set_string(env,result,1,view.message,true,true)
+                || !readiness_set_string(env,result,2,view.requirement_id,view.requirement_id_present==1,false)
+                || !readiness_set_string(env,result,3,view.profile_id,view.profile_id_present==1,false)
+                || !readiness_set_string(env,result,4,view.test_id,view.test_id_present==1,false)
+                || !readiness_set_string(env,result,5,view.source_clause_id,view.source_clause_id_present==1,false)) return static_cast<jobjectArray>(nullptr);
+        if (view.requirement_id_present>1 || view.profile_id_present>1 || view.test_id_present>1 || view.source_clause_id_present>1) {
+            throw_invalid_input(env); return static_cast<jobjectArray>(nullptr);
+        }
+        return result;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_profileReadinessRelease(
+        JNIEnv*, jclass, jlong raw_handle) {
+    kmipkit_profile_readiness_release(from_java_handle<kmipkit_profile_readiness_t>(raw_handle));
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_profileCatalogTableCount(
+        JNIEnv* env, jclass, jint table) {
+    return guarded<jlong>(env, 0, [&] {
+        if (table < 1 || table > 3) { throw_invalid_input(env); return static_cast<jlong>(0); }
+        uint64_t count = 0;
+        if (!check_status(env, [&] { return kmipkit_profile_catalog_table_count_v1(static_cast<uint32_t>(table), &count); })) return static_cast<jlong>(0);
+        if (count > static_cast<uint64_t>(std::numeric_limits<jlong>::max())) { throw_invalid_input(env); return static_cast<jlong>(0); }
+        return static_cast<jlong>(count);
+    });
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_profileCatalogRow(
+        JNIEnv* env, jclass, jint table, jlong raw_index) {
+    return guarded<jobjectArray>(env, nullptr, [&] {
+        if (table < 1 || table > 3 || raw_index < 0) { throw_invalid_input(env); return static_cast<jobjectArray>(nullptr); }
+        kmipkit_profile_catalog_row_view_v1_t row{}; row.struct_size=static_cast<uint32_t>(sizeof(row)); row.abi_version=1;
+        if (!check_status(env,[&]{return kmipkit_profile_catalog_row_at_v1(static_cast<uint32_t>(table),static_cast<uint64_t>(raw_index),&row);})) return static_cast<jobjectArray>(nullptr);
+        const jsize length=table==1?5:(table==2?8:4); jobjectArray result=readiness_string_array(env,length); if(result==nullptr)return static_cast<jobjectArray>(nullptr);
+        bool ok=false;
+        if(table==1) ok=readiness_set_string(env,result,0,row.profile_id,true,true)&&readiness_set_string(env,result,1,row.name,true,true)&&readiness_set_string(env,result,2,row.applicability,true,true)&&readiness_set_string(env,result,3,row.claim_state,true,true)&&readiness_set_text(env,result,4,row.selected_target?"true":"false");
+        else if(table==2) ok=readiness_set_string(env,result,0,row.requirement_id,true,true)&&readiness_set_string(env,result,1,row.source_keyword,row.source_keyword_present==1,false)&&readiness_set_string(env,result,2,row.source_force,row.source_force_present==1,false)&&readiness_set_string(env,result,3,row.source_gap_id,row.source_gap_id_present==1,false)&&readiness_set_string(env,result,4,row.source_locator,row.source_locator_present==1,false)&&readiness_set_string(env,result,5,row.verification_category,true,true)&&readiness_set_string(env,result,6,row.scope_state,true,true)&&readiness_set_text(env,result,7,row.has_accepted_deviation?"true":"false");
+        else ok=readiness_set_string(env,result,0,row.test_id,true,true)&&readiness_set_string(env,result,1,row.official_case_id,true,true)&&readiness_set_string(env,result,2,row.mandatory_status,true,true)&&readiness_set_string(env,result,3,row.fixture_availability,true,true);
+        if(!ok)return static_cast<jobjectArray>(nullptr); return result;
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_profileCatalogRelationCount(
+        JNIEnv* env,jclass,jint table,jlong row,jint relation) {
+    return guarded<jlong>(env,0,[&]{if(table<1||table>3||row<0||relation<1||relation>10){throw_invalid_input(env);return static_cast<jlong>(0);}uint64_t count=0;if(!check_status(env,[&]{return kmipkit_profile_catalog_relation_count_v1(static_cast<uint32_t>(table),static_cast<uint64_t>(row),static_cast<uint32_t>(relation),&count);}))return static_cast<jlong>(0);if(count>static_cast<uint64_t>(std::numeric_limits<jlong>::max())){throw_invalid_input(env);return static_cast<jlong>(0);}return static_cast<jlong>(count);});
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_profileCatalogRelationRow(
+        JNIEnv* env,jclass,jint table,jlong row,jint relation,jlong index) {
+    return guarded<jobjectArray>(env,nullptr,[&]{if(table<1||table>3||row<0||relation<1||relation>10||index<0){throw_invalid_input(env);return static_cast<jobjectArray>(nullptr);}kmipkit_profile_catalog_row_view_v1_t item{};item.struct_size=static_cast<uint32_t>(sizeof(item));item.abi_version=1;if(!check_status(env,[&]{return kmipkit_profile_catalog_relation_at_v1(static_cast<uint32_t>(table),static_cast<uint64_t>(row),static_cast<uint32_t>(relation),static_cast<uint64_t>(index),&item);}))return static_cast<jobjectArray>(nullptr);jsize length=item.row_kind==5?1:(item.row_kind==4?3:4);jobjectArray result=readiness_string_array(env,length);if(result==nullptr)return static_cast<jobjectArray>(nullptr);bool ok=false;if(item.row_kind==5)ok=readiness_set_string(env,result,0,item.text_value,true,true);else if(item.row_kind==4)ok=readiness_set_string(env,result,0,item.requirement_id,true,true)&&readiness_set_string(env,result,1,item.source_clause_id,true,true)&&readiness_set_string(env,result,2,item.scope_state,true,true);else if(item.row_kind==3)ok=readiness_set_string(env,result,0,item.test_id,true,true)&&readiness_set_string(env,result,1,item.official_case_id,true,true)&&readiness_set_string(env,result,2,item.mandatory_status,true,true)&&readiness_set_string(env,result,3,item.fixture_availability,true,true);if(!ok){throw_invalid_input(env);return static_cast<jobjectArray>(nullptr);}return result;});
 }
 
 } // extern "C"
