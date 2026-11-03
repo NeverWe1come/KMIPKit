@@ -10363,4 +10363,11 @@ Final verification after the traceability/task updates:
 - `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest discover -s tools/normative_catalog/tests -p test_feature_traceability.py -q` — 30 passed, 1 skipped.
 - `git diff --check` passed after task and traceability updates.
 
-The manifest keeps 6,470 public declarations and 8,480 approved exclusions; blocked KMIPKIT-0043 candidates fall from 841 to 768. The mappings do not add an OASIS conformance, profile-support, interoperability, or certification claim. Independent review and hosted CI results are recorded after they complete; T102 remains open.
+The manifest keeps 6,470 public declarations and 8,480 approved exclusions; blocked KMIPKIT-0043 candidates fall from 841 to 768. The mappings do not add an OASIS conformance, profile-support, interoperability, or certification claim. T102 remains open.
+
+Independent review for head `3e5f587fb`:
+
+- Security review of `2d4c449a2..3e5f587fb` plus local documentation — no findings. It confirmed exact source/alias copying, unchanged foreign-language mappings, no runtime changes, and no promotion of unlisted parser or payload paths. The reviewer did not rerun the generator or tests; those results are recorded above.
+- QA review — no findings. It confirmed 73 unique changed public declaration rows matching the 73 pinned pairs (64 verified and nine declared), with no additional declaration rows changed. It independently confirmed totals of 6,470 declarations, 8,480 exclusions, and 768 blocked candidates. The reviewer confirmed T102 244/244, generator check 12/12, and `git diff --check`; `test_manifest_v2` was not repeated because the coordinator's 151/151 result was already available.
+
+Hosted CI for the pushed head is pending.
