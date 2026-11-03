@@ -90048,6 +90048,3006 @@
       "exportName": "<kmipkit::ProfileObjectState as core::fmt::Debug>::fmt",
       "packageId": "rust-kmipkit",
       "reason": "This redacted compiler-generated Debug formatter adds no separate KMIP client capability. The existing output masks the ProfileObjectState identifier and caller-attested values, and the ProfileValidationContext state collection."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::DelegatedLoginError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::DelegatedLoginError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::DelegatedLoginError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::DelegatedLoginError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::DelegatedLoginError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::DelegatedLoginError as core::borrow::Borrow<kmipkit_protocol::delegated_login::DelegatedLoginError>>::borrow",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::DelegatedLoginError as core::borrow::BorrowMut<kmipkit_protocol::delegated_login::DelegatedLoginError>>::borrow_mut",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::DelegatedLoginError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::DelegatedLoginError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::DelegatedLoginError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::DelegatedLoginError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::DelegatedLoginError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::DelegatedLoginError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::DelegatedLoginError as core::convert::From<kmipkit_protocol::delegated_login::DelegatedLoginError>>::from",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::DelegatedLoginError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::DelegatedLoginError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::DelegatedLoginError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::DelegatedLoginError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::DelegatedLoginError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::DelegatedLoginError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::DelegatedLoginError as core::error::Error>::description",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::DelegatedLoginError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::DelegatedLoginError as core::error::Error>::source",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::DelegatedLoginError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::DelegatedLoginError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::DelegatedLoginError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LoginError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LoginError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LoginError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LoginError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LoginError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LoginError as core::borrow::Borrow<kmipkit_protocol::login::LoginError>>::borrow",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LoginError as core::borrow::BorrowMut<kmipkit_protocol::login::LoginError>>::borrow_mut",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LoginError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LoginError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LoginError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LoginError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LoginError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LoginError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LoginError as core::convert::From<kmipkit_protocol::login::LoginError>>::from",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LoginError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LoginError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LoginError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LoginError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LoginError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LoginError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LoginError as core::error::Error>::description",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LoginError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LoginError as core::error::Error>::source",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LoginError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LoginError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LoginError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LogoutError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LogoutError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LogoutError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LogoutError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LogoutError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LogoutError as core::borrow::Borrow<kmipkit_protocol::logout::LogoutError>>::borrow",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LogoutError as core::borrow::BorrowMut<kmipkit_protocol::logout::LogoutError>>::borrow_mut",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LogoutError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LogoutError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LogoutError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LogoutError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LogoutError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LogoutError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LogoutError as core::convert::From<kmipkit_protocol::logout::LogoutError>>::from",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LogoutError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LogoutError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LogoutError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LogoutError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LogoutError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LogoutError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LogoutError as core::error::Error>::description",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LogoutError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LogoutError as core::error::Error>::source",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LogoutError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LogoutError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::LogoutError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationError as core::borrow::Borrow<kmipkit_protocol::ticket::TicketValidationError>>::borrow",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationError as core::borrow::BorrowMut<kmipkit_protocol::ticket::TicketValidationError>>::borrow_mut",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationError as core::convert::From<kmipkit_protocol::ticket::TicketValidationError>>::from",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationError as core::error::Error>::description",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationError as core::error::Error>::source",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationErrorKind as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationErrorKind as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationErrorKind as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationErrorKind as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationErrorKind as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationErrorKind as core::borrow::Borrow<kmipkit_protocol::ticket::TicketValidationErrorKind>>::borrow",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationErrorKind as core::borrow::BorrowMut<kmipkit_protocol::ticket::TicketValidationErrorKind>>::borrow_mut",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationErrorKind as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationErrorKind as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationErrorKind as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationErrorKind as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationErrorKind as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationErrorKind as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationErrorKind as core::convert::From<kmipkit_protocol::ticket::TicketValidationErrorKind>>::from",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationErrorKind as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationErrorKind as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationErrorKind as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationErrorKind as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationErrorKind as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationErrorKind as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit::TicketValidationErrorKind as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginError as core::borrow::Borrow<kmipkit_protocol::delegated_login::DelegatedLoginError>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginError as core::borrow::BorrowMut<kmipkit_protocol::delegated_login::DelegatedLoginError>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginError as core::convert::From<kmipkit_protocol::delegated_login::DelegatedLoginError>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginError as core::error::Error>::description",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginError as core::error::Error>::source",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.12 Tables 199-201; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::DelegatedLoginError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LoginError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LoginError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LoginError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LoginError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LoginError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LoginError as core::borrow::Borrow<kmipkit_protocol::login::LoginError>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LoginError as core::borrow::BorrowMut<kmipkit_protocol::login::LoginError>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LoginError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LoginError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LoginError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LoginError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LoginError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LoginError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LoginError as core::convert::From<kmipkit_protocol::login::LoginError>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LoginError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LoginError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LoginError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LoginError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LoginError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LoginError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LoginError as core::error::Error>::description",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LoginError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LoginError as core::error::Error>::source",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LoginError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LoginError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.30 Tables 253-255; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LoginError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LogoutError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LogoutError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LogoutError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LogoutError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LogoutError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LogoutError as core::borrow::Borrow<kmipkit_protocol::logout::LogoutError>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LogoutError as core::borrow::BorrowMut<kmipkit_protocol::logout::LogoutError>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LogoutError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LogoutError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LogoutError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LogoutError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LogoutError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LogoutError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LogoutError as core::convert::From<kmipkit_protocol::logout::LogoutError>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LogoutError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LogoutError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LogoutError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LogoutError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LogoutError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LogoutError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LogoutError as core::error::Error>::description",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LogoutError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LogoutError as core::error::Error>::source",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LogoutError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LogoutError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §6.1.31 Tables 256-258; payload-free local conversion error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::LogoutError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationError as core::borrow::Borrow<kmipkit_protocol::ticket::TicketValidationError>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationError as core::borrow::BorrowMut<kmipkit_protocol::ticket::TicketValidationError>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationError as core::convert::From<kmipkit_protocol::ticket::TicketValidationError>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationError as core::error::Error>::description",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationError as core::error::Error>::source",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-001/002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation error; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationErrorKind as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationErrorKind as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationErrorKind as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationErrorKind as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationErrorKind as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationErrorKind as core::borrow::Borrow<kmipkit_protocol::ticket::TicketValidationErrorKind>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationErrorKind as core::borrow::BorrowMut<kmipkit_protocol::ticket::TicketValidationErrorKind>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationErrorKind as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationErrorKind as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationErrorKind as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationErrorKind as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationErrorKind as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationErrorKind as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationErrorKind as core::convert::From<kmipkit_protocol::ticket::TicketValidationErrorKind>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationErrorKind as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationErrorKind as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationErrorKind as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationErrorKind as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationErrorKind as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationErrorKind as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "T102 KMIPKIT-0043-FR-010/KMIPKIT-0043-FR-021; owner KMIPKIT-0038-FR-002/005/008; OASIS KMIP v2.1 §7.39 Table 391; §11.57 Table 488; payload-free local validation category; no OASIS trait mandate.",
+      "exportName": "<kmipkit_protocol::TicketValidationErrorKind as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "Compiler-generated Rust trait implementation for this payload-free local error value is not a separate KMIPKit product capability."
     }
   ],
   "capabilities": [

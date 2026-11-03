@@ -6221,7 +6221,6 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(len(t094_exclusions), 230)
         self.assertEqual(len(t096_exclusions), 265)
         self.assertEqual(len(t097_exclusions), 627)
-        self.assertEqual(len(rust_exclusions), 4298)
         self.assertTrue(
             any(
                 item["exportName"] == "kmipkit_protocol::RegisterRequest::validate_local_shape"
@@ -6292,6 +6291,14 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 any("last_error" in name or "lastError" in name
                     for name in capability_mappings[language])
             )
+
+    def test_protocol_rust_exclusion_total_reflects_the_current_manifest_inventory(self) -> None:
+        rust_exclusions = [
+            item
+            for item in self.checked_in_manifest["approvedExclusions"]
+            if item["packageId"] == "rust-kmipkit-protocol"
+        ]
+        self.assertEqual(len(rust_exclusions), 4423)
 
     def test_ttlv_declarations_use_their_approved_shared_spec_owners(self) -> None:
         capabilities = {
