@@ -65,6 +65,12 @@ class T102ProfileReadinessCParameterTests(unittest.TestCase):
         self.assertEqual(handle["c"]["ownership"], "library-owned")
         self.assertEqual(handle["c"]["releaseFunction"], "kmipkit_profile_readiness_release")
 
+    def test_versioned_evidence_records_can_embed_the_approved_byte_span_carrier(self) -> None:
+        catalog = generate._load_json(ROOT, generate.CATALOG_PATH, generate.MAX_CATALOG_BYTES)
+        generate._validate_v2_manifest(
+            self.manifest, self.schema, catalog, ROOT, require_complete=False
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
