@@ -194,14 +194,16 @@ class T102RemainingResponseViewMappingTests(unittest.TestCase):
         }
         cls.operations = {row["operationId"]: row for row in cls.manifest["operations"]}
 
-    def test_exact_remaining_response_view_candidate_set(self) -> None:
+    def test_exact_response_view_declaration_set(self) -> None:
+        expected_names = {
+            f"kmipkit_client::ClientResponseView<'a>::{item.method}" for item in EXPECTED
+        }
         expected_ids = {item.declaration_id for item in EXPECTED}
         actual_ids = {
             row["declarationId"]
             for row in self.manifest["publicDeclarations"]
             if row["packageId"] == "rust-kmipkit-client"
-            and row["exportName"].startswith("kmipkit_client::ClientResponseView<'a>::")
-            and row.get("candidateSpecId") == "KMIPKIT-0043"
+            and row["exportName"] in expected_names
         }
         self.assertEqual(expected_ids, actual_ids)
 
@@ -241,14 +243,15 @@ class T102RemainingResponseViewMappingTests(unittest.TestCase):
                     <= set(target["requirementIds"])
                 )
                 source = foreign["c"]
+                inherited_requirements = set()
                 for language, source_row in foreign.items():
                     self.assertEqual("verified", source_row["declarationState"])
                     self.assertEqual(item.operation_id, source_row["capabilityId"])
-                    self.assertEqual(source["requirementIds"], source_row["requirementIds"])
                     self.assertEqual(source["approvalSource"], source_row["approvalSource"])
                     self.assertEqual(source["parityEvidenceIds"], source_row["parityEvidenceIds"])
-                    self.assertEqual(mappings[language], source_row["languageMappings"][language])
-                self.assertEqual(source["requirementIds"], target["requirementIds"])
+                    inherited_requirements.update(source_row["requirementIds"])
+                inherited_requirements.update({"KMIPKIT-0043-FR-010", "KMIPKIT-0043-FR-021"})
+                self.assertEqual(sorted(inherited_requirements), target["requirementIds"])
                 self.assertEqual(source["approvalSource"], target["approvalSource"])
                 self.assertEqual(source["parityEvidenceIds"], target["parityEvidenceIds"])
 

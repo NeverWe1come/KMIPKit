@@ -19,6 +19,9 @@ from tools.api_manifest.tests.t102_manifest_totals import (
     T102_BLOCKED_CANDIDATES,
     T102_PUBLIC_DECLARATIONS,
 )
+from tools.api_manifest.tests.test_t102_remaining_response_view_mappings import (
+    EXPECTED as REMAINING_RESPONSE_VIEWS,
+)
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
@@ -140,10 +143,10 @@ EXPECTED = (
 )
 
 # Baseline fingerprints exclude only the nine target rows and their Rust list entries.
-UNCHANGED_DECLARATIONS_SHA256 = "8bbf178705208cefa17aeda950c1c7589dd5456d1f4b2c4ea1bdf7c8a029ff57"
+UNCHANGED_DECLARATIONS_SHA256 = "6bbb8d0dd842305fb1a7e4c8fd2adab5339a96c2f5c024447bbd68dab9f5a69b"
 UNCHANGED_OPERATIONS_SHA256 = "9e68400351e8ad20d5b41bd28893f79622babfbbd6dbefc559d7283948cb09f5"
 OTHER_MANIFEST_SHA256 = "89ce2f39dccd3e4548dc0145da0e8b4463f4f4ae769ed472d80cf44b26679ba6"
-EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = 759
+EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = 740
 
 
 def canonical_sha256(value: object) -> str:
@@ -303,6 +306,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
 
     def test_no_unlisted_declaration_or_operation_row_changes(self) -> None:
         target_ids = {item.declaration_id for item in EXPECTED}
+        target_ids.update(item.declaration_id for item in REMAINING_RESPONSE_VIEWS)
         unchanged_declarations = [
             row
             for row in self.manifest["publicDeclarations"]
@@ -316,6 +320,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
         target_operations = {
             f"KMIPKIT-ELEM-OP-C2S-{item.operation_suffix}" for item in EXPECTED
         }
+        target_operations.update(item.operation_id for item in REMAINING_RESPONSE_VIEWS)
         normalized_operations = copy.deepcopy(self.manifest["operations"])
         for operation in normalized_operations:
             if operation["operationId"] in target_operations:

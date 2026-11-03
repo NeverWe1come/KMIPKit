@@ -321,7 +321,7 @@ class T102PolicyControlErrorTraitExclusionTests(unittest.TestCase):
                 (
                     "rust-kmipkit-client",
                     f"kmipkit_client::ClientResponseView<'a>::{method}",
-                ): "blocked",
+                ): "verified",
             }
             actual = {
                 (row.get("packageId"), row.get("exportName")): row["declarationState"]

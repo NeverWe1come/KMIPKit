@@ -106,14 +106,14 @@ def operation_rows() -> dict[tuple[str, str], str]:
 
     add(ROOT_PACKAGE, "kmipkit::Client::derive_key", "kmipkit::Client::derive_key_with_options", "kmipkit::ClientBatchOutcome::derive_key_response", "kmipkit::ClientRequest::derive_key")
     add(CLIENT, "kmipkit_client::Client::derive_key", "kmipkit_client::Client::derive_key_with_options", "kmipkit_client::ClientBatchOutcome::derive_key_response", "kmipkit_client::ClientRequest::derive_key")
-    add(CLIENT, "kmipkit_client::ClientResponseView<'a>::derive_key", state="blocked")
+    add(CLIENT, "kmipkit_client::ClientResponseView<'a>::derive_key")
     for method, title in (("export", "Export"), ("import", "Import")):
         for package, prefix in ((ROOT_PACKAGE, "kmipkit"), (CLIENT, "kmipkit_client")):
             add(package, f"{prefix}::Client::{method}", f"{prefix}::Client::{method}_with_options", f"{prefix}::ClientBatchOutcome::{title}", f"{prefix}::ClientBatchOutcome::{title}::0", f"{prefix}::ClientBatchOutcome::{method}_response", f"{prefix}::ClientOperation::{title}", f"{prefix}::ClientRequest::{title}", f"{prefix}::ClientRequest::{title}::0", f"{prefix}::ClientRequest::{method}")
-        add(CLIENT, f"kmipkit_client::ClientResponseView<'a>::{method}", state="blocked")
+        add(CLIENT, f"kmipkit_client::ClientResponseView<'a>::{method}")
     add(ROOT_PACKAGE, "kmipkit::Client::join_split_key", "kmipkit::Client::join_split_key_with_options", "kmipkit::ClientBatchOutcome::join_split_key_response", "kmipkit::ClientRequest::join_split_key")
     add(CLIENT, "kmipkit_client::Client::join_split_key", "kmipkit_client::Client::join_split_key_with_options", "kmipkit_client::ClientBatchOutcome::join_split_key_response", "kmipkit_client::ClientRequest::join_split_key")
-    add(CLIENT, "kmipkit_client::ClientResponseView<'a>::join_split_key", state="blocked")
+    add(CLIENT, "kmipkit_client::ClientResponseView<'a>::join_split_key")
     return result
 
 

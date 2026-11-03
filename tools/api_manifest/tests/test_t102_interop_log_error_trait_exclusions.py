@@ -63,7 +63,7 @@ def operation_rows() -> dict[tuple[str,str],str]:
         for package,prefix in ((ROOT_PACKAGE,'kmipkit'),(CLIENT,'kmipkit_client')):
             names=(f'{prefix}::Client::{method}',f'{prefix}::ClientBatchOutcome::{title}',f'{prefix}::ClientBatchOutcome::{title}::0',f'{prefix}::ClientOperation::{title}',f'{prefix}::ClientRequest::{title}',f'{prefix}::ClientRequest::{title}::0',f'{prefix}::ClientRequest::{method}')
             rows.update({(package,name):'verified' for name in names})
-        rows[(CLIENT,f"kmipkit_client::ClientResponseView<'a>::{method}")]='blocked'
+        rows[(CLIENT,f"kmipkit_client::ClientResponseView<'a>::{method}")]='verified'
     return rows
 
 class T102InteropLogErrorTraitExclusionTests(unittest.TestCase):
