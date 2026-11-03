@@ -776,3 +776,17 @@ KMIPKIT-0010-FR-013 supplies the parity ruling for caller evidence: Rust owns th
 KMIPKIT-0043-FR-005/010/021 trace the 26 Python `__exit__` declarations to their existing four-language native-handle release mappings. The exact Python `__enter__` and `closed` helper exports are recorded individually in `approvedExclusions`; the release capability remains available through Rust ownership, C release, Java close, and Python close. These are binding lifecycle helpers with no KMIP wire behavior, so no OASIS normative clause applies. `tools/api_manifest/tests/test_t102_python_native_handle_lifecycle.py` pins the 26-type inventory and language targets; `bindings/python/tests/test_shared_parity_fixtures.py::test_client_batch_and_result_context_exit_closes_once` exercises normal and exceptional context exits.
 
 The same T102 checkpoint maps `client_profile_readiness` across all four facades. `crates/kmipkit/tests/runtime_metadata.rs::capability_query_matches_manifest_ready_capabilities` and `crates/kmipkit-ffi/tests/support/metadata_tests.rs::capability_query_only_reports_c_mapped_nonblocked_capabilities` verify that Rust and C runtime metadata report the generated capability surface consistently. Readiness remains local KMIPKit evidence and does not assert profile conformance.
+
+### T102 - Exact Rust alias mappings
+
+`tools/api_manifest/tests/test_t102_approved_alias_mapping.py` pins all 73 exact source/alias pairs. Every alias inherits the existing source declaration's kind, ready/declared state, capability ID, requirement IDs, approved owner, parity evidence, and C/Java/Python mappings; only the Rust package/name points to the reexport. Operation-owned records update their Rust declaration list, while shared capabilities update their Rust mapping list. The batch is inventory and API parity work; it adds no Rust behavior or KMIP operation.
+
+| Alias family | Existing approved owner | KMIP 2.1 functional context |
+|---|---|---|
+| Login, Delegated Login, Logout, Ticket | KMIPKIT-0038, `specs/024-credential-sessions/spec.md` | §§6.1.12, 6.1.30, 6.1.31, 7.39, and 11.57; Tables 199–201, 253–255, 256–258, 391, and 488 |
+| Get/Set Constraints, Get Usage Allocation, Set Defaults, Usage Allocation Context | KMIPKIT-0039, `specs/025-policy-controls/spec.md` | §§6.1.22, 6.1.23, 6.1.52, and 6.1.53; Tables 229–234, 325–327, and 328–330 |
+| PKCS#11 response builders | KMIPKIT-0040, `specs/026-pkcs11/spec.md` | §6.1.37, Tables 273–275 |
+| RNG Retrieve and RNG Seed request/response aliases | KMIPKIT-0041, `specs/027-rng-operations/spec.md` | §§6.1.49 and 6.1.50; Tables 316–321 |
+| `ProfileValidationSelection::validate` reexports | KMIPKIT-0010, `specs/010-profile-conformance/spec.md` | KMIP §14.1 and KMIP Profiles §6.1 are context only; profile-evidence identifiers and readiness are KMIPKit metadata |
+
+The exact alias test also verifies the post-batch T102 blocked-candidate total of 768. The inventory retains 6,470 public declarations and 8,480 exact approved exclusions. Unmapped response parsers, request payload helpers, sensitive fields, and Rust trait artifacts remain under their prior blocked/exclusion evidence. These alias mappings do not establish additional conformance or profile-support claims.

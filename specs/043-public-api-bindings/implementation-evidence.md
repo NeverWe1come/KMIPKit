@@ -10347,3 +10347,20 @@ Final verification for this checkpoint:
 - `git diff --check` passed; generator check confirmed generated output is current.
 
 One initial Python invocation omitted `KMIPKIT_NATIVE_LIBRARY` and failed during module collection because the local DLL was not selected. Re-running with the repository-local DLL path passed; no test or product defect was found. T102 remains open with 841 blocked candidates.
+
+### T102 exact approved Rust alias mappings (2026-11-03)
+
+Red `3b9e20a0b` adds `tools/api_manifest/tests/test_t102_approved_alias_mapping.py` with 73 exact Rust source/alias pairs and the post-batch total of 768. Before Green, the new assertions failed because the aliases were still blocked candidates and the aggregate count was still 841. Green `5cce56caa` maps only those 73 aliases to their existing KMIPKIT-0038, -0039, -0040, -0041, or -0010 owner declaration. It reuses the exact source kind, state, capability, requirement IDs, approval evidence, parity evidence, and C/Java/Python mappings, changing only the Rust package/name. Operation and capability Rust inventories were updated through the manifest, then the pinned generator refreshed all 12 outputs. No generated file was hand-edited.
+
+The T102 state-preservation assertions were updated for these exact source/alias pairs. They continue to require parsers, raw payload helpers, sensitive material paths, and unsupported aliases to remain blocked or excluded. The profile-model snapshot explicitly omits only the two newly mapped `ProfileValidationSelection::validate` aliases; it continues to hash the remaining protected declaration rows. No runtime implementation or external KMIP behavior changed.
+
+Final verification after the traceability/task updates:
+
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest discover --failfast -s tools/api_manifest/tests -p 'test_t102*.py' -q` — 244 passed in 48.136s.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2 -q` — 151 passed in 336.533s.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified after preserving the source manifest's existing formatting.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest scripts.tests.test_requirement_traceability -v` — 2 passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest discover -s tools/normative_catalog/tests -p test_feature_traceability.py -q` — 30 passed, 1 skipped.
+- `git diff --check` passed after task and traceability updates.
+
+The manifest keeps 6,470 public declarations and 8,480 approved exclusions; blocked KMIPKIT-0043 candidates fall from 841 to 768. The mappings do not add an OASIS conformance, profile-support, interoperability, or certification claim. Independent review and hosted CI results are recorded after they complete; T102 remains open.
