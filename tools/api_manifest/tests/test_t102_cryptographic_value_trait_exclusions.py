@@ -68,6 +68,7 @@ CRYPTographic_TYPES = {
         "implementation": "kmipkit_protocol::cryptographic_operation::CryptographicOperationResponseContext",
         "section": None,
         "owner_requirements": (
+            "KMIPKIT-0021-FR-003",
             "KMIPKIT-0021-FR-008",
             "KMIPKIT-0021-FR-015",
         ),
@@ -181,7 +182,7 @@ class T102CryptographicValueTraitExclusionTests(unittest.TestCase):
                 for row in exclusions:
                     with self.subTest(public_name=public_name, export_name=row["exportName"]):
                         self.assertIn("standard-trait implementation", row["reason"])
-                        self.assertIn("not a separate KMIPKit capability", row["reason"])
+                        self.assertIn("not a separate KMIPKit product capability", row["reason"])
                         self.assertEqual(
                             row["approvalSource"],
                             {
@@ -198,7 +199,10 @@ class T102CryptographicValueTraitExclusionTests(unittest.TestCase):
                             self.assertIn(requirement_id, row["evidence"])
                         if details["section"] is None:
                             self.assertIn("local response-framing model", row["evidence"])
-                            self.assertIn("no OASIS requirement applies to compiler-generated traits", row["evidence"])
+                            self.assertIn(
+                                "no OASIS requirement defines this local context type or applies to compiler-generated traits",
+                                row["evidence"],
+                            )
                         else:
                             self.assertIn("OASIS KMIP Specification v2.1", row["evidence"])
                             self.assertIn(details["section"], row["evidence"])

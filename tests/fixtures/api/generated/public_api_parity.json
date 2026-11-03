@@ -85490,6 +85490,1518 @@
       "exportName": "<kmipkit_protocol::profiles_generated::GeneratedVerificationCategory as core::fmt::Debug>::fmt",
       "packageId": "rust-kmipkit-protocol",
       "reason": "Exact compiler-observed Rust standard-trait implementation paths for GeneratedVerificationCategory add no distinct profile model behavior. These compiler-generated language artifacts are not a separate KMIP client capability; the profile model type and its functional declarations remain accounted for separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.12; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicAlgorithm as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.12; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicAlgorithm as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.12; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicAlgorithm as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.12; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicAlgorithm as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.12; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicAlgorithm as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicAlgorithm>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.12; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicAlgorithm as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicAlgorithm>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.12; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicAlgorithm as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.12; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicAlgorithm as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.12; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicAlgorithm as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.12; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicAlgorithm as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.12; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicAlgorithm as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.12; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicAlgorithm as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.12; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicAlgorithm as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicAlgorithm>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.12; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicAlgorithm as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.12; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicAlgorithm as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.12; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicAlgorithm as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.12; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicAlgorithm as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.12; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicAlgorithm as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.12; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicAlgorithm as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.12; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicAlgorithm as core::hash::Hash>::hash",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.12; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicAlgorithm as core::hash::Hash>::hash_slice",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.16; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DigitalSignatureAlgorithm as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.16; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DigitalSignatureAlgorithm as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.16; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DigitalSignatureAlgorithm as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.16; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DigitalSignatureAlgorithm as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.16; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DigitalSignatureAlgorithm as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::DigitalSignatureAlgorithm>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.16; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DigitalSignatureAlgorithm as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::DigitalSignatureAlgorithm>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.16; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DigitalSignatureAlgorithm as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.16; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DigitalSignatureAlgorithm as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.16; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DigitalSignatureAlgorithm as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.16; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DigitalSignatureAlgorithm as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.16; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DigitalSignatureAlgorithm as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.16; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DigitalSignatureAlgorithm as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.16; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DigitalSignatureAlgorithm as core::convert::From<kmipkit_protocol::cryptographic_operation::DigitalSignatureAlgorithm>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.16; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DigitalSignatureAlgorithm as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.16; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DigitalSignatureAlgorithm as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.16; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DigitalSignatureAlgorithm as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.16; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DigitalSignatureAlgorithm as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.16; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DigitalSignatureAlgorithm as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.16; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DigitalSignatureAlgorithm as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.16; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DigitalSignatureAlgorithm as core::hash::Hash>::hash",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.16; the accepted owner maps this value under KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::DigitalSignatureAlgorithm as core::hash::Hash>::hash_slice",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.21; the accepted owner maps this value under KMIPKIT-0021-FR-002, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::HashingAlgorithm as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.21; the accepted owner maps this value under KMIPKIT-0021-FR-002, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::HashingAlgorithm as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.21; the accepted owner maps this value under KMIPKIT-0021-FR-002, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::HashingAlgorithm as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.21; the accepted owner maps this value under KMIPKIT-0021-FR-002, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::HashingAlgorithm as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.21; the accepted owner maps this value under KMIPKIT-0021-FR-002, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::HashingAlgorithm as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::HashingAlgorithm>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.21; the accepted owner maps this value under KMIPKIT-0021-FR-002, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::HashingAlgorithm as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::HashingAlgorithm>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.21; the accepted owner maps this value under KMIPKIT-0021-FR-002, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::HashingAlgorithm as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.21; the accepted owner maps this value under KMIPKIT-0021-FR-002, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::HashingAlgorithm as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.21; the accepted owner maps this value under KMIPKIT-0021-FR-002, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::HashingAlgorithm as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.21; the accepted owner maps this value under KMIPKIT-0021-FR-002, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::HashingAlgorithm as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.21; the accepted owner maps this value under KMIPKIT-0021-FR-002, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::HashingAlgorithm as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.21; the accepted owner maps this value under KMIPKIT-0021-FR-002, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::HashingAlgorithm as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.21; the accepted owner maps this value under KMIPKIT-0021-FR-002, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::HashingAlgorithm as core::convert::From<kmipkit_protocol::cryptographic_operation::HashingAlgorithm>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.21; the accepted owner maps this value under KMIPKIT-0021-FR-002, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::HashingAlgorithm as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.21; the accepted owner maps this value under KMIPKIT-0021-FR-002, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::HashingAlgorithm as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.21; the accepted owner maps this value under KMIPKIT-0021-FR-002, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::HashingAlgorithm as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.21; the accepted owner maps this value under KMIPKIT-0021-FR-002, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::HashingAlgorithm as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.21; the accepted owner maps this value under KMIPKIT-0021-FR-002, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::HashingAlgorithm as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.21; the accepted owner maps this value under KMIPKIT-0021-FR-002, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::HashingAlgorithm as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.21; the accepted owner maps this value under KMIPKIT-0021-FR-002, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::HashingAlgorithm as core::hash::Hash>::hash",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.21; the accepted owner maps this value under KMIPKIT-0021-FR-002, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-013. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::HashingAlgorithm as core::hash::Hash>::hash_slice",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.61; the accepted owner maps this value under KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ValidityIndicator as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.61; the accepted owner maps this value under KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ValidityIndicator as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.61; the accepted owner maps this value under KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ValidityIndicator as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.61; the accepted owner maps this value under KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ValidityIndicator as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.61; the accepted owner maps this value under KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ValidityIndicator as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::ValidityIndicator>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.61; the accepted owner maps this value under KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ValidityIndicator as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::ValidityIndicator>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.61; the accepted owner maps this value under KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ValidityIndicator as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.61; the accepted owner maps this value under KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ValidityIndicator as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.61; the accepted owner maps this value under KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ValidityIndicator as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.61; the accepted owner maps this value under KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ValidityIndicator as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.61; the accepted owner maps this value under KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ValidityIndicator as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.61; the accepted owner maps this value under KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ValidityIndicator as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.61; the accepted owner maps this value under KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ValidityIndicator as core::convert::From<kmipkit_protocol::cryptographic_operation::ValidityIndicator>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.61; the accepted owner maps this value under KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ValidityIndicator as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.61; the accepted owner maps this value under KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ValidityIndicator as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.61; the accepted owner maps this value under KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ValidityIndicator as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.61; the accepted owner maps this value under KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ValidityIndicator as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.61; the accepted owner maps this value under KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ValidityIndicator as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.61; the accepted owner maps this value under KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ValidityIndicator as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.61; the accepted owner maps this value under KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ValidityIndicator as core::hash::Hash>::hash",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). OASIS KMIP Specification v2.1 §11.61; the accepted owner maps this value under KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::ValidityIndicator as core::hash::Hash>::hash_slice",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path is language-level behavior of an open KMIP value; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-003, KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicOperationResponseContext as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-003, KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicOperationResponseContext as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-003, KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicOperationResponseContext as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-003, KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicOperationResponseContext as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-003, KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicOperationResponseContext as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationResponseContext>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-003, KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicOperationResponseContext as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationResponseContext>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-003, KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicOperationResponseContext as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-003, KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicOperationResponseContext as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-003, KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicOperationResponseContext as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-003, KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicOperationResponseContext as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-003, KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicOperationResponseContext as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-003, KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicOperationResponseContext as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-003, KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicOperationResponseContext as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationResponseContext>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-003, KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicOperationResponseContext as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-003, KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicOperationResponseContext as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-003, KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicOperationResponseContext as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-003, KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicOperationResponseContext as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-003, KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicOperationResponseContext as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-003, KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicOperationResponseContext as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-003, KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicOperationResponseContext as core::hash::Hash>::hash",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-003, KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::CryptographicOperationResponseContext as core::hash::Hash>::hash_slice",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::VerificationResponseContext as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::VerificationResponseContext as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::VerificationResponseContext as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::VerificationResponseContext as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::VerificationResponseContext as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationResponseContext>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::VerificationResponseContext as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationResponseContext>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::VerificationResponseContext as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::VerificationResponseContext as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::VerificationResponseContext as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::VerificationResponseContext as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::VerificationResponseContext as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::VerificationResponseContext as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::VerificationResponseContext as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationResponseContext>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::VerificationResponseContext as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::VerificationResponseContext as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::VerificationResponseContext as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::VerificationResponseContext as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::VerificationResponseContext as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::VerificationResponseContext as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::VerificationResponseContext as core::hash::Hash>::hash",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::VerificationResponseContext as core::hash::Hash>::hash_slice",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-observed Rust standard-trait implementation path belongs to a KMIPKit-local response-framing model; it is not a separate KMIPKit product capability or KMIP operation."
     }
   ],
   "capabilities": [
