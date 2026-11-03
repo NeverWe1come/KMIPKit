@@ -424390,7 +424390,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424402,7 +424402,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424414,7 +424414,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424426,7 +424426,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424438,7 +424438,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424450,7 +424450,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424462,7 +424462,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424474,7 +424474,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424486,7 +424486,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424498,7 +424498,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424510,7 +424510,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424522,7 +424522,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424534,7 +424534,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424546,7 +424546,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424558,7 +424558,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424570,7 +424570,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424582,7 +424582,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424594,7 +424594,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424606,7 +424606,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424618,7 +424618,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424630,7 +424630,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424642,7 +424642,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424654,7 +424654,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424666,7 +424666,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424678,7 +424678,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424690,7 +424690,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424702,7 +424702,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424714,7 +424714,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424726,7 +424726,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424738,7 +424738,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424750,7 +424750,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424762,7 +424762,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424774,7 +424774,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424786,7 +424786,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424798,7 +424798,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424810,7 +424810,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424822,7 +424822,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424834,7 +424834,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424846,7 +424846,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424858,7 +424858,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424870,7 +424870,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424882,7 +424882,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424894,7 +424894,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424906,7 +424906,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424918,7 +424918,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424930,7 +424930,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424942,7 +424942,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424954,7 +424954,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424966,7 +424966,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424978,7 +424978,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -424990,7 +424990,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -425002,7 +425002,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -425014,7 +425014,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -425026,7 +425026,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -425038,7 +425038,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -425050,7 +425050,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -425062,7 +425062,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -425074,7 +425074,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -425086,7 +425086,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -425098,7 +425098,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -425110,7 +425110,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -425122,7 +425122,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -425134,7 +425134,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -425146,7 +425146,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -425158,7 +425158,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -425170,7 +425170,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -425182,7 +425182,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -425194,7 +425194,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -425206,7 +425206,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -425218,7 +425218,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -425230,7 +425230,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -425242,7 +425242,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -425254,7 +425254,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -425266,7 +425266,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -425278,7 +425278,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
-      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
+      "evidence": "Approved KMIPKIT-0006 owner specification; KMIPKIT-0006-FR-001 KMIPKIT-0006-FR-014 KMIPKIT-0006-FR-021. T102 inventory classification uses KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The Rust 1.94.0 export report records this compiler-observed Rust standard-trait path. OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426. No OASIS normative clause directly applies to Rust standard-trait paths. This is an inventory-only classification and makes no OASIS conformance, interoperability, profile-support, or certification claim. Exact paths and Rust 1.94.0 scope are in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`."
     },
     {
       "packageId": "rust-kmipkit-ttlv",

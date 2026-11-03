@@ -135,7 +135,7 @@ GROUPS = (
             candidate_id="KMIPKIT-0006",
             approval=MESSAGE_APPROVAL,
             requirements=MESSAGE_REQUIREMENTS,
-            normative="OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426",
+            normative="OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.21, and 10.1.2; Tables 394-409 and 417-426",
             type_name=name.rsplit("::", 1)[-1],
         )
         for name in (
