@@ -200,7 +200,7 @@ class T102ProfileValidationErrorTraitExclusionTests(unittest.TestCase):
                         )
                         self.assertIn("compiler-generated Rust traits", row["evidence"])
                         self.assertIn("no OASIS error-table reference applies", row["evidence"])
-                        self.assertIn("exact compiler-observed Rust standard-trait", row["reason"])
+                        self.assertIn("Exact compiler-observed Rust standard-trait", row["reason"])
                         self.assertIn("not a separate KMIP client capability", row["reason"])
                         self.assertIn(type_name, row["reason"])
                 all_paths.update((package, export_name) for export_name in expected)
