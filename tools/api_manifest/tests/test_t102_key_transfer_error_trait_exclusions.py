@@ -176,9 +176,9 @@ class T102KeyTransferErrorTraitExclusionTests(unittest.TestCase):
 
     def test_manifest_and_t102_candidate_totals_decrease_by_104(self) -> None:
         candidates = sum(r.get("candidateSpecId") == "KMIPKIT-0043" and r["declarationState"] == "blocked" for r in self.manifest["publicDeclarations"])
-        self.assertEqual(candidates, 2187)
-        self.assertEqual(len(self.manifest["publicDeclarations"]), 7385)
-        self.assertEqual(len(self.manifest["approvedExclusions"]), 7339)
+        self.assertEqual(candidates, 2177)
+        self.assertEqual(len(self.manifest["publicDeclarations"]), 7375)
+        self.assertEqual(len(self.manifest["approvedExclusions"]), 7349)
 
 
 if __name__ == "__main__":

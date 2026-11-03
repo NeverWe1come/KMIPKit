@@ -253,9 +253,9 @@ class T102GetLocateErrorTraitExclusionTests(unittest.TestCase):
             and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(candidate_count, 2187)
-        self.assertEqual(len(self.manifest["publicDeclarations"]), 7385)
-        self.assertEqual(len(self.manifest["approvedExclusions"]), 7339)
+        self.assertEqual(candidate_count, 2177)
+        self.assertEqual(len(self.manifest["publicDeclarations"]), 7375)
+        self.assertEqual(len(self.manifest["approvedExclusions"]), 7349)
 
 
 if __name__ == "__main__":

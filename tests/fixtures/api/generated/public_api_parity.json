@@ -89909,6 +89909,136 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0039",
+      "evidence": "KMIPKIT-0039-FR-009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021; approved owner specs/025-policy-controls/spec.md. OASIS KMIP Specification v2.1 §6.1.23, Table 234 is functional context only; no OASIS requirement requires these Rust traits. These compiler-observed Rust trait paths are inventory-only, not separate client capabilities. Borrow/BorrowMut only borrow the same non-Clone context; From<T> for T and conditional Into/TryFrom/TryInto identity conversions move the same non-Clone context and cannot duplicate, reset, or replenish reservation state.",
+      "exportName": "<kmipkit_client::UsageAllocationContext as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of a Rust value, not a separate KMIPKit client capability. The concrete declaration remains separately inventoried under its approved four-language Usage Allocation guard mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0039",
+      "evidence": "KMIPKIT-0039-FR-009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021; approved owner specs/025-policy-controls/spec.md. OASIS KMIP Specification v2.1 §6.1.23, Table 234 is functional context only; no OASIS requirement requires these Rust traits. These compiler-observed Rust trait paths are inventory-only, not separate client capabilities. Borrow/BorrowMut only borrow the same non-Clone context; From<T> for T and conditional Into/TryFrom/TryInto identity conversions move the same non-Clone context and cannot duplicate, reset, or replenish reservation state.",
+      "exportName": "<kmipkit_client::UsageAllocationContext as core::borrow::Borrow<kmipkit_client::usage_allocation::UsageAllocationContext>>::borrow",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of a Rust value, not a separate KMIPKit client capability. The concrete declaration remains separately inventoried under its approved four-language Usage Allocation guard mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0039",
+      "evidence": "KMIPKIT-0039-FR-009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021; approved owner specs/025-policy-controls/spec.md. OASIS KMIP Specification v2.1 §6.1.23, Table 234 is functional context only; no OASIS requirement requires these Rust traits. These compiler-observed Rust trait paths are inventory-only, not separate client capabilities. Borrow/BorrowMut only borrow the same non-Clone context; From<T> for T and conditional Into/TryFrom/TryInto identity conversions move the same non-Clone context and cannot duplicate, reset, or replenish reservation state.",
+      "exportName": "<kmipkit_client::UsageAllocationContext as core::borrow::BorrowMut<kmipkit_client::usage_allocation::UsageAllocationContext>>::borrow_mut",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of a Rust value, not a separate KMIPKit client capability. The concrete declaration remains separately inventoried under its approved four-language Usage Allocation guard mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0039",
+      "evidence": "KMIPKIT-0039-FR-009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021; approved owner specs/025-policy-controls/spec.md. OASIS KMIP Specification v2.1 §6.1.23, Table 234 is functional context only; no OASIS requirement requires these Rust traits. These compiler-observed Rust trait paths are inventory-only, not separate client capabilities. Borrow/BorrowMut only borrow the same non-Clone context; From<T> for T and conditional Into/TryFrom/TryInto identity conversions move the same non-Clone context and cannot duplicate, reset, or replenish reservation state.",
+      "exportName": "<kmipkit_client::UsageAllocationContext as core::convert::From<kmipkit_client::usage_allocation::UsageAllocationContext>>::from",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of a Rust value, not a separate KMIPKit client capability. The concrete declaration remains separately inventoried under its approved four-language Usage Allocation guard mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0039",
+      "evidence": "KMIPKIT-0039-FR-009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021; approved owner specs/025-policy-controls/spec.md. OASIS KMIP Specification v2.1 §6.1.23, Table 234 is functional context only; no OASIS requirement requires these Rust traits. These compiler-observed Rust trait paths are inventory-only, not separate client capabilities. Borrow/BorrowMut only borrow the same non-Clone context; From<T> for T and conditional Into/TryFrom/TryInto identity conversions move the same non-Clone context and cannot duplicate, reset, or replenish reservation state.",
+      "exportName": "<kmipkit_client::UsageAllocationContext as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of a Rust value, not a separate KMIPKit client capability. The concrete declaration remains separately inventoried under its approved four-language Usage Allocation guard mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0039",
+      "evidence": "KMIPKIT-0039-FR-009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021; approved owner specs/025-policy-controls/spec.md. OASIS KMIP Specification v2.1 §6.1.23, Table 234 is functional context only; no OASIS requirement requires these Rust traits. These compiler-observed Rust trait paths are inventory-only, not separate client capabilities. Borrow/BorrowMut only borrow the same non-Clone context; From<T> for T and conditional Into/TryFrom/TryInto identity conversions move the same non-Clone context and cannot duplicate, reset, or replenish reservation state.",
+      "exportName": "<kmipkit_client::UsageAllocationContext as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of a Rust value, not a separate KMIPKit client capability. The concrete declaration remains separately inventoried under its approved four-language Usage Allocation guard mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0039",
+      "evidence": "KMIPKIT-0039-FR-009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021; approved owner specs/025-policy-controls/spec.md. OASIS KMIP Specification v2.1 §6.1.23, Table 234 is functional context only; no OASIS requirement requires these Rust traits. These compiler-observed Rust trait paths are inventory-only, not separate client capabilities. Borrow/BorrowMut only borrow the same non-Clone context; From<T> for T and conditional Into/TryFrom/TryInto identity conversions move the same non-Clone context and cannot duplicate, reset, or replenish reservation state.",
+      "exportName": "<kmipkit_client::UsageAllocationContext as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of a Rust value, not a separate KMIPKit client capability. The concrete declaration remains separately inventoried under its approved four-language Usage Allocation guard mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0039",
+      "evidence": "KMIPKIT-0039-FR-009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021; approved owner specs/025-policy-controls/spec.md. OASIS KMIP Specification v2.1 §6.1.23, Table 234 is functional context only; no OASIS requirement requires these Rust traits. These compiler-observed Rust trait paths are inventory-only, not separate client capabilities. Borrow/BorrowMut only borrow the same non-Clone context; From<T> for T and conditional Into/TryFrom/TryInto identity conversions move the same non-Clone context and cannot duplicate, reset, or replenish reservation state.",
+      "exportName": "<kmipkit_client::UsageAllocationContext as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of a Rust value, not a separate KMIPKit client capability. The concrete declaration remains separately inventoried under its approved four-language Usage Allocation guard mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0039",
+      "evidence": "KMIPKIT-0039-FR-009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021; approved owner specs/025-policy-controls/spec.md. OASIS KMIP Specification v2.1 §6.1.23, Table 234 is functional context only; no OASIS requirement requires these Rust traits. These compiler-observed Rust trait paths are inventory-only, not separate client capabilities. Borrow/BorrowMut only borrow the same non-Clone context; From<T> for T and conditional Into/TryFrom/TryInto identity conversions move the same non-Clone context and cannot duplicate, reset, or replenish reservation state.",
+      "exportName": "<kmipkit_client::UsageAllocationContext as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of a Rust value, not a separate KMIPKit client capability. The concrete declaration remains separately inventoried under its approved four-language Usage Allocation guard mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0039",
+      "evidence": "KMIPKIT-0039-FR-009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021; approved owner specs/025-policy-controls/spec.md. OASIS KMIP Specification v2.1 §6.1.23, Table 234 is functional context only; no OASIS requirement requires these Rust traits. These compiler-observed Rust trait paths are inventory-only, not separate client capabilities. Borrow/BorrowMut only borrow the same non-Clone context; From<T> for T and conditional Into/TryFrom/TryInto identity conversions move the same non-Clone context and cannot duplicate, reset, or replenish reservation state. KMIPKIT-0039-FR-005 and KMIPKIT-0043-FR-013 cover the redacted Debug diagnostic; it omits the resolved Unique Identifier and shows local accounting metadata only.",
+      "exportName": "<kmipkit_client::UsageAllocationContext as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of a Rust value, not a separate KMIPKit client capability. The concrete declaration remains separately inventoried under its approved four-language Usage Allocation guard mapping."
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
         "kind": "feature-specification",
         "path": "specs/010-profile-conformance/spec.md",
