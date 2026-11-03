@@ -9795,3 +9795,14 @@ Verification:
 - Rust report generation and `audit_rust_exports.py --check` both exited 0: 10,463 observed, 5,174 matched, 5,289 excluded, zero missing, stale, kind, issue, or conditional mismatches. Shared Rust inventory report generation and `--check` exited 0: 10,463 observed, 864 mapped, 5,289 approved-excluded. The Windows Rust audit emitted optional AWS-LC compiler-probe/NASM warnings and still exited 0.
 - `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-11-01.json --check` — exit 0; exact matches C 757/757, Java 1,014/1,014, Python 1,140/1,140, with zero missing, unobserved, kind mismatch, or issue.
 - `git diff --check` passed for Green and the documentation diff. Red, Green, and Refactor are distinct DCO-signed commits. Only this batch's tracked files were staged; pre-existing untracked artifacts were left unstaged. Nothing was pushed or merged.
+
+
+### T102 - Profile model trait-artifact exclusions (2026-11-03)
+
+Preflight against base `7f7a0d1ac4336b9654cdd596351103473c67a0f8` found exactly 336 current compiler-observed paths across 17 package/type pairs in the complete Rust 1.94.0 report: 251 direct and 85 conditional. There were no prior exact exclusions. Sixteen parent type declarations are blocked and only `kmipkit_client::ProfileValidationSelection` is declared. The report has zero issues and matches the base manifest. An idle Gradle daemon was the only unrelated long-lived process; no overlapping cargo, Rust, Python, pytest, or uv run was active.
+
+The accepted functional owner is `specs/010-profile-conformance/spec.md`, accepted for implementation by PR #49. Functional owner requirements are KMIPKIT-0010-FR-003/005/013/014; catalog and evidence requirements are KMIPKIT-0010-FR-001/002/004/007/008/009/010/011/017/018. Caller-owned remote state FR-019 is outside this batch. Source context is OASIS KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §§3.1, 5.1.1, 5.1.3, 5.6.3, and 6.1. T102 exclusion authority is KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. These local profile, selection, evidence, and readiness model types have no applicable operation error table.
+
+| Phase | Commit | Evidence | Result |
+|---|---|---|---|
+| Red | This commit | `py -B -m unittest tools.api_manifest.tests.test_t102_profile_model_trait_exclusions -v` and `py -B -m unittest scripts.tests.test_workflow.WorkflowContractTests.test_script_contract_job_runs_t102_profile_model_trait_exclusion_contract -v` | Expected failures: the focused contract found no approved exclusions and saw the pre-batch candidate total 2,891 instead of 2,555; parent, member, capability, catalog, and out-of-scope preservation checks passed. The workflow guard failed because the script-contract job did not yet invoke the new focused contract. |
