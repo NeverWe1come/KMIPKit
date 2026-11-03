@@ -22,6 +22,10 @@ from tools.api_manifest.tests.t102_manifest_totals import (
 from tools.api_manifest.tests.test_t102_remaining_response_view_mappings import (
     EXPECTED as REMAINING_RESPONSE_VIEWS,
 )
+from tools.api_manifest.tests.test_t102_locate_request_builder_mapping import (
+    LOCATE_DECLARATIONS_WITH_MISATTRIBUTED_SERVER_REQUIREMENT,
+    LOCATE_FUNCTION_IDS,
+)
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
@@ -156,6 +160,7 @@ LOCATE_REQUEST_BUILDER_IDS = {
 }
 LOCATE_OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-LOCATE"
 LOCATE_REQUEST_REQUIREMENT = "KMIPKIT-REQ-SPEC-6.1.28-007"
+LOCATE_SERVER_ONLY_REQUIREMENT = "KMIPKIT-REQ-SPEC-6.1.28-011"
 
 
 def canonical_sha256(value: object) -> str:
@@ -317,11 +322,17 @@ class T102ResponseViewMappingTests(unittest.TestCase):
         target_ids = {item.declaration_id for item in EXPECTED}
         target_ids.update(item.declaration_id for item in REMAINING_RESPONSE_VIEWS)
         target_ids.update(LOCATE_REQUEST_BUILDER_IDS)
-        unchanged_declarations = [
+        unchanged_declarations = copy.deepcopy([
             row
             for row in self.manifest["publicDeclarations"]
             if row["declarationId"] not in target_ids
-        ]
+        ])
+        for declaration in unchanged_declarations:
+            if declaration["declarationId"] in LOCATE_DECLARATIONS_WITH_MISATTRIBUTED_SERVER_REQUIREMENT:
+                requirements = set(declaration["requirementIds"])
+                requirements.discard(LOCATE_REQUEST_REQUIREMENT)
+                requirements.add(LOCATE_SERVER_ONLY_REQUIREMENT)
+                declaration["requirementIds"] = sorted(requirements)
         self.assertEqual(
             UNCHANGED_DECLARATIONS_SHA256,
             canonical_sha256(unchanged_declarations),
@@ -354,6 +365,12 @@ class T102ResponseViewMappingTests(unittest.TestCase):
             for requirement_id in other_manifest["requirementIds"]
             if requirement_id != LOCATE_REQUEST_REQUIREMENT
         ]
+        for function in other_manifest["functions"]:
+            if function["id"] in LOCATE_FUNCTION_IDS:
+                requirements = set(function["requirementIds"])
+                requirements.discard(LOCATE_REQUEST_REQUIREMENT)
+                requirements.add(LOCATE_SERVER_ONLY_REQUIREMENT)
+                function["requirementIds"] = sorted(requirements)
         self.assertEqual(OTHER_MANIFEST_SHA256, canonical_sha256(other_manifest))
 
     def test_post_batch_manifest_totals_are_pinned(self) -> None:
