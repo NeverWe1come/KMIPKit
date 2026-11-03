@@ -194,7 +194,10 @@ fn rekey_key_pair_sends_table_310_and_returns_both_identifiers_once() {
             "replacement-public-key".to_owned()
         ))
     );
-    assert!(typed.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)));
+    assert_eq!(
+        typed.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)),
+        Some(true)
+    );
     let debug = format!("{:?}", outcome.response());
     assert!(debug.starts_with("RekeyKeyPair("));
     assert!(!debug.contains("replacement-private-key"));

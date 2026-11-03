@@ -264,7 +264,10 @@ fn successful_response_returns_both_replacement_identifiers_and_unknown_fields()
             "replacement-public".to_owned()
         ))
     );
-    assert!(response.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)));
+    assert_eq!(
+        response.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)),
+        Some(true)
+    );
 }
 
 #[test]
@@ -331,12 +334,8 @@ fn failure_preserves_table_312_reason_without_success_identifiers() {
 
 #[test]
 fn failure_and_pending_do_not_expose_response_ttlv() {
-    let failure = typed_response(
-        OPERATION_FAILED,
-        Some(0x0000_0001),
-        None,
-    )
-    .expect("Table 312 remains a typed common result");
+    let failure = typed_response(OPERATION_FAILED, Some(0x0000_0001), None)
+        .expect("Table 312 remains a typed common result");
     assert_eq!(failure.result().status().raw(), OPERATION_FAILED);
     assert_eq!(failure.with_ttlv(|_| Some(())), None);
 

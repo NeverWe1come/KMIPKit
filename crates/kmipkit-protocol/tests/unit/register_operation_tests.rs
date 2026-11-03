@@ -1255,20 +1255,23 @@ fn successful_response_requires_and_preserves_unique_identifier_and_extensions()
             "registered-object".to_owned()
         ))
     );
-    assert!(response.with_ttlv(|view| {
-        let payload = view
-            .children()
-            .iter()
-            .find(|field| field.tag().raw() == RESPONSE_PAYLOAD)
-            .expect("Register response includes a Response Payload");
-        payload.with_value(|value| match value {
-            ValueView::Structure(payload) => payload
+    assert_eq!(
+        response.with_ttlv(|view| {
+            let payload = view
                 .children()
                 .iter()
-                .any(|field| field.tag().raw() == UNKNOWN_VENDOR_TAG),
-            _ => false,
-        })
-    }));
+                .find(|field| field.tag().raw() == RESPONSE_PAYLOAD)
+                .expect("Register response includes a Response Payload");
+            payload.with_value(|value| match value {
+                ValueView::Structure(payload) => payload
+                    .children()
+                    .iter()
+                    .any(|field| field.tag().raw() == UNKNOWN_VENDOR_TAG),
+                _ => false,
+            })
+        }),
+        Some(true)
+    );
 }
 
 #[test]

@@ -208,7 +208,10 @@ fn recertify_sends_one_table_300_request_and_exposes_table_301_identifier() {
             "replacement-certificate".to_owned()
         ))
     );
-    assert!(typed.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)));
+    assert_eq!(
+        typed.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)),
+        Some(true)
+    );
     assert_eq!(
         request_fields(
             captured

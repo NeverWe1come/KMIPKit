@@ -91,13 +91,14 @@ impl fmt::Debug for ReProvisionRequest {
 
 /// A typed Re-Provision result from §6.1.48, Table 314.
 ///
-/// The full generic response item remains available for callback-scoped
-/// inspection, including unknown fields. The Table 314 Unique Identifier is
+/// Successful results retain the full generic response item for
+/// callback-scoped inspection, including unknown fields. Failure and Pending
+/// retain only their common result. The Table 314 Unique Identifier is
 /// optional and is not synthesized when absent.
 #[derive(Debug)]
 pub struct ReProvisionResponse {
     result: KmipOperationResult,
-    response_ttlv: OwnedResponseTtlv,
+    response_ttlv: Option<OwnedResponseTtlv>,
     unique_identifier: Option<UniqueIdentifier>,
 }
 
@@ -120,13 +121,18 @@ impl ReProvisionResponse {
         let result_message = item.with_result_message(|text| ResultMessage::new(text.to_owned()));
         let result = KmipOperationResult::new(status, item.result_reason(), result_message)
             .map_err(ReProvisionError::InvalidOperationResult)?;
-        let response_ttlv = common::clone_response_item(item, "Re-Provision")
-            .map_err(|_| ReProvisionError::MalformedResponseItem)?;
-
         let unique_identifier = if status.raw() == SUCCESS {
             item.with_response_payload(|payload| parse_success_identifier(&payload))
                 .transpose()?
                 .flatten()
+        } else {
+            None
+        };
+        let response_ttlv = if status.raw() == SUCCESS {
+            Some(
+                common::clone_response_item(item, "Re-Provision")
+                    .map_err(|_| ReProvisionError::MalformedResponseItem)?,
+            )
         } else {
             None
         };
@@ -150,9 +156,14 @@ impl ReProvisionResponse {
         self.unique_identifier.as_ref()
     }
 
-    /// Lends the complete ordered generic response batch item.
-    pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> R {
-        self.response_ttlv.with_ttlv(callback)
+    /// Lends the complete ordered generic response batch item on success.
+    ///
+    /// Failure and Pending preserve the common result without retaining the
+    /// response TTLV.
+    pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> Option<R> {
+        self.response_ttlv
+            .as_ref()
+            .map(|response_ttlv| response_ttlv.with_ttlv(callback))
     }
 }
 

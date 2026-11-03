@@ -269,7 +269,10 @@ fn successful_response_returns_new_identifier_and_preserves_unknown_fields() {
             "replacement-certificate".to_owned()
         ))
     );
-    assert!(response.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)));
+    assert_eq!(
+        response.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)),
+        Some(true)
+    );
 }
 
 #[test]
@@ -303,12 +306,8 @@ fn failure_preserves_table_302_reason_without_success_identifier() {
 
 #[test]
 fn failure_and_pending_do_not_expose_response_ttlv() {
-    let failure = typed_response(
-        OPERATION_FAILED,
-        Some(0x0000_0001),
-        None,
-    )
-    .expect("Table 302 remains a typed common result");
+    let failure = typed_response(OPERATION_FAILED, Some(0x0000_0001), None)
+        .expect("Table 302 remains a typed common result");
     assert_eq!(failure.result().status().raw(), OPERATION_FAILED);
     assert_eq!(failure.with_ttlv(|_| Some(())), None);
 

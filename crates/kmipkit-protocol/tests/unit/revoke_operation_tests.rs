@@ -211,7 +211,7 @@ fn request_accessors_and_response_ttlv_view_preserve_caller_values() {
         )])),
     )
     .expect("Table 296 success includes a Unique Identifier");
-    assert_eq!(response.with_ttlv(|view| view.children().len()), 3);
+    assert_eq!(response.with_ttlv(|view| view.children().len()), Some(3));
 }
 
 #[test]

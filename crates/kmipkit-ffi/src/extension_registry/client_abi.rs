@@ -4741,8 +4741,11 @@ pub extern "C" fn kmipkit_client_batch_item_response_recertify_ttlv(
             return SUCCESS;
         }
         if let Some(recertify) = outcome.recertify_response() {
-            let structure =
-                try_ffi!(recertify.with_ttlv(|view| super::clone_structure_view(&view)));
+            let Some(structure) = recertify.with_ttlv(|view| super::clone_structure_view(&view))
+            else {
+                return SUCCESS;
+            };
+            let structure = try_ffi!(structure);
             *response_ttlv = try_ffi!(try_make_handle(
                 Kind::Structure,
                 HandleValue::Structure(structure),
@@ -4771,7 +4774,10 @@ pub extern "C" fn kmipkit_client_batch_item_response_rekey_ttlv(
             return SUCCESS;
         }
         if let Some(rekey) = outcome.rekey_response() {
-            let structure = try_ffi!(rekey.with_ttlv(|view| super::clone_structure_view(&view)));
+            let Some(structure) = rekey.with_ttlv(|view| super::clone_structure_view(&view)) else {
+                return SUCCESS;
+            };
+            let structure = try_ffi!(structure);
             *response_ttlv = try_ffi!(try_make_handle(
                 Kind::Structure,
                 HandleValue::Structure(structure),
@@ -4799,7 +4805,11 @@ pub extern "C" fn kmipkit_client_batch_item_response_rekey_key_pair_ttlv(
             return SUCCESS;
         }
         if let Some(result) = item.outcome().rekey_key_pair_response() {
-            let structure = try_ffi!(result.with_ttlv(|view| super::clone_structure_view(&view)));
+            let Some(structure) = result.with_ttlv(|view| super::clone_structure_view(&view))
+            else {
+                return SUCCESS;
+            };
+            let structure = try_ffi!(structure);
             *response_ttlv = try_ffi!(try_make_handle(
                 Kind::Structure,
                 HandleValue::Structure(structure)
@@ -4827,8 +4837,11 @@ pub extern "C" fn kmipkit_client_batch_item_response_reprovision_ttlv(
             return SUCCESS;
         }
         if let Some(reprovision) = item.outcome().reprovision_response() {
-            let structure =
-                try_ffi!(reprovision.with_ttlv(|view| super::clone_structure_view(&view)));
+            let Some(structure) = reprovision.with_ttlv(|view| super::clone_structure_view(&view))
+            else {
+                return SUCCESS;
+            };
+            let structure = try_ffi!(structure);
             *response_ttlv = try_ffi!(try_make_handle(
                 Kind::Structure,
                 HandleValue::Structure(structure),
@@ -4929,19 +4942,16 @@ fn copy_register_revoke_ttlv_impl(
         (
             RegisterRevokeResponseKind::Register,
             kmipkit_client::ClientBatchOutcome::Register(value),
-        ) => Some(try_ffi!(
-            value.with_ttlv(|view| super::clone_structure_view(&view))
-        )),
+        ) => value.with_ttlv(|view| super::clone_structure_view(&view)),
         (RegisterRevokeResponseKind::Revoke, kmipkit_client::ClientBatchOutcome::Revoke(value)) => {
-            Some(try_ffi!(
-                value.with_ttlv(|view| super::clone_structure_view(&view))
-            ))
+            value.with_ttlv(|view| super::clone_structure_view(&view))
         }
         _ => None,
     };
     let Some(structure) = structure else {
         return SUCCESS;
     };
+    let structure = try_ffi!(structure);
     *response_ttlv = try_ffi!(try_make_handle(
         Kind::Structure,
         HandleValue::Structure(structure),
@@ -5133,7 +5143,10 @@ pub extern "C" fn kmipkit_client_batch_item_response_obtain_lease_ttlv(
             return SUCCESS;
         }
         if let kmipkit_client::ClientBatchOutcome::ObtainLease(lease) = outcome {
-            let structure = try_ffi!(lease.with_ttlv(|view| super::clone_structure_view(&view)));
+            let Some(structure) = lease.with_ttlv(|view| super::clone_structure_view(&view)) else {
+                return SUCCESS;
+            };
+            let structure = try_ffi!(structure);
             *response_ttlv = try_ffi!(try_make_handle(
                 Kind::Structure,
                 HandleValue::Structure(structure),

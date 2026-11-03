@@ -190,7 +190,7 @@ impl fmt::Debug for RevokeRequest {
 #[derive(Debug)]
 pub struct RevokeResponse {
     result: KmipOperationResult,
-    response_ttlv: OwnedResponseTtlv,
+    response_ttlv: Option<OwnedResponseTtlv>,
     unique_identifier: Option<UniqueIdentifier>,
 }
 
@@ -214,13 +214,18 @@ impl RevokeResponse {
         let result_message = item.with_result_message(|text| ResultMessage::new(text.to_owned()));
         let result = KmipOperationResult::new(status, item.result_reason(), result_message)
             .map_err(RevokeError::InvalidOperationResult)?;
-        let response_ttlv = common::clone_response_item(item, "Revoke")
-            .map_err(|_| RevokeError::MalformedResponseItem)?;
-
         let unique_identifier = if status.raw() == SUCCESS {
             Some(
                 item.with_response_payload(|payload| parse_success_identifier(&payload))
                     .ok_or(RevokeError::MalformedSuccessPayload)??,
+            )
+        } else {
+            None
+        };
+        let response_ttlv = if status.raw() == SUCCESS {
+            Some(
+                common::clone_response_item(item, "Revoke")
+                    .map_err(|_| RevokeError::MalformedResponseItem)?,
             )
         } else {
             None
@@ -245,9 +250,14 @@ impl RevokeResponse {
         self.unique_identifier.as_ref()
     }
 
-    /// Lends the complete ordered generic response batch item.
-    pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> R {
-        self.response_ttlv.with_ttlv(callback)
+    /// Lends the complete ordered generic response batch item on success.
+    ///
+    /// Failure and Pending preserve the common result without retaining the
+    /// response TTLV.
+    pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> Option<R> {
+        self.response_ttlv
+            .as_ref()
+            .map(|response_ttlv| response_ttlv.with_ttlv(callback))
     }
 }
 

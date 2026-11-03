@@ -163,7 +163,10 @@ fn rekey_sends_one_table_305_request_and_exposes_replacement_identifier() {
         typed.unique_identifier(),
         Some(&UniqueIdentifier::TextString("replacement-key".to_owned()))
     );
-    assert!(typed.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)));
+    assert_eq!(
+        typed.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)),
+        Some(true)
+    );
     assert_eq!(
         request_fields(
             captured

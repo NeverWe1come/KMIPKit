@@ -133,7 +133,10 @@ fn successful_response_preserves_optional_identifier_and_absence() {
             "reprovisioned-credential".to_owned()
         ))
     );
-    assert!(response.with_ttlv(|view| !view.children().is_empty()));
+    assert_eq!(
+        response.with_ttlv(|view| !view.children().is_empty()),
+        Some(true)
+    );
 
     let absent = typed_response(SUCCESS, None, Some(structure([])))
         .expect("Table 314 marks Unique Identifier optional");
@@ -185,12 +188,8 @@ fn failure_preserves_table_315_common_result_without_success_values() {
 
 #[test]
 fn failure_and_pending_do_not_expose_response_ttlv() {
-    let failure = typed_response(
-        OPERATION_FAILED,
-        Some(0x0000_0001),
-        None,
-    )
-    .expect("Table 315 failure remains a typed common result");
+    let failure = typed_response(OPERATION_FAILED, Some(0x0000_0001), None)
+        .expect("Table 315 failure remains a typed common result");
     assert_eq!(failure.result().status().raw(), OPERATION_FAILED);
     assert_eq!(failure.with_ttlv(|_| Some(())), None);
 
