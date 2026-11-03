@@ -9948,6 +9948,41 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::RevocationReason",
     ),
     (
+        "rust-observed-5317149641363798a749",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RevocationReason::AFFILIATION_CHANGED",
+    ),
+    (
+        "rust-observed-e39b91b528939a846927",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RevocationReason::CA_COMPROMISE",
+    ),
+    (
+        "rust-observed-d7de5b7ed68e562e4989",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RevocationReason::CESSATION_OF_OPERATION",
+    ),
+    (
+        "rust-observed-4fc6839fcfaf6b620fce",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RevocationReason::KEY_COMPROMISE",
+    ),
+    (
+        "rust-observed-acb02c73ead8cb7d3a4f",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RevocationReason::PRIVILEGE_WITHDRAWN",
+    ),
+    (
+        "rust-observed-0b8042942eef85b8e885",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RevocationReason::SUPERSEDED",
+    ),
+    (
+        "rust-observed-1e1ac0cb1af003e02031",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RevocationReason::UNSPECIFIED",
+    ),
+    (
         "rust-observed-002ee42045fd471388d0",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::RevocationReason::from_raw",

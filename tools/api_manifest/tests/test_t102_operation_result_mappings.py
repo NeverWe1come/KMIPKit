@@ -150,7 +150,7 @@ class T102OperationResultMappingTests(unittest.TestCase):
             and row.get("candidateSpecId") == "KMIPKIT-0043"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(715, T102_BLOCKED_CANDIDATES)
+        self.assertEqual(708, T102_BLOCKED_CANDIDATES)
         self.assertEqual(T102_BLOCKED_CANDIDATES, blocked)
         self.assertEqual(T102_PUBLIC_DECLARATIONS, len(self.manifest["publicDeclarations"]))
         self.assertEqual(T102_APPROVED_EXCLUSIONS, len(self.manifest["approvedExclusions"]))
