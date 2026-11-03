@@ -169,4 +169,17 @@ final class ProfileReadinessParityTest {
         assertTrue(ProfileReadiness.evaluate(
                 BASELINE, List.of(ProfileEvidenceRecord.passed(requirementId))).isPresent());
     }
+
+    @Test
+    void readinessAcceptsStandardUtf8UnknownRequirementAndKeepsItRedacted() {
+        String requirementId = String.valueOf((char) 0) + "UNKNOWN-λ-🔐";
+        ProfileReadiness readiness = ProfileReadiness.evaluate(
+                BASELINE, List.of(ProfileEvidenceRecord.passed(requirementId))).orElseThrow();
+        ProfileReadinessBlocker unknown = readiness.blockers().stream()
+                .filter(item -> item.kind().equals("unknown_requirement_record"))
+                .findFirst().orElseThrow();
+
+        assertNull(unknown.requirementId());
+        assertFalse(unknown.message().contains(requirementId));
+    }
 }

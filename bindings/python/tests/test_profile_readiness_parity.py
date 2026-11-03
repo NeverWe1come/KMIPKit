@@ -117,3 +117,15 @@ def test_evidence_identifier_above_profile_id_limit_fits_aggregate_limit() -> No
     )
 
     assert readiness is not None
+
+
+def test_standard_utf8_unknown_requirement_is_accepted_and_kept_redacted() -> None:
+    requirement_id = "\x00UNKNOWN-λ-🔐"
+    readiness = ProfileReadiness.evaluate(
+        BASELINE_ID, (ProfileEvidenceRecord.passed(requirement_id),)
+    )
+
+    assert readiness is not None
+    unknown = next(blocker for blocker in readiness.blockers if blocker.kind == "unknown_requirement_record")
+    assert unknown.requirement_id is None
+    assert requirement_id not in unknown.message
