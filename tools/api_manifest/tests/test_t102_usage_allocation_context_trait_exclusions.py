@@ -57,7 +57,7 @@ class T102UsageAllocationContextTraitExclusionTests(unittest.TestCase):
         cls.manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
         cls.report = json.loads(REPORT_PATH.read_text(encoding="utf-8"))
 
-    def test_exact_client_trait_paths_are_excluded_and_root_alias_stays_blocked(self) -> None:
+    def test_exact_client_and_root_trait_paths_are_owner_approved_exclusions(self) -> None:
         self.assertTrue(self.report["complete"])
         self.assertTrue(self.report["matchesManifest"])
         self.assertEqual(self.report["toolchain"], "1.94.0")
@@ -158,14 +158,7 @@ class T102UsageAllocationContextTraitExclusionTests(unittest.TestCase):
             if row.get("packageId") == ROOT_PACKAGE
             and row.get("exportName", "").startswith(f"<{ROOT_PUBLIC_TYPE} as ")
         }
-        self.assertEqual(set(root_declarations), root_selected)
-        self.assertTrue(
-            all(
-                row["declarationState"] == "blocked"
-                and row.get("candidateSpecId") == "KMIPKIT-0043"
-                for row in root_declarations.values()
-            )
-        )
+        self.assertEqual(set(root_declarations), set())
         root_parent = next(
             row
             for row in self.manifest["publicDeclarations"]
@@ -175,12 +168,28 @@ class T102UsageAllocationContextTraitExclusionTests(unittest.TestCase):
         self.assertEqual(root_parent["declarationState"], "blocked")
         self.assertEqual(root_parent.get("candidateSpecId"), "KMIPKIT-0043")
         root_exclusions = {
-            row["exportName"]
+            row["exportName"]: row
             for row in self.manifest["approvedExclusions"]
             if row.get("packageId") == ROOT_PACKAGE
             and row.get("exportName", "").startswith(f"<{ROOT_PUBLIC_TYPE} as ")
         }
-        self.assertEqual(root_exclusions, set())
+        self.assertEqual(set(root_exclusions), root_selected)
+        for export_name, row in root_exclusions.items():
+            with self.subTest(root_export_name=export_name):
+                self.assertEqual(row["approvalSource"], OWNER_APPROVAL)
+                self.assertIn("Approved KMIPKIT-0039 owner specification", row["evidence"])
+                self.assertIn("not a separate KMIP client capability", row["reason"])
+                for requirement_id in (
+                    "KMIPKIT-0039-FR-001",
+                    "KMIPKIT-0039-FR-002",
+                    "KMIPKIT-0039-FR-005",
+                    "KMIPKIT-0039-FR-009",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("Section 6.1.23, Tables 232-234", row["evidence"])
+                self.assertIn("inventory-only", row["evidence"])
 
     def test_error_sibling_traits_are_exactly_excluded_from_client_inventory(self) -> None:
         error_public_type = CLIENT_ERROR_PUBLIC_TYPE
@@ -218,12 +227,12 @@ class T102UsageAllocationContextTraitExclusionTests(unittest.TestCase):
             and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(candidates, 1264)
-        self.assertEqual(len(self.manifest["publicDeclarations"]), 6462)
-        self.assertEqual(len(self.manifest["approvedExclusions"]), 8262)
-        self.assertEqual(self.report["counts"]["manifest"], 3547)
-        self.assertEqual(self.report["counts"]["matched"], 3547)
-        self.assertEqual(self.report["counts"]["excluded"], 6916)
+        self.assertEqual(candidates, 1098)
+        self.assertEqual(len(self.manifest["publicDeclarations"]), 6296)
+        self.assertEqual(len(self.manifest["approvedExclusions"]), 8428)
+        self.assertEqual(self.report["counts"]["manifest"], 3381)
+        self.assertEqual(self.report["counts"]["matched"], 3381)
+        self.assertEqual(self.report["counts"]["excluded"], 7082)
 
 
 if __name__ == "__main__":

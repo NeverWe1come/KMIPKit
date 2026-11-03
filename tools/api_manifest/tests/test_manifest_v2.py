@@ -1599,7 +1599,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             == "specs/006-message-batch-model/spec.md"
             and row["exportName"].startswith("<kmipkit_protocol::")
         ]
-        self.assertEqual(len(exclusions), 92)
+        self.assertEqual(len(exclusions), 167)
         for exclusion in exclusions:
             export_name = exclusion["exportName"]
             with self.subTest(export=export_name):
@@ -6217,7 +6217,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             if item["approvalSource"]["path"] == "specs/016-attribute-operations/spec.md"
         ]
         self.assertEqual(len(t087_exclusions), 217)
-        self.assertEqual(len(t091_exclusions), 112)
+        self.assertEqual(len(t091_exclusions), 142)
         self.assertEqual(len(t094_exclusions), 230)
         self.assertEqual(len(t096_exclusions), 265)
         self.assertEqual(len(t097_exclusions), 627)
@@ -6299,7 +6299,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for item in self.checked_in_manifest["approvedExclusions"]
             if item["packageId"] == "rust-kmipkit-protocol"
         ]
-        self.assertEqual(len(rust_exclusions), 4605)
+        self.assertEqual(len(rust_exclusions), 4721)
 
     def test_ttlv_declarations_use_their_approved_shared_spec_owners(self) -> None:
         capabilities = {

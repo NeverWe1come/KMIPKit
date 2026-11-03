@@ -32,14 +32,18 @@ MESSAGE_APPROVAL = {
     "status": "Approved",
     "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
 }
-MESSAGE_REQUIREMENTS = ("KMIPKIT-0006-FR-001", "KMIPKIT-0006-FR-014")
+MESSAGE_REQUIREMENTS = (
+    "KMIPKIT-0006-FR-001",
+    "KMIPKIT-0006-FR-014",
+    "KMIPKIT-0006-FR-021",
+)
 
 TTLV_OWNER = "specs/004-generic-ttlv-model/spec.md"
 TTLV_APPROVAL = {
     "kind": "feature-specification",
     "path": TTLV_OWNER,
     "status": "Approved",
-    "evidence": "The approved TTLV model specification is recorded at `specs/004-generic-ttlv-model/spec.md`.",
+    "evidence": "**Status**: Approved",
 }
 TTLV_REQUIREMENTS = (
     "KMIPKIT-0004-FR-006",
@@ -73,6 +77,7 @@ LIFECYCLE_APPROVAL = {
 CERTIFY_REQUIREMENTS = (
     "KMIPKIT-0036-FR-001",
     "KMIPKIT-0036-FR-004",
+    "KMIPKIT-0036-FR-005",
 )
 
 POLICY_OWNER = "specs/025-policy-controls/spec.md"
@@ -130,7 +135,7 @@ GROUPS = (
             candidate_id="KMIPKIT-0006",
             approval=MESSAGE_APPROVAL,
             requirements=MESSAGE_REQUIREMENTS,
-            normative="OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8-10.1.2, Tables 394-401, 404-408, 418, and 421-426",
+            normative="OASIS Key Management Interoperability Protocol Specification v2.1 Sections 8.1-8.6, 9.1-9.13, 9.16-9.21, and 10.1.2; Tables 394-409, 417-418, and 420-426",
             type_name=name.rsplit("::", 1)[-1],
         )
         for name in (
@@ -172,7 +177,14 @@ GROUPS = (
             requirements=ASYNC_REQUIREMENTS,
             normative=normative,
             type_name=name,
-            extra=("response correlation remains redacted",),
+            extra=(
+                "response correlation remains redacted",
+                *(
+                    ("Query Asynchronous Requests response remains generic under KMIPKIT-0009-FR-007",)
+                    if name == "QueryAsyncRequestsResponse"
+                    else ()
+                ),
+            ),
         )
         for name, normative in (
             (
@@ -315,7 +327,7 @@ class T102ViewsAsyncPolicyTraitsBatchTests(unittest.TestCase):
                 for required_text in (*COMMON_EVIDENCE, group["normative"], *group["extra"]):
                     self.assertIn(required_text.casefold(), evidence.casefold())
                 self.assertIn("exact Rust standard-trait implementation", row["reason"])
-                self.assertIn("no separate KMIP client capability", row["reason"])
+                self.assertIn("not a separate kmip client capability", row["reason"].casefold())
                 self.assertIn(group["type_name"], row["reason"])
 
         self.assertEqual(len(selected), 166)

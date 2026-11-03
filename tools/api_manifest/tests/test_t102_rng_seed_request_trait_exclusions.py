@@ -181,7 +181,7 @@ class T102RngSeedRequestTraitExclusionTests(unittest.TestCase):
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            1264,
+            1098,
         )
 
 
