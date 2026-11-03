@@ -332463,7 +332463,9 @@
           "internal"
         ],
         "documentation": [
-          "Canonical Rust evaluator; unknown profiles return success with a null handle. Bounded to 100,000 records and 16 MiB aggregate UTF-8 input."
+          "Canonical Rust evaluator; unknown profiles return success with a null handle. Bounded to 100,000 records and 16 MiB aggregate UTF-8 input.",
+          "The output handle slot must not overlap the profile span, record array, or any requirement span.",
+          "Inputs must remain readable and unmodified until the call returns."
         ]
       }
     },
@@ -332526,7 +332528,9 @@
           "internal"
         ],
         "documentation": [
-          "Borrowed spans remain valid until handle release."
+          "Copies readiness fields into a versioned view borrowed from a live handle.",
+          "The handle must remain live without concurrent release during the call and while returned spans are read.",
+          "The output view must be aligned writable storage and must not overlap the handle or borrowed spans."
         ]
       }
     },
@@ -332594,7 +332598,9 @@
           "internal"
         ],
         "documentation": [
-          "Fixed redacted messages; borrowed spans remain valid until handle release."
+          "Copies one redacted blocker into a versioned view borrowed from the readiness handle.",
+          "The handle must remain live without concurrent release during the call and while returned spans are read.",
+          "The output blocker view must be aligned writable storage and must not overlap the handle or borrowed spans."
         ]
       }
     },

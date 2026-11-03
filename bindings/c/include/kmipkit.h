@@ -2096,14 +2096,20 @@ int32_t kmipkit_last_error_profile_validation_error_get_v1(kmipkit_profile_valid
 /* KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_profile_validation_error_view_get_v1(kmipkit_profile_validation_error_t * error, kmipkit_profile_validation_error_view_v1_t * out_view);
 /* Canonical Rust evaluator; unknown profiles return success with a null handle. Bounded to 100,000 records and 16 MiB aggregate UTF-8 input.
+ * The output handle slot must not overlap the profile span, record array, or any requirement span.
+ * Inputs must remain readable and unmodified until the call returns.
  */
 /* KMIPKIT-0010-FR-010, KMIPKIT-0010-FR-017, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_profile_readiness_evaluate_v1(const kmipkit_byte_span_v1_t * profile_id, const kmipkit_profile_evidence_record_v1_t * records, uint64_t record_count, kmipkit_profile_readiness_t ** out_readiness);
-/* Borrowed spans remain valid until handle release.
+/* Copies readiness fields into a versioned view borrowed from a live handle.
+ * The handle must remain live without concurrent release during the call and while returned spans are read.
+ * The output view must be aligned writable storage and must not overlap the handle or borrowed spans.
  */
 /* KMIPKIT-0010-FR-010, KMIPKIT-0010-FR-017, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_profile_readiness_view_get_v1(kmipkit_profile_readiness_t * readiness, kmipkit_profile_readiness_view_v1_t * out_view);
-/* Fixed redacted messages; borrowed spans remain valid until handle release.
+/* Copies one redacted blocker into a versioned view borrowed from the readiness handle.
+ * The handle must remain live without concurrent release during the call and while returned spans are read.
+ * The output blocker view must be aligned writable storage and must not overlap the handle or borrowed spans.
  */
 /* KMIPKIT-0010-FR-010, KMIPKIT-0010-FR-017, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_profile_readiness_blocker_at_v1(kmipkit_profile_readiness_t * readiness, uint64_t index, kmipkit_profile_readiness_blocker_view_v1_t * out_view);
