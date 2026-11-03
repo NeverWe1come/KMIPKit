@@ -579,3 +579,15 @@ The pinned upstream source SHA-256 is `8BF9D914C097E98A6509AA1FFCBF03406F738066E
 | `kmipkit_protocol::SetDefaultsError` | Approved `specs/025-policy-controls/spec.md` (KMIPKIT-0039-FR-001/003/004/006/007); `KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS` | Section 6.1.53, Table 330: Set Defaults Errors | 26 paths (21 direct, five conditional); same exact-set test |
 
 The focused test pins each exact `(packageId, exportName)` set against the Rust 1.94.0 compiler report. The protocol parent and functional rows, root error aliases and their traits/functions, related request/response states, and operation/client states remain unchanged. The 104 exclusions are inventory reconciliation only; T102 remains open and no OASIS conformance claim is made.
+
+
+### T102 - KMIPKIT-0037 key transfer error trait exclusions
+
+| Protocol error declaration | Approved owner requirements | Pinned OASIS KMIP v2.1 operation/error reference | Exact trait inventory |
+|---|---|---|---|
+| `kmipkit_protocol::DeriveKeyError` | Approved `specs/023-key-material-transfer/spec.md` (KMIPKIT-0037-FR-001/002/004/005/008); `KMIPKIT-ELEM-OP-C2S-DERIVE-KEY` | Section 6.1.14, Table 207: Derive Key Errors; Tables 205-206 are request/response payloads | 26 paths (21 direct, five conditional); `tools/api_manifest/tests/test_t102_key_transfer_error_trait_exclusions.py` |
+| `kmipkit_protocol::ExportError` | Approved `specs/023-key-material-transfer/spec.md` (KMIPKIT-0037-FR-001/002/004/005/008); `KMIPKIT-ELEM-OP-C2S-EXPORT` | Section 6.1.18, Table 219: Export Errors; Tables 217-218 are request/response payloads | 26 paths (21 direct, five conditional); same exact-set test |
+| `kmipkit_protocol::ImportError` | Approved `specs/023-key-material-transfer/spec.md` (KMIPKIT-0037-FR-001/002/004/005/008); `KMIPKIT-ELEM-OP-C2S-IMPORT` | Section 6.1.25, Table 240: Import Errors; Tables 238-239 are request/response payloads | 26 paths (21 direct, five conditional); same exact-set test |
+| `kmipkit_protocol::JoinSplitKeyError` | Approved `specs/023-key-material-transfer/spec.md` (KMIPKIT-0037-FR-001/002/004/005/008); `KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY` | Section 6.1.27, Table 246: Join Split Key Errors; Tables 244-245 are request/response payloads | 26 paths (21 direct, five conditional); same exact-set test |
+
+The exact test pins all 104 `(packageId, exportName)` pairs against the Rust 1.94.0 direct and conditional report paths. The error parent/functional rows, absent root error aliases, request/response models, and operation/client states remain unchanged. T102 inventory reconciliation makes no OASIS conformance claim.
