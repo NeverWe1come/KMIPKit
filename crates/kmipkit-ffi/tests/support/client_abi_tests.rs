@@ -10705,3 +10705,11 @@ fn client_response_extension_abi_returns_ordered_generic_ttlv_copy() {
 
     kmipkit_ttlv_structure_view_release(view);
 }
+#[test]
+fn successful_response_ttlv_absence_is_an_internal_error() {
+    assert_eq!(
+        super::require_success_response_ttlv::<()>(None),
+        Err(ERROR_INTERNAL)
+    );
+}
+

@@ -20,6 +20,10 @@ fn batch_response_item_from_handle(
     response.get(*index).ok_or(ERROR_INTERNAL)
 }
 
+fn require_success_response_ttlv<T>(response_ttlv: Option<T>) -> FfiResult<T> {
+    response_ttlv.ok_or(ERROR_INVALID_INPUT)
+}
+
 fn copy_transport_span(data: *const u8, length: u64, maximum: u64) -> FfiResult<Vec<u8>> {
     let bytes = input_span(data, length, maximum)?;
     let mut owned = Vec::new();
