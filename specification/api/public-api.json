@@ -189478,390 +189478,6 @@
       }
     },
     {
-      "declarationId": "rust-observed-fdc76fdb56be372e4b3a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObjectGroupMember as alloc::borrow::ToOwned>::Owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-b198411da1631ffd0d12",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObjectGroupMember as alloc::borrow::ToOwned>::clone_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-c96f97b24adeba4a29a5",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObjectGroupMember as alloc::borrow::ToOwned>::to_owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-93b30d77f59461610394",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-8732aa5f1f5aae310274",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::borrow::Borrow<kmipkit_protocol::locate::ObjectGroupMember>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-4ca3b56fd64a00a3768a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::borrow::BorrowMut<kmipkit_protocol::locate::ObjectGroupMember>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-a47a0eb842c9da994f1f",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::clone::Clone>::clone",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-39d93dc4f7fe6ca3f44a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::clone::Clone>::clone_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-4d50c3e2f7a277790b60",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::clone::CloneToUninit>::clone_to_uninit",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-22aa036b5151de8003d3",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-c7a601588a38d423f36c",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::cmp::PartialEq>::eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-88b19ac3eb782728a789",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::cmp::PartialEq>::ne",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-e4ea2a82c72414257f53",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::convert::From<kmipkit_protocol::locate::ObjectGroupMember>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-7aa4814f9385d9f581ae",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::locate::ObjectGroupMember"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-16520e620ddaacab016b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::locate::ObjectGroupMember"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-53f286426cc5c05d689c",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::locate::ObjectGroupMember"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-199b99871f91a4d7b232",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::locate::ObjectGroupMember"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-5f1ad1e03a5f2e02dbdb",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::locate::ObjectGroupMember"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-fcad7b8ab6082fae7c46",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-ad656296c9981609850e",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::hash::Hash>::hash",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-6011b53a28e11ff4b34f",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::hash::Hash>::hash_slice",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
       "declarationId": "rust-observed-6301c653a527d86db3ea",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
@@ -194558,434 +194174,6 @@
       "candidateSpecId": "KMIPKIT-0043",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
-
-
-
-
-
-
-
-
-
-
-
-    {
-      "declarationId": "rust-observed-0bf8c6c6f8510bb1a734",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::StorageStatusMask as alloc::borrow::ToOwned>::Owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-adbe9d2e9a42f59d9ffc",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::StorageStatusMask as alloc::borrow::ToOwned>::clone_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-6218f3b8d4e6fa4db881",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::StorageStatusMask as alloc::borrow::ToOwned>::to_owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-ac715196b6456e01d162",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::StorageStatusMask as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-0b6ec4c2544d28fd3bd8",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::StorageStatusMask as core::borrow::Borrow<kmipkit_protocol::locate::StorageStatusMask>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-bc7a5843fe880eb68512",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::StorageStatusMask as core::borrow::BorrowMut<kmipkit_protocol::locate::StorageStatusMask>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-fafe4ecb897b7b5dde51",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::StorageStatusMask as core::clone::Clone>::clone",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-23ab4910abc304dec45a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::StorageStatusMask as core::clone::Clone>::clone_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-6eedfa52d8e0b8a07c72",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::StorageStatusMask as core::clone::CloneToUninit>::clone_to_uninit",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-547f27354cf55f1275b6",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::StorageStatusMask as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-e62dd73f22721f3633e0",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::StorageStatusMask as core::cmp::PartialEq>::eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-16b98d93f5be63585b3f",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::StorageStatusMask as core::cmp::PartialEq>::ne",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-5b0adeca8b9cd5b3d001",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::StorageStatusMask as core::convert::From<kmipkit_protocol::locate::StorageStatusMask>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-62cc740f4388e42bed1e",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::StorageStatusMask as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::locate::StorageStatusMask"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-b6c8ca5d51d43ec46915",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::StorageStatusMask as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::locate::StorageStatusMask"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-6bbc34adfed225af2c8f",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::StorageStatusMask as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::locate::StorageStatusMask"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-f1d59fcb6c159b270191",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::StorageStatusMask as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::locate::StorageStatusMask"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-e2267036ed76e53fa6fd",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::StorageStatusMask as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::locate::StorageStatusMask"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-30067280525841c9bc26",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::StorageStatusMask as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-d1b50babf94857d3287b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::StorageStatusMask as core::hash::Hash>::hash",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-c579207cbc32dcd0d915",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::StorageStatusMask as core::hash::Hash>::hash_slice",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     {
       "declarationId": "rust-observed-af6aee3c0672974ca5ee",
       "packageId": "rust-kmipkit-protocol",
@@ -435587,6 +434775,510 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Exact T102 exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Functional owner is specs/021-hash-mac-signature-operations/spec.md (KMIPKIT-0021). This KMIPKit-local response-framing model is mapped by KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-015; no OASIS requirement defines this local context type or applies to compiler-generated traits. This inventories compiler-generated Rust traits only; it changes no operation behavior, error/response-TTLV policy, or cryptographic validation and makes no conformance claim."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObjectGroupMember as alloc::borrow::ToOwned>::Owned",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObjectGroupMember as alloc::borrow::ToOwned>::clone_into",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObjectGroupMember as alloc::borrow::ToOwned>::to_owned",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::borrow::Borrow<kmipkit_protocol::locate::ObjectGroupMember>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::borrow::BorrowMut<kmipkit_protocol::locate::ObjectGroupMember>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::clone::Clone>::clone",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::clone::Clone>::clone_from",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::clone::CloneToUninit>::clone_to_uninit",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::cmp::PartialEq>::eq",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::cmp::PartialEq>::ne",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::convert::From<kmipkit_protocol::locate::ObjectGroupMember>>::from",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::hash::Hash>::hash",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ObjectGroupMember as core::hash::Hash>::hash_slice",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::StorageStatusMask as alloc::borrow::ToOwned>::Owned",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::StorageStatusMask as alloc::borrow::ToOwned>::clone_into",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::StorageStatusMask as alloc::borrow::ToOwned>::to_owned",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::StorageStatusMask as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::StorageStatusMask as core::borrow::Borrow<kmipkit_protocol::locate::StorageStatusMask>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::StorageStatusMask as core::borrow::BorrowMut<kmipkit_protocol::locate::StorageStatusMask>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::StorageStatusMask as core::clone::Clone>::clone",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::StorageStatusMask as core::clone::Clone>::clone_from",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::StorageStatusMask as core::clone::CloneToUninit>::clone_to_uninit",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::StorageStatusMask as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::StorageStatusMask as core::cmp::PartialEq>::eq",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::StorageStatusMask as core::cmp::PartialEq>::ne",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::StorageStatusMask as core::convert::From<kmipkit_protocol::locate::StorageStatusMask>>::from",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::StorageStatusMask as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::StorageStatusMask as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::StorageStatusMask as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::StorageStatusMask as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::StorageStatusMask as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::StorageStatusMask as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::StorageStatusMask as core::hash::Hash>::hash",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::StorageStatusMask as core::hash::Hash>::hash_slice",
+      "reason": "This exact Rust standard-trait implementation is Rust language-level behavior, not a separate KMIP client capability; the Locate value and its explicit raw/from_raw accessors carry the functional API contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Approved functional owner specs/017-managed-object-retrieval/spec.md (KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-009). OASIS KMIP Specification v2.1 §11.33, Table 467 defines Object Group Member values; §12.3, Table 498 defines Storage Status Mask bits; §6.1.28, Table 247 defines the Locate request fields. These operation and value clauses ground functional values only; no OASIS clause applies directly to compiler-generated traits. Exact T102 inventory exclusion under KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021; inventory-only; this slice makes no conformance claim. The Locate value parents remain blocked and from_raw/raw remain verified."
     }
   ],
   "apiLevels": [
