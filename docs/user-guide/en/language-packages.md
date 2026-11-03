@@ -185,6 +185,13 @@ owned TTLV structure; Java exposes `ObtainLeaseResponse.responseTtlv()` and
 Python exposes `ObtainLeaseResponse.response_ttlv`. Callers close the owned
 result when done. KMIPKit does not track lease expiration or start a timer.
 
+For Certify, Obtain Lease, Re-certify, Re-key, Re-key Key Pair, Re-Provision,
+Register, and Revoke, generic response TTLV is available only on Success.
+Rust's `with_ttlv` returns `None` for Failure and Pending; C, Java, and Python
+likewise omit the typed response copy. The common result status, reason, and
+message remain available on the batch result, along with Pending correlation
+metadata. Check retains its specified policy-denial fields.
+
 Successful Hash, MAC, MAC Verify, Sign, and Signature Verify results also expose
 their complete ordered generic response TTLV. Rust lends a `StructureView`; C
 returns a caller-owned `kmipkit_ttlv_structure_t` that must be released with

@@ -28,6 +28,7 @@ MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 class ExpectedResponseView:
     declaration_id: str
     method: str
+    operation_name: str
     operation_suffix: str
     c_name: str
     java_name: str
@@ -40,6 +41,7 @@ EXPECTED = (
     ExpectedResponseView(
         declaration_id="rust-observed-0fff45b22624c9863341",
         method="certify",
+        operation_name="Certify",
         operation_suffix="CERTIFY",
         c_name="kmipkit_client_batch_item_response_certify",
         java_name="org.kmipkit.extensions.ClientBatchItemResult.certifyResponse",
@@ -50,6 +52,7 @@ EXPECTED = (
     ExpectedResponseView(
         declaration_id="rust-observed-54eed5a0560f0f327be1",
         method="check",
+        operation_name="Check",
         operation_suffix="CHECK",
         c_name="kmipkit_client_batch_item_response_check",
         java_name="org.kmipkit.extensions.ClientBatchItemResult.checkResponse",
@@ -60,6 +63,7 @@ EXPECTED = (
     ExpectedResponseView(
         declaration_id="rust-observed-bab5f3119a04dc27703d",
         method="obtain_lease",
+        operation_name="Obtain Lease",
         operation_suffix="OBTAIN-LEASE",
         c_name="kmipkit_client_batch_item_response_obtain_lease",
         java_name="org.kmipkit.extensions.ClientBatchItemResult.obtainLeaseResponse",
@@ -70,6 +74,7 @@ EXPECTED = (
     ExpectedResponseView(
         declaration_id="rust-observed-d771ff20731cba0fe337",
         method="recertify",
+        operation_name="Re-certify",
         operation_suffix="RE-CERTIFY",
         c_name="kmipkit_client_batch_item_response_recertify",
         java_name="org.kmipkit.extensions.ClientBatchItemResult.recertifyResponse",
@@ -80,6 +85,7 @@ EXPECTED = (
     ExpectedResponseView(
         declaration_id="rust-observed-0c3da3aa589125b3f6f2",
         method="rekey",
+        operation_name="Re-key",
         operation_suffix="RE-KEY",
         c_name="kmipkit_client_batch_item_response_rekey",
         java_name="org.kmipkit.extensions.ClientBatchItemResult.rekeyResponse",
@@ -90,6 +96,7 @@ EXPECTED = (
     ExpectedResponseView(
         declaration_id="rust-observed-b92daec87f8a60fd2ba9",
         method="rekey_key_pair",
+        operation_name="Re-key Key Pair",
         operation_suffix="RE-KEY-KEY-PAIR",
         c_name="kmipkit_client_batch_item_response_rekey_key_pair",
         java_name="org.kmipkit.extensions.ClientBatchItemResult.rekeyKeyPairResponse",
@@ -100,6 +107,7 @@ EXPECTED = (
     ExpectedResponseView(
         declaration_id="rust-observed-b878eca12ed7a7e2ea13",
         method="reprovision",
+        operation_name="Re-Provision",
         operation_suffix="RE-PROVISION",
         c_name="kmipkit_client_batch_item_response_reprovision",
         java_name="org.kmipkit.extensions.ClientBatchItemResult.reprovisionResponse",
@@ -110,6 +118,7 @@ EXPECTED = (
     ExpectedResponseView(
         declaration_id="rust-observed-0e423c1d2c8da37b44e3",
         method="register",
+        operation_name="Register",
         operation_suffix="REGISTER",
         c_name="kmipkit_client_batch_item_response_register",
         java_name="org.kmipkit.extensions.ClientBatchItemResult.registerResponse",
@@ -120,6 +129,7 @@ EXPECTED = (
     ExpectedResponseView(
         declaration_id="rust-observed-8ca19e8a2669101cd02e",
         method="revoke",
+        operation_name="Revoke",
         operation_suffix="REVOKE",
         c_name="kmipkit_client_batch_item_response_revoke",
         java_name="org.kmipkit.extensions.ClientBatchItemResult.revokeResponse",
@@ -158,6 +168,17 @@ class T102ResponseViewMappingTests(unittest.TestCase):
             row["declarationId"]: row for row in cls.manifest["publicDeclarations"]
         }
         cls.operations = {row["operationId"]: row for row in cls.manifest["operations"]}
+        cls.lifecycle_spec = (ROOT / "specs" / "022-object-lifecycle" / "spec.md").read_text(
+            encoding="utf-8"
+        )
+
+    def lifecycle_story(self, operation_name: str) -> str:
+        for story in self.lifecycle_spec.split("### User Story ")[1:]:
+            heading = story.splitlines()[0]
+            name = heading.split("— ", maxsplit=1)[1].split(" (Priority:", maxsplit=1)[0]
+            if name == operation_name:
+                return story
+        self.fail(f"approved lifecycle spec has no user story for {operation_name}")
 
     def test_common_result_remains_available_on_all_four_facades(self) -> None:
         result = self.declarations[
@@ -266,6 +287,10 @@ class T102ResponseViewMappingTests(unittest.TestCase):
 
                 self.assertEqual("verified", operation["apiState"])
                 self.assertEqual(item.section, operation["section"])
+                self.assertIn(
+                    f"Given a valid Table {item.response_table} success",
+                    self.lifecycle_story(item.operation_name),
+                )
                 self.assertEqual("KMIPKIT-0036", operation["featureSpecId"])
                 self.assertEqual(
                     {"specId": "KMIPKIT-0036", "state": "approved"},

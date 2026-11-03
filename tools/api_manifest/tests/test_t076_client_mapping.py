@@ -68,6 +68,48 @@ REVOKE_RESPONSE_EXCLUDED_EXPORTS = frozenset(
         "__slots__",
     )
 ) | {"kmipkit.client.RevokeResponse.__repr__"}
+PROFILE_READINESS_ENUM_MEMBERS = (
+    "DISCOURAGED_ABSENCE_OR_DEVIATION",
+    "OPTIONAL_CAPABILITY",
+    "PROHIBITED_BEHAVIOR",
+    "RECOMMENDED_BEHAVIOR_OR_DEVIATION",
+    "REQUIRED_BEHAVIOR",
+)
+PROFILE_READINESS_EXPECTED_ENUM_EXPORTS = frozenset(
+    f"kmipkit.profile_catalog.VerificationCategory.{member}"
+    for member in PROFILE_READINESS_ENUM_MEMBERS
+)
+PROFILE_READINESS_DATACLASS_TYPES = (
+    ("profile_catalog", "ClientProfile"),
+    ("profile_catalog", "ClientRequirement"),
+    ("profile_catalog", "ProfileScopeBlocker"),
+    ("profile_catalog", "ProfileTestCase"),
+    ("profile_readiness", "ProfileEvidenceRecord"),
+    ("profile_readiness", "ProfileReadiness"),
+    ("profile_readiness", "ProfileReadinessBlocker"),
+)
+PROFILE_READINESS_DATACLASS_MEMBERS = (
+    "__dataclass_fields__",
+    "__dataclass_params__",
+    "__delattr__",
+    "__eq__",
+    "__hash__",
+    "__init__",
+    "__match_args__",
+    "__repr__",
+    "__setattr__",
+    "__slots__",
+)
+PROFILE_READINESS_EXPECTED_EXCLUSIONS = frozenset(
+    f"kmipkit.{module}.{type_name}.{member}"
+    for module, type_name in PROFILE_READINESS_DATACLASS_TYPES
+    for member in PROFILE_READINESS_DATACLASS_MEMBERS
+) | {
+    "kmipkit.profile_catalog",
+    "kmipkit.profile_readiness",
+    "kmipkit.profile_readiness.ProfileEvidenceRecord.requirement_id",
+    "kmipkit.profile_readiness.ProfileEvidenceRecord.passed_value",
+}
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 T076_SYMBOLS = {
     "kmipkit_client_batch_add_error_continuation_value",
@@ -4413,51 +4455,8 @@ class T076ClientMappingTests(unittest.TestCase):
             if row["packageId"] == "python-kmipkit"
         }
 
-        enum_members = (
-            "DISCOURAGED_ABSENCE_OR_DEVIATION",
-            "OPTIONAL_CAPABILITY",
-            "PROHIBITED_BEHAVIOR",
-            "RECOMMENDED_BEHAVIOR_OR_DEVIATION",
-            "REQUIRED_BEHAVIOR",
-        )
-        expected_enum_exports = {
-            f"kmipkit.profile_catalog.VerificationCategory.{member}"
-            for member in enum_members
-        }
-        dataclass_types = (
-            ("profile_catalog", "ClientProfile"),
-            ("profile_catalog", "ClientRequirement"),
-            ("profile_catalog", "ProfileScopeBlocker"),
-            ("profile_catalog", "ProfileTestCase"),
-            ("profile_readiness", "ProfileEvidenceRecord"),
-            ("profile_readiness", "ProfileReadiness"),
-            ("profile_readiness", "ProfileReadinessBlocker"),
-        )
-        dataclass_members = (
-            "__dataclass_fields__",
-            "__dataclass_params__",
-            "__delattr__",
-            "__eq__",
-            "__hash__",
-            "__init__",
-            "__match_args__",
-            "__repr__",
-            "__setattr__",
-            "__slots__",
-        )
-        expected_exclusions = {
-            f"kmipkit.{module}.{type_name}.{member}"
-            for module, type_name in dataclass_types
-            for member in dataclass_members
-        }
-        expected_exclusions.update(
-            {
-                "kmipkit.profile_catalog",
-                "kmipkit.profile_readiness",
-                "kmipkit.profile_readiness.ProfileEvidenceRecord.requirement_id",
-                "kmipkit.profile_readiness.ProfileEvidenceRecord.passed_value",
-            }
-        )
+        expected_enum_exports = PROFILE_READINESS_EXPECTED_ENUM_EXPORTS
+        expected_exclusions = PROFILE_READINESS_EXPECTED_EXCLUSIONS
         unclassified = observed - declarations.keys() - exclusions.keys()
         self.assertEqual(set(), unclassified)
 
@@ -4482,6 +4481,9 @@ class T076ClientMappingTests(unittest.TestCase):
         }
         observed_profile_exclusions = expected_exclusions & observed
         self.assertEqual(observed_profile_exclusions, set(profile_exclusions))
+        self.assertEqual(5, len(expected_enum_exports))
+        self.assertEqual(74, len(observed_profile_exclusions))
+        self.assertEqual(79, len(expected_enum_exports) + len(observed_profile_exclusions))
         for export_name, exclusion in profile_exclusions.items():
             with self.subTest(excluded_export=export_name):
                 self.assertEqual("python-kmipkit", exclusion["packageId"])

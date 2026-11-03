@@ -198,6 +198,14 @@ propia; Java expone `ObtainLeaseResponse.responseTtlv()` y Python,
 `ObtainLeaseResponse.response_ttlv`; el llamador cierra el resultado cuando
 termina. KMIPKit no controla la expiración del lease ni inicia temporizadores.
 
+En Certify, Obtain Lease, Re-certify, Re-key, Re-key Key Pair, Re-Provision,
+Register y Revoke, el TTLV genérico de respuesta solo está
+disponible cuando el resultado es Success. `with_ttlv` de Rust devuelve `None`
+para Failure y Pending; C, Java y Python también omiten la copia de la respuesta
+tipada. El resultado común —estado, motivo y mensaje— sigue disponible en el
+resultado del lote, junto con los metadatos de correlación de Pending. Check
+conserva los campos de denegación de política previstos por KMIP.
+
 Las respuestas correctas de Hash, MAC, MAC Verify, Sign y Signature Verify
 también exponen su TTLV genérico completo y ordenado. Rust presta una
 `StructureView`; C devuelve un `kmipkit_ttlv_structure_t` propiedad del
