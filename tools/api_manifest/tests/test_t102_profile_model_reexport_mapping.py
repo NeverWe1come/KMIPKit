@@ -86,6 +86,14 @@ class T102ProfileModelReexportMappingTests(unittest.TestCase):
             if row["capabilityId"] == "client_profile_validation"
         )
         self.assertEqual("declared", capability["capabilityState"])
+        for package, crate in REEXPORT_PACKAGES.items():
+            for name in (
+                f"{crate}::ProfileValidationSelection::validate",
+                f"{crate}::ProfileValidationResult",
+            ):
+                declaration = declarations[(package, name)]
+                self.assertEqual("blocked", declaration["declarationState"])
+                self.assertNotIn(name, capability["mappings"]["rust"])
         self.assertEqual(
             {name for _, name in expected},
             {
