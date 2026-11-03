@@ -368,6 +368,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B -m unittest tools.api_manifest.tests.test_t102_profile_model_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $python -B -m unittest tools.api_manifest.tests.test_t102_profile_debug_trait_exclusions -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B -m unittest tools.api_manifest.tests.test_t102_cryptographic_value_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B -m unittest tools.api_manifest.tests.test_t102_locate_value_trait_exclusions -v

@@ -284254,20 +284254,6 @@
       }
     },
     {
-      "declarationId": "rust-observed-b6234e0661ab49d7602e",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::ProfileObjectState as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
       "declarationId": "rust-observed-e122f0502d76179909d5",
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
@@ -284614,20 +284600,6 @@
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "<kmipkit::ProfileValidationContext as core::default::Default>::default",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-7325c1ca5077b2cabbc1",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::ProfileValidationContext as core::fmt::Debug>::fmt",
       "capabilityId": "public_binding_surface",
       "requirementIds": [
         "KMIPKIT-0043-FR-021"
@@ -286329,20 +286301,6 @@
       }
     },
     {
-      "declarationId": "rust-observed-64bc68cd23adc84ea27a",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::ProfileObjectState as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
       "declarationId": "rust-observed-900bb477769d3ea2eea0",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
@@ -286689,20 +286647,6 @@
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "<kmipkit_client::ProfileValidationContext as core::default::Default>::default",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-c997674f9ce1016d5995",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::ProfileValidationContext as core::fmt::Debug>::fmt",
       "capabilityId": "public_binding_surface",
       "requirementIds": [
         "KMIPKIT-0043-FR-021"
@@ -288724,20 +288668,6 @@
       }
     },
     {
-      "declarationId": "rust-observed-f11b031cd7f7f71d50a4",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ProfileObjectState as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
       "declarationId": "rust-observed-73f77388dc5302726b21",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
@@ -289084,20 +289014,6 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "<kmipkit_protocol::ProfileValidationContext as core::default::Default>::default",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-5968971d7eb7388bc6aa",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ProfileValidationContext as core::fmt::Debug>::fmt",
       "capabilityId": "public_binding_surface",
       "requirementIds": [
         "KMIPKIT-0043-FR-021"
@@ -433955,6 +433871,78 @@
       "exportName": "<kmipkit::SecretBytes as core::fmt::Display>::fmt",
       "packageId": "rust-kmipkit",
       "reason": "Exact Rust standard-trait implementation artifact, not a separate four-language capability. Only this trait-qualified inventory item is excluded; the root SecretBytes wrapper and all mapped inherent lifecycle APIs remain declared."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ProfileValidationContext as core::fmt::Debug>::fmt",
+      "reason": "This redacted compiler-generated Debug formatter adds no separate KMIP client capability. The existing output masks the ProfileObjectState identifier and caller-attested values, and the ProfileValidationContext state collection.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "evidence": "Accepted KMIPKIT-0010 owner by PR #49 merge 045b97dde40e54efbc264d95c1d827c4f7d40415; KMIPKIT-0010-FR-012 and KMIPKIT-0010-FR-019 govern diagnostic redaction and one-exchange caller state. T102 exclusions use KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, and KMIPKIT-0043-FR-021. The Rust 1.94.0 report records these six exact compiler-generated Rust traits. KMIP Specification v2.1 §4.38 and §4.59 provide caller-state context. No OASIS requirement is assigned to these traits. Existing manual Debug output redacts the identifier and all state values. The other 111 paths remain blocked candidates, including Clone, Eq, and PartialEq. Parent states and the client capability remain unchanged; Baseline remains evidence_incomplete. This inventory-only slice changes no runtime/profile behavior or conformance claim."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ProfileObjectState as core::fmt::Debug>::fmt",
+      "reason": "This redacted compiler-generated Debug formatter adds no separate KMIP client capability. The existing output masks the ProfileObjectState identifier and caller-attested values, and the ProfileValidationContext state collection.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "evidence": "Accepted KMIPKIT-0010 owner by PR #49 merge 045b97dde40e54efbc264d95c1d827c4f7d40415; KMIPKIT-0010-FR-012 and KMIPKIT-0010-FR-019 govern diagnostic redaction and one-exchange caller state. T102 exclusions use KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, and KMIPKIT-0043-FR-021. The Rust 1.94.0 report records these six exact compiler-generated Rust traits. KMIP Specification v2.1 §4.38 and §4.59 provide caller-state context. No OASIS requirement is assigned to these traits. Existing manual Debug output redacts the identifier and all state values. The other 111 paths remain blocked candidates, including Clone, Eq, and PartialEq. Parent states and the client capability remain unchanged; Baseline remains evidence_incomplete. This inventory-only slice changes no runtime/profile behavior or conformance claim."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ProfileValidationContext as core::fmt::Debug>::fmt",
+      "reason": "This redacted compiler-generated Debug formatter adds no separate KMIP client capability. The existing output masks the ProfileObjectState identifier and caller-attested values, and the ProfileValidationContext state collection.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "evidence": "Accepted KMIPKIT-0010 owner by PR #49 merge 045b97dde40e54efbc264d95c1d827c4f7d40415; KMIPKIT-0010-FR-012 and KMIPKIT-0010-FR-019 govern diagnostic redaction and one-exchange caller state. T102 exclusions use KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, and KMIPKIT-0043-FR-021. The Rust 1.94.0 report records these six exact compiler-generated Rust traits. KMIP Specification v2.1 §4.38 and §4.59 provide caller-state context. No OASIS requirement is assigned to these traits. Existing manual Debug output redacts the identifier and all state values. The other 111 paths remain blocked candidates, including Clone, Eq, and PartialEq. Parent states and the client capability remain unchanged; Baseline remains evidence_incomplete. This inventory-only slice changes no runtime/profile behavior or conformance claim."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ProfileObjectState as core::fmt::Debug>::fmt",
+      "reason": "This redacted compiler-generated Debug formatter adds no separate KMIP client capability. The existing output masks the ProfileObjectState identifier and caller-attested values, and the ProfileValidationContext state collection.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "evidence": "Accepted KMIPKIT-0010 owner by PR #49 merge 045b97dde40e54efbc264d95c1d827c4f7d40415; KMIPKIT-0010-FR-012 and KMIPKIT-0010-FR-019 govern diagnostic redaction and one-exchange caller state. T102 exclusions use KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, and KMIPKIT-0043-FR-021. The Rust 1.94.0 report records these six exact compiler-generated Rust traits. KMIP Specification v2.1 §4.38 and §4.59 provide caller-state context. No OASIS requirement is assigned to these traits. Existing manual Debug output redacts the identifier and all state values. The other 111 paths remain blocked candidates, including Clone, Eq, and PartialEq. Parent states and the client capability remain unchanged; Baseline remains evidence_incomplete. This inventory-only slice changes no runtime/profile behavior or conformance claim."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ProfileValidationContext as core::fmt::Debug>::fmt",
+      "reason": "This redacted compiler-generated Debug formatter adds no separate KMIP client capability. The existing output masks the ProfileObjectState identifier and caller-attested values, and the ProfileValidationContext state collection.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "evidence": "Accepted KMIPKIT-0010 owner by PR #49 merge 045b97dde40e54efbc264d95c1d827c4f7d40415; KMIPKIT-0010-FR-012 and KMIPKIT-0010-FR-019 govern diagnostic redaction and one-exchange caller state. T102 exclusions use KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, and KMIPKIT-0043-FR-021. The Rust 1.94.0 report records these six exact compiler-generated Rust traits. KMIP Specification v2.1 §4.38 and §4.59 provide caller-state context. No OASIS requirement is assigned to these traits. Existing manual Debug output redacts the identifier and all state values. The other 111 paths remain blocked candidates, including Clone, Eq, and PartialEq. Parent states and the client capability remain unchanged; Baseline remains evidence_incomplete. This inventory-only slice changes no runtime/profile behavior or conformance claim."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ProfileObjectState as core::fmt::Debug>::fmt",
+      "reason": "This redacted compiler-generated Debug formatter adds no separate KMIP client capability. The existing output masks the ProfileObjectState identifier and caller-attested values, and the ProfileValidationContext state collection.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "evidence": "Accepted KMIPKIT-0010 owner by PR #49 merge 045b97dde40e54efbc264d95c1d827c4f7d40415; KMIPKIT-0010-FR-012 and KMIPKIT-0010-FR-019 govern diagnostic redaction and one-exchange caller state. T102 exclusions use KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, and KMIPKIT-0043-FR-021. The Rust 1.94.0 report records these six exact compiler-generated Rust traits. KMIP Specification v2.1 §4.38 and §4.59 provide caller-state context. No OASIS requirement is assigned to these traits. Existing manual Debug output redacts the identifier and all state values. The other 111 paths remain blocked candidates, including Clone, Eq, and PartialEq. Parent states and the client capability remain unchanged; Baseline remains evidence_incomplete. This inventory-only slice changes no runtime/profile behavior or conformance claim."
     }
   ],
   "apiLevels": [

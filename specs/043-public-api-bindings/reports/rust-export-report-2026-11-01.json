@@ -59500,11 +59500,11 @@
   "counts": {
     "conditionalConditionMismatches": 0,
     "conditionalStateMismatches": 0,
-    "excluded": 5987,
+    "excluded": 5993,
     "issues": 0,
     "kindMismatches": 0,
-    "manifest": 4476,
-    "matched": 4476,
+    "manifest": 4470,
+    "matched": 4470,
     "missingFromManifest": 0,
     "notObserved": 0,
     "observed": 10463
@@ -232929,6 +232929,27 @@
     },
     {
       "aliases": [
+        "<kmipkit::ProfileObjectState as core::fmt::Debug>::fmt"
+      ],
+      "exportLocations": [
+        {
+          "column": 21,
+          "line": 146,
+          "path": "crates/kmipkit/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit::ProfileObjectState as core::fmt::Debug>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit_protocol\",\"profile\",\"ProfileObjectState\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_protocol::profile::ProfileObjectState\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 223,
+        "path": "crates/kmipkit-protocol/src/profile.rs"
+      },
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "aliases": [
         "<kmipkit::ProfileTransport as alloc::borrow::ToOwned>::Owned"
       ],
       "exportLocations": [
@@ -233330,6 +233351,27 @@
       "location": {
         "column": 23,
         "line": 100,
+        "path": "crates/kmipkit-protocol/src/profile.rs"
+      },
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "aliases": [
+        "<kmipkit::ProfileValidationContext as core::fmt::Debug>::fmt"
+      ],
+      "exportLocations": [
+        {
+          "column": 59,
+          "line": 146,
+          "path": "crates/kmipkit/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit::ProfileValidationContext as core::fmt::Debug>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit_protocol\",\"profile\",\"ProfileValidationContext\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_protocol::profile::ProfileValidationContext\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 321,
         "path": "crates/kmipkit-protocol/src/profile.rs"
       },
       "packageId": "rust-kmipkit"
@@ -248605,6 +248647,27 @@
     },
     {
       "aliases": [
+        "<kmipkit_client::ProfileObjectState as core::fmt::Debug>::fmt"
+      ],
+      "exportLocations": [
+        {
+          "column": 5,
+          "line": 293,
+          "path": "crates/kmipkit-client/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_client::ProfileObjectState as core::fmt::Debug>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-client\",[\"kmipkit_protocol\",\"profile\",\"ProfileObjectState\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_protocol::profile::ProfileObjectState\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 223,
+        "path": "crates/kmipkit-protocol/src/profile.rs"
+      },
+      "packageId": "rust-kmipkit-client"
+    },
+    {
+      "aliases": [
         "<kmipkit_client::ProfileTransport as alloc::borrow::ToOwned>::Owned"
       ],
       "exportLocations": [
@@ -249006,6 +249069,27 @@
       "location": {
         "column": 23,
         "line": 100,
+        "path": "crates/kmipkit-protocol/src/profile.rs"
+      },
+      "packageId": "rust-kmipkit-client"
+    },
+    {
+      "aliases": [
+        "<kmipkit_client::ProfileValidationContext as core::fmt::Debug>::fmt"
+      ],
+      "exportLocations": [
+        {
+          "column": 43,
+          "line": 293,
+          "path": "crates/kmipkit-client/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_client::ProfileValidationContext as core::fmt::Debug>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-client\",[\"kmipkit_protocol\",\"profile\",\"ProfileValidationContext\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_protocol::profile::ProfileValidationContext\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 321,
         "path": "crates/kmipkit-protocol/src/profile.rs"
       },
       "packageId": "rust-kmipkit-client"
@@ -302558,6 +302642,27 @@
     },
     {
       "aliases": [
+        "<kmipkit_protocol::ProfileObjectState as core::fmt::Debug>::fmt"
+      ],
+      "exportLocations": [
+        {
+          "column": 54,
+          "line": 172,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::ProfileObjectState as core::fmt::Debug>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"profile\",\"ProfileObjectState\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_protocol::profile::ProfileObjectState\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 223,
+        "path": "crates/kmipkit-protocol/src/profile.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
         "<kmipkit_protocol::ProfileEvidenceReadiness as alloc::borrow::ToOwned>::Owned",
         "<kmipkit_protocol::ProfileReadiness as alloc::borrow::ToOwned>::Owned"
       ],
@@ -304060,6 +304165,27 @@
       "location": {
         "column": 23,
         "line": 100,
+        "path": "crates/kmipkit-protocol/src/profile.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_protocol::ProfileValidationContext as core::fmt::Debug>::fmt"
+      ],
+      "exportLocations": [
+        {
+          "column": 48,
+          "line": 173,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_protocol::ProfileValidationContext as core::fmt::Debug>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"profile\",\"ProfileValidationContext\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_protocol::profile::ProfileValidationContext\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 321,
         "path": "crates/kmipkit-protocol/src/profile.rs"
       },
       "packageId": "rust-kmipkit-protocol"
@@ -362633,28 +362759,6 @@
     },
     {
       "aliases": [
-        "<kmipkit::ProfileObjectState as core::fmt::Debug>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 21,
-          "line": 146,
-          "path": "crates/kmipkit/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit::ProfileObjectState as core::fmt::Debug>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit_protocol\",\"profile\",\"ProfileObjectState\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_protocol::profile::ProfileObjectState\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 223,
-        "path": "crates/kmipkit-protocol/src/profile.rs"
-      },
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "aliases": [
         "<kmipkit::ProfileValidationContext as alloc::borrow::ToOwned>::Owned"
       ],
       "declarationState": "blocked",
@@ -363075,28 +363179,6 @@
       "location": {
         "column": 17,
         "line": 237,
-        "path": "crates/kmipkit-protocol/src/profile.rs"
-      },
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "aliases": [
-        "<kmipkit::ProfileValidationContext as core::fmt::Debug>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 59,
-          "line": 146,
-          "path": "crates/kmipkit/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit::ProfileValidationContext as core::fmt::Debug>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit_protocol\",\"profile\",\"ProfileValidationContext\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_protocol::profile::ProfileValidationContext\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 321,
         "path": "crates/kmipkit-protocol/src/profile.rs"
       },
       "packageId": "rust-kmipkit"
@@ -389755,28 +389837,6 @@
     },
     {
       "aliases": [
-        "<kmipkit_client::ProfileObjectState as core::fmt::Debug>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 5,
-          "line": 293,
-          "path": "crates/kmipkit-client/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_client::ProfileObjectState as core::fmt::Debug>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-client\",[\"kmipkit_protocol\",\"profile\",\"ProfileObjectState\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_protocol::profile::ProfileObjectState\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 223,
-        "path": "crates/kmipkit-protocol/src/profile.rs"
-      },
-      "packageId": "rust-kmipkit-client"
-    },
-    {
-      "aliases": [
         "<kmipkit_client::ProfileValidationContext as alloc::borrow::ToOwned>::Owned"
       ],
       "declarationState": "blocked",
@@ -390197,28 +390257,6 @@
       "location": {
         "column": 17,
         "line": 237,
-        "path": "crates/kmipkit-protocol/src/profile.rs"
-      },
-      "packageId": "rust-kmipkit-client"
-    },
-    {
-      "aliases": [
-        "<kmipkit_client::ProfileValidationContext as core::fmt::Debug>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 43,
-          "line": 293,
-          "path": "crates/kmipkit-client/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_client::ProfileValidationContext as core::fmt::Debug>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-client\",[\"kmipkit_protocol\",\"profile\",\"ProfileValidationContext\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_protocol::profile::ProfileValidationContext\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 321,
         "path": "crates/kmipkit-protocol/src/profile.rs"
       },
       "packageId": "rust-kmipkit-client"
@@ -416818,28 +416856,6 @@
     },
     {
       "aliases": [
-        "<kmipkit_protocol::ProfileObjectState as core::fmt::Debug>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 54,
-          "line": 172,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::ProfileObjectState as core::fmt::Debug>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"profile\",\"ProfileObjectState\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_protocol::profile::ProfileObjectState\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 223,
-        "path": "crates/kmipkit-protocol/src/profile.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
         "<kmipkit_protocol::ProfileValidationContext as alloc::borrow::ToOwned>::Owned"
       ],
       "declarationState": "blocked",
@@ -417260,28 +417276,6 @@
       "location": {
         "column": 17,
         "line": 237,
-        "path": "crates/kmipkit-protocol/src/profile.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "<kmipkit_protocol::ProfileValidationContext as core::fmt::Debug>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 48,
-          "line": 173,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_protocol::ProfileValidationContext as core::fmt::Debug>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-protocol\",[\"kmipkit_protocol\",\"profile\",\"ProfileValidationContext\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_protocol::profile::ProfileValidationContext\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 321,
         "path": "crates/kmipkit-protocol/src/profile.rs"
       },
       "packageId": "rust-kmipkit-protocol"

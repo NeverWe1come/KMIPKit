@@ -89846,6 +89846,78 @@
       "exportName": "<kmipkit::SecretBytes as core::fmt::Display>::fmt",
       "packageId": "rust-kmipkit",
       "reason": "Exact Rust standard-trait implementation artifact, not a separate four-language capability. Only this trait-qualified inventory item is excluded; the root SecretBytes wrapper and all mapped inherent lifecycle APIs remain declared."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "evidence": "Accepted KMIPKIT-0010 owner by PR #49 merge 045b97dde40e54efbc264d95c1d827c4f7d40415; KMIPKIT-0010-FR-012 and KMIPKIT-0010-FR-019 govern diagnostic redaction and one-exchange caller state. T102 exclusions use KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, and KMIPKIT-0043-FR-021. The Rust 1.94.0 report records these six exact compiler-generated Rust traits. KMIP Specification v2.1 §4.38 and §4.59 provide caller-state context. No OASIS requirement is assigned to these traits. Existing manual Debug output redacts the identifier and all state values. The other 111 paths remain blocked candidates, including Clone, Eq, and PartialEq. Parent states and the client capability remain unchanged; Baseline remains evidence_incomplete. This inventory-only slice changes no runtime/profile behavior or conformance claim.",
+      "exportName": "<kmipkit_protocol::ProfileValidationContext as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This redacted compiler-generated Debug formatter adds no separate KMIP client capability. The existing output masks the ProfileObjectState identifier and caller-attested values, and the ProfileValidationContext state collection."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "evidence": "Accepted KMIPKIT-0010 owner by PR #49 merge 045b97dde40e54efbc264d95c1d827c4f7d40415; KMIPKIT-0010-FR-012 and KMIPKIT-0010-FR-019 govern diagnostic redaction and one-exchange caller state. T102 exclusions use KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, and KMIPKIT-0043-FR-021. The Rust 1.94.0 report records these six exact compiler-generated Rust traits. KMIP Specification v2.1 §4.38 and §4.59 provide caller-state context. No OASIS requirement is assigned to these traits. Existing manual Debug output redacts the identifier and all state values. The other 111 paths remain blocked candidates, including Clone, Eq, and PartialEq. Parent states and the client capability remain unchanged; Baseline remains evidence_incomplete. This inventory-only slice changes no runtime/profile behavior or conformance claim.",
+      "exportName": "<kmipkit_protocol::ProfileObjectState as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This redacted compiler-generated Debug formatter adds no separate KMIP client capability. The existing output masks the ProfileObjectState identifier and caller-attested values, and the ProfileValidationContext state collection."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "evidence": "Accepted KMIPKIT-0010 owner by PR #49 merge 045b97dde40e54efbc264d95c1d827c4f7d40415; KMIPKIT-0010-FR-012 and KMIPKIT-0010-FR-019 govern diagnostic redaction and one-exchange caller state. T102 exclusions use KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, and KMIPKIT-0043-FR-021. The Rust 1.94.0 report records these six exact compiler-generated Rust traits. KMIP Specification v2.1 §4.38 and §4.59 provide caller-state context. No OASIS requirement is assigned to these traits. Existing manual Debug output redacts the identifier and all state values. The other 111 paths remain blocked candidates, including Clone, Eq, and PartialEq. Parent states and the client capability remain unchanged; Baseline remains evidence_incomplete. This inventory-only slice changes no runtime/profile behavior or conformance claim.",
+      "exportName": "<kmipkit_client::ProfileValidationContext as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This redacted compiler-generated Debug formatter adds no separate KMIP client capability. The existing output masks the ProfileObjectState identifier and caller-attested values, and the ProfileValidationContext state collection."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "evidence": "Accepted KMIPKIT-0010 owner by PR #49 merge 045b97dde40e54efbc264d95c1d827c4f7d40415; KMIPKIT-0010-FR-012 and KMIPKIT-0010-FR-019 govern diagnostic redaction and one-exchange caller state. T102 exclusions use KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, and KMIPKIT-0043-FR-021. The Rust 1.94.0 report records these six exact compiler-generated Rust traits. KMIP Specification v2.1 §4.38 and §4.59 provide caller-state context. No OASIS requirement is assigned to these traits. Existing manual Debug output redacts the identifier and all state values. The other 111 paths remain blocked candidates, including Clone, Eq, and PartialEq. Parent states and the client capability remain unchanged; Baseline remains evidence_incomplete. This inventory-only slice changes no runtime/profile behavior or conformance claim.",
+      "exportName": "<kmipkit_client::ProfileObjectState as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This redacted compiler-generated Debug formatter adds no separate KMIP client capability. The existing output masks the ProfileObjectState identifier and caller-attested values, and the ProfileValidationContext state collection."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "evidence": "Accepted KMIPKIT-0010 owner by PR #49 merge 045b97dde40e54efbc264d95c1d827c4f7d40415; KMIPKIT-0010-FR-012 and KMIPKIT-0010-FR-019 govern diagnostic redaction and one-exchange caller state. T102 exclusions use KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, and KMIPKIT-0043-FR-021. The Rust 1.94.0 report records these six exact compiler-generated Rust traits. KMIP Specification v2.1 §4.38 and §4.59 provide caller-state context. No OASIS requirement is assigned to these traits. Existing manual Debug output redacts the identifier and all state values. The other 111 paths remain blocked candidates, including Clone, Eq, and PartialEq. Parent states and the client capability remain unchanged; Baseline remains evidence_incomplete. This inventory-only slice changes no runtime/profile behavior or conformance claim.",
+      "exportName": "<kmipkit::ProfileValidationContext as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "This redacted compiler-generated Debug formatter adds no separate KMIP client capability. The existing output masks the ProfileObjectState identifier and caller-attested values, and the ProfileValidationContext state collection."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "evidence": "Accepted KMIPKIT-0010 owner by PR #49 merge 045b97dde40e54efbc264d95c1d827c4f7d40415; KMIPKIT-0010-FR-012 and KMIPKIT-0010-FR-019 govern diagnostic redaction and one-exchange caller state. T102 exclusions use KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, and KMIPKIT-0043-FR-021. The Rust 1.94.0 report records these six exact compiler-generated Rust traits. KMIP Specification v2.1 §4.38 and §4.59 provide caller-state context. No OASIS requirement is assigned to these traits. Existing manual Debug output redacts the identifier and all state values. The other 111 paths remain blocked candidates, including Clone, Eq, and PartialEq. Parent states and the client capability remain unchanged; Baseline remains evidence_incomplete. This inventory-only slice changes no runtime/profile behavior or conformance claim.",
+      "exportName": "<kmipkit::ProfileObjectState as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "This redacted compiler-generated Debug formatter adds no separate KMIP client capability. The existing output masks the ProfileObjectState identifier and caller-attested values, and the ProfileValidationContext state collection."
     }
   ],
   "capabilities": [
