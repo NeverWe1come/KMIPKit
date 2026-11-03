@@ -6221,7 +6221,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(len(t094_exclusions), 230)
         self.assertEqual(len(t096_exclusions), 265)
         self.assertEqual(len(t097_exclusions), 627)
-        self.assertEqual(len(rust_exclusions), 4244)
+        self.assertEqual(len(rust_exclusions), 4296)
         self.assertTrue(
             any(
                 item["exportName"] == "kmipkit_protocol::RegisterRequest::validate_local_shape"
@@ -6245,6 +6245,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "specs/012-vendor-extension-registry/spec.md",
                 "specs/014-server-generated-creation/spec.md",
                 "specs/016-attribute-operations/spec.md",
+                "specs/017-managed-object-retrieval/spec.md",
                 "specs/043-public-api-bindings/spec.md",
                 "specs/025-policy-controls/spec.md",
                 "specs/008-credentials-attestation/spec.md",

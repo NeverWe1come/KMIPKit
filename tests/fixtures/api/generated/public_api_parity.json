@@ -88514,6 +88514,630 @@
       "exportName": "<kmipkit_protocol::KeyWrapType as core::hash::Hash>::hash_slice",
       "packageId": "rust-kmipkit-protocol",
       "reason": "This exact Rust standard-trait implementation is a compiler-visible artifact, not a separate KMIPKit product capability; it adds no KMIP operation, selector, or wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::GetError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::GetError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::GetError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::GetError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::GetError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::GetError as core::borrow::Borrow<kmipkit_protocol::get::GetError>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::GetError as core::borrow::BorrowMut<kmipkit_protocol::get::GetError>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::GetError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::GetError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::GetError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::GetError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::GetError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::GetError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::GetError as core::convert::From<kmipkit_protocol::get::GetError>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::GetError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::GetError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::GetError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::GetError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::GetError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::GetError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::GetError as core::error::Error>::description",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::GetError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::GetError as core::error::Error>::source",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::GetError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::GetError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.19.1, Table 222: Get Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::GetError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free GetError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::LocateError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::LocateError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::LocateError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::LocateError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::LocateError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::LocateError as core::borrow::Borrow<kmipkit_protocol::locate::LocateError>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::LocateError as core::borrow::BorrowMut<kmipkit_protocol::locate::LocateError>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::LocateError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::LocateError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::LocateError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::LocateError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::LocateError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::LocateError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::LocateError as core::convert::From<kmipkit_protocol::locate::LocateError>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::LocateError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::LocateError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::LocateError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::LocateError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::LocateError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::LocateError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::LocateError as core::error::Error>::description",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::LocateError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::LocateError as core::error::Error>::source",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::LocateError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::LocateError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-010/021; KMIPKIT-0017-FR-001/011/012/013; OASIS KMIP Specification v2.1 §6.1.28.1, Table 249: Locate Errors; payload-free conversion error.",
+      "exportName": "<kmipkit_protocol::LocateError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This compiler-observed Rust standard-trait path is language-level behavior of payload-free LocateError; it is not a separate KMIP client capability."
     }
   ],
   "capabilities": [
