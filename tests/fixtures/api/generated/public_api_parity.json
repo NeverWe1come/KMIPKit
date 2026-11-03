@@ -76718,6 +76718,1254 @@
       "exportName": "<kmipkit_protocol::ReProvisionError as core::fmt::Display>::fmt",
       "packageId": "rust-kmipkit-protocol",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the ReProvisionError protocol error model, not a separate KMIP client capability; the error type and its operation API remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.22, Table 231; Table 231: Get Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetConstraintsError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.22, Table 231; Table 231: Get Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetConstraintsError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.22, Table 231; Table 231: Get Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetConstraintsError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.22, Table 231; Table 231: Get Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetConstraintsError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.22, Table 231; Table 231: Get Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetConstraintsError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.22, Table 231; Table 231: Get Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetConstraintsError as core::borrow::Borrow<kmipkit_protocol::get_constraints::GetConstraintsError>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.22, Table 231; Table 231: Get Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetConstraintsError as core::borrow::BorrowMut<kmipkit_protocol::get_constraints::GetConstraintsError>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.22, Table 231; Table 231: Get Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetConstraintsError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.22, Table 231; Table 231: Get Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetConstraintsError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.22, Table 231; Table 231: Get Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetConstraintsError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.22, Table 231; Table 231: Get Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetConstraintsError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.22, Table 231; Table 231: Get Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetConstraintsError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.22, Table 231; Table 231: Get Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetConstraintsError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.22, Table 231; Table 231: Get Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetConstraintsError as core::convert::From<kmipkit_protocol::get_constraints::GetConstraintsError>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.22, Table 231; Table 231: Get Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetConstraintsError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.22, Table 231; Table 231: Get Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetConstraintsError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.22, Table 231; Table 231: Get Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetConstraintsError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.22, Table 231; Table 231: Get Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetConstraintsError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.22, Table 231; Table 231: Get Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetConstraintsError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.22, Table 231; Table 231: Get Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetConstraintsError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.22, Table 231; Table 231: Get Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetConstraintsError as core::error::Error>::description",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.22, Table 231; Table 231: Get Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetConstraintsError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.22, Table 231; Table 231: Get Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetConstraintsError as core::error::Error>::source",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.22, Table 231; Table 231: Get Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetConstraintsError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.22, Table 231; Table 231: Get Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetConstraintsError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.22, Table 231; Table 231: Get Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetConstraintsError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.23, Table 234; Table 234: Get Usage Allocation Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetUsageAllocationError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.23, Table 234; Table 234: Get Usage Allocation Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetUsageAllocationError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.23, Table 234; Table 234: Get Usage Allocation Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetUsageAllocationError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.23, Table 234; Table 234: Get Usage Allocation Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetUsageAllocationError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.23, Table 234; Table 234: Get Usage Allocation Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetUsageAllocationError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.23, Table 234; Table 234: Get Usage Allocation Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationError as core::borrow::Borrow<kmipkit_protocol::get_usage_allocation::GetUsageAllocationError>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetUsageAllocationError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.23, Table 234; Table 234: Get Usage Allocation Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationError as core::borrow::BorrowMut<kmipkit_protocol::get_usage_allocation::GetUsageAllocationError>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetUsageAllocationError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.23, Table 234; Table 234: Get Usage Allocation Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetUsageAllocationError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.23, Table 234; Table 234: Get Usage Allocation Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetUsageAllocationError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.23, Table 234; Table 234: Get Usage Allocation Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetUsageAllocationError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.23, Table 234; Table 234: Get Usage Allocation Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetUsageAllocationError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.23, Table 234; Table 234: Get Usage Allocation Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetUsageAllocationError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.23, Table 234; Table 234: Get Usage Allocation Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetUsageAllocationError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.23, Table 234; Table 234: Get Usage Allocation Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationError as core::convert::From<kmipkit_protocol::get_usage_allocation::GetUsageAllocationError>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetUsageAllocationError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.23, Table 234; Table 234: Get Usage Allocation Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetUsageAllocationError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.23, Table 234; Table 234: Get Usage Allocation Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetUsageAllocationError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.23, Table 234; Table 234: Get Usage Allocation Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetUsageAllocationError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.23, Table 234; Table 234: Get Usage Allocation Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetUsageAllocationError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.23, Table 234; Table 234: Get Usage Allocation Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetUsageAllocationError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.23, Table 234; Table 234: Get Usage Allocation Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetUsageAllocationError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.23, Table 234; Table 234: Get Usage Allocation Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationError as core::error::Error>::description",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetUsageAllocationError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.23, Table 234; Table 234: Get Usage Allocation Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetUsageAllocationError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.23, Table 234; Table 234: Get Usage Allocation Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationError as core::error::Error>::source",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetUsageAllocationError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.23, Table 234; Table 234: Get Usage Allocation Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetUsageAllocationError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.23, Table 234; Table 234: Get Usage Allocation Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetUsageAllocationError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.23, Table 234; Table 234: Get Usage Allocation Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::GetUsageAllocationError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for GetUsageAllocationError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.52, Table 327; Table 327: Set Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetConstraintsError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.52, Table 327; Table 327: Set Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetConstraintsError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.52, Table 327; Table 327: Set Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetConstraintsError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.52, Table 327; Table 327: Set Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetConstraintsError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.52, Table 327; Table 327: Set Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetConstraintsError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.52, Table 327; Table 327: Set Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetConstraintsError as core::borrow::Borrow<kmipkit_protocol::set_constraints::SetConstraintsError>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.52, Table 327; Table 327: Set Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetConstraintsError as core::borrow::BorrowMut<kmipkit_protocol::set_constraints::SetConstraintsError>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.52, Table 327; Table 327: Set Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetConstraintsError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.52, Table 327; Table 327: Set Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetConstraintsError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.52, Table 327; Table 327: Set Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetConstraintsError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.52, Table 327; Table 327: Set Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetConstraintsError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.52, Table 327; Table 327: Set Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetConstraintsError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.52, Table 327; Table 327: Set Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetConstraintsError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.52, Table 327; Table 327: Set Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetConstraintsError as core::convert::From<kmipkit_protocol::set_constraints::SetConstraintsError>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.52, Table 327; Table 327: Set Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetConstraintsError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.52, Table 327; Table 327: Set Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetConstraintsError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.52, Table 327; Table 327: Set Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetConstraintsError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.52, Table 327; Table 327: Set Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetConstraintsError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.52, Table 327; Table 327: Set Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetConstraintsError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.52, Table 327; Table 327: Set Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetConstraintsError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.52, Table 327; Table 327: Set Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetConstraintsError as core::error::Error>::description",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.52, Table 327; Table 327: Set Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetConstraintsError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.52, Table 327; Table 327: Set Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetConstraintsError as core::error::Error>::source",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.52, Table 327; Table 327: Set Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetConstraintsError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.52, Table 327; Table 327: Set Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetConstraintsError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.52, Table 327; Table 327: Set Constraints Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetConstraintsError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetConstraintsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.53, Table 330; Table 330: Set Defaults Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetDefaultsError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.53, Table 330; Table 330: Set Defaults Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetDefaultsError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.53, Table 330; Table 330: Set Defaults Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetDefaultsError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.53, Table 330; Table 330: Set Defaults Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetDefaultsError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.53, Table 330; Table 330: Set Defaults Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetDefaultsError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.53, Table 330; Table 330: Set Defaults Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetDefaultsError as core::borrow::Borrow<kmipkit_protocol::set_defaults::SetDefaultsError>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.53, Table 330; Table 330: Set Defaults Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetDefaultsError as core::borrow::BorrowMut<kmipkit_protocol::set_defaults::SetDefaultsError>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.53, Table 330; Table 330: Set Defaults Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetDefaultsError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.53, Table 330; Table 330: Set Defaults Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetDefaultsError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.53, Table 330; Table 330: Set Defaults Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetDefaultsError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.53, Table 330; Table 330: Set Defaults Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetDefaultsError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.53, Table 330; Table 330: Set Defaults Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetDefaultsError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.53, Table 330; Table 330: Set Defaults Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetDefaultsError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.53, Table 330; Table 330: Set Defaults Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetDefaultsError as core::convert::From<kmipkit_protocol::set_defaults::SetDefaultsError>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.53, Table 330; Table 330: Set Defaults Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetDefaultsError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.53, Table 330; Table 330: Set Defaults Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetDefaultsError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.53, Table 330; Table 330: Set Defaults Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetDefaultsError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.53, Table 330; Table 330: Set Defaults Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetDefaultsError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.53, Table 330; Table 330: Set Defaults Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetDefaultsError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.53, Table 330; Table 330: Set Defaults Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetDefaultsError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.53, Table 330; Table 330: Set Defaults Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetDefaultsError as core::error::Error>::description",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.53, Table 330; Table 330: Set Defaults Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetDefaultsError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.53, Table 330; Table 330: Set Defaults Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetDefaultsError as core::error::Error>::source",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.53, Table 330; Table 330: Set Defaults Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetDefaultsError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.53, Table 330; Table 330: Set Defaults Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetDefaultsError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-007, KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP v2.1 Section 6.1.53, Table 330; Table 330: Set Defaults Errors; inventory-only compiler-observed Rust standard-trait declaration; this exact Rust language-level behavior is not a separate KMIP client capability. This inventory makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::SetDefaultsError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation for SetDefaultsError is language-level behavior of a Rust value, not a separate KMIP client capability; the corresponding protocol error remains represented by its independently tracked declaration."
     }
   ],
   "capabilities": [
