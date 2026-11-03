@@ -4932,6 +4932,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                         and "ClientOperation::" not in row["exportName"]
                     )
             expected_requirement_ids = canonical["requirementIds"]
+            if variant == "Locate":
+                # This discriminator does not carry Attributes; -007 belongs to requests.
+                expected_requirement_ids = [
+                    requirement_id
+                    for requirement_id in expected_requirement_ids
+                    if requirement_id != "KMIPKIT-REQ-SPEC-6.1.28-007"
+                ]
             expected_approval = canonical.get("approvalSource")
             parity_evidence_ids = sorted(
                 set(operation.get("parityEvidenceIds", []))
