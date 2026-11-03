@@ -639,3 +639,21 @@ The four numeric wrappers preserve unknown and extension values as open numeric 
 The exact-set contract `tools/api_manifest/tests/test_t102_locate_value_trait_exclusions.py` reconciles 42 compiler-observed Rust 1.94.0 standard-trait paths in `rust-kmipkit-protocol`: 21 for `ObjectGroupMember` and 21 for `StorageStatusMask`, each split into 16 direct and five conditional paths. All 42 base-manifest declaration rows carried `candidateSpecId` KMIPKIT-0043 and had no prior exact exclusion. They are excluded under KMIPKIT-0043-FR-010/021; no OASIS clause applies directly to compiler-generated traits.
 
 The approved functional owner is `specs/017-managed-object-retrieval/spec.md` (KMIPKIT-0017-FR-001/006/009). OASIS KMIP Specification v2.1 §11.33/Table 467 defines the Object Group Member enumeration; §12.3/Table 498 defines Storage Status Mask bits; §6.1.28/Table 247 defines the Locate request fields. These sources ground functional Locate values and fields, not Rust trait inventory behavior. The type parents remain blocked, `from_raw` and `raw` for both types remain verified, and no root-facade aliases exist. This reconciliation changes no Locate request/response behavior and makes no conformance claim. Public declarations/exclusions change from 7,627/7,097 to 7,585/7,139; blocked KMIPKIT-0043 candidates change from 2,429 to 2,387. Red `923ce7721`; Green `df69a3bcc`; complete phase and audit evidence is in `implementation-evidence.md`.
+
+
+### T102 - KMIPKIT-0037 key value selector trait exclusions
+
+The pinned Rust 1.94.0 report identifies exactly 16 direct and five conditional trait paths for each of `KeyFormatType`, `KeyWrapType`, `KeyCompressionType`, and `DerivationMethod`. At the Red baseline `d65cd1254be0d4b2f398bafd61285b1eb8bcfc13`, each of those 84 paths was a `KMIPKIT-0043` candidate and none had a prior exclusion. The four parent declarations and each `from_raw`/`raw` declaration remain blocked. `DerivationParameters` and `DeriveKeyRequest` remain blocked without any trait-path exclusion because they carry derivation salt/IV/data, identifiers, or secret-bearing operation parameters.
+
+The functional owner `specs/023-key-material-transfer/spec.md` (KMIPKIT-0037) is **Approved for implementation by maintainer (2026-10-11), not Accepted**; this maps owner FR-001/002/004/008. The Get-related format, wrap, and compression selectors also cite `specs/017-managed-object-retrieval/spec.md`, KMIPKIT-0017-FR-003/005. T102 inventory authority is KMIPKIT-0043-FR-010/021. OASIS KMIP v2.1 value sources are `KeyFormatType` §11.25/Table 461, `KeyWrapType` §11.29, `KeyCompressionType` §11.24/Table 459, and `DerivationMethod` §11.14/Tables 445/446. These define functional values; OASIS has no requirement for compiler-generated Rust traits.
+
+Operation payload tables are contextual owner references only, not trait requirements: §6.1.14, Table 205: Derive Key Request Payload; §6.1.18, Table 217: Export Request Payload; §6.1.19, Table 220: Get Request Payload; and §6.1.25, Table 238: Import Request Payload. No operation or secret handling, state, API behavior, conformance claim, or wire capability changes.
+
+| Protocol trait type | Approved functional owner and exact OASIS value source | Paths |
+|---|---|---|
+| `kmipkit_protocol::KeyFormatType` | KMIPKIT-0037-FR-001/002/004/008; KMIPKIT-0017-FR-003/005; §11.25/Table 461 | 21 (16 direct, five conditional) |
+| `kmipkit_protocol::KeyWrapType` | KMIPKIT-0037-FR-001/002/004/008; KMIPKIT-0017-FR-003/005; §11.29 | 21 (16 direct, five conditional) |
+| `kmipkit_protocol::KeyCompressionType` | KMIPKIT-0037-FR-001/002/004/008; KMIPKIT-0017-FR-003/005; §11.24/Table 459 | 21 (16 direct, five conditional) |
+| `kmipkit_protocol::DerivationMethod` | KMIPKIT-0037-FR-001/002/004/008; §11.14/Tables 445/446 | 21 (16 direct, five conditional) |
+
+The focused test pins all 84 `(packageId, exportName)` paths and their compact per-type evidence, and verifies the separate full operation-context record. Manifest counts change from 7,585/7,139 declarations/exclusions to 7,501/7,223; blocked KMIPKIT-0043 candidates change from 2,387 to 2,303. The task began at baseline SHA `d65cd1254be0d4b2f398bafd61285b1eb8bcfc13`. T102 remains open; no conformance, profile-support, interoperability, or certification claim is made.
