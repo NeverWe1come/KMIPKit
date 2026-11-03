@@ -356,6 +356,16 @@ class WorkflowContractTests(unittest.TestCase):
             "Every supported platform must verify the exact Pkcs11Request trait exclusion set.",
         )
 
+    def test_script_contract_job_runs_t102_pkcs11_client_root_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_pkcs11_client_root_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact client-root PKCS#11 trait exclusion set.",
+        )
+
     def test_script_contract_job_runs_t102_set_constraints_request_trait_exclusion_contract(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "script-contracts")
