@@ -10202,3 +10202,34 @@ The source manifest moves exactly 45 blocked candidates to approved exclusions. 
 Verification completed: the full T102 contract suite passes 226/226; the full manifest-v2 suite passes 151/151 in 319.348 seconds; requirement traceability passes 2/2; feature traceability passes 30 tests with one documented skip. Generator `--check` verifies all 12 outputs. Rust audit `--check` reports 10,463 observed, 3,715 matched, and 6,748 excluded, with zero discrepancies; shared inventory `--check` passes; binding export audit `--check` exits 0. The first manifest-v2 run exposed one stale aggregate expectation (4,512); after correcting it to 4,557, the full rerun passed. QA identified the OASIS table-role wording error; the pinned source confirmed the correction and QA re-review passed. Independent security review also passed with no findings. The earlier review findings are resolved.
 
 T102 remains open. This inventory-only checkpoint makes no KMIP conformance, profile-support, interoperability, or certification claim.
+
+### T102 - Mixed-owner credential, PKCS#11, and operation-data trait paths (2026-11-03)
+
+Preflight used the complete Rust 1.94.0 export report at Red commit `48a0f573a`. The approved owners are `specs/024-credential-sessions/spec.md` (KMIPKIT-0038), `specs/008-credentials-attestation/spec.md` (KMIPKIT-0008), `specs/026-pkcs11/spec.md` (KMIPKIT-0040), and `specs/019-cryptographic-operations/spec.md` (KMIPKIT-0019). Each owner is Approved for implementation. T102 exclusion authority is KMIPKIT-0043-FR-010/021; every row cites its owning FRs and exact Rust 1.94.0 export report path.
+
+The exact-set test covers 94 root alias trait paths for Ticket and credential-session types, 10 `CredentialView` paths, 52 `Pkcs11Error` paths across client and protocol, and 12 `OperationData` paths. OASIS KMIP 2.1 functional context is cited at Sections 11.57, 7.39, 6.1.12, 6.1.30, and 6.1.31 for ticket/session types; Sections 9.4 and 9.11 for credentials; Section 6.1.37 for PKCS#11; and Section 7.9 plus Sections 6.1.11/6.1.17 for operation data. These clauses do not impose Rust standard-trait requirements.
+
+The exclusion scope does not change any KMIP operation or runtime behavior. Ticket formatting keeps its custom Debug/Display redaction; `CredentialView` Debug emits only the discriminator; `Pkcs11Error` retains sanitized error values; and `OperationData` keeps fixed redaction labels while Byte Strings remain owned by `SecretBytes`. PKCS#11 `formalAcceptance` remains false: only `Pkcs11Error` type/variant/field rows remain blocked, while the verified `Pkcs11Request` and `Pkcs11Response` declaration states are preserved. The owner specification's separate interoperability task remains open.
+
+The source manifest moves exactly 168 blocked candidates to approved exclusions. Public declarations/exclusions change from 6,630/8,094 to 6,462/8,262; blocked KMIPKIT-0043 candidates decrease from 1,432 to 1,264. The prior candidate preflight partitioned the 1,432 rows into 392 Rust trait-artifact paths and 1,040 functional declarations; after this batch, 224 trait-artifact paths and 1,040 functional declarations remain for classification. The refreshed Rust audit is complete at 10,463 observed, 3,547 matched, and 6,916 excluded, with zero missing/unobserved paths, issues, kind mismatches, or conditional mismatches. The existing C, Java, and Python operation mappings retain their previous states.
+
+| Phase | Commit | Evidence | Result |
+|---|---|---|---|
+| Red | `48a0f573a` | `test_t102_mixed_trait_batch.py` | Expected failure: all 168 compiler-observed paths remained blocked declarations and had no corresponding approved exclusion. |
+| Green | `f9c986c78` | Exact manifest move, generated outputs, refreshed Rust audit, and aggregate T102 guards | Moved only the 168 exact compiler paths; preserved functional declaration states and PKCS#11 formal-acceptance status. |
+| Refactor | This commit | Final suite, traceability, generated-output, and independent review evidence | Records the final verification and review limitations. |
+
+Verification completed:
+
+- Full T102 contract suite — 227 passed in 16.486 seconds.
+- Full manifest-v2 suite using the pinned offline requirements — 151 passed in 318.177 seconds.
+- `python -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
+- Rust export audit `--check` — 10,463 observed, 3,547 matched, and 6,916 excluded, with zero issues, missing/unobserved paths, kind mismatches, or conditional mismatches. The Windows AWS-LC compiler-probe and missing-NASM warnings were emitted; the audit exited 0.
+- Shared Rust inventory `--check` passed.
+- Binding export audit `--check` passed with exact C/Java/Python matches of 757/757, 1,014/1,014, and 1,140/1,140.
+- Feature traceability and requirement traceability — 32 tests passed, one documented skip.
+- `git diff --check` passed.
+- Independent QA re-review — PASS; it confirmed only the exact 168 candidates moved, all prior records/order remained intact, and PKCS#11 states/evidence are accurate.
+- Bounded manual security review — PASS, no findings. The automated Codex Security scan did not produce a `scanId` because the selected HEAD/diff digest changed; no replacement scan was started. This is a manual review result, not a formal automated scan.
+
+This inventory-only checkpoint makes no new KMIP conformance, profile-support, interoperability, or certification claim; T102 remains open.
