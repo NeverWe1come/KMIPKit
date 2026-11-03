@@ -38,6 +38,8 @@ PROFILE_MODEL_REEXPORT_MAPPINGS = {
 }
 
 RUST_MAPPINGS = {
+    "kmipkit::ProfileValidationSelection::validate",
+    "kmipkit_protocol::ProfileValidationSelection::validate",
     "kmipkit_client::ProfileValidationSelection",
     "kmipkit_client::ProfileValidationContext",
     "kmipkit_client::ProfileObjectState",

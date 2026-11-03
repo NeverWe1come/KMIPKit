@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import unittest
+from copy import deepcopy
 from pathlib import Path
 
 
@@ -162,7 +163,7 @@ class T102CredentialResponseTraitExclusionTests(unittest.TestCase):
                         self.assertIn("catalog references, not tests executed", row["evidence"])
                         self.assertIn("inventory-only", row["evidence"])
 
-    def test_functional_protocol_and_root_facade_rows_keep_their_states(self) -> None:
+    def test_root_facade_rows_reuse_only_the_protocols_approved_mapping(self) -> None:
         for response_type, details in RESPONSES.items():
             protocol_type = f"kmipkit_protocol::{response_type}"
             root_type = f"kmipkit::{response_type}"
@@ -206,14 +207,29 @@ class T102CredentialResponseTraitExclusionTests(unittest.TestCase):
                 }
                 self.assertEqual(set(root_rows), expected_root_paths)
                 self.assertTrue(
-                    all(row["declarationState"] == "blocked" for row in root_rows.values())
-                )
-                self.assertTrue(
-                    all(row["candidateSpecId"] == "KMIPKIT-0043" for row in root_rows.values())
-                )
-                self.assertTrue(
                     all(row["parityScope"] == "four-language" for row in root_rows.values())
                 )
+                for root_name, root_row in root_rows.items():
+                    protocol_name = root_name.replace("kmipkit::", "kmipkit_protocol::", 1)
+                    protocol_row = protocol_rows[protocol_name]
+                    with self.subTest(response_type=response_type, root_name=root_name):
+                        if protocol_row["declarationState"] in {"declared", "verified"}:
+                            expected_mappings = deepcopy(protocol_row["languageMappings"])
+                            expected_mappings["rust"] = {
+                                "packageId": "rust-kmipkit",
+                                "name": root_name,
+                            }
+                            self.assertEqual(
+                                protocol_row["declarationState"], root_row["declarationState"]
+                            )
+                            self.assertEqual(
+                                protocol_row["capabilityId"], root_row["capabilityId"]
+                            )
+                            self.assertEqual(expected_mappings, root_row["languageMappings"])
+                            self.assertNotIn("candidateSpecId", root_row)
+                        else:
+                            self.assertEqual("blocked", root_row["declarationState"])
+                            self.assertEqual("KMIPKIT-0043", root_row["candidateSpecId"])
                 root_exclusions = {
                     row["exportName"]
                     for row in self.manifest.get("approvedExclusions", [])

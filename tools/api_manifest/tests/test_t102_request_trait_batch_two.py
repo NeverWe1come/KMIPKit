@@ -129,8 +129,8 @@ TYPES = {
             "::to_ttlv_payload": "blocked",
         },
         "root_states": {
-            "": "blocked",
-            "::new": "blocked",
+            "": "verified",
+            "::new": "verified",
             "::to_ttlv_payload": "blocked",
         },
     },
@@ -156,11 +156,11 @@ TYPES = {
             "::with_defaults_information": "verified",
         },
         "root_states": {
-            "": "blocked",
-            "::defaults_information": "blocked",
-            "::new": "blocked",
+            "": "verified",
+            "::defaults_information": "verified",
+            "::new": "verified",
             "::to_ttlv_payload": "blocked",
-            "::with_defaults_information": "blocked",
+            "::with_defaults_information": "verified",
         },
     },
 }

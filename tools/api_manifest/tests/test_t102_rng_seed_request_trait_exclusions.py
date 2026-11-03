@@ -165,10 +165,10 @@ class T102RngSeedRequestTraitExclusionTests(unittest.TestCase):
             "kmipkit::RngSeedRequest::to_ttlv_payload",
         }
         self.assertEqual(set(root_rows), expected_root_declarations)
-        self.assertTrue(all(row["declarationState"] == "blocked" for row in root_rows.values()))
-        self.assertTrue(
-            all(row.get("candidateSpecId") == "KMIPKIT-0043" for row in root_rows.values())
-        )
+        self.assertEqual(root_rows["kmipkit::RngSeedRequest"]["declarationState"], "verified")
+        self.assertEqual(root_rows["kmipkit::RngSeedRequest::new"]["declarationState"], "verified")
+        self.assertEqual(root_rows["kmipkit::RngSeedRequest::to_ttlv_payload"]["declarationState"], "blocked")
+        self.assertEqual(root_rows["kmipkit::RngSeedRequest::to_ttlv_payload"].get("candidateSpecId"), "KMIPKIT-0043")
         expected_root_traits = {
             name.replace("<kmipkit_protocol::RngSeedRequest", "<kmipkit::RngSeedRequest", 1)
             for name in EXPECTED_PROTOCOL_TRAIT_EXPORTS

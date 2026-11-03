@@ -32,7 +32,7 @@ MODEL_SUFFIXES = {
         "::with_usage_limits_total",
     ),
     "ProfileValidationContext": ("", "::new", "::with_object_state"),
-    "ProfileValidationSelection": ("", "::new", "::profile_ids"),
+    "ProfileValidationSelection": ("", "::new", "::profile_ids", "::validate"),
 }
 
 
@@ -48,8 +48,11 @@ class T102ProfileModelReexportMappingTests(unittest.TestCase):
             for type_name, suffixes in MODEL_SUFFIXES.items()
             for suffix in suffixes
         }
-        self.assertEqual(30, len(expected))
-        self.assertFalse(any("::validate" in name for _, name in expected))
+        self.assertEqual(32, len(expected))
+        self.assertEqual(
+            2,
+            sum(name.endswith("::ProfileValidationSelection::validate") for _, name in expected),
+        )
         self.assertFalse(any("ProfileValidationResult" in name for _, name in expected))
 
         rows = {
@@ -87,10 +90,7 @@ class T102ProfileModelReexportMappingTests(unittest.TestCase):
         )
         self.assertEqual("declared", capability["capabilityState"])
         for package, crate in REEXPORT_PACKAGES.items():
-            for name in (
-                f"{crate}::ProfileValidationSelection::validate",
-                f"{crate}::ProfileValidationResult",
-            ):
+            for name in (f"{crate}::ProfileValidationResult",):
                 declaration = declarations[(package, name)]
                 self.assertEqual("blocked", declaration["declarationState"])
                 self.assertNotIn(name, capability["mappings"]["rust"])

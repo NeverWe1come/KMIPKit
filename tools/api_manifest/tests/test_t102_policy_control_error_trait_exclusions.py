@@ -309,7 +309,8 @@ class T102PolicyControlErrorTraitExclusionTests(unittest.TestCase):
                 self.assertEqual(len(protocol_rows), 1)
                 self.assertEqual(protocol_rows[0]["declarationState"], "verified")
                 self.assertEqual(len(root_rows), 1)
-                self.assertEqual(root_rows[0]["declarationState"], "blocked")
+                self.assertEqual(root_rows[0]["declarationState"], "verified")
+                self.assertNotIn("candidateSpecId", root_rows[0])
 
             method = operation["method"]
             expected = {

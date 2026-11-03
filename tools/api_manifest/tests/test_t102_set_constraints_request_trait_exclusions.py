@@ -62,9 +62,9 @@ EXPECTED_PROTOCOL_FUNCTIONAL_STATES = {
     "kmipkit_protocol::SetConstraintsRequest::to_ttlv_payload": "blocked",
 }
 EXPECTED_ROOT_FACADE_STATES = {
-    "kmipkit::SetConstraintsRequest": "blocked",
-    "kmipkit::SetConstraintsRequest::constraints": "blocked",
-    "kmipkit::SetConstraintsRequest::new": "blocked",
+    "kmipkit::SetConstraintsRequest": "verified",
+    "kmipkit::SetConstraintsRequest::constraints": "verified",
+    "kmipkit::SetConstraintsRequest::new": "verified",
     "kmipkit::SetConstraintsRequest::to_ttlv_payload": "blocked",
 }
 

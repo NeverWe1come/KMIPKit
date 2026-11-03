@@ -524,13 +524,15 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit::GetConstraintsResponse")
         }
         blocked = {
+            "kmipkit::GetConstraintsResponse::try_from_response_item",
+        }
+        mapped = {
             "kmipkit::GetConstraintsResponse",
             "kmipkit::GetConstraintsResponse::constraints",
             "kmipkit::GetConstraintsResponse::result",
-            "kmipkit::GetConstraintsResponse::try_from_response_item",
         }
         ttlv_constructor = "kmipkit::GetConstraintsResponse::with_ttlv"
-        self.assertEqual(set(rows), blocked | {ttlv_constructor})
+        self.assertEqual(set(rows), blocked | mapped | {ttlv_constructor})
         self.assertEqual(
             {name for name, row in rows.items() if row["declarationState"] == "blocked"},
             blocked,
@@ -538,6 +540,10 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         for name in blocked:
             with self.subTest(export_name=name):
                 self.assertEqual(rows[name]["candidateSpecId"], "KMIPKIT-0043")
+        for name in mapped:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["declarationState"], "verified")
+                self.assertNotIn("candidateSpecId", rows[name])
         self.assertEqual(rows[ttlv_constructor]["declarationState"], "verified")
         self.assertEqual(
             rows[ttlv_constructor]["capabilityId"],
@@ -678,9 +684,11 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
 
     def test_set_root_response_facade_remains_blocked_except_existing_ttlv_constructor(self) -> None:
         blocked = {
+            "kmipkit::SetConstraintsResponse::try_from_response_item",
+        }
+        mapped = {
             "kmipkit::SetConstraintsResponse",
             "kmipkit::SetConstraintsResponse::result",
-            "kmipkit::SetConstraintsResponse::try_from_response_item",
         }
         ttlv_constructor = "kmipkit::SetConstraintsResponse::with_ttlv"
         rows = {
@@ -689,7 +697,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             if row.get("packageId") == "rust-kmipkit"
             and row.get("exportName", "").startswith("kmipkit::SetConstraintsResponse")
         }
-        self.assertEqual(set(rows), blocked | {ttlv_constructor})
+        self.assertEqual(set(rows), blocked | mapped | {ttlv_constructor})
         self.assertEqual(
             {name for name, row in rows.items() if row["declarationState"] == "blocked"},
             blocked,
@@ -697,6 +705,10 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         for name in blocked:
             with self.subTest(export_name=name):
                 self.assertEqual(rows[name]["candidateSpecId"], "KMIPKIT-0043")
+        for name in mapped:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["declarationState"], "verified")
+                self.assertNotIn("candidateSpecId", rows[name])
         self.assertEqual(rows[ttlv_constructor]["declarationState"], "verified")
         self.assertEqual(
             rows[ttlv_constructor]["capabilityId"],
@@ -3030,11 +3042,13 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             {"c", "java", "python", "rust"},
         )
         expected_root_blocked = {
-            "kmipkit::RngRetrieveResponse",
-            "kmipkit::RngRetrieveResponse::data",
             "kmipkit::RngRetrieveResponse::result",
             "kmipkit::RngRetrieveResponse::try_from_pending_response_item",
             "kmipkit::RngRetrieveResponse::try_from_response_item",
+        }
+        expected_root_verified = {
+            "kmipkit::RngRetrieveResponse",
+            "kmipkit::RngRetrieveResponse::data",
             "kmipkit::RngRetrieveResponse::with_ttlv",
         }
         root_rows = {
@@ -3043,9 +3057,11 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             if row.get("packageId") == "rust-kmipkit"
             and row.get("exportName", "").startswith("kmipkit::RngRetrieveResponse")
         }
-        self.assertEqual(set(root_rows), expected_root_blocked)
-        self.assertTrue(all(row["declarationState"] == "blocked" for row in root_rows.values()))
-        self.assertTrue(all(row.get("candidateSpecId") == "KMIPKIT-0043" for row in root_rows.values()))
+        self.assertEqual(set(root_rows), expected_root_blocked | expected_root_verified)
+        self.assertTrue(all(root_rows[name]["declarationState"] == "blocked" for name in expected_root_blocked))
+        self.assertTrue(all(root_rows[name].get("candidateSpecId") == "KMIPKIT-0043" for name in expected_root_blocked))
+        self.assertTrue(all(root_rows[name]["declarationState"] == "verified" for name in expected_root_verified))
+        self.assertTrue(all("candidateSpecId" not in root_rows[name] for name in expected_root_verified))
         operation = next(
             row for row in self.manifest["operations"]
             if row["operationId"] == "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE"
@@ -3185,11 +3201,13 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             {"c", "java", "python", "rust"},
         )
         expected_root_blocked = {
-            "kmipkit::RngSeedResponse",
-            "kmipkit::RngSeedResponse::data_length",
             "kmipkit::RngSeedResponse::result",
             "kmipkit::RngSeedResponse::try_from_pending_response_item",
             "kmipkit::RngSeedResponse::try_from_response_item",
+        }
+        expected_root_verified = {
+            "kmipkit::RngSeedResponse",
+            "kmipkit::RngSeedResponse::data_length",
             "kmipkit::RngSeedResponse::with_ttlv",
         }
         root_rows = {
@@ -3198,9 +3216,11 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             if row.get("packageId") == "rust-kmipkit"
             and row.get("exportName", "").startswith("kmipkit::RngSeedResponse")
         }
-        self.assertEqual(set(root_rows), expected_root_blocked)
-        self.assertTrue(all(row["declarationState"] == "blocked" for row in root_rows.values()))
-        self.assertTrue(all(row.get("candidateSpecId") == "KMIPKIT-0043" for row in root_rows.values()))
+        self.assertEqual(set(root_rows), expected_root_blocked | expected_root_verified)
+        self.assertTrue(all(root_rows[name]["declarationState"] == "blocked" for name in expected_root_blocked))
+        self.assertTrue(all(root_rows[name].get("candidateSpecId") == "KMIPKIT-0043" for name in expected_root_blocked))
+        self.assertTrue(all(root_rows[name]["declarationState"] == "verified" for name in expected_root_verified))
+        self.assertTrue(all("candidateSpecId" not in root_rows[name] for name in expected_root_verified))
         operation = next(
             row for row in self.manifest["operations"]
             if row["operationId"] == "KMIPKIT-ELEM-OP-C2S-RNG-SEED"
@@ -3245,10 +3265,10 @@ POLICY_RESPONSE_TRAIT_CASES = {
             "kmipkit_protocol::GetUsageAllocationResponse::with_ttlv",
         },
         "root_rows": {
-            "kmipkit::GetUsageAllocationResponse": "blocked",
-            "kmipkit::GetUsageAllocationResponse::result": "blocked",
+            "kmipkit::GetUsageAllocationResponse": "verified",
+            "kmipkit::GetUsageAllocationResponse::result": "verified",
             "kmipkit::GetUsageAllocationResponse::try_from_response_item": "blocked",
-            "kmipkit::GetUsageAllocationResponse::unique_identifier": "blocked",
+            "kmipkit::GetUsageAllocationResponse::unique_identifier": "verified",
             "kmipkit::GetUsageAllocationResponse::with_ttlv": "verified",
         },
     },
@@ -3269,10 +3289,10 @@ POLICY_RESPONSE_TRAIT_CASES = {
             "kmipkit_protocol::SetDefaultsResponse::with_ttlv",
         },
         "root_rows": {
-            "kmipkit::SetDefaultsResponse": "blocked",
-            "kmipkit::SetDefaultsResponse::result": "blocked",
+            "kmipkit::SetDefaultsResponse": "verified",
+            "kmipkit::SetDefaultsResponse::result": "verified",
             "kmipkit::SetDefaultsResponse::try_from_response_item": "blocked",
-            "kmipkit::SetDefaultsResponse::with_ttlv": "blocked",
+            "kmipkit::SetDefaultsResponse::with_ttlv": "verified",
         },
     },
 }

@@ -113,18 +113,18 @@ PROTOCOL_STATES = {
 }
 ROOT_STATES = {
     "TicketType": {
-        "": "blocked", "::LOGIN": "blocked", "::from_raw": "blocked",
-        "::known_name": "blocked", "::raw": "blocked",
+        "": "verified", "::LOGIN": "blocked", "::from_raw": "blocked",
+        "::known_name": "blocked", "::raw": "verified",
     },
     "Ticket": {
-        "": "blocked", "::into_ttlv": "blocked", "::new": "blocked",
-        "::ticket_type": "blocked", "::try_from_ttlv": "blocked",
-        "::with_ticket_value": "blocked", "::with_ttlv": "blocked",
+        "": "verified", "::into_ttlv": "blocked", "::new": "blocked",
+        "::ticket_type": "verified", "::try_from_ttlv": "blocked",
+        "::with_ticket_value": "verified", "::with_ttlv": "verified",
     },
     "LoginRequest": {
-        "": "blocked", "::into_ttlv_payload": "blocked", "::new": "blocked",
-        "::with_lease_time_date_time": "blocked", "::with_lease_time_interval": "blocked",
-        "::with_request_count": "blocked", "::with_usage_limits": "blocked",
+        "": "verified", "::into_ttlv_payload": "blocked", "::new": "verified",
+        "::with_lease_time_date_time": "verified", "::with_lease_time_interval": "verified",
+        "::with_request_count": "verified", "::with_usage_limits": "verified",
     },
 }
 

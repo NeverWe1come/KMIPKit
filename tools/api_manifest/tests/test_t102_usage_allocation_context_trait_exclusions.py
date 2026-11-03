@@ -171,8 +171,9 @@ class T102UsageAllocationContextTraitExclusionTests(unittest.TestCase):
             if row.get("packageId") == ROOT_PACKAGE
             and row.get("exportName") == ROOT_PUBLIC_TYPE
         )
-        self.assertEqual(root_parent["declarationState"], "blocked")
-        self.assertEqual(root_parent.get("candidateSpecId"), "KMIPKIT-0043")
+        self.assertEqual(root_parent["declarationState"], "declared")
+        self.assertEqual(root_parent["capabilityId"], "usage_allocation_guard")
+        self.assertNotIn("candidateSpecId", root_parent)
         root_exclusions = {
             row["exportName"]: row
             for row in self.manifest["approvedExclusions"]

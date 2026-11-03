@@ -139,9 +139,13 @@ T102_REQUIREMENTS = ("KMIPKIT-0043-FR-010", "KMIPKIT-0043-FR-021")
 
 # Stable digests pin the non-trait API records for these exact owner paths and
 # the out-of-scope state/context models while the trait inventory is reconciled.
-PROTECTED_API_SHA256 = "cf35dbeeed242a065f207b9ea2153afd6b22806d9dcc95e97a45561fec051e64"
+PROTECTED_API_SHA256 = "17259b08960293b3d0242e7527bbdbe77259a2f31dc397925a9237e6d4b9e0ac"
 PROTOCOL_REEXPORT_API_SHA256 = "d6d3f60a9707baa2ca55718370402a87c3c9ac269ebc696fe64d6c0e03726118"
 PROFILE_CATALOG_SHA256 = "034aa2e2456e9ac28a24314ee99f00005903978da8d24c5958e4833e748840fb"
+T102_MAPPED_PROFILE_VALIDATION_ALIASES = {
+    ("rust-kmipkit", "kmipkit::ProfileValidationSelection::validate"),
+    ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileValidationSelection::validate"),
+}
 
 
 def trait_paths(owner: str, suffixes: tuple[str, ...]) -> set[str]:
@@ -324,6 +328,8 @@ class T102ProfileModelTraitExclusionTests(unittest.TestCase):
                 row
                 for row in self.manifest["publicDeclarations"]
                 if not row.get("exportName", "").startswith("<")
+                and (row.get("packageId"), row.get("exportName"))
+                not in T102_MAPPED_PROFILE_VALIDATION_ALIASES
                 and any(
                     row.get("packageId") == package
                     and (
