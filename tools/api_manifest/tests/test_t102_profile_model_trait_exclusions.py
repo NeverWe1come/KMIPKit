@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[3]
 MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
 CATALOG_PATH = ROOT / "specification" / "catalog" / "kmip-2.1.json"
 REPORTS_PATH = ROOT / "specs" / "043-public-api-bindings" / "reports"
+REPORT_PATH = REPORTS_PATH / "rust-export-report-2026-11-01.json"
 
 TYPE_CASES = (
     ("rust-kmipkit", "kmipkit::ProfileTransport", "kmipkit_protocol::profile::ProfileTransport", "blocked", 14),
@@ -137,13 +138,6 @@ OUT_OF_SCOPE_API_SHA256 = "7d6d514495b15f781d689c1bea7f8e1227c5a9f92517cf99aaa33
 PROFILE_CATALOG_SHA256 = "034aa2e2456e9ac28a24314ee99f00005903978da8d24c5958e4833e748840fb"
 
 
-def latest_rust_report_path() -> Path:
-    reports = sorted(REPORTS_PATH.glob("rust-export-report-*.json"))
-    if not reports:
-        raise AssertionError("No checked-in Rust export report is available.")
-    return reports[-1]
-
-
 def trait_paths(owner: str, suffixes: tuple[str, ...]) -> set[str]:
     return {f"<{owner} as {suffix}" for suffix in suffixes}
 
@@ -174,7 +168,7 @@ class T102ProfileModelTraitExclusionTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
         cls.catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
-        cls.report = json.loads(latest_rust_report_path().read_text(encoding="utf-8"))
+        cls.report = json.loads(REPORT_PATH.read_text(encoding="utf-8"))
 
     def test_exact_profile_model_trait_paths_are_compiler_observed_and_owner_approved(self) -> None:
         self.assertTrue(self.report["complete"])

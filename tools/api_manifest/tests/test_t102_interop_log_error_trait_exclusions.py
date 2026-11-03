@@ -113,6 +113,6 @@ class T102InteropLogErrorTraitExclusionTests(unittest.TestCase):
 
     def test_manifest_and_t102_totals_decrease_by_52(self):
         count=sum(r.get('candidateSpecId')=='KMIPKIT-0043' and r['declarationState']=='blocked' for r in self.manifest['publicDeclarations'])
-        self.assertEqual(count,2891); self.assertEqual(len(self.manifest['publicDeclarations']),8089); self.assertEqual(len(self.manifest['approvedExclusions']),6635)
+        self.assertEqual(count,2555); self.assertEqual(len(self.manifest['publicDeclarations']),7753); self.assertEqual(len(self.manifest['approvedExclusions']),6971)
 
 if __name__=='__main__': unittest.main()
