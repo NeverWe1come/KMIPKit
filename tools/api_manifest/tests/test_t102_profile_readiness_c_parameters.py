@@ -80,7 +80,9 @@ class T102ProfileReadinessCParameterTests(unittest.TestCase):
         self.assertLess(header.index(span_layout), header.index(record_layout))
 
     def test_generated_header_places_readiness_safety_preconditions_by_each_declaration(self) -> None:
-        header = generate.render_c_header(self.manifest)
+        header_path = ROOT / "bindings" / "c" / "include" / "kmipkit.h"
+        header = header_path.read_text(encoding="utf-8")
+        self.assertEqual(header, generate.render_c_header(self.manifest))
         contracts = {
             "kmipkit_profile_readiness_evaluate_v1": (
                 "The output handle slot must not overlap the profile span, record array, or any requirement span.",
