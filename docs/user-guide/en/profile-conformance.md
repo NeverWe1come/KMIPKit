@@ -215,3 +215,30 @@ See the [conformance strategy](../../compliance/conformance.md), the
 [KMIP 2.1 inventory](../../../specification/catalog/README.md), and the
 [KMIPKIT-0010 specification](../../../specs/010-profile-conformance/spec.md)
 for the evidence model and its scope.
+
+## Local evidence and catalog snapshots
+
+`ProfileReadiness.evaluate` accepts caller-supplied pass/fail records and
+returns an immutable local snapshot from the canonical Rust evaluator. Java
+returns `Optional.empty()` for an unknown profile; Python returns `None`.
+`ProfileCatalog.clientProfiles`, `clientRequirements`, and `profileTestCases`
+return immutable Java lists. Python's `client_profiles`,
+`client_requirements`, and `profile_test_cases` return tuples. All catalog rows
+and nested relationships retain generated catalog order. Catalog metadata is
+descriptive; these accessors do not execute profile rules or replay official
+test cases.
+
+The evaluator accepts at most 100,000 evidence records and 16 MiB of aggregate
+UTF-8 input, including the profile identifier. A profile identifier is limited
+to 4 KiB. Java raises `ResourceLimitException` and Python raises
+`ResourceLimitError` when a limit is exceeded. The C caller supplies aligned,
+readable versioned records and spans. Readiness-view text spans borrow from the
+owned readiness handle until it is released; catalog text spans refer to
+generated static data. See the [C ABI ownership and lifetime rules](../../architecture/ffi-and-bindings.md#profile-readiness-and-catalog-abi).
+
+For Baseline Client, the catalog continues to report `evidence_incomplete` and
+`published_claim == false`, even if caller-supplied local records pass. KMIP
+Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1 provide profile context;
+the readiness diagnostics and catalog states are KMIPKit metadata, not OASIS
+error codes or a claim of profile support, conformance, interoperability, or
+certification.

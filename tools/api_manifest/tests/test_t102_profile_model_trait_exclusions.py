@@ -20,10 +20,10 @@ TYPE_CASES = (
     ("rust-kmipkit", "kmipkit::ProfileValidationSelection", "kmipkit_protocol::profile::ProfileValidationSelection", "declared", 14),
     ("rust-kmipkit-client", "kmipkit_client::ProfileTransport", "kmipkit_protocol::profile::ProfileTransport", "blocked", 14),
     ("rust-kmipkit-client", "kmipkit_client::ProfileValidationSelection", "kmipkit_protocol::profile::ProfileValidationSelection", "declared", 14),
-    ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileEvidenceReadiness", "kmipkit_protocol::profile::ProfileReadiness", "blocked", 14),
-    ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileEvidenceRecord", "kmipkit_protocol::profile::ProfileEvidenceRecord", "blocked", 14),
-    ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileReadiness", "kmipkit_protocol::profile::ProfileReadiness", "blocked", 14),
-    ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileReadinessBlocker", "kmipkit_protocol::profile::ProfileReadinessBlocker", "blocked", 27),
+    ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileEvidenceReadiness", "kmipkit_protocol::profile::ProfileReadiness", "declared", 14),
+    ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileEvidenceRecord", "kmipkit_protocol::profile::ProfileEvidenceRecord", "declared", 14),
+    ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileReadiness", "kmipkit_protocol::profile::ProfileReadiness", "declared", 14),
+    ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileReadinessBlocker", "kmipkit_protocol::profile::ProfileReadinessBlocker", "declared", 27),
     ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileTransport", "kmipkit_protocol::profile::ProfileTransport", "blocked", 14),
     ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileValidationResult", "kmipkit_protocol::profile::ProfileValidationResult", "blocked", 14),
     ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileValidationSelection", "kmipkit_protocol::profile::ProfileValidationSelection", "declared", 14),
@@ -31,35 +31,35 @@ TYPE_CASES = (
         "rust-kmipkit-protocol",
         "kmipkit_protocol::profiles_generated::GeneratedClientProfile",
         "kmipkit_protocol::profiles_generated::GeneratedClientProfile",
-        "blocked",
+        "declared",
         14,
     ),
     (
         "rust-kmipkit-protocol",
         "kmipkit_protocol::profiles_generated::GeneratedClientRequirement",
         "kmipkit_protocol::profiles_generated::GeneratedClientRequirement",
-        "blocked",
+        "declared",
         14,
     ),
     (
         "rust-kmipkit-protocol",
         "kmipkit_protocol::profiles_generated::GeneratedProfileScopeBlocker",
         "kmipkit_protocol::profiles_generated::GeneratedProfileScopeBlocker",
-        "blocked",
+        "declared",
         14,
     ),
     (
         "rust-kmipkit-protocol",
         "kmipkit_protocol::profiles_generated::GeneratedProfileTestCase",
         "kmipkit_protocol::profiles_generated::GeneratedProfileTestCase",
-        "blocked",
+        "declared",
         14,
     ),
     (
         "rust-kmipkit-protocol",
         "kmipkit_protocol::profiles_generated::GeneratedVerificationCategory",
         "kmipkit_protocol::profiles_generated::GeneratedVerificationCategory",
-        "blocked",
+        "declared",
         14,
     ),
 )
@@ -133,7 +133,7 @@ T102_REQUIREMENTS = ("KMIPKIT-0043-FR-010", "KMIPKIT-0043-FR-021")
 
 # Stable digests pin the non-trait API records for these exact owner paths and
 # the out-of-scope state/context models while the trait inventory is reconciled.
-PROTECTED_API_SHA256 = "f5678efa74fa840983a910a74497b63e328a7c97060258efe78ed29b4fb06500"
+PROTECTED_API_SHA256 = "cf35dbeeed242a065f207b9ea2153afd6b22806d9dcc95e97a45561fec051e64"
 PROTOCOL_REEXPORT_API_SHA256 = "d6d3f60a9707baa2ca55718370402a87c3c9ac269ebc696fe64d6c0e03726118"
 PROFILE_CATALOG_SHA256 = "034aa2e2456e9ac28a24314ee99f00005903978da8d24c5958e4833e748840fb"
 
@@ -308,8 +308,8 @@ class T102ProfileModelTraitExclusionTests(unittest.TestCase):
             and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(candidates, 1008)
-        self.assertEqual(len(self.manifest["publicDeclarations"]), 6296)
+        self.assertEqual(candidates, 919)
+        self.assertEqual(len(self.manifest["publicDeclarations"]), 6522)
         self.assertEqual(len(self.manifest["approvedExclusions"]), 8428)
 
     def _protected_rows(self, owners: object) -> list[dict[str, object]]:

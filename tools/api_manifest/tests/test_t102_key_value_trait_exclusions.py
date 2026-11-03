@@ -194,7 +194,7 @@ class T102KeyValueTraitExclusionTests(unittest.TestCase):
                             self.assertIn("KMIPKIT-0017-FR-003/005", evidence)
 
         self.assertEqual(len(expected_all), 84)
-        self.assertEqual(len(self.manifest["publicDeclarations"]), 6296)
+        self.assertEqual(len(self.manifest["publicDeclarations"]), 6522)
         self.assertEqual(len(self.manifest["approvedExclusions"]), 8428)
 
     def test_full_oasis_operation_context_is_recorded_separately(self) -> None:

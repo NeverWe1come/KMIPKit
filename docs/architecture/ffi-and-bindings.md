@@ -107,6 +107,44 @@ secrets. Snapshots contain no source strings or request payloads.
   an immutable `str`, which cannot be reliably erased. Deliberate application
   copies remain outside KMIPKit's zeroization guarantee.
 
+### Profile readiness and catalog ABI
+
+`kmipkit_profile_readiness_evaluate_v1` borrows the profile span and evidence
+record array only for the duration of the call. The profile identifier is at
+most 4 KiB of UTF-8, the array contains at most 100,000 records, and the
+profile identifier plus all requirement identifiers must fit within 16 MiB of
+UTF-8 input. The ABI checks versions, lengths, record flags, aggregate bounds,
+and UTF-8 before cloning values into the canonical Rust evaluator. C callers
+must still provide aligned pointers to readable spans and records and, for
+each nonempty span, readable storage of the stated length. The output handle
+slot must be aligned and writable. The ABI can reject null pointers and
+invalid metadata, but cannot establish that arbitrary caller addresses refer
+to accessible memory. The output slot must be disjoint from the profile span,
+record array, and every input span's backing storage; callers must not modify
+input records or span bytes during the call.
+
+An unknown profile returns success with a null output handle. Otherwise the
+readiness handle owns its snapshot. Initialize each versioned view with its
+exact `struct_size` and ABI version 1 before calling
+`kmipkit_profile_readiness_view_get_v1` or
+`kmipkit_profile_readiness_blocker_at_v1`; these output records must be aligned
+and readable and writable because the ABI first reads their version metadata.
+Text spans in those views borrow from the live readiness handle. Copy any span
+that must outlive the handle, then call
+`kmipkit_profile_readiness_release`; released views are invalid. Output view
+storage must not alias the handle's storage or any borrowed span being read.
+The caller must serialize release against accessors and span reads; it must
+not release a handle concurrently with either.
+
+The profile catalog count/index functions return generated static metadata.
+Their row views must be aligned, readable, writable, and initialized with the
+exact v1 size and version. Text spans returned for catalog rows and relations
+refer to static generated data and remain valid for the process lifetime; they
+are not allocated buffers and must not be freed. Java copies these spans into
+immutable records and lists. Python copies them into frozen records and tuples.
+Neither the catalog nor a local readiness snapshot executes profile rules,
+publishes a claim, or establishes KMIP conformance.
+
 ## Generated and manual portions
 
 Manually reviewed code owns lifecycle, configuration, execution, errors,

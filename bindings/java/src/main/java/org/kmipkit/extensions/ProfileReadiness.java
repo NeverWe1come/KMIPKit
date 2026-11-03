@@ -7,7 +7,12 @@ import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.ResourceLimitException;
 
-/** Immutable, caller-local readiness snapshot from the canonical Rust evaluator. */
+/**
+ * Immutable, caller-local readiness snapshot from the canonical Rust evaluator.
+ *
+ * <p>The snapshot reports catalog evidence and the result of evaluating caller-supplied records.
+ * It performs no transport operation and does not establish profile support or conformance.
+ */
 public final class ProfileReadiness {
     private static final int MAX_PROFILE_ID_BYTES = 4 * 1024;
     private static final long MAX_EVIDENCE_BYTES = 16L * 1024 * 1024;
@@ -43,7 +48,20 @@ public final class ProfileReadiness {
         }
     }
 
-    /** Evaluates local evidence. An unknown profile has no readiness value. */
+    /**
+     * Evaluates caller-local evidence with the canonical Rust evaluator.
+     *
+     * <p>An unknown profile returns {@link Optional#empty()}. At most 100,000 records and 16 MiB
+     * of aggregate UTF-8 input are accepted; {@code profileId} is limited to 4 KiB. The method
+     * rejects exceeded limits before creating the JNI string array. Returned strings are copied
+     * into an immutable Java snapshot and the native handle is released before return.
+     *
+     * @param profileId stable profile identifier to evaluate
+     * @param evidence caller-supplied pass/fail records
+     * @return the immutable readiness snapshot, or empty when the profile is unknown
+     * @throws InvalidInputException if an input record or identifier is invalid
+     * @throws ResourceLimitException if a record, profile identifier, or aggregate input limit is exceeded
+     */
     public static Optional<ProfileReadiness> evaluate(
             String profileId, List<ProfileEvidenceRecord> evidence) {
         if (profileId == null || evidence == null) {
@@ -79,12 +97,19 @@ public final class ProfileReadiness {
         return handle == 0 ? Optional.empty() : Optional.of(new ProfileReadiness(handle));
     }
 
+    /** Returns the evaluated stable profile identifier. */
     public String profileId() { return profileId; }
+    /** Returns whether the catalog selects this profile as an evidence target. */
     public boolean targetSelected() { return targetSelected; }
+    /** Returns whether runtime validation is available for the profile. */
     public boolean runtimeValidationAvailable() { return runtimeValidationAvailable; }
+    /** Returns the catalog's effective evidence state. */
     public String effectiveState() { return effectiveState; }
+    /** Returns whether caller records cover the catalog requirements. */
     public boolean requirementRecordsComplete() { return requirementRecordsComplete; }
+    /** Returns the catalog's published-claim flag; local evaluation cannot set it. */
     public boolean publishedClaim() { return publishedClaim; }
+    /** Returns the immutable list of fixed, redacted blockers. */
     public List<ProfileReadinessBlocker> blockers() { return blockers; }
 
     private static long utf8LengthUpTo(String value, long maximum) {

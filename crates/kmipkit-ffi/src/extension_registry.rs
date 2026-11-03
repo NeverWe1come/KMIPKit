@@ -2631,11 +2631,13 @@ fn profile_readiness_view(
 ///
 /// # Safety
 ///
-/// `profile_id` must be null or point to an aligned, readable byte-span record. For a nonzero
-/// span, its `data` must point to that many readable bytes. `records` must be null or point to an
-/// aligned array of `record_count` readable versioned records when the count is nonzero; every
-/// nested requirement span follows the same readable-byte rule. `out_readiness` must point to an
-/// aligned, writable handle slot.
+/// `profile_id` must point to an aligned, readable byte-span record. For a nonzero span, its
+/// `data` must point to that many readable bytes. `records` may be null only when `record_count`
+/// is zero; otherwise it must point to an aligned array of `record_count` readable versioned
+/// records, and every nested requirement span follows the same readable-byte rule.
+/// `out_readiness` must point to an aligned, writable handle slot that does not overlap the
+/// profile span, the record array, or any input span storage. Input records and span bytes must
+/// remain readable and unmodified for the duration of this call.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kmipkit_profile_readiness_evaluate_v1(
     profile_id: *const crate::kmipkit_byte_span_v1_t,
@@ -2715,9 +2717,11 @@ pub unsafe extern "C" fn kmipkit_profile_readiness_evaluate_v1(
 ///
 /// # Safety
 ///
-/// `readiness` must be a live handle returned by `kmipkit_profile_readiness_evaluate_v1`; `out_view`
-/// must point to an aligned, readable and writable view record initialized with the exact current
-/// size and ABI version 1.
+/// `readiness` must be a live handle returned by `kmipkit_profile_readiness_evaluate_v1` and must
+/// remain live without concurrent release for this call and while the caller reads returned spans.
+/// `out_view` must point to an aligned, readable and writable view record initialized with the
+/// exact current size and ABI version 1. It must not overlap the handle's owned storage or any
+/// borrowed span storage being read by the caller.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kmipkit_profile_readiness_view_get_v1(
     readiness: *mut kmipkit_profile_readiness_t,
@@ -2729,7 +2733,11 @@ pub unsafe extern "C" fn kmipkit_profile_readiness_view_get_v1(
         }
         // SAFETY: the caller promises a writable view record for this ABI call.
         let view = unsafe { &mut *out_view };
-        let expected_size = size_of::<crate::kmipkit_profile_readiness_view_v1_t>() as u32;
+        let Ok(expected_size) =
+            u32::try_from(size_of::<crate::kmipkit_profile_readiness_view_v1_t>())
+        else {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        };
         if view.struct_size != expected_size || view.abi_version != 1 {
             return record_ffi_error(ERROR_INVALID_INPUT);
         }
@@ -2740,7 +2748,7 @@ pub unsafe extern "C" fn kmipkit_profile_readiness_view_get_v1(
         let HandleValue::ProfileReadiness(readiness) = &handle.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        *view = try_ffi!(profile_readiness_view(readiness, expected_size as u32, 1));
+        *view = try_ffi!(profile_readiness_view(readiness, expected_size, 1));
         SUCCESS
     })
 }
@@ -2749,8 +2757,10 @@ pub unsafe extern "C" fn kmipkit_profile_readiness_view_get_v1(
 ///
 /// # Safety
 ///
-/// `readiness` must remain live for this call; `out_view` must point to an aligned, readable and
-/// writable blocker view initialized with the exact current size and ABI version 1.
+/// `readiness` must remain live without concurrent release for this call and while the caller reads
+/// returned spans. `out_view` must point to an aligned, readable and writable blocker view
+/// initialized with the exact current size and ABI version 1. It must not overlap the handle's
+/// owned storage or any borrowed span storage being read by the caller.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kmipkit_profile_readiness_blocker_at_v1(
     readiness: *mut kmipkit_profile_readiness_t,
@@ -2763,7 +2773,11 @@ pub unsafe extern "C" fn kmipkit_profile_readiness_blocker_at_v1(
         }
         // SAFETY: the caller promises a writable blocker view record for this ABI call.
         let view = unsafe { &mut *out_view };
-        let expected_size = size_of::<crate::kmipkit_profile_readiness_blocker_view_v1_t>() as u32;
+        let Ok(expected_size) =
+            u32::try_from(size_of::<crate::kmipkit_profile_readiness_blocker_view_v1_t>())
+        else {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        };
         if view.struct_size != expected_size || view.abi_version != 1 {
             return record_ffi_error(ERROR_INVALID_INPUT);
         }
@@ -2791,6 +2805,9 @@ pub unsafe extern "C" fn kmipkit_profile_readiness_blocker_at_v1(
 }
 
 /// Releases a readiness snapshot and invalidates every view span borrowed from it.
+///
+/// The caller must serialize release against every accessor and every read through a borrowed view
+/// span; no thread may use the handle or those spans once release begins.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_profile_readiness_release(readiness: *mut kmipkit_profile_readiness_t) {
     ffi_entrypoint(|| release(readiness, Kind::ProfileReadiness));
@@ -3069,7 +3086,11 @@ pub unsafe extern "C" fn kmipkit_profile_catalog_row_at_v1(
         }
         // SAFETY: the caller promises a writable versioned catalog row for this call.
         let row = unsafe { &mut *out_row };
-        let expected_size = size_of::<crate::kmipkit_profile_catalog_row_view_v1_t>() as u32;
+        let Ok(expected_size) =
+            u32::try_from(size_of::<crate::kmipkit_profile_catalog_row_view_v1_t>())
+        else {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        };
         if row.struct_size != expected_size || row.abi_version != 1 {
             return record_ffi_error(ERROR_INVALID_INPUT);
         }
@@ -3124,7 +3145,11 @@ pub unsafe extern "C" fn kmipkit_profile_catalog_relation_at_v1(
         }
         // SAFETY: the caller promises a writable versioned catalog row for this call.
         let row = unsafe { &mut *out_row };
-        let expected_size = size_of::<crate::kmipkit_profile_catalog_row_view_v1_t>() as u32;
+        let Ok(expected_size) =
+            u32::try_from(size_of::<crate::kmipkit_profile_catalog_row_view_v1_t>())
+        else {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        };
         if row.struct_size != expected_size || row.abi_version != 1 {
             return record_ffi_error(ERROR_INVALID_INPUT);
         }

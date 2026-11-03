@@ -187,7 +187,7 @@ class T102ExportGetRequestTraitExclusionTests(unittest.TestCase):
             row.get("candidateSpecId") == "KMIPKIT-0043" and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(count, 1008)
+        self.assertEqual(count, 919)
 
 
 if __name__ == "__main__":

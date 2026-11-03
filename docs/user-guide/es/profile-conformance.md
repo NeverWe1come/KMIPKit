@@ -225,3 +225,31 @@ Consulta la [estrategia de conformidad](../../compliance/conformance.md), el
 [inventario KMIP 2.1](../../../specification/catalog/README.md) y la
 [especificación KMIPKIT-0010](../../../specs/010-profile-conformance/spec.md)
 para conocer el modelo de evidencia y su alcance.
+
+## Informes locales de evidencia y catálogo
+
+`ProfileReadiness.evaluate` acepta registros de aprobado/no aprobado aportados
+por la aplicación y devuelve una instantánea local e inmutable del evaluador
+Rust canónico. Java devuelve `Optional.empty()` si el perfil no existe; Python
+devuelve `None`. `ProfileCatalog.clientProfiles`, `clientRequirements` y
+`profileTestCases` devuelven listas Java inmutables. En Python,
+`client_profiles`, `client_requirements` y `profile_test_cases` devuelven tuplas.
+Las filas y relaciones anidadas conservan el orden generado del catálogo. Los
+datos del catálogo son descriptivos: estos accesos no ejecutan reglas del
+perfil ni reproducen casos oficiales.
+
+El evaluador acepta como máximo 100.000 registros y 16 MiB de entrada UTF-8
+agregada, incluido el identificador del perfil. El identificador del perfil
+tiene un límite de 4 KiB. Java lanza `ResourceLimitException` y Python
+`ResourceLimitError` cuando se supera un límite. El cliente C proporciona
+registros y spans versionados, alineados y legibles. Los spans de texto de una
+vista de readiness pertenecen al handle abierto hasta que se libera; los spans
+de texto del catálogo apuntan a datos estáticos generados. Consulta las
+[reglas de ownership y lifetime del ABI C](../../architecture/ffi-and-bindings.md#profile-readiness-and-catalog-abi).
+
+Para Baseline Client, el catálogo sigue indicando `evidence_incomplete` y
+`published_claim == false`, aunque los registros locales aportados indiquen
+que todos los requisitos se han superado. KMIP Specification v2.1 §14.1 y
+KMIP Profiles v2.1 §6.1 aportan contexto sobre perfiles; los diagnósticos y
+estados del catálogo son metadatos de KMIPKit, no códigos de error OASIS ni
+afirmaciones de soporte, conformidad, interoperabilidad o certificación.

@@ -6,7 +6,12 @@ import java.util.Optional;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 
-/** Owned immutable snapshots of generated profile metadata. */
+/**
+ * Owned immutable snapshots of generated profile metadata.
+ *
+ * <p>Rows and nested relationships retain generated catalog order. These records are descriptive
+ * metadata, not executable validation rules or a profile-support claim.
+ */
 public final class ProfileCatalog {
     private static final int PROFILES = NativeExtensionRegistry.PROFILE_CATALOG_CLIENT_PROFILES;
     private static final int REQUIREMENTS = NativeExtensionRegistry.PROFILE_CATALOG_CLIENT_REQUIREMENTS;
@@ -24,6 +29,7 @@ public final class ProfileCatalog {
 
     private ProfileCatalog() {}
 
+    /** Returns every client profile and its ordered relationships as an immutable list. */
     public static List<ClientProfile> clientProfiles() {
         List<ClientProfile> rows = new ArrayList<>();
         long count = NativeExtensionRegistry.profileCatalogTableCount(PROFILES);
@@ -47,6 +53,7 @@ public final class ProfileCatalog {
         return List.copyOf(rows);
     }
 
+    /** Returns every requirement row and its ordered relationships as an immutable list. */
     public static List<ClientRequirement> clientRequirements() {
         List<ClientRequirement> rows = new ArrayList<>();
         long count = NativeExtensionRegistry.profileCatalogTableCount(REQUIREMENTS);
@@ -61,6 +68,7 @@ public final class ProfileCatalog {
         return List.copyOf(rows);
     }
 
+    /** Returns all profile test-case metadata in stable catalog order as an immutable list. */
     public static List<ProfileTestCase> profileTestCases() {
         List<ProfileTestCase> rows = new ArrayList<>();
         long count = NativeExtensionRegistry.profileCatalogTableCount(TEST_CASES);
@@ -100,6 +108,7 @@ public final class ProfileCatalog {
         return value;
     }
 
+    /** Open-ended local category for the evidence or behavior described by a catalog row. */
     public enum VerificationCategory {
         REQUIRED_BEHAVIOR("required_behavior"),
         PROHIBITED_BEHAVIOR("prohibited_behavior"),
@@ -116,9 +125,43 @@ public final class ProfileCatalog {
         }
     }
 
+    /**
+     * Unresolved profile-scope obligation retained in the catalog.
+     *
+     * @param requirementId stable requirement identifier
+     * @param sourceClauseId stable source-clause identifier
+     * @param scopeState catalog state explaining why the obligation is unresolved
+     */
     public record ProfileScopeBlocker(String requirementId, String sourceClauseId, String scopeState) {}
+
+    /**
+     * Generated profile test-case metadata; this record does not execute or synthesize fixtures.
+     *
+     * @param testId stable KMIPKit test-case identifier
+     * @param officialCaseId optional linked official case identifier, represented as a string
+     * @param mandatoryStatus catalog mandatory/optional classification
+     * @param fixtureAvailability catalog fixture availability state
+     */
     public record ProfileTestCase(String testId, String officialCaseId, String mandatoryStatus,
             String fixtureAvailability) {}
+
+    /**
+     * Immutable client profile row and its ordered nested catalog relationships.
+     *
+     * @param profileId stable profile identifier
+     * @param name catalog display name
+     * @param applicability applicability within KMIPKit's product scope
+     * @param claimState catalog evidence state, separate from target selection
+     * @param selectedTarget whether the project selected this profile as an evidence target
+     * @param directSourceClauseIds directly linked source clauses
+     * @param sourceClauseIds complete source-clause closure
+     * @param requirementIds ordered requirement closure
+     * @param unresolvedScopeObligations unresolved profile-scope obligations
+     * @param dependencyProfileIds ordered profile dependencies
+     * @param transportRequirements ordered transport metadata
+     * @param encodingRequirements ordered encoding metadata
+     * @param testCases ordered linked test cases
+     */
     public record ClientProfile(String profileId, String name, String applicability, String claimState,
             boolean selectedTarget, List<String> directSourceClauseIds, List<String> sourceClauseIds,
             List<String> requirementIds, List<ProfileScopeBlocker> unresolvedScopeObligations,
@@ -136,6 +179,21 @@ public final class ProfileCatalog {
             testCases = List.copyOf(testCases);
         }
     }
+    /**
+     * Immutable requirement row and its ordered catalog relationships.
+     *
+     * @param requirementId stable requirement identifier
+     * @param sourceKeyword source keyword when available
+     * @param sourceForce source force classification when available
+     * @param sourceGapId linked gap identifier when available
+     * @param sourceLocator source document locator when available
+     * @param verificationCategory local verification category
+     * @param scopeState current catalog scope state
+     * @param sourceClauseIds ordered source-clause identifiers
+     * @param profileIds ordered linked profile identifiers
+     * @param officialTestCaseIds ordered linked official case identifiers
+     * @param hasAcceptedDeviation whether the catalog records an accepted deviation
+     */
     public record ClientRequirement(String requirementId, Optional<String> sourceKeyword,
             Optional<String> sourceForce, Optional<String> sourceGapId, Optional<String> sourceLocator,
             VerificationCategory verificationCategory, String scopeState, List<String> sourceClauseIds,

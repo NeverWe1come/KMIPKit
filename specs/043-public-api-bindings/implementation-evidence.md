@@ -10275,3 +10275,56 @@ Final verification:
 - git diff --check — passed.
 
 The capability remains declared; Baseline Client remains evidence_incomplete. This inventory and mapping checkpoint makes no new KMIP conformance, profile-support, interoperability, or certification claim.
+
+### T102 - Profile readiness and generated catalog parity (2026-11-03)
+
+The approved implementation batch promotes exactly 45 Rust readiness declarations and 44 Rust generated-catalog declarations to the existing `client_profile_readiness` capability. It adds 100 C declarations, 63 Java declarations, and 63 Python declarations for the same canonical capability surface. The local catalog/evidence capability remains separate from `client_profile_validation`; no catalog/readiness API is exposed through generated profile JSON, and `Baseline` remains `evidence_incomplete` with `published_claim=false`. KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1 are profile context only. These readiness labels and diagnostics are KMIPKit metadata, not OASIS error codes.
+
+The Rust implementation is canonical. C views borrow spans from a live readiness handle until release; generated catalog spans point to static generated data. Java and Python copy native spans into immutable language objects and close/release owned handles deterministically. The shared bounds are a 4 KiB profile ID, 100,000 evidence records, and 16 MiB aggregate UTF-8 bytes. Java now counts standard UTF-8 bytes from UTF-16 before copy allocation, accepts NUL and valid Unicode scalar values (including supplementary code points), and rejects unpaired surrogates. Rust, Java, and Python all treat a valid unknown identifier as an `unknown_requirement_record` blocker while redacting the caller-provided identifier from blocker output. This is output-value parity for local readiness, not a claim of separate enum construction or runtime-validation parity.
+
+Red/Green implementation history: initial exact contracts and bounds Reds are listed in the T102 task checkpoint; the initial feature Green is `0b0b63262`. Unicode parity Red `f0b5d4efc` added a shared unknown-ID assertion with NUL, Greek, and supplementary Unicode characters; Java failed before the fix while Rust and Python passed. Unicode/JNI Green `11b794859` replaces modified UTF-8 with standard UTF-8 conversion and preflight byte counting. The Java Green run also rebuilt the JNI library after the previously confirmed exception-boundary and `GetBooleanArrayRegion` fixes.
+
+Verification evidence before the final full manifest-v2 run:
+
+- `.\gradlew.bat test --no-daemon --tests org.kmipkit.extensions.ProfileReadinessParityTest --tests org.kmipkit.extensions.ProfileValidationMappingTest` — BUILD SUCCESSFUL; 5 actionable Gradle tasks, with JNI rebuilt.
+- `cargo test -p kmipkit-protocol --test profile_evidence` — 5 passed, including standard UTF-8 unknown-ID handling.
+- `cargo test -p kmipkit-ffi --all-features --lib readiness_` — 4 passed, covering all readiness ABI tests. The `--all-features` flag is required here to build the C consumer libraries linked by the FFI test crate.
+- Python profile readiness parity tests using the pinned local source and native FFI DLL — 7 passed.
+- Focused T102/T036 contracts — 14 passed. Full T102 suite — 239 passed.
+- Pinned `tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
+- `git diff --check` passed. `cargo fmt --check` initially identified formatting in the newly added Rust test; `cargo fmt --all` applied canonical formatting, and the final format check is recorded below.
+
+
+Final stable verification after the JNI UTF-8, checked-layout conversions, test lint cleanup, and documentation updates:
+
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2 -q` — exit 0; `Ran 151 tests in 340.853s`; `OK`. This was the single final manifest-v2 run on the stabilized source and documentation state.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest discover --failfast -s tools/api_manifest/tests -p 'test_t102*.py' -q` — exit 0; 239 tests passed in 57.921s.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t102_profile_readiness_parity tools.api_manifest.tests.test_t102_profile_readiness_c_parameters tools.api_manifest.tests.test_t102_profile_model_reexport_mapping tools.api_manifest.tests.test_t036_profile_mapping -v` — exit 0; 14 passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest scripts.tests.test_requirement_traceability -v` — exit 0; 2 passed. `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest discover -s tools/normative_catalog/tests -p test_feature_traceability.py -q` — exit 0; 30 passed, 1 skipped.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B tools/api_manifest/generate.py --check` — exit 0; all 12 generated outputs verified.
+- `cargo fmt --all --check`, `git diff --check`, and `cargo clippy --message-format short -p kmipkit-ffi --all-targets --all-features --no-deps -- -D warnings` — exit 0. Clippy completed in 4.08s with no lint diagnostics; only optional AWS-LC compiler-probe/NASM warnings were emitted.
+- `cargo test -p kmipkit-ffi --all-features --lib readiness_` — exit 0; 4 passed. `cargo test -p kmipkit-protocol --test profile_evidence` — exit 0; 5 passed.
+- Java readiness/validation mapping Gradle tests — BUILD SUCCESSFUL with native JNI rebuild; Python readiness parity — 7 passed. Java, Rust, and Python Unicode unknown-ID cases all preserve the redacted `unknown_requirement_record` blocker.
+- Independent post-fix security review confirmed exception boundaries, `GetBooleanArrayRegion`, alias/lifetime documentation, bounds, redaction, and unchanged claims. C ABI safety preconditions remain in the FFI guide and Rust `# Safety` docs; generated header output was not edited by hand.
+
+### T102 review fixes — caller evidence parity and generated C safety docs (2026-11-03)
+
+The accepted KMIPKIT-0010-FR-013 interpretation keeps Rust canonical and measures cross-language parity at observable outputs. Empty and whitespace requirement IDs are accepted caller evidence, produce the fixed `unknown_requirement_record` blocker in Rust/C/Java/Python, and are never echoed. No language gains a separate enum or construction surface. The profile catalog/readiness capability stays `client_profile_readiness`, separate from runtime validation; `Baseline` remains `evidence_incomplete` and `published_claim=false`. KMIP v2.1 §14.1 and KMIP Profiles v2.1 §6.1 are context only; the identifiers and blocker are KMIPKit-defined metadata.
+
+Red/Green history for the Java parity finding: Red `e2d4b3a67` added the empty and whitespace cases and demonstrated that Java alone rejected them through `isBlank()` with `InvalidInputException`; Rust, C ABI, and Python already produced the fixed blocker. Green `685095cc4` removed only the blank-string rejection while preserving null rejection and JNI invalid-surrogate behavior. Java parity Gradle tests passed, Python profile readiness parity passed 9/9 using `.venv-codex` with `KMIPKIT_NATIVE_LIBRARY=../../target/debug/kmipkit_ffi.dll`, Rust protocol parity passed 1/1, and the parent-confirmed C ABI command `cargo test -p kmipkit-ffi --all-features --lib readiness_` passed 5/5.
+
+Red/Green history for the generated C header finding: Red `13329c1e8` uses an explicit first-line documentation anchor per symbol and checks the checked-in generated header. It failed against the previous generated text specifically because the `profile_id` precondition did not distinguish the aligned/readable byte-span record from the nonempty readable data bytes. Green `a0bbb6d85` updates only `cSignature.documentation` in `specification/api/public-api.json` and the pinned generated `bindings/c/include/kmipkit.h`. The comments state aligned/readable input records and data, NULL/count rules, initialized ABI-v1 aligned/readable/writable output structs, non-overlap, stable inputs, and live-handle/no-concurrent-release requirements through span reads. No generated output was edited by hand. The contract test passed 4/4; focused mapping tests for T102/T036 passed 11/11; generator `--check` verified all 12 outputs; `git diff --check` passed.
+
+The T102 exact readiness/catalog scope remains 45 + 44 Rust declarations, 315 declarations under `client_profile_readiness`, 6,522 public declarations, 8,428 approved exclusions, and 919 blocked KMIPKIT-0043 candidates. The review fixes change neither runtime behavior nor those counts.
+
+Post-fix verification before the single final `manifest-v2` run:
+
+- Java: from `bindings/java`, `gradlew.bat test --tests org.kmipkit.extensions.ProfileReadinessParityTest --tests org.kmipkit.extensions.ProfileValidationMappingTest` — BUILD SUCCESSFUL; JNI library rebuilt.
+- Python: from `bindings/python`, set `KMIPKIT_NATIVE_LIBRARY=../../target/debug/kmipkit_ffi.dll`, then `.venv-codex/Scripts/python.exe -m pytest -q tests/test_profile_readiness_parity.py` — 9 passed.
+- Rust: `cargo test -p kmipkit-protocol --test profile_evidence_identifier_parity` — 1 passed. C ABI: `cargo test -p kmipkit-ffi --all-features --lib readiness_` — 5 passed (confirmed by the parent run).
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest discover --failfast -s tools/api_manifest/tests -p 'test_t102*.py' -q` — 240 tests passed.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest scripts.tests.test_requirement_traceability -v` — 2 passed. `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest discover -s tools/normative_catalog/tests -p test_feature_traceability.py -q` — 30 tests passed, 1 skipped.
+- `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified. The readiness C safety contract test — 4 passed; focused T102/T036 mapping tests — 11 passed.
+- `cargo fmt --all --check`, `git diff --check`, and `cargo clippy --message-format short -p kmipkit-ffi --all-targets --all-features --no-deps -- -D warnings` — exit 0. Clippy emitted no lint diagnostics; optional AWS-LC compiler-probe/NASM warnings remain environmental.
+
+The single final stabilized-state command was `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2 -q` — exit 0; output: `Ran 151 tests in 328.187s` and `OK`.

@@ -36,7 +36,11 @@ def _decode(span: object) -> str:
 
 @dataclass(frozen=True, slots=True)
 class ProfileEvidenceRecord:
-    """One caller-supplied pass/fail record for a stable requirement identifier."""
+    """One caller-supplied pass/fail record for a stable requirement identifier.
+
+    :ivar requirement_id: Stable requirement identifier, encoded as UTF-8 for the native call.
+    :ivar passed_value: Whether the caller reports that this requirement passed.
+    """
 
     requirement_id: str
     passed_value: bool
@@ -55,7 +59,15 @@ class ProfileEvidenceRecord:
 
 @dataclass(frozen=True, slots=True)
 class ProfileReadinessBlocker:
-    """One redacted blocker with stable optional catalog identifiers."""
+    """One redacted blocker with stable optional catalog identifiers.
+
+    :ivar kind: Open string identifying the blocker category.
+    :ivar message: Fixed diagnostic text that contains no caller payload.
+    :ivar requirement_id: Optional catalog requirement identifier.
+    :ivar profile_id: Optional catalog profile identifier.
+    :ivar test_id: Optional catalog test identifier.
+    :ivar source_clause_id: Optional source-clause identifier.
+    """
 
     kind: str
     message: str
@@ -67,7 +79,17 @@ class ProfileReadinessBlocker:
 
 @dataclass(frozen=True, slots=True)
 class ProfileReadiness:
-    """An owned immutable snapshot returned by the canonical Rust evaluator."""
+    """Owned immutable snapshot returned by the canonical Rust evaluator.
+
+    :ivar profile_id: The stable profile identifier evaluated by Rust.
+    :ivar target_selected: Whether the catalog marks this profile as a target.
+    :ivar runtime_validation_available: Whether runtime validation is available.
+    :ivar effective_state: Current evidence state from the profile catalog.
+    :ivar requirement_records_complete: Whether caller records cover the catalog requirements.
+    :ivar published_claim: Whether the catalog records a public claim; this stays false for the
+        incomplete Baseline Client evidence.
+    :ivar blockers: Immutable tuple of redacted blockers returned by Rust.
+    """
 
     profile_id: str
     target_selected: bool
@@ -81,6 +103,18 @@ class ProfileReadiness:
     def evaluate(
         cls, profile_id: str, records: tuple[ProfileEvidenceRecord, ...] | list[ProfileEvidenceRecord]
     ) -> ProfileReadiness | None:
+        """Evaluate caller-local evidence with the canonical Rust evaluator.
+
+        Unknown profile identifiers return ``None``. This operation does not perform transport
+        I/O or establish profile support or conformance. At most 100,000 records and 16 MiB of
+        aggregate UTF-8 input are accepted; ``profile_id`` is limited to 4 KiB. Invalid input,
+        malformed UTF-8, and exceeded limits raise the corresponding KMIPKit error.
+
+        :param profile_id: Stable profile identifier to evaluate.
+        :param records: Caller-supplied evidence records; their strings are copied for the native
+            call and the returned snapshot owns its decoded values.
+        :return: An immutable readiness snapshot, or ``None`` when the profile is unknown.
+        """
         if not isinstance(profile_id, str) or not isinstance(records, (tuple, list)):
             raise errors.InvalidInputError()
         if len(records) > _MAX_RECORDS:
