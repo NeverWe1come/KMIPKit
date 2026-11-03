@@ -393,7 +393,7 @@ class T102ViewsAsyncPolicyTraitsBatchTests(unittest.TestCase):
             and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(candidates, 1_098)
+        self.assertEqual(candidates, 1_008)
         self.assertEqual(len(self.manifest["publicDeclarations"]), 6_296)
         self.assertEqual(len(self.manifest["approvedExclusions"]), 8_428)
 

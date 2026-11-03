@@ -19,9 +19,9 @@ REPORT_PATH = (
 )
 
 PACKAGES = {
-    "rust-kmipkit-protocol": ("kmipkit_protocol", "blocked"),
+    "rust-kmipkit-protocol": ("kmipkit_protocol", "declared"),
     "rust-kmipkit-client": ("kmipkit_client", "declared"),
-    "rust-kmipkit": ("kmipkit", "blocked"),
+    "rust-kmipkit": ("kmipkit", "declared"),
 }
 TYPE_NAMES = ("ProfileValidationContext", "ProfileObjectState")
 OWNER_APPROVAL = {
