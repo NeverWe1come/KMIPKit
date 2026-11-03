@@ -109,3 +109,11 @@ def test_aggregate_evidence_over_sixteen_mib_is_rejected_before_encoding() -> No
 
     with pytest.raises(errors.ResourceLimitError):
         ProfileReadiness.evaluate(BASELINE_ID, evidence)
+
+
+def test_evidence_identifier_above_profile_id_limit_fits_aggregate_limit() -> None:
+    readiness = ProfileReadiness.evaluate(
+        BASELINE_ID, (ProfileEvidenceRecord.passed("x" * (8 * 1024)),)
+    )
+
+    assert readiness is not None

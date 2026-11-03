@@ -161,4 +161,12 @@ final class ProfileReadinessParityTest {
         assertThrows(ResourceLimitException.class,
                 () -> ProfileReadiness.evaluate(BASELINE, evidence));
     }
+
+    @Test
+    void readinessAllowsEvidenceIdentifierAboveProfileIdLimitWithinAggregateLimit() {
+        String requirementId = "x".repeat(8 * 1024);
+
+        assertTrue(ProfileReadiness.evaluate(
+                BASELINE, List.of(ProfileEvidenceRecord.passed(requirementId))).isPresent());
+    }
 }
