@@ -441772,7 +441772,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
       },
-      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model remains mapped to OASIS KMIP v2.1 Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model is traced to OASIS KMIP v2.1 Section 2.3 (Opaque Object), Section 2.3, Table 4 (Table 4: Opaque Object Structure), Section 11.34, Table 468 (Table 468: Object Type Enumeration), Section 11.35, Table 469 (Table 469: Opaque Data Type Enumeration), and Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -441784,7 +441784,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
       },
-      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model remains mapped to OASIS KMIP v2.1 Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model is traced to OASIS KMIP v2.1 Section 2.3 (Opaque Object), Section 2.3, Table 4 (Table 4: Opaque Object Structure), Section 11.34, Table 468 (Table 468: Object Type Enumeration), Section 11.35, Table 469 (Table 469: Opaque Data Type Enumeration), and Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -441796,7 +441796,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
       },
-      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model remains mapped to OASIS KMIP v2.1 Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model is traced to OASIS KMIP v2.1 Section 2.3 (Opaque Object), Section 2.3, Table 4 (Table 4: Opaque Object Structure), Section 11.34, Table 468 (Table 468: Object Type Enumeration), Section 11.35, Table 469 (Table 469: Opaque Data Type Enumeration), and Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -441808,7 +441808,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
       },
-      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model remains mapped to OASIS KMIP v2.1 Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model is traced to OASIS KMIP v2.1 Section 2.3 (Opaque Object), Section 2.3, Table 4 (Table 4: Opaque Object Structure), Section 11.34, Table 468 (Table 468: Object Type Enumeration), Section 11.35, Table 469 (Table 469: Opaque Data Type Enumeration), and Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -441820,7 +441820,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
       },
-      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model remains mapped to OASIS KMIP v2.1 Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model is traced to OASIS KMIP v2.1 Section 2.3 (Opaque Object), Section 2.3, Table 4 (Table 4: Opaque Object Structure), Section 11.34, Table 468 (Table 468: Object Type Enumeration), Section 11.35, Table 469 (Table 469: Opaque Data Type Enumeration), and Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -441832,7 +441832,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
       },
-      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model remains mapped to OASIS KMIP v2.1 Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model is traced to OASIS KMIP v2.1 Section 2.3 (Opaque Object), Section 2.3, Table 4 (Table 4: Opaque Object Structure), Section 11.34, Table 468 (Table 468: Object Type Enumeration), Section 11.35, Table 469 (Table 469: Opaque Data Type Enumeration), and Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -441844,7 +441844,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
       },
-      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model remains mapped to OASIS KMIP v2.1 Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model is traced to OASIS KMIP v2.1 Section 2.3 (Opaque Object), Section 2.3, Table 4 (Table 4: Opaque Object Structure), Section 11.34, Table 468 (Table 468: Object Type Enumeration), Section 11.35, Table 469 (Table 469: Opaque Data Type Enumeration), and Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -441856,7 +441856,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
       },
-      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model remains mapped to OASIS KMIP v2.1 Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model is traced to OASIS KMIP v2.1 Section 2.3 (Opaque Object), Section 2.3, Table 4 (Table 4: Opaque Object Structure), Section 11.34, Table 468 (Table 468: Object Type Enumeration), Section 11.35, Table 469 (Table 469: Opaque Data Type Enumeration), and Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -441868,7 +441868,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
       },
-      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model remains mapped to OASIS KMIP v2.1 Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model is traced to OASIS KMIP v2.1 Section 2.3 (Opaque Object), Section 2.3, Table 4 (Table 4: Opaque Object Structure), Section 11.34, Table 468 (Table 468: Object Type Enumeration), Section 11.35, Table 469 (Table 469: Opaque Data Type Enumeration), and Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -441880,7 +441880,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
       },
-      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model remains mapped to OASIS KMIP v2.1 Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
+      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model is traced to OASIS KMIP v2.1 Section 2.3 (Opaque Object), Section 2.3, Table 4 (Table 4: Opaque Object Structure), Section 11.34, Table 468 (Table 468: Object Type Enumeration), Section 11.35, Table 469 (Table 469: Opaque Data Type Enumeration), and Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json."
     },
     {
       "packageId": "rust-kmipkit-protocol",

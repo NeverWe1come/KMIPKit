@@ -95,11 +95,11 @@ OWNER = {
             "KMIPKIT-REQ-SPEC-6.1.43-001",
         ),
         "references": (
-            "OASIS KMIP v2.1 Section 2.3",
-            "OASIS KMIP v2.1 Section 2.3, Table 4",
-            "OASIS KMIP v2.1 Section 11.34, Table 468",
-            "OASIS KMIP v2.1 Section 11.35, Table 469",
-            "OASIS KMIP v2.1 Section 6.1.43, Table 291",
+            "OASIS KMIP v2.1 Section 2.3 (Opaque Object)",
+            "Section 2.3, Table 4",
+            "Section 11.34, Table 468",
+            "Section 11.35, Table 469",
+            "Section 6.1.43, Table 291",
         ),
         "tables": (
             "Table 4: Opaque Object Structure",
