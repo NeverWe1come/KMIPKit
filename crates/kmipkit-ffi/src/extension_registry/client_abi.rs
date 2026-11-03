@@ -20,8 +20,11 @@ fn batch_response_item_from_handle(
     response.get(*index).ok_or(ERROR_INTERNAL)
 }
 
-fn require_success_response_ttlv<T>(response_ttlv: Option<T>) -> FfiResult<T> {
-    response_ttlv.ok_or(ERROR_INVALID_INPUT)
+fn require_success_response_ttlv<T>(response_ttlv: Option<FfiResult<T>>) -> FfiResult<T> {
+    match response_ttlv {
+        Some(response_ttlv) => response_ttlv,
+        None => Err(ERROR_INTERNAL),
+    }
 }
 
 fn copy_transport_span(data: *const u8, length: u64, maximum: u64) -> FfiResult<Vec<u8>> {
@@ -4745,11 +4748,9 @@ pub extern "C" fn kmipkit_client_batch_item_response_recertify_ttlv(
             return SUCCESS;
         }
         if let Some(recertify) = outcome.recertify_response() {
-            let Some(structure) = recertify.with_ttlv(|view| super::clone_structure_view(&view))
-            else {
-                return SUCCESS;
-            };
-            let structure = try_ffi!(structure);
+            let structure = try_ffi!(require_success_response_ttlv(
+                recertify.with_ttlv(|view| super::clone_structure_view(&view))
+            ));
             *response_ttlv = try_ffi!(try_make_handle(
                 Kind::Structure,
                 HandleValue::Structure(structure),
@@ -4778,10 +4779,9 @@ pub extern "C" fn kmipkit_client_batch_item_response_rekey_ttlv(
             return SUCCESS;
         }
         if let Some(rekey) = outcome.rekey_response() {
-            let Some(structure) = rekey.with_ttlv(|view| super::clone_structure_view(&view)) else {
-                return SUCCESS;
-            };
-            let structure = try_ffi!(structure);
+            let structure = try_ffi!(require_success_response_ttlv(
+                rekey.with_ttlv(|view| super::clone_structure_view(&view))
+            ));
             *response_ttlv = try_ffi!(try_make_handle(
                 Kind::Structure,
                 HandleValue::Structure(structure),
@@ -4809,11 +4809,9 @@ pub extern "C" fn kmipkit_client_batch_item_response_rekey_key_pair_ttlv(
             return SUCCESS;
         }
         if let Some(result) = item.outcome().rekey_key_pair_response() {
-            let Some(structure) = result.with_ttlv(|view| super::clone_structure_view(&view))
-            else {
-                return SUCCESS;
-            };
-            let structure = try_ffi!(structure);
+            let structure = try_ffi!(require_success_response_ttlv(
+                result.with_ttlv(|view| super::clone_structure_view(&view))
+            ));
             *response_ttlv = try_ffi!(try_make_handle(
                 Kind::Structure,
                 HandleValue::Structure(structure)
@@ -4841,11 +4839,9 @@ pub extern "C" fn kmipkit_client_batch_item_response_reprovision_ttlv(
             return SUCCESS;
         }
         if let Some(reprovision) = item.outcome().reprovision_response() {
-            let Some(structure) = reprovision.with_ttlv(|view| super::clone_structure_view(&view))
-            else {
-                return SUCCESS;
-            };
-            let structure = try_ffi!(structure);
+            let structure = try_ffi!(require_success_response_ttlv(
+                reprovision.with_ttlv(|view| super::clone_structure_view(&view))
+            ));
             *response_ttlv = try_ffi!(try_make_handle(
                 Kind::Structure,
                 HandleValue::Structure(structure),
@@ -4942,7 +4938,7 @@ fn copy_register_revoke_ttlv_impl(
     if item.outcome().result().status().raw() != 0 {
         return SUCCESS;
     }
-    let structure = match (kind, item.outcome()) {
+    let response_ttlv_view = match (kind, item.outcome()) {
         (
             RegisterRevokeResponseKind::Register,
             kmipkit_client::ClientBatchOutcome::Register(value),
@@ -4950,12 +4946,9 @@ fn copy_register_revoke_ttlv_impl(
         (RegisterRevokeResponseKind::Revoke, kmipkit_client::ClientBatchOutcome::Revoke(value)) => {
             value.with_ttlv(|view| super::clone_structure_view(&view))
         }
-        _ => None,
+        _ => return SUCCESS,
     };
-    let Some(structure) = structure else {
-        return SUCCESS;
-    };
-    let structure = try_ffi!(structure);
+    let structure = try_ffi!(require_success_response_ttlv(response_ttlv_view));
     *response_ttlv = try_ffi!(try_make_handle(
         Kind::Structure,
         HandleValue::Structure(structure),
@@ -5147,10 +5140,9 @@ pub extern "C" fn kmipkit_client_batch_item_response_obtain_lease_ttlv(
             return SUCCESS;
         }
         if let kmipkit_client::ClientBatchOutcome::ObtainLease(lease) = outcome {
-            let Some(structure) = lease.with_ttlv(|view| super::clone_structure_view(&view)) else {
-                return SUCCESS;
-            };
-            let structure = try_ffi!(structure);
+            let structure = try_ffi!(require_success_response_ttlv(
+                lease.with_ttlv(|view| super::clone_structure_view(&view))
+            ));
             *response_ttlv = try_ffi!(try_make_handle(
                 Kind::Structure,
                 HandleValue::Structure(structure),

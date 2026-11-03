@@ -10708,8 +10708,7 @@ fn client_response_extension_abi_returns_ordered_generic_ttlv_copy() {
 #[test]
 fn successful_response_ttlv_absence_is_an_internal_error() {
     assert_eq!(
-        super::require_success_response_ttlv::<()>(None),
+        super::require_success_response_ttlv::<()>(None::<Result<(), i32>>),
         Err(ERROR_INTERNAL)
     );
 }
-
