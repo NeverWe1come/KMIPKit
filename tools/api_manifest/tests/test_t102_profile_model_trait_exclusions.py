@@ -283,16 +283,16 @@ class T102ProfileModelTraitExclusionTests(unittest.TestCase):
             OUT_OF_SCOPE_API_SHA256,
             "ProfileObjectState and ProfileValidationContext must remain out of scope.",
         )
-        self.assertFalse(
-            any(
-                row.get("packageId") == "rust-kmipkit-protocol"
-                and any(
-                    row.get("exportName", "").startswith(f"<{owner} as ")
-                    for _package, owner in out_of_scope
-                )
-                for row in self.manifest["approvedExclusions"]
-            )
-        )
+        protocol_debug_paths = {
+            f"<{owner} as core::fmt::Debug>::fmt" for _package, owner in out_of_scope
+        }
+        observed_protocol_exclusions = {
+            row["exportName"]
+            for row in self.manifest["approvedExclusions"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and any(row.get("exportName", "").startswith(f"<{owner} as ") for _, owner in out_of_scope)
+        }
+        self.assertEqual(observed_protocol_exclusions, protocol_debug_paths)
 
     def test_manifest_totals_change_only_by_the_exact_profile_model_batch(self) -> None:
         candidates = sum(
@@ -300,9 +300,9 @@ class T102ProfileModelTraitExclusionTests(unittest.TestCase):
             and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(candidates, 2193)
-        self.assertEqual(len(self.manifest["publicDeclarations"]), 7391)
-        self.assertEqual(len(self.manifest["approvedExclusions"]), 7333)
+        self.assertEqual(candidates, 2187)
+        self.assertEqual(len(self.manifest["publicDeclarations"]), 7385)
+        self.assertEqual(len(self.manifest["approvedExclusions"]), 7339)
 
     def _protected_rows(self, owners: object) -> list[dict[str, object]]:
         return sorted(

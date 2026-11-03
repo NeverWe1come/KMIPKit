@@ -10002,3 +10002,30 @@ Warnings and limits:
 
 - `uv` reports the expected `--no-project` warning. The pinned Rust 1.94.0 audit exited 0 despite optional Windows AWS-LC warnings: its `stdalign_check.c` probe failed and NASM was unavailable.
 - This is a Rust trait inventory and traceability update only. No runtime behavior, functional API/ABI mapping, request/response operations, or KMIP wire format changed. No conformance, profile-support, interoperability, certification, or new OASIS requirement claim is made. T022 remains open. Work is local only; nothing was pushed or merged.
+
+### T102 — Caller-attested profile-state Debug trait-artifact exclusions (2026-11-03)
+
+Preflight verified the six exact `core::fmt::Debug::fmt` paths were current blocked KMIPKIT-0043 candidates: `ProfileValidationContext` and `ProfileObjectState` in `rust-kmipkit-protocol`, `rust-kmipkit-client`, and `rust-kmipkit`. The accepted owner `specs/010-profile-conformance/spec.md` is accepted by merge of PR #49 and has 57/57 tasks complete. KMIPKIT-0010-FR-019 covers exchange-scoped caller-attested state; FR-012 covers diagnostic redaction. T102 authority is KMIPKIT-0043-FR-010/021, with FR-013 for diagnostic redaction. OASIS KMIP Specification v2.1 §§4.38 and 4.59 provide context for caller state; no OASIS requirement is assigned to Rust traits.
+
+Source review confirmed the existing manual Debug implementations redact the `ProfileObjectState` identifier and caller-attested fields, and redact the state map in `ProfileValidationContext`. No formatter or runtime code changed. The protocol/root parent declarations remain blocked; client parents remain declared. `client_profile_validation` remains declared and Baseline remains `evidence_incomplete`. The other 111 compiler-observed trait paths for these types remain blocked candidates, including Clone, Eq, and PartialEq; no traits were reused or cached.
+
+The exact-set contract is `tools/api_manifest/tests/test_t102_profile_debug_trait_exclusions.py`. It pins the six target paths, unchanged parent and capability states, owner/exclusion evidence, and the 111 remaining candidates. The manifest delta was applied textually after restoring the original byte representation: exactly the six source rows were removed and inserted as exclusions, and removing those six target slices from the final manifest yields the original bytes elsewhere in the manifest. The final manifest remains under its 20 MiB validator limit. Public declaration/exclusion totals changed from 7,391/7,333 to 7,385/7,339; blocked KMIPKIT-0043 candidates changed from 2,193 to 2,187.
+
+| Phase | Commit | Evidence | Result |
+|---|---|---|---|
+| Red | `af86de049` | Exact-set and CI workflow contracts | Expected failure: the six targets remained candidate declarations without exclusions; the parent-state assertions passed. The workflow guard also failed because CI did not yet invoke the contract. |
+| Green | `67cdf903a` | Six manifest exclusions, regenerated outputs/reports, workflow invocation | Moved only the six Debug paths, preserved all parent states, and added the exact-set contract to CI. |
+| Refactor | This commit | Aggregate guards, shared report, traceability/task/evidence updates, final verification | Updates only affected inventory guards and evidence; no runtime/API behavior changes. |
+
+Verification evidence:
+
+- Existing redaction test under Rust 1.94.0: `cargo +1.94.0 test --locked --offline -p kmipkit-protocol --lib profile_object_state_debug_redacts_identifiers_and_asserted_facts -- --nocapture` — 1 passed.
+- Focused exact-set contract — 3 passed. Full T102 suite `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest discover --failfast -s tools/api_manifest/tests -p 'test_t102*.py' -q` — 213 passed. Full workflow suite with the same `uv run` options and `-s scripts/tests -p 'test_*.py' -q` — 364 passed, 26 skipped; exit 0.
+- `py -B tools/api_manifest/generate.py --check` verified all 12 generated outputs. Rust export audit with `--repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json --check` passed under Rust 1.94.0: 10,463 observed, 4,470 matched, 5,993 excluded, zero issues, missing, unobserved, kind, or conditional mismatches.
+- Shared inventory report and `--check` are current: 10,463 observed (8,420 direct, 2,043 conditional), 864 mapped, 5,993 approved-excluded, and two pre-existing blocked unreconciled declarations. Shared-inventory contracts — 17 passed. Binding export audit `--check` passed: C 757/757, Java 1,014/1,014, Python 1,140/1,140, with zero issues or mismatches; binding-export contracts — 51 passed.
+- The single full manifest-v2 run completed 149/150 tests in 263.185 seconds and exposed one stale aggregate guard in `test_ffi_runtime_metadata_is_owned_and_mapped_in_all_languages` (expected 4,296 Rust exclusions, actual 4,298). `rg` confirmed that was the only `4296` literal in `tools/api_manifest/tests`; it was corrected to 4,298. The affected focused contract then passed 1/1, and the full T102 suite passed again with 213/213. The full manifest-v2 suite was not repeated.
+
+Warnings and limits:
+
+- Windows Rust audit emitted optional AWS-LC `stdalign_check.c` and missing-NASM warnings; the audit exited 0 with a complete matching inventory. The workflow suite emits synthetic failure messages from negative fixture cases; all tests passed.
+- This is inventory reconciliation only. No formatter, runtime, API/ABI capability, KMIP wire behavior, conformance, profile support, or certification claim changed. Work is local only; nothing was pushed or merged.

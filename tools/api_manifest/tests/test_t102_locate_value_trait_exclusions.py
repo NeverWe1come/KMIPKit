@@ -157,7 +157,7 @@ class T102LocateValueTraitExclusionTests(unittest.TestCase):
             row.get("candidateSpecId") == "KMIPKIT-0043"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(total_candidates, 2_193)
+        self.assertEqual(total_candidates, 2_187)
 
     def test_locate_value_parents_and_raw_accessors_keep_their_states(self) -> None:
         rows = {

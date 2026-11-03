@@ -110,12 +110,21 @@ class T102ProfileDebugTraitExclusionTests(unittest.TestCase):
                         self.assertEqual(row["approvalSource"], OWNER_APPROVAL)
                         for requirement_id in (*OWNER_REQUIREMENTS, *T102_REQUIREMENTS):
                             self.assertIn(requirement_id, row["evidence"])
-                        self.assertIn("KMIP Specification v2.1 §§4.38 and 4.59", row["evidence"])
+                        citation = f"KMIP Specification v2.1 {chr(0x00A7)}4.38 and {chr(0x00A7)}4.59"
+                        self.assertIn(citation, row["evidence"])
                         self.assertIn("compiler-generated Rust traits", row["evidence"])
                         self.assertIn("No OASIS requirement is assigned to these traits", row["evidence"])
                         self.assertIn("inventory-only", row["evidence"])
                         self.assertIn("redacted", row["reason"].lower())
-                        self.assertIn("not a separate KMIP client capability", row["reason"])
+                        self.assertIn("no separate kmip client capability", row["reason"].lower())
+
+                observed_excluded = {
+                    row["exportName"]
+                    for row in self.report["excluded"]
+                    if row.get("packageId") == package
+                    and row.get("exportName", "").startswith(prefix)
+                }
+                self.assertEqual(observed_excluded, {debug_path(crate, type_name)})
 
                 all_selected.update((package, path) for path in (observed - (observed - {debug_path(crate, type_name)})))
                 retained_path_count += len(declarations)
