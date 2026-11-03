@@ -71,6 +71,32 @@ RUST_MAPPINGS = {
     "kmipkit_protocol::ProfileValidationError::source_clause_id",
     "kmipkit_protocol::ProfileValidationError::source_gap_id",
     "kmipkit_protocol::ProfileValidationError::source_gap_locator",
+    *{
+        f"{package}::ProfileValidationErrorCode{suffix}"
+        for package in ("kmipkit", "kmipkit_client", "kmipkit_protocol")
+        for suffix in (
+            "",
+            "::as_str",
+            "::ConditionalProfileUnsatisfied",
+            "::ConflictingConstraints",
+            "::DependencyCycle",
+            "::DuplicateProfile",
+            "::EmptySelection",
+            "::IncompleteRuleMapping",
+            "::MissingCategoryTest",
+            "::MissingRequirementMetadata",
+            "::MissingRuleMapping",
+            "::ProfileStateBindingMismatch",
+            "::ProfileStateContextRequired",
+            "::ProfileUnavailable",
+            "::RequestRuleRejected",
+            "::ResponseRuleRejected",
+            "::RuleMappingMismatch",
+            "::TransportConstraintRejected",
+            "::UnknownProfile",
+            "::UnresolvedRequirementScope",
+        )
+    },
 }
 
 C_MAPPINGS = {

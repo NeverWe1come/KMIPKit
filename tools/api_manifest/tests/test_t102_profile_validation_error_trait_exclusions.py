@@ -207,7 +207,7 @@ class T102ProfileValidationErrorTraitExclusionTests(unittest.TestCase):
 
         self.assertEqual(len(all_paths), 135)
 
-    def test_functional_profile_error_and_blocked_code_states_remain_unchanged(self) -> None:
+    def test_profile_error_stays_declared_while_code_rows_leave_t102_candidates(self) -> None:
         for package, crate in PACKAGES.items():
             rows = {
                 row["exportName"]: row
@@ -221,14 +221,14 @@ class T102ProfileValidationErrorTraitExclusionTests(unittest.TestCase):
             }
             expected_error[f"{crate}::ProfileValidationError::for_test"] = "blocked"
             expected_code = {
-                f"{crate}::{name}": "blocked" for name in BLOCKED_CODE_EXPORTS
+                f"{crate}::{name}": "declared" for name in BLOCKED_CODE_EXPORTS
             }
             self.assertEqual(
                 {name: row["declarationState"] for name, row in rows.items()},
                 expected_error | expected_code,
             )
             for name in expected_code:
-                self.assertEqual(rows[name]["candidateSpecId"], "KMIPKIT-0043")
+                self.assertEqual(rows[name]["capabilityId"], "client_profile_validation")
 
     def test_profile_capability_and_baseline_evidence_state_are_preserved(self) -> None:
         capability = next(
@@ -250,7 +250,7 @@ class T102ProfileValidationErrorTraitExclusionTests(unittest.TestCase):
             and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(candidates, 1098)
+        self.assertEqual(candidates, 1038)
         self.assertEqual(len(self.manifest["publicDeclarations"]), 6296)
         self.assertEqual(len(self.manifest["approvedExclusions"]), 8428)
 
