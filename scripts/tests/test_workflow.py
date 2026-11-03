@@ -456,6 +456,16 @@ class WorkflowContractTests(unittest.TestCase):
             "Every supported platform must verify the exact profile model trait exclusions.",
         )
 
+    def test_script_contract_job_runs_t102_profile_debug_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_profile_debug_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact profile-state Debug trait exclusions.",
+        )
+
     def test_script_contract_job_runs_t102_cryptographic_value_trait_exclusion_contract(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "script-contracts")
