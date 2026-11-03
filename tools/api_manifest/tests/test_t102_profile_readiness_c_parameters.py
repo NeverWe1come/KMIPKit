@@ -85,7 +85,7 @@ class T102ProfileReadinessCParameterTests(unittest.TestCase):
         contracts = {
             "kmipkit_profile_readiness_evaluate_v1": (
                 "The output handle slot must be aligned writable storage and must not overlap the profile span, record array, or any requirement span.",
-                "The profile_id span must point to aligned, readable storage.",
+                "The profile_id parameter must point to an aligned, readable byte-span record; for a nonzero length, its data must point to readable bytes.",
                 "The records array may be NULL only when record_count is zero; otherwise it must be an aligned, readable array of record_count records.",
                 "Each nested requirement span with nonzero length must point to readable bytes.",
                 "Profile and evidence inputs must remain readable and unmodified until the call returns.",
