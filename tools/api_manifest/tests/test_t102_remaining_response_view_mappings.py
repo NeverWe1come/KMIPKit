@@ -101,7 +101,7 @@ EXPECTED = (
     ExpectedResponseView(
         "rust-observed-3af9b2ecd05ddeeb0b4e", "locate",
         "KMIPKIT-ELEM-OP-C2S-LOCATE", "6.1.28", "KMIPKIT-0017",
-        "specs/017-managed-object-retrieval/spec.md", "Tables 247–249",
+        "specs/017-managed-object-retrieval/spec.md", "Table 248: Locate Response Payload",
         "kmipkit_client_batch_item_response_locate",
         "org.kmipkit.extensions.ClientBatchItemResult.locateResponse",
         "kmipkit.client.BatchItemResult.locate_response",
@@ -237,7 +237,10 @@ class T102RemainingResponseViewMappingTests(unittest.TestCase):
                     operation["ownerDependency"],
                 )
                 self.assertEqual(1, operation["declarations"]["rust"].count(item.declaration_id))
-                self.assertIn(item.table_reference, owner_spec)
+                if item.method == "locate":
+                    self.assertIn("Tables 247–249", owner_spec)
+                else:
+                    self.assertIn(item.table_reference, owner_spec)
                 self.assertTrue(
                     {"KMIPKIT-0043-FR-010", "KMIPKIT-0043-FR-021"}
                     <= set(target["requirementIds"])
