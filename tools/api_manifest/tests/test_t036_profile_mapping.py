@@ -16,6 +16,27 @@ USER_GUIDE_PATHS = (
     ROOT / "docs" / "user-guide" / "es" / "profile-conformance.md",
 )
 
+PROFILE_MODEL_REEXPORT_MAPPINGS = {
+    f"{crate}::{type_name}{suffix}"
+    for crate in ("kmipkit", "kmipkit_protocol")
+    for type_name, suffixes in {
+        "ProfileObjectState": (
+            "",
+            "::new",
+            "::with_get_usage_allocation_changed_count",
+            "::with_get_usage_allocation_performed",
+            "::with_original_creation_date_present",
+            "::with_protection_use_started",
+            "::with_usage_limits_count",
+            "::with_usage_limits_present",
+            "::with_usage_limits_total",
+        ),
+        "ProfileValidationContext": ("", "::new", "::with_object_state"),
+        "ProfileValidationSelection": ("", "::new", "::profile_ids"),
+    }.items()
+    for suffix in suffixes
+}
+
 RUST_MAPPINGS = {
     "kmipkit_client::ProfileValidationSelection",
     "kmipkit_client::ProfileValidationContext",
@@ -97,6 +118,7 @@ RUST_MAPPINGS = {
             "::UnresolvedRequirementScope",
         )
     },
+    *PROFILE_MODEL_REEXPORT_MAPPINGS,
 }
 
 C_MAPPINGS = {

@@ -17,7 +17,7 @@ REPORT_PATH = REPORTS_PATH / "rust-export-report-2026-11-01.json"
 TYPE_CASES = (
     ("rust-kmipkit", "kmipkit::ProfileTransport", "kmipkit_protocol::profile::ProfileTransport", "blocked", 14),
     ("rust-kmipkit", "kmipkit::ProfileValidationResult", "kmipkit_protocol::profile::ProfileValidationResult", "blocked", 14),
-    ("rust-kmipkit", "kmipkit::ProfileValidationSelection", "kmipkit_protocol::profile::ProfileValidationSelection", "blocked", 14),
+    ("rust-kmipkit", "kmipkit::ProfileValidationSelection", "kmipkit_protocol::profile::ProfileValidationSelection", "declared", 14),
     ("rust-kmipkit-client", "kmipkit_client::ProfileTransport", "kmipkit_protocol::profile::ProfileTransport", "blocked", 14),
     ("rust-kmipkit-client", "kmipkit_client::ProfileValidationSelection", "kmipkit_protocol::profile::ProfileValidationSelection", "declared", 14),
     ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileEvidenceReadiness", "kmipkit_protocol::profile::ProfileReadiness", "blocked", 14),
@@ -26,7 +26,7 @@ TYPE_CASES = (
     ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileReadinessBlocker", "kmipkit_protocol::profile::ProfileReadinessBlocker", "blocked", 27),
     ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileTransport", "kmipkit_protocol::profile::ProfileTransport", "blocked", 14),
     ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileValidationResult", "kmipkit_protocol::profile::ProfileValidationResult", "blocked", 14),
-    ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileValidationSelection", "kmipkit_protocol::profile::ProfileValidationSelection", "blocked", 14),
+    ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileValidationSelection", "kmipkit_protocol::profile::ProfileValidationSelection", "declared", 14),
     (
         "rust-kmipkit-protocol",
         "kmipkit_protocol::profiles_generated::GeneratedClientProfile",
@@ -268,22 +268,22 @@ class T102ProfileModelTraitExclusionTests(unittest.TestCase):
             "Parent, method, field, variant, and reexport records must remain unchanged.",
         )
 
-        out_of_scope = (
+        protocol_reexports = (
             ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileObjectState"),
             ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileValidationContext"),
         )
-        for package, owner in out_of_scope:
+        for package, owner in protocol_reexports:
             parent = [
                 row
                 for row in self.manifest["publicDeclarations"]
                 if row.get("packageId") == package and row.get("exportName") == owner
             ]
             self.assertEqual(len(parent), 1, owner)
-            self.assertEqual(parent[0]["declarationState"], "blocked", owner)
+            self.assertEqual(parent[0]["declarationState"], "declared", owner)
         self.assertEqual(
-            canonical_sha256(self._protected_rows(out_of_scope)),
+            canonical_sha256(self._protected_rows(protocol_reexports)),
             OUT_OF_SCOPE_API_SHA256,
-            "ProfileObjectState and ProfileValidationContext must remain out of scope.",
+            "ProfileObjectState and ProfileValidationContext aliases retain their client mapping.",
         )
         protocol_profile_trait_paths: set[str] = set()
         for type_name, direct_count, target in (
@@ -298,7 +298,7 @@ class T102ProfileModelTraitExclusionTests(unittest.TestCase):
             row["exportName"]
             for row in self.manifest["approvedExclusions"]
             if row.get("packageId") == "rust-kmipkit-protocol"
-            and any(row.get("exportName", "").startswith(f"<{owner} as ") for _, owner in out_of_scope)
+            and any(row.get("exportName", "").startswith(f"<{owner} as ") for _, owner in protocol_reexports)
         }
         self.assertEqual(observed_protocol_exclusions, protocol_profile_trait_paths)
 
@@ -308,7 +308,7 @@ class T102ProfileModelTraitExclusionTests(unittest.TestCase):
             and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(candidates, 1098)
+        self.assertEqual(candidates, 1008)
         self.assertEqual(len(self.manifest["publicDeclarations"]), 6296)
         self.assertEqual(len(self.manifest["approvedExclusions"]), 8428)
 

@@ -157,7 +157,6 @@ class T102ProfileContextStateTraitBatchTests(unittest.TestCase):
 
     def test_parent_states_and_profile_claims_remain_unchanged(self) -> None:
         for package, crate in PACKAGES.items():
-            expected_parent_state = "declared" if package == "rust-kmipkit-client" else "blocked"
             for type_name in TYPES:
                 parents = [
                     row
@@ -166,7 +165,7 @@ class T102ProfileContextStateTraitBatchTests(unittest.TestCase):
                     and row.get("exportName") == f"{crate}::{type_name}"
                 ]
                 self.assertEqual(len(parents), 1)
-                self.assertEqual(parents[0]["declarationState"], expected_parent_state)
+                self.assertEqual(parents[0]["declarationState"], "declared")
 
         capability = next(
             row for row in self.manifest["capabilities"]
@@ -185,7 +184,7 @@ class T102ProfileContextStateTraitBatchTests(unittest.TestCase):
             and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(candidates, 1098)
+        self.assertEqual(candidates, 1008)
         self.assertEqual(len(self.manifest["publicDeclarations"]), 6296)
         self.assertEqual(len(self.manifest["approvedExclusions"]), 8428)
 
