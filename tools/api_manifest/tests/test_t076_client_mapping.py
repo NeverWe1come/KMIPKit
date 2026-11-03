@@ -4388,5 +4388,117 @@ class T076ClientMappingTests(unittest.TestCase):
 
 
 
+    def test_profile_readiness_python_exports_are_exactly_mapped_or_excluded(self) -> None:
+        python_root = ROOT / "bindings" / "python" / "src" / "kmipkit"
+        sources = {
+            path.relative_to(python_root.parent).as_posix(): path.read_text(encoding="utf-8")
+            for path in sorted(python_root.rglob("*.py"))
+        }
+        inventory = audit_binding_exports.inventory_python_sources(sources)
+        observed = {
+            row["exportName"]
+            for row in inventory["declarations"]
+            if row["exportName"].startswith(
+                ("kmipkit.profile_catalog", "kmipkit.profile_readiness")
+            )
+        }
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "python-kmipkit"
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "python-kmipkit"
+        }
+
+        enum_members = (
+            "DISCOURAGED_ABSENCE_OR_DEVIATION",
+            "OPTIONAL_CAPABILITY",
+            "PROHIBITED_BEHAVIOR",
+            "RECOMMENDED_BEHAVIOR_OR_DEVIATION",
+            "REQUIRED_BEHAVIOR",
+        )
+        expected_enum_exports = {
+            f"kmipkit.profile_catalog.VerificationCategory.{member}"
+            for member in enum_members
+        }
+        dataclass_types = (
+            ("profile_catalog", "ClientProfile"),
+            ("profile_catalog", "ClientRequirement"),
+            ("profile_catalog", "ProfileScopeBlocker"),
+            ("profile_catalog", "ProfileTestCase"),
+            ("profile_readiness", "ProfileEvidenceRecord"),
+            ("profile_readiness", "ProfileReadiness"),
+            ("profile_readiness", "ProfileReadinessBlocker"),
+        )
+        dataclass_members = (
+            "__dataclass_fields__",
+            "__dataclass_params__",
+            "__delattr__",
+            "__eq__",
+            "__hash__",
+            "__init__",
+            "__match_args__",
+            "__repr__",
+            "__setattr__",
+            "__slots__",
+        )
+        expected_exclusions = {
+            f"kmipkit.{module}.{type_name}.{member}"
+            for module, type_name in dataclass_types
+            for member in dataclass_members
+        }
+        expected_exclusions.update(
+            {
+                "kmipkit.profile_catalog",
+                "kmipkit.profile_readiness",
+                "kmipkit.profile_readiness.ProfileEvidenceRecord.requirement_id",
+                "kmipkit.profile_readiness.ProfileEvidenceRecord.passed_value",
+            }
+        )
+        unclassified = observed - declarations.keys() - exclusions.keys()
+        self.assertEqual(expected_enum_exports | expected_exclusions, unclassified)
+
+        for export_name in expected_enum_exports:
+            with self.subTest(mapped_enum=export_name):
+                declaration = declarations.get(export_name)
+                self.assertIsNotNone(declaration)
+                if declaration is not None:
+                    self.assertEqual("client_profile_readiness", declaration["capabilityId"])
+                    self.assertEqual(export_name, declaration["languageMappings"]["python"]["name"])
+                    self.assertTrue(
+                        declaration["languageMappings"]["java"]["name"].endswith(
+                            export_name.rsplit(".", 1)[-1]
+                        )
+                    )
+                self.assertNotIn(export_name, exclusions)
+
+        profile_exclusions = {
+            export_name: exclusion
+            for export_name, exclusion in exclusions.items()
+            if export_name.startswith(("kmipkit.profile_catalog", "kmipkit.profile_readiness"))
+        }
+        self.assertEqual(expected_exclusions, set(profile_exclusions))
+        for export_name, exclusion in profile_exclusions.items():
+            with self.subTest(excluded_export=export_name):
+                self.assertEqual("python-kmipkit", exclusion["packageId"])
+                self.assertEqual(export_name, exclusion["exportName"])
+                self.assertTrue(exclusion["reason"])
+                self.assertTrue(exclusion["evidence"])
+                self.assertEqual(
+                    "specs/043-public-api-bindings/spec.md",
+                    exclusion["approvalSource"]["path"],
+                )
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+                if export_name in {
+                    "kmipkit.profile_readiness.ProfileEvidenceRecord.requirement_id",
+                    "kmipkit.profile_readiness.ProfileEvidenceRecord.passed_value",
+                }:
+                    self.assertIn("KMIPKIT-0010-FR-017", exclusion["evidence"])
+                    self.assertIn("input-only", exclusion["reason"])
+
+
 if __name__ == "__main__":
     unittest.main()
