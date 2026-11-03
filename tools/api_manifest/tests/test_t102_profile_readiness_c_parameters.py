@@ -84,27 +84,36 @@ class T102ProfileReadinessCParameterTests(unittest.TestCase):
         header = header_path.read_text(encoding="utf-8")
         contracts = {
             "kmipkit_profile_readiness_evaluate_v1": (
-                "The output handle slot must be aligned writable storage and must not overlap the profile span, record array, or any requirement span.",
-                "The profile_id parameter must point to an aligned, readable byte-span record; for a nonzero length, its data must point to readable bytes.",
-                "The records array may be NULL only when record_count is zero; otherwise it must be an aligned, readable array of record_count records.",
-                "Each nested requirement span with nonzero length must point to readable bytes.",
-                "Profile and evidence inputs must remain readable and unmodified until the call returns.",
+                "Canonical Rust evaluator; unknown profiles return success with a null handle.",
+                (
+                    "The output handle slot must be aligned writable storage and must not overlap the profile span, record array, or any requirement span.",
+                    "The profile_id parameter must point to an aligned, readable byte-span record; for a nonzero length, its data must point to readable bytes.",
+                    "The records array may be NULL only when record_count is zero; otherwise it must be an aligned, readable array of record_count records.",
+                    "Each nested requirement span with nonzero length must point to readable bytes.",
+                    "Profile and evidence inputs must remain readable and unmodified until the call returns.",
+                ),
             ),
             "kmipkit_profile_readiness_view_get_v1": (
-                "The handle must remain live without concurrent release during the call and while returned spans are read.",
-                "The output view must be aligned, readable, and writable storage initialized with the exact size and ABI version 1.",
-                "The output view must not overlap the handle's owned storage or any borrowed span.",
+                "Copies readiness fields into a versioned view borrowed from a live handle.",
+                (
+                    "The handle must remain live without concurrent release during the call and while returned spans are read.",
+                    "The output view must be aligned, readable, and writable storage initialized with the exact size and ABI version 1.",
+                    "The output view must not overlap the handle's owned storage or any borrowed span.",
+                ),
             ),
             "kmipkit_profile_readiness_blocker_at_v1": (
-                "The handle must remain live without concurrent release during the call and while returned spans are read.",
-                "The output blocker view must be aligned, readable, and writable storage initialized with the exact size and ABI version 1.",
-                "The output blocker view must not overlap the handle's owned storage or any borrowed span.",
+                "Copies one redacted blocker into a versioned view borrowed from the readiness handle.",
+                (
+                    "The handle must remain live without concurrent release during the call and while returned spans are read.",
+                    "The output blocker view must be aligned, readable, and writable storage initialized with the exact size and ABI version 1.",
+                    "The output blocker view must not overlap the handle's owned storage or any borrowed span.",
+                ),
             ),
         }
-        for symbol, expected_documentation in contracts.items():
+        for symbol, (comment_anchor, expected_documentation) in contracts.items():
             with self.subTest(symbol=symbol):
                 declaration_at = header.index(symbol + "(")
-                comment_start = header.rfind("/* " + expected_documentation[0], 0, declaration_at)
+                comment_start = header.rfind("/* " + comment_anchor, 0, declaration_at)
                 self.assertGreaterEqual(comment_start, 0)
                 comment_end = header.find("*/", comment_start, declaration_at)
                 self.assertGreaterEqual(comment_end, comment_start)
