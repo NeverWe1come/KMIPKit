@@ -16,7 +16,11 @@ OWNER_APPROVAL = {
     "status": "Approved",
     "evidence": "**Status**: Approved for implementation — 2026-10-11",
 }
-OWNER_REQUIREMENTS = ("KMIPKIT-0041-FR-001", "KMIPKIT-0041-FR-002", "KMIPKIT-0041-FR-004")
+OWNER_REQUIREMENTS = (
+    "KMIPKIT-0041-FR-001",
+    "KMIPKIT-0041-FR-004",
+    "KMIPKIT-0041-FR-005",
+)
 T102_REQUIREMENTS = ("KMIPKIT-0043-FR-010", "KMIPKIT-0043-FR-021")
 CONDITIONAL_TRAITS = {
     "core::convert::Into<U>>::into",
@@ -91,8 +95,8 @@ ERROR_PREFIXES = (
     ("rust-kmipkit-protocol", "kmipkit_protocol::RngSeedError"),
 )
 NORMATIVE_CONTEXT = {
-    "RngRetrieveError": "OASIS KMIP v2.1 §6.1.49 Tables 316-318",
-    "RngSeedError": "OASIS KMIP v2.1 §6.1.50 Tables 319-321",
+    "RngRetrieveError": "OASIS KMIP v2.1 Section 6.1.49 Tables 316-318",
+    "RngSeedError": "OASIS KMIP v2.1 Section 6.1.50 Tables 319-321",
 }
 
 
@@ -165,6 +169,15 @@ class T102RngRootTraitBatchTests(unittest.TestCase):
                 self.assertIn(NORMATIVE_CONTEXT[owner_type], row["evidence"])
                 self.assertIn("no OASIS standard-trait requirement", row["evidence"])
                 self.assertIn("inventory-only", row["evidence"])
+                if category == "error":
+                    for requirement_id in ("KMIPKIT-0041-FR-003", "KMIPKIT-0041-FR-006"):
+                        self.assertIn(requirement_id, row["evidence"])
+                    self.assertIn("payload-free ResultValidationError source", row["evidence"])
+                elif "RngSeedRequest" in key[1]:
+                    self.assertIn("SecretBytes Debug output is redacted", row["evidence"])
+                    self.assertIn("trait paths do not expose seed bytes", row["evidence"])
+                else:
+                    self.assertIn("only the requested data length", row["evidence"])
 
         candidate_count = sum(
             row.get("candidateSpecId") == "KMIPKIT-0043"

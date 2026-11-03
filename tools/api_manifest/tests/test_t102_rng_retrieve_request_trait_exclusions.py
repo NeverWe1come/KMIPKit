@@ -130,19 +130,28 @@ class T102RngRetrieveRequestTraitExclusionTests(unittest.TestCase):
         root_rows = {
             row["exportName"]: row["declarationState"] for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit"
-            and (row.get("exportName") in expected_root_api or row.get("exportName", "").startswith(ROOT_PREFIX))
+            and row.get("exportName") in expected_root_api
         }
-        self.assertEqual(set(root_rows), expected_root_traits | expected_root_api)
+        self.assertEqual(set(root_rows), expected_root_api)
         self.assertEqual(len(expected_root_traits), 19)
         self.assertEqual(len(expected_root_api), 4)
         self.assertTrue(all(state == "blocked" for state in root_rows.values()))
+
+        root_exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith(ROOT_PREFIX)
+        }
+        self.assertEqual(set(root_exclusions), expected_root_traits)
+        self.assertTrue(all(row["approvalSource"]["path"] == "specs/027-rng-operations/spec.md" for row in root_exclusions.values()))
 
     def test_candidate_count_moves_only_by_the_nineteen_protocol_paths(self) -> None:
         candidate_count = sum(
             row.get("candidateSpecId") == "KMIPKIT-0043" and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(candidate_count, 1721)
+        self.assertEqual(candidate_count, 1588)
 
 
 if __name__ == "__main__":

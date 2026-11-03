@@ -274,9 +274,9 @@ class T102LifecycleErrorTraitExclusionTests(unittest.TestCase):
             and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(count, 1721)
-        self.assertEqual(len(self.manifest["publicDeclarations"]), 6919)
-        self.assertEqual(len(self.manifest["approvedExclusions"]), 7805)
+        self.assertEqual(count, 1588)
+        self.assertEqual(len(self.manifest["publicDeclarations"]), 6786)
+        self.assertEqual(len(self.manifest["approvedExclusions"]), 7938)
 
 
 if __name__ == "__main__":

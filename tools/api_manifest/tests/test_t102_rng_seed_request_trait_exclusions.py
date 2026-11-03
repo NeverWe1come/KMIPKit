@@ -151,36 +151,37 @@ class T102RngSeedRequestTraitExclusionTests(unittest.TestCase):
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit"
-            and (
-                row.get("exportName", "").startswith("kmipkit::RngSeedRequest")
-                or row.get("exportName", "").startswith(ROOT_PREFIX)
-            )
-        }
-        expected_root_traits = {
-            name.replace("<kmipkit_protocol::RngSeedRequest", "<kmipkit::RngSeedRequest", 1)
-            for name in EXPECTED_PROTOCOL_TRAIT_EXPORTS
+            and row.get("exportName", "").startswith("kmipkit::RngSeedRequest")
         }
         expected_root_declarations = {
             "kmipkit::RngSeedRequest",
             "kmipkit::RngSeedRequest::new",
             "kmipkit::RngSeedRequest::to_ttlv_payload",
         }
-        self.assertEqual(set(root_rows), expected_root_traits | expected_root_declarations)
-        self.assertEqual(
-            {name for name in root_rows if name.startswith(ROOT_PREFIX)},
-            expected_root_traits,
-        )
+        self.assertEqual(set(root_rows), expected_root_declarations)
         self.assertTrue(all(row["declarationState"] == "blocked" for row in root_rows.values()))
         self.assertTrue(
             all(row.get("candidateSpecId") == "KMIPKIT-0043" for row in root_rows.values())
         )
+        expected_root_traits = {
+            name.replace("<kmipkit_protocol::RngSeedRequest", "<kmipkit::RngSeedRequest", 1)
+            for name in EXPECTED_PROTOCOL_TRAIT_EXPORTS
+        }
+        root_exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith(ROOT_PREFIX)
+        }
+        self.assertEqual(set(root_exclusions), expected_root_traits)
+        self.assertTrue(all(row["approvalSource"]["path"] == "specs/027-rng-operations/spec.md" for row in root_exclusions.values()))
         self.assertEqual(
             sum(
                 row.get("candidateSpecId") == "KMIPKIT-0043"
                 and row.get("declarationState") == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            1721,
+            1588,
         )
 
 

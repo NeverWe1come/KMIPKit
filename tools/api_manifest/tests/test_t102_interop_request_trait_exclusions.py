@@ -199,7 +199,7 @@ class T102InteropRequestTraitExclusionTests(unittest.TestCase):
                 and row["declarationState"] == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            1721,
+            1588,
         )
 
 

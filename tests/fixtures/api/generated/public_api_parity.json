@@ -95726,6 +95726,1735 @@
       "exportName": "<kmipkit_client::UsageAllocationContextError as core::fmt::Display>::fmt",
       "packageId": "rust-kmipkit-client",
       "reason": "This exact Rust standard-trait implementation is language-level behavior of a Rust value, not a separate KMIPKit client capability. Its functional declarations remain independently tracked under the approved policy-control owner and KMIPKIT-0043 inventory."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveError as core::error::Error>::description",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveError as core::error::Error>::source",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-002; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngRetrieveRequest alias contains only the requested data length. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveRequest as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-002; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngRetrieveRequest alias contains only the requested data length. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveRequest as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-002; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngRetrieveRequest alias contains only the requested data length. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveRequest as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-002; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngRetrieveRequest alias contains only the requested data length. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveRequest as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-002; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngRetrieveRequest alias contains only the requested data length. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveRequest as core::borrow::Borrow<kmipkit_protocol::rng_retrieve::RngRetrieveRequest>>::borrow",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-002; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngRetrieveRequest alias contains only the requested data length. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveRequest as core::borrow::BorrowMut<kmipkit_protocol::rng_retrieve::RngRetrieveRequest>>::borrow_mut",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-002; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngRetrieveRequest alias contains only the requested data length. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveRequest as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-002; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngRetrieveRequest alias contains only the requested data length. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveRequest as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-002; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngRetrieveRequest alias contains only the requested data length. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveRequest as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-002; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngRetrieveRequest alias contains only the requested data length. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveRequest as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-002; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngRetrieveRequest alias contains only the requested data length. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveRequest as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-002; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngRetrieveRequest alias contains only the requested data length. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveRequest as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-002; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngRetrieveRequest alias contains only the requested data length. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveRequest as core::convert::From<kmipkit_protocol::rng_retrieve::RngRetrieveRequest>>::from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-002; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngRetrieveRequest alias contains only the requested data length. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveRequest as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-002; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngRetrieveRequest alias contains only the requested data length. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveRequest as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-002; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngRetrieveRequest alias contains only the requested data length. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveRequest as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-002; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngRetrieveRequest alias contains only the requested data length. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveRequest as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-002; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngRetrieveRequest alias contains only the requested data length. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveRequest as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-002; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngRetrieveRequest alias contains only the requested data length. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngRetrieveRequest as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedError as core::error::Error>::description",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedError as core::error::Error>::source",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngSeedRequest alias stores SecretBytes; SecretBytes Debug output is redacted and these trait paths do not expose seed bytes. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedRequest as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngSeedRequest alias stores SecretBytes; SecretBytes Debug output is redacted and these trait paths do not expose seed bytes. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedRequest as core::borrow::Borrow<kmipkit_protocol::rng_seed::RngSeedRequest>>::borrow",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngSeedRequest alias stores SecretBytes; SecretBytes Debug output is redacted and these trait paths do not expose seed bytes. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedRequest as core::borrow::BorrowMut<kmipkit_protocol::rng_seed::RngSeedRequest>>::borrow_mut",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngSeedRequest alias stores SecretBytes; SecretBytes Debug output is redacted and these trait paths do not expose seed bytes. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedRequest as core::convert::From<kmipkit_protocol::rng_seed::RngSeedRequest>>::from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngSeedRequest alias stores SecretBytes; SecretBytes Debug output is redacted and these trait paths do not expose seed bytes. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedRequest as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngSeedRequest alias stores SecretBytes; SecretBytes Debug output is redacted and these trait paths do not expose seed bytes. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedRequest as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngSeedRequest alias stores SecretBytes; SecretBytes Debug output is redacted and these trait paths do not expose seed bytes. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedRequest as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngSeedRequest alias stores SecretBytes; SecretBytes Debug output is redacted and these trait paths do not expose seed bytes. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedRequest as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngSeedRequest alias stores SecretBytes; SecretBytes Debug output is redacted and these trait paths do not expose seed bytes. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedRequest as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The root RngSeedRequest alias stores SecretBytes; SecretBytes Debug output is redacted and these trait paths do not expose seed bytes. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit::RngSeedRequest as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngRetrieveError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngRetrieveError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngRetrieveError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngRetrieveError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngRetrieveError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngRetrieveError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngRetrieveError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngRetrieveError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngRetrieveError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngRetrieveError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngRetrieveError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngRetrieveError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngRetrieveError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngRetrieveError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngRetrieveError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngRetrieveError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngRetrieveError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngRetrieveError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngRetrieveError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngRetrieveError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngRetrieveError as core::error::Error>::description",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngRetrieveError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngRetrieveError as core::error::Error>::source",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngRetrieveError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngRetrieveError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.49 Tables 316-318 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngRetrieveError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngSeedError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngSeedError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngSeedError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngSeedError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngSeedError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngSeedError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngSeedError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngSeedError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngSeedError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngSeedError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngSeedError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngSeedError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngSeedError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngSeedError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngSeedError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngSeedError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngSeedError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngSeedError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngSeedError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngSeedError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngSeedError as core::error::Error>::description",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngSeedError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngSeedError as core::error::Error>::source",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngSeedError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngSeedError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0041",
+      "evidence": "KMIPKIT-0041-FR-001; KMIPKIT-0041-FR-003; KMIPKIT-0041-FR-004; KMIPKIT-0041-FR-005; KMIPKIT-0041-FR-006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. Approved owner specs/027-rng-operations/spec.md. OASIS KMIP v2.1 Section 6.1.50 Tables 319-321 describes the operation payload and result alternatives as functional context only; no OASIS standard-trait requirement applies. The error exposes only a payload-free ResultValidationError source and no response bytes, response TTLV, Result Message text, identifier, or secret. This exact compiler-observed path is inventory-only and makes no conformance claim.",
+      "exportName": "<kmipkit_protocol::RngSeedError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of an RNG request or payload-free error alias, not a separate KMIPKit client capability; its functional declaration remains separately tracked."
     }
   ],
   "capabilities": [
