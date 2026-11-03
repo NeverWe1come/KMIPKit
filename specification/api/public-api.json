@@ -332464,8 +332464,11 @@
         ],
         "documentation": [
           "Canonical Rust evaluator; unknown profiles return success with a null handle. Bounded to 100,000 records and 16 MiB aggregate UTF-8 input.",
-          "The output handle slot must not overlap the profile span, record array, or any requirement span.",
-          "Inputs must remain readable and unmodified until the call returns."
+          "The output handle slot must be aligned writable storage and must not overlap the profile span, record array, or any requirement span.",
+          "The profile_id parameter must point to an aligned, readable byte-span record; for a nonzero length, its data must point to readable bytes.",
+          "The records array may be NULL only when record_count is zero; otherwise it must be an aligned, readable array of record_count records.",
+          "Each nested requirement span with nonzero length must point to readable bytes.",
+          "Profile and evidence inputs must remain readable and unmodified until the call returns."
         ]
       }
     },
@@ -332530,7 +332533,8 @@
         "documentation": [
           "Copies readiness fields into a versioned view borrowed from a live handle.",
           "The handle must remain live without concurrent release during the call and while returned spans are read.",
-          "The output view must be aligned writable storage and must not overlap the handle or borrowed spans."
+          "The output view must be aligned, readable, and writable storage initialized with the exact size and ABI version 1.",
+          "The output view must not overlap the handle's owned storage or any borrowed span."
         ]
       }
     },
@@ -332600,7 +332604,8 @@
         "documentation": [
           "Copies one redacted blocker into a versioned view borrowed from the readiness handle.",
           "The handle must remain live without concurrent release during the call and while returned spans are read.",
-          "The output blocker view must be aligned writable storage and must not overlap the handle or borrowed spans."
+          "The output blocker view must be aligned, readable, and writable storage initialized with the exact size and ABI version 1.",
+          "The output blocker view must not overlap the handle's owned storage or any borrowed span."
         ]
       }
     },
