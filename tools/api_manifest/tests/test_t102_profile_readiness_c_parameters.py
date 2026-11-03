@@ -79,6 +79,30 @@ class T102ProfileReadinessCParameterTests(unittest.TestCase):
         self.assertIn(record_layout, header)
         self.assertLess(header.index(span_layout), header.index(record_layout))
 
+    def test_generated_header_places_readiness_safety_preconditions_by_each_declaration(self) -> None:
+        header = generate.render_c_header(self.manifest)
+        contracts = {
+            "kmipkit_profile_readiness_evaluate_v1": (
+                "The output handle slot must not overlap the profile span, record array, or any requirement span.",
+                "Inputs must remain readable and unmodified until the call returns.",
+            ),
+            "kmipkit_profile_readiness_view_get_v1": (
+                "The handle must remain live without concurrent release during the call and while returned spans are read.",
+                "The output view must be aligned writable storage and must not overlap the handle or borrowed spans.",
+            ),
+            "kmipkit_profile_readiness_blocker_at_v1": (
+                "The handle must remain live without concurrent release during the call and while returned spans are read.",
+                "The output blocker view must be aligned writable storage and must not overlap the handle or borrowed spans.",
+            ),
+        }
+        for symbol, expected_documentation in contracts.items():
+            with self.subTest(symbol=symbol):
+                declaration_at = header.index(symbol + "(")
+                previous_declaration = header.rfind(";", 0, declaration_at)
+                declaration_context = header[previous_declaration + 1:declaration_at]
+                for expected_line in expected_documentation:
+                    self.assertIn(expected_line, declaration_context)
+
 
 if __name__ == "__main__":
     unittest.main()
