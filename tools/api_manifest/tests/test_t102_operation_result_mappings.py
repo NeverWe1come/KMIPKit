@@ -13,6 +13,11 @@ from tools.api_manifest.tests.test_t102_remaining_response_view_mappings import 
 from tools.api_manifest.tests.test_t102_response_view_mappings import (
     EXPECTED as RESPONSE_VIEWS,
 )
+from tools.api_manifest.tests.t102_manifest_totals import (
+    T102_APPROVED_EXCLUSIONS,
+    T102_BLOCKED_CANDIDATES,
+    T102_PUBLIC_DECLARATIONS,
+)
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
@@ -138,6 +143,17 @@ class T102OperationResultMappingTests(unittest.TestCase):
         ):
             with self.subTest(export=export):
                 self.assertIn(export, self.declarations)
+
+    def test_post_batch_manifest_totals(self) -> None:
+        blocked = sum(
+            row.get("declarationState") == "blocked"
+            and row.get("candidateSpecId") == "KMIPKIT-0043"
+            for row in self.manifest["publicDeclarations"]
+        )
+        self.assertEqual(715, T102_BLOCKED_CANDIDATES)
+        self.assertEqual(T102_BLOCKED_CANDIDATES, blocked)
+        self.assertEqual(T102_PUBLIC_DECLARATIONS, len(self.manifest["publicDeclarations"]))
+        self.assertEqual(T102_APPROVED_EXCLUSIONS, len(self.manifest["approvedExclusions"]))
 
     def test_exact_operation_result_declarations_map_to_shared_metadata(self) -> None:
         self.assertEqual(25, len(EXPECTED))

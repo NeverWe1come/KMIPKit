@@ -158,7 +158,7 @@ class T102Pkcs11ClientRootTraitExclusionTests(unittest.TestCase):
             "kmipkit_client::Pkcs11Request::with_input_parameters": "blocked",
             "kmipkit_client::Pkcs11Request::with_interface": "blocked",
             "kmipkit_client::Pkcs11Response": "verified",
-            "kmipkit_client::Pkcs11Response::result": "blocked",
+            "kmipkit_client::Pkcs11Response::result": "verified",
             "kmipkit_client::Pkcs11Response::try_from_response_item": "blocked",
             "kmipkit_client::Pkcs11Response::with_correlation_value": "verified",
             "kmipkit_client::Pkcs11Response::with_function": "verified",

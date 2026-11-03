@@ -27,7 +27,7 @@ RESPONSES = {
         "cases": "Delegated Login cases 2.21–2.33",
         "protocol_states": {
             "type": "verified",
-            "result": "blocked",
+            "result": "verified",
             "ticket": "verified",
             "try_from_response_item": "blocked",
         },
@@ -41,7 +41,7 @@ RESPONSES = {
         "case_fixture": "specification/oasis/kmip-2.1/fixtures/TC-LOGIN-1-21.xml",
         "protocol_states": {
             "type": "verified",
-            "result": "blocked",
+            "result": "verified",
             "ticket": "verified",
             "try_from_response_item": "blocked",
         },

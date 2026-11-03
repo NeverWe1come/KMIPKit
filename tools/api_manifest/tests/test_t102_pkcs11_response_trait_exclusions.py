@@ -148,6 +148,7 @@ class T102Pkcs11ResponseTraitExclusionTests(unittest.TestCase):
         }
         verified = {
             "kmipkit_protocol::Pkcs11Response",
+            "kmipkit_protocol::Pkcs11Response::result",
             "kmipkit_protocol::Pkcs11Response::with_correlation_value",
             "kmipkit_protocol::Pkcs11Response::with_function",
             "kmipkit_protocol::Pkcs11Response::with_interface",
@@ -157,7 +158,6 @@ class T102Pkcs11ResponseTraitExclusionTests(unittest.TestCase):
             "kmipkit_protocol::Pkcs11Response::with_ttlv_payload",
         }
         blocked = {
-            "kmipkit_protocol::Pkcs11Response::result",
             "kmipkit_protocol::Pkcs11Response::try_from_response_item",
         }
         self.assertEqual(set(protocol_rows), verified | blocked)
