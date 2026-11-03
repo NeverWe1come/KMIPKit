@@ -2,7 +2,9 @@
 
 KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1 provide profile
 context only. ``ProfileValidationErrorCode`` is a KMIPKit-defined diagnostic
-enum, not an OASIS error code.
+enum, not an OASIS error code. Each Rust enum variant maps by its ``as_str``
+output to the stable string exposed by the C, Java, and Python error details;
+the managed-language APIs do not construct separate code enums.
 """
 
 from __future__ import annotations
@@ -19,25 +21,25 @@ PACKAGES = {
     "rust-kmipkit-client": "kmipkit_client",
     "rust-kmipkit-protocol": "kmipkit_protocol",
 }
-VARIANTS = {
-    "ConditionalProfileUnsatisfied",
-    "ConflictingConstraints",
-    "DependencyCycle",
-    "DuplicateProfile",
-    "EmptySelection",
-    "IncompleteRuleMapping",
-    "MissingCategoryTest",
-    "MissingRequirementMetadata",
-    "MissingRuleMapping",
-    "ProfileStateBindingMismatch",
-    "ProfileStateContextRequired",
-    "ProfileUnavailable",
-    "RequestRuleRejected",
-    "ResponseRuleRejected",
-    "RuleMappingMismatch",
-    "TransportConstraintRejected",
-    "UnknownProfile",
-    "UnresolvedRequirementScope",
+VARIANT_CODES = {
+    "EmptySelection": "empty_selection",
+    "DuplicateProfile": "duplicate_profile",
+    "UnknownProfile": "unknown_profile",
+    "ProfileUnavailable": "profile_unavailable",
+    "ConditionalProfileUnsatisfied": "conditional_profile_unsatisfied",
+    "DependencyCycle": "dependency_cycle",
+    "MissingRequirementMetadata": "missing_requirement_metadata",
+    "UnresolvedRequirementScope": "unresolved_requirement_scope",
+    "MissingRuleMapping": "missing_rule_mapping",
+    "IncompleteRuleMapping": "incomplete_rule_mapping",
+    "RuleMappingMismatch": "rule_mapping_mismatch",
+    "MissingCategoryTest": "missing_category_test",
+    "ConflictingConstraints": "conflicting_constraints",
+    "RequestRuleRejected": "request_rule_rejected",
+    "ResponseRuleRejected": "response_rule_rejected",
+    "TransportConstraintRejected": "transport_constraint_rejected",
+    "ProfileStateContextRequired": "profile_state_context_required",
+    "ProfileStateBindingMismatch": "profile_state_binding_mismatch",
 }
 LANGUAGE_TARGETS = {
     "c": (
@@ -72,11 +74,12 @@ class T102ProfileValidationErrorCodeMappingTests(unittest.TestCase):
             for suffix in (
                 "",
                 "::as_str",
-                *(f"::{variant}" for variant in VARIANTS),
+                *(f"::{variant}" for variant in VARIANT_CODES),
             )
         }
         self.assertEqual(expected, set(rows))
         self.assertEqual(60, len(rows))
+        self.assertEqual(18, len(VARIANT_CODES))
 
         declarations = self.manifest["publicDeclarations"]
         for (package, export_name), row in rows.items():

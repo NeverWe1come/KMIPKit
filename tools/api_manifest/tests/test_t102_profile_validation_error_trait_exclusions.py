@@ -87,7 +87,7 @@ CONDITIONAL_SUFFIXES = {
     "core::convert::TryInto<U>>::Error",
     "core::convert::TryInto<U>>::try_into",
 }
-BLOCKED_CODE_EXPORTS = {
+MAPPED_CODE_EXPORTS = {
     "ProfileValidationErrorCode",
     "ProfileValidationErrorCode::ConditionalProfileUnsatisfied",
     "ProfileValidationErrorCode::ConflictingConstraints",
@@ -221,7 +221,7 @@ class T102ProfileValidationErrorTraitExclusionTests(unittest.TestCase):
             }
             expected_error[f"{crate}::ProfileValidationError::for_test"] = "blocked"
             expected_code = {
-                f"{crate}::{name}": "declared" for name in BLOCKED_CODE_EXPORTS
+                f"{crate}::{name}": "declared" for name in MAPPED_CODE_EXPORTS
             }
             self.assertEqual(
                 {name: row["declarationState"] for name, row in rows.items()},
