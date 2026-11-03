@@ -133,8 +133,8 @@ T102_REQUIREMENTS = ("KMIPKIT-0043-FR-010", "KMIPKIT-0043-FR-021")
 
 # Stable digests pin the non-trait API records for these exact owner paths and
 # the out-of-scope state/context models while the trait inventory is reconciled.
-PROTECTED_API_SHA256 = "087b1988d8dbaf2d828104681eead5f4c78dae27210797df92ac4a361d483b45"
-OUT_OF_SCOPE_API_SHA256 = "7d6d514495b15f781d689c1bea7f8e1227c5a9f92517cf99aaa33f73265f07c9"
+PROTECTED_API_SHA256 = "f5678efa74fa840983a910a74497b63e328a7c97060258efe78ed29b4fb06500"
+PROTOCOL_REEXPORT_API_SHA256 = "d6d3f60a9707baa2ca55718370402a87c3c9ac269ebc696fe64d6c0e03726118"
 PROFILE_CATALOG_SHA256 = "034aa2e2456e9ac28a24314ee99f00005903978da8d24c5958e4833e748840fb"
 
 
@@ -282,7 +282,7 @@ class T102ProfileModelTraitExclusionTests(unittest.TestCase):
             self.assertEqual(parent[0]["declarationState"], "declared", owner)
         self.assertEqual(
             canonical_sha256(self._protected_rows(protocol_reexports)),
-            OUT_OF_SCOPE_API_SHA256,
+            PROTOCOL_REEXPORT_API_SHA256,
             "ProfileObjectState and ProfileValidationContext aliases retain their client mapping.",
         )
         protocol_profile_trait_paths: set[str] = set()

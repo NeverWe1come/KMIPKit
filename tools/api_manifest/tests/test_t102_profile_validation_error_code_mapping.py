@@ -112,6 +112,7 @@ class T102ProfileValidationErrorCodeMappingTests(unittest.TestCase):
             if row["capabilityId"] == "client_profile_validation"
         )
         rust_mappings = set(capability["mappings"]["rust"])
+        self.assertEqual("declared", capability["capabilityState"])
         self.assertEqual(
             {export_name for _, export_name in expected},
             {
@@ -120,6 +121,8 @@ class T102ProfileValidationErrorCodeMappingTests(unittest.TestCase):
                 if "ProfileValidationErrorCode" in export_name
             },
         )
+        for language, (_, target) in LANGUAGE_TARGETS.items():
+            self.assertIn(target, capability["mappings"][language])
 
         for package, crate in PACKAGES.items():
             code_accessor = next(

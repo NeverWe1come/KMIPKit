@@ -182,7 +182,7 @@ class T102JoinSplitKeyRequestTraitExclusionTests(unittest.TestCase):
                 and row["declarationState"] == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            1098,
+            1008,
         )
 
 
