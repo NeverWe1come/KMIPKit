@@ -1,9 +1,16 @@
 from __future__ import annotations
 
-from kmipkit import profile_catalog
+import pytest
+
+from kmipkit import errors, profile_catalog
 from kmipkit.profile_readiness import ProfileEvidenceRecord, ProfileReadiness
 
 BASELINE_ID = "KMIPKIT-PROFILE-BASELINE-CLIENT"
+
+
+class _EncodingGuardText(str):
+    def encode(self, *args: object, **kwargs: object) -> bytes:
+        raise AssertionError("oversized text must be rejected before encoding")
 
 
 def test_baseline_readiness_uses_rust_evaluator_and_never_claims_support() -> None:
@@ -50,7 +57,7 @@ def test_catalog_snapshots_are_complete_ordered_and_immutable() -> None:
 
     assert isinstance(profiles, tuple) and len(profiles) == 18
     assert isinstance(requirements, tuple) and len(requirements) == 483
-    assert isinstance(test_cases, tuple) and len(test_cases) == 94
+    assert isinstance(test_cases, tuple) and len(test_cases) == 93
     assert tuple(row.profile_id for row in profiles) == tuple(sorted(row.profile_id for row in profiles))
     assert tuple(row.requirement_id for row in requirements) == tuple(sorted(row.requirement_id for row in requirements))
     assert tuple(row.test_id for row in test_cases) == tuple(sorted(row.test_id for row in test_cases))
@@ -84,3 +91,21 @@ def test_catalog_snapshots_are_complete_ordered_and_immutable() -> None:
     baseline = next(row for row in profiles if row.profile_id == BASELINE_ID)
     assert baseline.claim_state == "evidence_incomplete"
     assert baseline.selected_target is True
+
+
+def test_profile_id_over_four_kib_is_rejected_before_encoding() -> None:
+    profile_id = _EncodingGuardText("x" * (4 * 1024 + 1))
+
+    with pytest.raises(errors.ResourceLimitError):
+        ProfileReadiness.evaluate(profile_id, ())
+
+
+def test_aggregate_evidence_over_sixteen_mib_is_rejected_before_encoding() -> None:
+    large_identifier = _EncodingGuardText("x" * (8 * 1024 * 1024))
+    evidence = (
+        ProfileEvidenceRecord.passed(large_identifier),
+        ProfileEvidenceRecord.passed(large_identifier),
+    )
+
+    with pytest.raises(errors.ResourceLimitError):
+        ProfileReadiness.evaluate(BASELINE_ID, evidence)

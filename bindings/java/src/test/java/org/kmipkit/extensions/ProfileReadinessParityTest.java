@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Optional;
+import org.kmipkit.ResourceLimitException;
 import org.junit.jupiter.api.Test;
 
 final class ProfileReadinessParityTest {
@@ -47,8 +48,25 @@ final class ProfileReadinessParityTest {
                 .anyMatch(item -> item.kind().equals("unknown_requirement_record")));
         assertTrue(readiness.blockers().stream().allMatch(item -> !item.message().isBlank()));
         assertTrue(readiness.blockers().stream().noneMatch(item -> item.message().contains("UNKNOWN-CALLER-MARKER")));
-        assertTrue(readiness.blockers().stream().allMatch(item -> item.requirementId() != null
-                && item.profileId() != null && item.testId() != null && item.sourceClauseId() != null));
+        ProfileReadinessBlocker duplicate = readiness.blockers().stream()
+                .filter(item -> item.kind().equals("duplicate_requirement_record"))
+                .findFirst().orElseThrow();
+        assertEquals("KMIPKIT-REQ-PROF-4.1.2-001", duplicate.requirementId());
+        assertNull(duplicate.profileId());
+        assertNull(duplicate.testId());
+        assertNull(duplicate.sourceClauseId());
+
+        ProfileReadinessBlocker unknown = readiness.blockers().stream()
+                .filter(item -> item.kind().equals("unknown_requirement_record"))
+                .findFirst().orElseThrow();
+        assertNull(unknown.requirementId());
+        assertNull(unknown.profileId());
+        assertNull(unknown.testId());
+        assertNull(unknown.sourceClauseId());
+        assertTrue(readiness.blockers().stream()
+                .filter(item -> item.kind().equals("missing_requirement_record"))
+                .allMatch(item -> item.requirementId() != null && item.profileId() == null
+                        && item.testId() == null && item.sourceClauseId() == null));
     }
 
     @Test
@@ -59,7 +77,7 @@ final class ProfileReadinessParityTest {
 
         assertEquals(18, profiles.size());
         assertEquals(483, requirements.size());
-        assertEquals(94, testCases.size());
+        assertEquals(93, testCases.size());
         assertEquals(profiles.stream().map(ProfileCatalog.ClientProfile::profileId).sorted().toList(),
                 profiles.stream().map(ProfileCatalog.ClientProfile::profileId).toList());
         assertEquals(requirements.stream().map(ProfileCatalog.ClientRequirement::requirementId).sorted().toList(),
@@ -112,5 +130,35 @@ final class ProfileReadinessParityTest {
                 && item.officialCaseId() != null && item.mandatoryStatus() != null
                 && item.fixtureAvailability() != null));
         assertNull(requirements.get(0).sourceGapId().orElse(null));
+    }
+
+    @Test
+    void readinessRejectsProfileIdOverFourKiBBeforeCallingJni() {
+        String oversizedProfileId = "x".repeat(4 * 1024 + 1);
+
+        assertThrows(ResourceLimitException.class,
+                () -> ProfileReadiness.evaluate(oversizedProfileId, List.of()));
+    }
+
+    @Test
+    void readinessRejectsAggregateEvidenceBeforeReadingLaterRecords() {
+        String largeRequirementId = "x".repeat(8 * 1024 * 1024);
+        List<ProfileEvidenceRecord> evidence = new java.util.AbstractList<>() {
+            @Override
+            public ProfileEvidenceRecord get(int index) {
+                if (index == 2) {
+                    throw new AssertionError("the facade must reject before reading this record");
+                }
+                return ProfileEvidenceRecord.passed(largeRequirementId);
+            }
+
+            @Override
+            public int size() {
+                return 3;
+            }
+        };
+
+        assertThrows(ResourceLimitException.class,
+                () -> ProfileReadiness.evaluate(BASELINE, evidence));
     }
 }
