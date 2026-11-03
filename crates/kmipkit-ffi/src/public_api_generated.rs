@@ -9573,6 +9573,31 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::LocateRequest",
     ),
     (
+        "rust-observed-e07fce825be9d33278e1",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::LocateRequest::new",
+    ),
+    (
+        "rust-observed-8fff50bdd49a09ae00bf",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::LocateRequest::with_maximum_items",
+    ),
+    (
+        "rust-observed-feb2e57f6cbe856a8fa1",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::LocateRequest::with_object_group_member",
+    ),
+    (
+        "rust-observed-aa9a474fd92d1503b86d",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::LocateRequest::with_offset_items",
+    ),
+    (
+        "rust-observed-8d60104e0b52b30f3496",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::LocateRequest::with_storage_status_mask",
+    ),
+    (
         "rust-observed-dc477ae5a2b269c63724",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::LocateResponse",

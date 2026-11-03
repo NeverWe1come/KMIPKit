@@ -142,11 +142,20 @@ EXPECTED = (
     ),
 )
 
-# Baseline fingerprints exclude only the nine target rows and their Rust list entries.
-UNCHANGED_DECLARATIONS_SHA256 = "d0fb0b046df5cb15d574af1748a3779888c307b7b5f69800d6b9df3ed70a4793"
+# Baseline fingerprints exclude the response-view rows and the exact five Locate builders.
+UNCHANGED_DECLARATIONS_SHA256 = "f1446943404050918582a8d3e74f8b5cbc1a8dc06ee8fa60efa95934a23a420b"
 UNCHANGED_OPERATIONS_SHA256 = "eb69336ea313c72f6461f5e67655d985c820969697237b4b2b8efc3d79712735"
 OTHER_MANIFEST_SHA256 = "89ce2f39dccd3e4548dc0145da0e8b4463f4f4ae769ed472d80cf44b26679ba6"
-EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = 708
+EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = 703
+LOCATE_REQUEST_BUILDER_IDS = {
+    "rust-observed-e07fce825be9d33278e1",
+    "rust-observed-8fff50bdd49a09ae00bf",
+    "rust-observed-aa9a474fd92d1503b86d",
+    "rust-observed-8d60104e0b52b30f3496",
+    "rust-observed-feb2e57f6cbe856a8fa1",
+}
+LOCATE_OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-LOCATE"
+LOCATE_REQUEST_REQUIREMENT = "KMIPKIT-REQ-SPEC-6.1.28-007"
 
 
 def canonical_sha256(value: object) -> str:
@@ -307,6 +316,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
     def test_no_unlisted_declaration_or_operation_row_changes(self) -> None:
         target_ids = {item.declaration_id for item in EXPECTED}
         target_ids.update(item.declaration_id for item in REMAINING_RESPONSE_VIEWS)
+        target_ids.update(LOCATE_REQUEST_BUILDER_IDS)
         unchanged_declarations = [
             row
             for row in self.manifest["publicDeclarations"]
@@ -321,6 +331,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
             f"KMIPKIT-ELEM-OP-C2S-{item.operation_suffix}" for item in EXPECTED
         }
         target_operations.update(item.operation_id for item in REMAINING_RESPONSE_VIEWS)
+        target_operations.add(LOCATE_OPERATION_ID)
         normalized_operations = copy.deepcopy(self.manifest["operations"])
         for operation in normalized_operations:
             if operation["operationId"] in target_operations:
@@ -338,6 +349,11 @@ class T102ResponseViewMappingTests(unittest.TestCase):
             for key, value in self.manifest.items()
             if key not in {"publicDeclarations", "operations"}
         }
+        other_manifest["requirementIds"] = [
+            requirement_id
+            for requirement_id in other_manifest["requirementIds"]
+            if requirement_id != LOCATE_REQUEST_REQUIREMENT
+        ]
         self.assertEqual(OTHER_MANIFEST_SHA256, canonical_sha256(other_manifest))
 
     def test_post_batch_manifest_totals_are_pinned(self) -> None:

@@ -1530,19 +1530,21 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         self.assertEqual(audited_exclusions, EXPECTED_LOCATE_REQUEST_TRAIT_EXPORTS)
 
     def test_locate_request_preserves_verified_type_and_blocked_helpers(self) -> None:
-        verified = {"kmipkit_protocol::LocateRequest"}
+        verified = {
+            "kmipkit_protocol::LocateRequest",
+            "kmipkit_protocol::LocateRequest::new",
+            "kmipkit_protocol::LocateRequest::with_maximum_items",
+            "kmipkit_protocol::LocateRequest::with_offset_items",
+            "kmipkit_protocol::LocateRequest::with_storage_status_mask",
+            "kmipkit_protocol::LocateRequest::with_object_group_member",
+        }
         blocked = {
             "kmipkit_protocol::LocateRequest::attributes",
             "kmipkit_protocol::LocateRequest::maximum_items",
-            "kmipkit_protocol::LocateRequest::new",
             "kmipkit_protocol::LocateRequest::object_group_member",
             "kmipkit_protocol::LocateRequest::offset_items",
             "kmipkit_protocol::LocateRequest::storage_status_mask",
             "kmipkit_protocol::LocateRequest::to_ttlv_payload",
-            "kmipkit_protocol::LocateRequest::with_maximum_items",
-            "kmipkit_protocol::LocateRequest::with_object_group_member",
-            "kmipkit_protocol::LocateRequest::with_offset_items",
-            "kmipkit_protocol::LocateRequest::with_storage_status_mask",
         }
         rows = {
             row["exportName"]: row
