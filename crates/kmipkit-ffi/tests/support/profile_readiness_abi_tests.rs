@@ -21,6 +21,10 @@ fn span_text(span: kmipkit_byte_span_v1_t) -> Option<String> {
     std::str::from_utf8(bytes).ok().map(str::to_owned)
 }
 
+fn optional_span_text(span: kmipkit_byte_span_v1_t, present: u8) -> Option<String> {
+    (present != 0).then(|| span_text(span)).flatten()
+}
+
 fn initialized_blocker_view() -> kmipkit_profile_readiness_blocker_view_v1_t {
     kmipkit_profile_readiness_blocker_view_v1_t {
         struct_size: size_of::<kmipkit_profile_readiness_blocker_view_v1_t>() as u32,
@@ -188,12 +192,13 @@ fn readiness_blocker_view_preserves_all_thirteen_kinds_and_optional_ids() {
 #[test]
 fn readiness_ffi_preflights_versions_limits_and_invalid_flags() {
     let profile_id = b"KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let profile_span = kmipkit_byte_span_v1_t {
+        data: profile_id.as_ptr(),
+        length: profile_id.len() as u64,
+    };
     let mut out = ptr::null_mut::<kmipkit_profile_readiness_t>();
     let too_many = test_pointer_ffi_call!(kmipkit_profile_readiness_evaluate_v1(
-        kmipkit_byte_span_v1_t {
-            data: profile_id.as_ptr(),
-            length: profile_id.len() as u64
-        },
+        &profile_span,
         ptr::NonNull::<kmipkit_profile_evidence_record_v1_t>::dangling().as_ptr(),
         100_001,
         &mut out,
@@ -209,13 +214,16 @@ fn readiness_ffi_preflights_versions_limits_and_invalid_flags() {
             length: 16 * 1024 * 1024 + 1,
         },
         passed: 1,
-        reserved: [0; 7],
+        reserved_0: 0,
+        reserved_1: 0,
+        reserved_2: 0,
+        reserved_3: 0,
+        reserved_4: 0,
+        reserved_5: 0,
+        reserved_6: 0,
     };
     let limited = test_pointer_ffi_call!(kmipkit_profile_readiness_evaluate_v1(
-        kmipkit_byte_span_v1_t {
-            data: profile_id.as_ptr(),
-            length: profile_id.len() as u64
-        },
+        &profile_span,
         &raw const oversized,
         1,
         &mut out,
@@ -223,13 +231,24 @@ fn readiness_ffi_preflights_versions_limits_and_invalid_flags() {
     assert_eq!(limited, ERROR_RESOURCE_LIMIT);
     assert!(out.is_null());
 
+    let long_requirement_id = vec![b'x'; 8 * 1024];
+    oversized.requirement_id.data = long_requirement_id.as_ptr();
+    oversized.requirement_id.length = long_requirement_id.len() as u64;
+    let accepted_evidence_id = test_pointer_ffi_call!(kmipkit_profile_readiness_evaluate_v1(
+        &profile_span,
+        &raw const oversized,
+        1,
+        &mut out,
+    ));
+    assert_eq!(accepted_evidence_id, SUCCESS);
+    assert!(!out.is_null());
+    kmipkit_profile_readiness_release(out);
+    out = ptr::null_mut();
+
     oversized.requirement_id.length = 0;
     oversized.passed = 2;
     let invalid_flag = test_pointer_ffi_call!(kmipkit_profile_readiness_evaluate_v1(
-        kmipkit_byte_span_v1_t {
-            data: profile_id.as_ptr(),
-            length: profile_id.len() as u64
-        },
+        &profile_span,
         &raw const oversized,
         1,
         &mut out,
@@ -240,10 +259,7 @@ fn readiness_ffi_preflights_versions_limits_and_invalid_flags() {
     oversized.passed = 1;
     oversized.abi_version = 2;
     let invalid_version = test_pointer_ffi_call!(kmipkit_profile_readiness_evaluate_v1(
-        kmipkit_byte_span_v1_t {
-            data: profile_id.as_ptr(),
-            length: profile_id.len() as u64
-        },
+        &profile_span,
         &raw const oversized,
         1,
         &mut out,
@@ -255,12 +271,13 @@ fn readiness_ffi_preflights_versions_limits_and_invalid_flags() {
 #[test]
 fn readiness_views_borrow_from_the_live_handle_and_baseline_stays_unclaimed() {
     let profile_id = b"KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let profile_span = kmipkit_byte_span_v1_t {
+        data: profile_id.as_ptr(),
+        length: profile_id.len() as u64,
+    };
     let mut readiness = ptr::null_mut::<kmipkit_profile_readiness_t>();
     let status = test_pointer_ffi_call!(kmipkit_profile_readiness_evaluate_v1(
-        kmipkit_byte_span_v1_t {
-            data: profile_id.as_ptr(),
-            length: profile_id.len() as u64
-        },
+        &profile_span,
         ptr::null(),
         0,
         &mut readiness,
@@ -293,7 +310,9 @@ fn readiness_views_borrow_from_the_live_handle_and_baseline_stays_unclaimed() {
 fn assert_catalog_strings(table: u32, row_index: u64, relation: u32, expected: &[&str]) {
     let mut count = u64::MAX;
     assert_eq!(
-        kmipkit_profile_catalog_relation_count_v1(table, row_index, relation, &mut count),
+        unsafe {
+            kmipkit_profile_catalog_relation_count_v1(table, row_index, relation, &mut count)
+        },
         0
     );
     assert_eq!(count as usize, expected.len());
@@ -304,13 +323,15 @@ fn assert_catalog_strings(table: u32, row_index: u64, relation: u32, expected: &
             ..Default::default()
         };
         assert_eq!(
-            kmipkit_profile_catalog_relation_at_v1(
-                table,
-                row_index,
-                relation,
-                index as u64,
-                &mut row
-            ),
+            unsafe {
+                kmipkit_profile_catalog_relation_at_v1(
+                    table,
+                    row_index,
+                    relation,
+                    index as u64,
+                    &mut row,
+                )
+            },
             0
         );
         assert_eq!(span_text(row.text_value).as_deref(), Some(*expected_value));
@@ -346,7 +367,7 @@ fn catalog_ffi_matches_every_generated_rust_row_and_ordered_relation() {
     ] {
         let mut actual_count = 0;
         assert_eq!(
-            kmipkit_profile_catalog_table_count_v1(table, &mut actual_count),
+            unsafe { kmipkit_profile_catalog_table_count_v1(table, &mut actual_count) },
             0
         );
         assert_eq!(actual_count as usize, expected_count);
@@ -359,7 +380,7 @@ fn catalog_ffi_matches_every_generated_rust_row_and_ordered_relation() {
             ..Default::default()
         };
         assert_eq!(
-            kmipkit_profile_catalog_row_at_v1(PROFILE_TABLE, index as u64, &mut row),
+            unsafe { kmipkit_profile_catalog_row_at_v1(PROFILE_TABLE, index as u64, &mut row) },
             0
         );
         assert_eq!(
@@ -414,12 +435,14 @@ fn catalog_ffi_matches_every_generated_rust_row_and_ordered_relation() {
         );
         let mut count = 0;
         assert_eq!(
-            kmipkit_profile_catalog_relation_count_v1(
-                PROFILE_TABLE,
-                index as u64,
-                KMIPKIT_PROFILE_CATALOG_RELATION_UNRESOLVED_SCOPE_OBLIGATIONS,
-                &mut count
-            ),
+            unsafe {
+                kmipkit_profile_catalog_relation_count_v1(
+                    PROFILE_TABLE,
+                    index as u64,
+                    KMIPKIT_PROFILE_CATALOG_RELATION_UNRESOLVED_SCOPE_OBLIGATIONS,
+                    &mut count,
+                )
+            },
             0
         );
         assert_eq!(count as usize, expected.unresolved_scope_obligations.len());
@@ -430,13 +453,15 @@ fn catalog_ffi_matches_every_generated_rust_row_and_ordered_relation() {
                 ..Default::default()
             };
             assert_eq!(
-                kmipkit_profile_catalog_relation_at_v1(
-                    PROFILE_TABLE,
-                    index as u64,
-                    KMIPKIT_PROFILE_CATALOG_RELATION_UNRESOLVED_SCOPE_OBLIGATIONS,
-                    nested_index as u64,
-                    &mut nested
-                ),
+                unsafe {
+                    kmipkit_profile_catalog_relation_at_v1(
+                        PROFILE_TABLE,
+                        index as u64,
+                        KMIPKIT_PROFILE_CATALOG_RELATION_UNRESOLVED_SCOPE_OBLIGATIONS,
+                        nested_index as u64,
+                        &mut nested,
+                    )
+                },
                 0
             );
             assert_eq!(
@@ -454,12 +479,14 @@ fn catalog_ffi_matches_every_generated_rust_row_and_ordered_relation() {
         }
         let mut tests_count = 0;
         assert_eq!(
-            kmipkit_profile_catalog_relation_count_v1(
-                PROFILE_TABLE,
-                index as u64,
-                KMIPKIT_PROFILE_CATALOG_RELATION_TEST_CASES,
-                &mut tests_count
-            ),
+            unsafe {
+                kmipkit_profile_catalog_relation_count_v1(
+                    PROFILE_TABLE,
+                    index as u64,
+                    KMIPKIT_PROFILE_CATALOG_RELATION_TEST_CASES,
+                    &mut tests_count,
+                )
+            },
             0
         );
         assert_eq!(tests_count as usize, expected.test_cases.len());
@@ -470,13 +497,15 @@ fn catalog_ffi_matches_every_generated_rust_row_and_ordered_relation() {
                 ..Default::default()
             };
             assert_eq!(
-                kmipkit_profile_catalog_relation_at_v1(
-                    PROFILE_TABLE,
-                    index as u64,
-                    KMIPKIT_PROFILE_CATALOG_RELATION_TEST_CASES,
-                    nested_index as u64,
-                    &mut nested
-                ),
+                unsafe {
+                    kmipkit_profile_catalog_relation_at_v1(
+                        PROFILE_TABLE,
+                        index as u64,
+                        KMIPKIT_PROFILE_CATALOG_RELATION_TEST_CASES,
+                        nested_index as u64,
+                        &mut nested,
+                    )
+                },
                 0
             );
             assert_eq!(span_text(nested.test_id).as_deref(), Some(test.test_id));
@@ -502,7 +531,7 @@ fn catalog_ffi_matches_every_generated_rust_row_and_ordered_relation() {
             ..Default::default()
         };
         assert_eq!(
-            kmipkit_profile_catalog_row_at_v1(REQUIREMENT_TABLE, index as u64, &mut row),
+            unsafe { kmipkit_profile_catalog_row_at_v1(REQUIREMENT_TABLE, index as u64, &mut row) },
             0
         );
         assert_eq!(
@@ -514,7 +543,7 @@ fn catalog_ffi_matches_every_generated_rust_row_and_ordered_relation() {
             expected.source_keyword.is_some()
         );
         assert_eq!(
-            span_text(row.source_keyword).as_deref(),
+            optional_span_text(row.source_keyword, row.source_keyword_present).as_deref(),
             expected.source_keyword
         );
         assert_eq!(
@@ -522,7 +551,7 @@ fn catalog_ffi_matches_every_generated_rust_row_and_ordered_relation() {
             expected.source_force.is_some()
         );
         assert_eq!(
-            span_text(row.source_force).as_deref(),
+            optional_span_text(row.source_force, row.source_force_present).as_deref(),
             expected.source_force
         );
         assert_eq!(
@@ -530,7 +559,7 @@ fn catalog_ffi_matches_every_generated_rust_row_and_ordered_relation() {
             expected.source_gap_id.is_some()
         );
         assert_eq!(
-            span_text(row.source_gap_id).as_deref(),
+            optional_span_text(row.source_gap_id, row.source_gap_id_present).as_deref(),
             expected.source_gap_id
         );
         assert_eq!(
@@ -538,7 +567,7 @@ fn catalog_ffi_matches_every_generated_rust_row_and_ordered_relation() {
             expected.source_locator.is_some()
         );
         assert_eq!(
-            span_text(row.source_locator).as_deref(),
+            optional_span_text(row.source_locator, row.source_locator_present).as_deref(),
             expected.source_locator
         );
         assert_eq!(
@@ -580,7 +609,7 @@ fn catalog_ffi_matches_every_generated_rust_row_and_ordered_relation() {
             ..Default::default()
         };
         assert_eq!(
-            kmipkit_profile_catalog_row_at_v1(TEST_CASE_TABLE, index as u64, &mut row),
+            unsafe { kmipkit_profile_catalog_row_at_v1(TEST_CASE_TABLE, index as u64, &mut row) },
             0
         );
         assert_eq!(span_text(row.test_id).as_deref(), Some(expected.test_id));

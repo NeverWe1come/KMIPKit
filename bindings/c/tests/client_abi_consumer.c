@@ -8771,6 +8771,7 @@ static int profile_span_equals(kmipkit_byte_span_v1_t span, const char *expected
 
 int kmipkit_client_abi_c_consumer_profile_readiness_contract(void) {
     kmipkit_profile_readiness_t *readiness = 0;
+    kmipkit_profile_readiness_t *long_id_readiness = 0;
     kmipkit_profile_readiness_t *unknown = (kmipkit_profile_readiness_t *)(uintptr_t)1;
     kmipkit_profile_readiness_view_v1_t readiness_view = {0};
     kmipkit_profile_readiness_blocker_view_v1_t blocker = {0};
@@ -8781,6 +8782,8 @@ int kmipkit_client_abi_c_consumer_profile_readiness_contract(void) {
     uint64_t test_case_count = 0;
     uint64_t baseline_requirement_count = 0;
     int result = 0;
+    uint8_t long_requirement_id[8 * 1024];
+    kmipkit_profile_evidence_record_v1_t long_requirement_record = {0};
     static const uint8_t baseline[] = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     static const uint8_t unknown_id[] = "KMIPKIT-PROFILE-UNKNOWN";
     const kmipkit_byte_span_v1_t baseline_span = {baseline, sizeof(baseline) - 1};
@@ -8794,8 +8797,14 @@ int kmipkit_client_abi_c_consumer_profile_readiness_contract(void) {
     row.abi_version = 1;
     relation.struct_size = (uint32_t)sizeof(relation);
     relation.abi_version = 1;
+    memset(long_requirement_id, 'x', sizeof(long_requirement_id));
+    long_requirement_record.struct_size = (uint32_t)sizeof(long_requirement_record);
+    long_requirement_record.abi_version = 1;
+    long_requirement_record.requirement_id.data = long_requirement_id;
+    long_requirement_record.requirement_id.length = sizeof(long_requirement_id);
+    long_requirement_record.passed = 1;
     if (kmipkit_profile_readiness_evaluate_v1(
-            baseline_span, 0, 0, &readiness) != 0 ||
+            &baseline_span, 0, 0, &readiness) != 0 ||
         readiness == 0 ||
         kmipkit_profile_readiness_view_get_v1(readiness, &readiness_view) != 0 ||
         !profile_span_equals(readiness_view.profile_id, "KMIPKIT-PROFILE-BASELINE-CLIENT") ||
@@ -8809,7 +8818,7 @@ int kmipkit_client_abi_c_consumer_profile_readiness_contract(void) {
         kmipkit_profile_catalog_table_count_v1(
             KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_REQUIREMENTS, &requirement_count) != 0 || requirement_count != 483 ||
         kmipkit_profile_catalog_table_count_v1(
-            KMIPKIT_PROFILE_CATALOG_TABLE_PROFILE_TEST_CASES, &test_case_count) != 0 || test_case_count != 94 ||
+            KMIPKIT_PROFILE_CATALOG_TABLE_PROFILE_TEST_CASES, &test_case_count) != 0 || test_case_count != 93 ||
         kmipkit_profile_catalog_row_at_v1(
             KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES, 2, &row) != 0 ||
         !profile_span_equals(row.profile_id, "KMIPKIT-PROFILE-BASELINE-CLIENT") ||
@@ -8825,14 +8834,18 @@ int kmipkit_client_abi_c_consumer_profile_readiness_contract(void) {
         kmipkit_profile_catalog_row_at_v1(
             KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES, profile_count, &row) != T076_ERROR_INVALID_INPUT ||
         kmipkit_profile_readiness_evaluate_v1(
-            unknown_span, 0, 0, &unknown) != 0 ||
-        unknown != 0) {
+            &unknown_span, 0, 0, &unknown) != 0 ||
+        unknown != 0 ||
+        kmipkit_profile_readiness_evaluate_v1(
+            &baseline_span, &long_requirement_record, 1, &long_id_readiness) != 0 ||
+        long_id_readiness == 0) {
         goto cleanup;
     }
     result = 1;
 
 cleanup:
     kmipkit_profile_readiness_release(readiness);
+    kmipkit_profile_readiness_release(long_id_readiness);
     if (unknown != 0 && unknown != (kmipkit_profile_readiness_t *)(uintptr_t)1) {
         kmipkit_profile_readiness_release(unknown);
     }
