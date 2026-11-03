@@ -221,6 +221,16 @@ class ManifestGeneratorCliTests(unittest.TestCase):
     def test_manifest_input_limit_reserves_bounded_room_for_the_full_inventory(self) -> None:
         self.assertEqual(generate.MAX_MANIFEST_BYTES, 21 * 1024 * 1024)
 
+    def test_manifest_input_limit_rejects_oversized_files_before_json_decode(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            (root / "manifest.json").write_bytes(b"not-json")
+
+            with self.assertRaisesRegex(
+                generate.ManifestError, "manifest input exceeds the supported file size"
+            ):
+                generate._load_json(root, "manifest.json", max_bytes=1)
+
     def test_checked_in_manifest_fits_the_bounded_input_limit(self) -> None:
         self.assertLessEqual(MANIFEST.stat().st_size, generate.MAX_MANIFEST_BYTES)
 

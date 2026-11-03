@@ -254,9 +254,9 @@ class T102RevocationRegisterTraitExclusionTests(unittest.TestCase):
             and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(count, 2177)
-        self.assertEqual(len(self.manifest["publicDeclarations"]), 7375)
-        self.assertEqual(len(self.manifest["approvedExclusions"]), 7349)
+        self.assertEqual(count, 1721)
+        self.assertEqual(len(self.manifest["publicDeclarations"]), 6919)
+        self.assertEqual(len(self.manifest["approvedExclusions"]), 7805)
 
 
 if __name__ == "__main__":

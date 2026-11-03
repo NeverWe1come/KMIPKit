@@ -60,13 +60,6 @@ EXPECTED_ROOT_FACADE_STATES = {
     "kmipkit::SetConstraintsRequest::constraints": "blocked",
     "kmipkit::SetConstraintsRequest::new": "blocked",
     "kmipkit::SetConstraintsRequest::to_ttlv_payload": "blocked",
-    **{
-        export_name.replace(
-            "kmipkit_protocol::SetConstraintsRequest",
-            "kmipkit::SetConstraintsRequest",
-        ): "blocked"
-        for export_name in EXPECTED_PROTOCOL_TRAIT_EXPORTS
-    },
 }
 
 
@@ -150,13 +143,8 @@ class T102SetConstraintsRequestTraitExclusionTests(unittest.TestCase):
             row["exportName"]: row["declarationState"]
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit"
-            and (
-                row.get("exportName", "").startswith(
-                    "kmipkit::SetConstraintsRequest"
-                )
-                or row.get("exportName", "").startswith(
-                    "<kmipkit::SetConstraintsRequest as "
-                )
+            and row.get("exportName", "").startswith(
+                "kmipkit::SetConstraintsRequest"
             )
         }
 
@@ -170,7 +158,7 @@ class T102SetConstraintsRequestTraitExclusionTests(unittest.TestCase):
                 and row["declarationState"] == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            2177,
+            1721,
         )
 
 

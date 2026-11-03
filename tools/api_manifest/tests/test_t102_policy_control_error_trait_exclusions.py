@@ -238,7 +238,7 @@ class T102PolicyControlErrorTraitExclusionTests(unittest.TestCase):
 
         self.assertEqual(len(all_pairs), 104)
 
-    def test_protocol_and_root_error_declarations_and_alias_traits_remain_blocked(self) -> None:
+    def test_protocol_and_root_error_functional_declarations_remain_blocked(self) -> None:
         for type_name, suffix_states in FUNCTIONAL_STATES.items():
             protocol_name = f"kmipkit_protocol::{type_name}"
             expected_protocol = {
@@ -265,7 +265,6 @@ class T102PolicyControlErrorTraitExclusionTests(unittest.TestCase):
                 direct_suffixes(type_name) | CONDITIONAL,
                 root=True,
             )
-            expected_root.update({name: "blocked" for name in root_trait_paths})
             actual_root = {
                 row["exportName"]: row["declarationState"]
                 for row in self.manifest["publicDeclarations"]
@@ -273,15 +272,16 @@ class T102PolicyControlErrorTraitExclusionTests(unittest.TestCase):
                 and (
                     row.get("exportName") == f"kmipkit::{type_name}"
                     or row.get("exportName", "").startswith(f"kmipkit::{type_name}::")
-                    or row.get("exportName", "").startswith(f"<kmipkit::{type_name} as ")
                 )
             }
             self.assertEqual(actual_root, expected_root)
-            self.assertEqual(set(root_trait_paths) & {
+            root_exclusions = {
                 row.get("exportName")
                 for row in self.manifest["approvedExclusions"]
                 if row.get("packageId") == ROOT_PACKAGE
-            }, set())
+                and row.get("exportName", "").startswith(f"<kmipkit::{type_name} as ")
+            }
+            self.assertEqual(root_exclusions, root_trait_paths)
 
     def test_related_request_response_and_operation_rows_retain_their_states(self) -> None:
         for operation in OPERATIONS.values():
@@ -329,9 +329,9 @@ class T102PolicyControlErrorTraitExclusionTests(unittest.TestCase):
             and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(count, 2177)
-        self.assertEqual(len(self.manifest["publicDeclarations"]), 7375)
-        self.assertEqual(len(self.manifest["approvedExclusions"]), 7349)
+        self.assertEqual(count, 1721)
+        self.assertEqual(len(self.manifest["publicDeclarations"]), 6919)
+        self.assertEqual(len(self.manifest["approvedExclusions"]), 7805)
 
 
 if __name__ == "__main__":

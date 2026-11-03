@@ -250,28 +250,43 @@ class T102ProtocolRequestTraitExclusionTests(unittest.TestCase):
                 row["exportName"]: row["declarationState"]
                 for row in self.manifest["publicDeclarations"]
                 if row.get("packageId") == "rust-kmipkit"
-                and (
-                    row.get("exportName", "").startswith(root_type)
-                    or row.get("exportName", "").startswith(f"<{root_type} as ")
-                )
+                and row.get("exportName", "").startswith(root_type)
             }
             expected_root_states = {
                 f"{root_type}{suffix}": state
                 for suffix, state in details["root_functional_states"].items()
             }
-            if details["root_functional_states"]:
-                expected_root_states.update(
-                    {
-                        export_name.replace(protocol_type, root_type): "blocked"
-                        for export_name in (
-                            expected_direct_traits(protocol_type, f"kmipkit_protocol::{details['module']}::{type_name}")
-                            | expected_conditional_traits(protocol_type)
-                        )
-                    }
-                )
             with self.subTest(type_name=type_name):
                 self.assertEqual(protocol_functional_states, expected_protocol_states)
                 self.assertEqual(root_states, expected_root_states)
+            if type_name == "GetUsageAllocationRequest":
+                root_trait_prefix = f"<{root_type} as "
+                expected_root_traits = {
+                    export_name.replace(protocol_type, root_type)
+                    for export_name in (
+                        expected_direct_traits(
+                            protocol_type,
+                            f"kmipkit_protocol::{details['module']}::{type_name}",
+                        )
+                        | expected_conditional_traits(protocol_type)
+                    )
+                }
+                uid_debug = f"<{root_type} as core::fmt::Debug>::fmt"
+                expected_root_traits.remove(uid_debug)
+                actual_root_traits = {
+                    row["exportName"]
+                    for row in self.manifest["approvedExclusions"]
+                    if row.get("packageId") == "rust-kmipkit"
+                    and row.get("exportName", "").startswith(root_trait_prefix)
+                }
+                self.assertEqual(actual_root_traits, expected_root_traits)
+                debug_row = next(
+                    row
+                    for row in self.manifest["publicDeclarations"]
+                    if row.get("packageId") == "rust-kmipkit"
+                    and row.get("exportName") == uid_debug
+                )
+                self.assertEqual(debug_row.get("candidateSpecId"), "KMIPKIT-0043")
 
     def test_candidate_count_reflects_only_the_exact_forty_exclusions(self) -> None:
         self.assertEqual(
@@ -280,7 +295,7 @@ class T102ProtocolRequestTraitExclusionTests(unittest.TestCase):
                 and row["declarationState"] == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            2177,
+            1721,
         )
 
 

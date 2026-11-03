@@ -286,26 +286,11 @@ class T102RequestTraitBatchTwoTests(unittest.TestCase):
                 f"{root_type}{suffix}": state
                 for suffix, state in details["root_states"].items()
             }
-            if details["root_states"]:
-                protocol_trait_suffixes = (
-                    details["direct_suffixes"] | CONDITIONAL_TRAIT_SUFFIXES
-                )
-                expected_root.update(
-                    {
-                        export_name: "blocked"
-                        for export_name in trait_paths(
-                            root_type, protocol_trait_suffixes
-                        )
-                    }
-                )
             root_states = {
                 row["exportName"]: row["declarationState"]
                 for row in self.manifest["publicDeclarations"]
                 if row.get("packageId") == "rust-kmipkit"
-                and (
-                    row.get("exportName", "").startswith(root_type)
-                    or row.get("exportName", "").startswith(f"<{root_type} as ")
-                )
+                and row.get("exportName", "").startswith(root_type)
             }
             with self.subTest(type_name=type_name):
                 self.assertEqual(protocol_states, expected_protocol)
@@ -318,7 +303,7 @@ class T102RequestTraitBatchTwoTests(unittest.TestCase):
                 and row["declarationState"] == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            2177,
+            1721,
         )
 
 

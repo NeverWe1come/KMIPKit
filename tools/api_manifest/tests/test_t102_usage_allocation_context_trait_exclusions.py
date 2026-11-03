@@ -22,6 +22,7 @@ CLIENT_IMPLEMENTATION_TYPE = "kmipkit_client::usage_allocation::UsageAllocationC
 ROOT_PACKAGE = "rust-kmipkit"
 ROOT_PUBLIC_TYPE = "kmipkit::UsageAllocationContext"
 ROOT_IMPLEMENTATION_TYPE = CLIENT_IMPLEMENTATION_TYPE
+CLIENT_ERROR_PUBLIC_TYPE = "kmipkit_client::UsageAllocationContextError"
 OWNER_APPROVAL = {
     "kind": "feature-specification",
     "path": "specs/025-policy-controls/spec.md",
@@ -181,8 +182,8 @@ class T102UsageAllocationContextTraitExclusionTests(unittest.TestCase):
         }
         self.assertEqual(root_exclusions, set())
 
-    def test_error_sibling_traits_remain_blocked_candidates(self) -> None:
-        error_public_type = "kmipkit_client::UsageAllocationContextError"
+    def test_error_sibling_traits_are_exactly_excluded_from_client_inventory(self) -> None:
+        error_public_type = CLIENT_ERROR_PUBLIC_TYPE
         error_parent = next(
             row
             for row in self.manifest["publicDeclarations"]
@@ -197,34 +198,32 @@ class T102UsageAllocationContextTraitExclusionTests(unittest.TestCase):
             if row.get("packageId") == CLIENT_PACKAGE
             and row.get("exportName", "").startswith(f"<{error_public_type} as ")
         ]
-        self.assertTrue(error_trait_declarations)
-        self.assertTrue(
-            all(
-                row["declarationState"] == "blocked"
-                and row.get("candidateSpecId") == "KMIPKIT-0043"
-                for row in error_trait_declarations
-            )
-        )
+        self.assertEqual(error_trait_declarations, [])
         error_exclusions = [
             row
             for row in self.manifest["approvedExclusions"]
             if row.get("packageId") == CLIENT_PACKAGE
             and row.get("exportName", "").startswith(f"<{error_public_type} as ")
         ]
-        self.assertEqual(error_exclusions, [])
+        self.assertEqual(
+            len({row["exportName"] for row in error_exclusions}), 26
+        )
+        self.assertTrue(
+            all(row.get("candidateSpecId") == "KMIPKIT-0039" for row in error_exclusions)
+        )
 
-    def test_manifest_and_rust_inventory_totals_reflect_only_the_ten_paths(self) -> None:
+    def test_manifest_and_rust_inventory_totals_include_both_policy_trait_batches(self) -> None:
         candidates = sum(
             row.get("candidateSpecId") == "KMIPKIT-0043"
             and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(candidates, 2177)
-        self.assertEqual(len(self.manifest["publicDeclarations"]), 7375)
-        self.assertEqual(len(self.manifest["approvedExclusions"]), 7349)
-        self.assertEqual(self.report["counts"]["manifest"], 4460)
-        self.assertEqual(self.report["counts"]["matched"], 4460)
-        self.assertEqual(self.report["counts"]["excluded"], 6003)
+        self.assertEqual(candidates, 1721)
+        self.assertEqual(len(self.manifest["publicDeclarations"]), 6919)
+        self.assertEqual(len(self.manifest["approvedExclusions"]), 7805)
+        self.assertEqual(self.report["counts"]["manifest"], 4004)
+        self.assertEqual(self.report["counts"]["matched"], 4004)
+        self.assertEqual(self.report["counts"]["excluded"], 6459)
 
 
 if __name__ == "__main__":
