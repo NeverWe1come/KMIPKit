@@ -142,7 +142,7 @@ class T102RngRetrieveRequestTraitExclusionTests(unittest.TestCase):
             row.get("candidateSpecId") == "KMIPKIT-0043" and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(candidate_count, 3549)
+        self.assertEqual(candidate_count, 3520)
 
 
 if __name__ == "__main__":

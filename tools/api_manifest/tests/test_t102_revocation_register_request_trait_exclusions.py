@@ -76,9 +76,9 @@ OWNER = {
             "KMIPKIT-REQ-SPEC-6.1.44-003-002",
         ),
         "references": (
-            "OASIS KMIP v2.1 §11.48, Table 481",
-            "OASIS KMIP v2.1 §4.47, Table 123",
-            "OASIS KMIP v2.1 §6.1.44, Tables 295-297",
+            "OASIS KMIP v2.1 Section 11.48, Table 481",
+            "OASIS KMIP v2.1 Section 4.47, Table 123",
+            "OASIS KMIP v2.1 Section 6.1.44, Tables 295-297",
         ),
         "tables": (
             "Table 481: Revocation Reason Code Enumeration",
@@ -94,7 +94,7 @@ OWNER = {
             "KMIPKIT-0044-FR-007",
             "KMIPKIT-REQ-SPEC-6.1.43-001",
         ),
-        "references": ("OASIS KMIP v2.1 §6.1.43, Table 291",),
+        "references": ("OASIS KMIP v2.1 Section 6.1.43, Table 291",),
         "tables": ("Table 291: Register Request Payload",),
     },
 }

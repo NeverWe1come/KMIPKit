@@ -73562,6 +73562,354 @@
       "exportName": "<kmipkit_protocol::GetRequest as core::fmt::Debug>::fmt",
       "packageId": "rust-kmipkit-protocol",
       "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the typed GetRequest wrapper, not a separate KMIP client capability; explicit Get options and returned object handling remain governed by the approved four-language mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13",
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model remains mapped to OASIS KMIP v2.1 Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RegisterRequest as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the context-aware RegisterRequest model, not a separate KMIP client capability; the request model and its functional API remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13",
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model remains mapped to OASIS KMIP v2.1 Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RegisterRequest as core::borrow::Borrow<kmipkit_protocol::register::RegisterRequest>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the context-aware RegisterRequest model, not a separate KMIP client capability; the request model and its functional API remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13",
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model remains mapped to OASIS KMIP v2.1 Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RegisterRequest as core::borrow::BorrowMut<kmipkit_protocol::register::RegisterRequest>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the context-aware RegisterRequest model, not a separate KMIP client capability; the request model and its functional API remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13",
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model remains mapped to OASIS KMIP v2.1 Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RegisterRequest as core::convert::From<kmipkit_protocol::register::RegisterRequest>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the context-aware RegisterRequest model, not a separate KMIP client capability; the request model and its functional API remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13",
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model remains mapped to OASIS KMIP v2.1 Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RegisterRequest as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the context-aware RegisterRequest model, not a separate KMIP client capability; the request model and its functional API remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13",
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model remains mapped to OASIS KMIP v2.1 Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RegisterRequest as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the context-aware RegisterRequest model, not a separate KMIP client capability; the request model and its functional API remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13",
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model remains mapped to OASIS KMIP v2.1 Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RegisterRequest as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the context-aware RegisterRequest model, not a separate KMIP client capability; the request model and its functional API remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13",
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model remains mapped to OASIS KMIP v2.1 Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RegisterRequest as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the context-aware RegisterRequest model, not a separate KMIP client capability; the request model and its functional API remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13",
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model remains mapped to OASIS KMIP v2.1 Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RegisterRequest as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the context-aware RegisterRequest model, not a separate KMIP client capability; the request model and its functional API remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13",
+        "kind": "feature-specification",
+        "path": "specs/029-opaque-object-context/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-007, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The context-aware RegisterRequest model remains mapped to OASIS KMIP v2.1 Section 6.1.43, Table 291 (Table 291: Register Request Payload). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RegisterRequest as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the context-aware RegisterRequest model, not a separate KMIP client capability; the request model and its functional API remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-006, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The raw-preserving Revocation Reason Code maps to OASIS KMIP v2.1 Section 11.48, Table 481 (Table 481: Revocation Reason Code Enumeration); its enclosing Revocation Reason Structure is defined in OASIS KMIP v2.1 Section 4.47, Table 123 (Table 123: Revocation Reason Attribute Structure). Revoke remains mapped to OASIS KMIP v2.1 Section 6.1.44, Tables 295-297 (Table 295: Revoke Request Payload; Table 296: Revoke Response Payload; Table 297: Revoke Errors). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevocationReason as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the raw-preserving RevocationReason value, not a separate KMIP client capability; its public type, raw values, and protocol mapping remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-006, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The raw-preserving Revocation Reason Code maps to OASIS KMIP v2.1 Section 11.48, Table 481 (Table 481: Revocation Reason Code Enumeration); its enclosing Revocation Reason Structure is defined in OASIS KMIP v2.1 Section 4.47, Table 123 (Table 123: Revocation Reason Attribute Structure). Revoke remains mapped to OASIS KMIP v2.1 Section 6.1.44, Tables 295-297 (Table 295: Revoke Request Payload; Table 296: Revoke Response Payload; Table 297: Revoke Errors). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevocationReason as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the raw-preserving RevocationReason value, not a separate KMIP client capability; its public type, raw values, and protocol mapping remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-006, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The raw-preserving Revocation Reason Code maps to OASIS KMIP v2.1 Section 11.48, Table 481 (Table 481: Revocation Reason Code Enumeration); its enclosing Revocation Reason Structure is defined in OASIS KMIP v2.1 Section 4.47, Table 123 (Table 123: Revocation Reason Attribute Structure). Revoke remains mapped to OASIS KMIP v2.1 Section 6.1.44, Tables 295-297 (Table 295: Revoke Request Payload; Table 296: Revoke Response Payload; Table 297: Revoke Errors). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevocationReason as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the raw-preserving RevocationReason value, not a separate KMIP client capability; its public type, raw values, and protocol mapping remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-006, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The raw-preserving Revocation Reason Code maps to OASIS KMIP v2.1 Section 11.48, Table 481 (Table 481: Revocation Reason Code Enumeration); its enclosing Revocation Reason Structure is defined in OASIS KMIP v2.1 Section 4.47, Table 123 (Table 123: Revocation Reason Attribute Structure). Revoke remains mapped to OASIS KMIP v2.1 Section 6.1.44, Tables 295-297 (Table 295: Revoke Request Payload; Table 296: Revoke Response Payload; Table 297: Revoke Errors). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevocationReason as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the raw-preserving RevocationReason value, not a separate KMIP client capability; its public type, raw values, and protocol mapping remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-006, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The raw-preserving Revocation Reason Code maps to OASIS KMIP v2.1 Section 11.48, Table 481 (Table 481: Revocation Reason Code Enumeration); its enclosing Revocation Reason Structure is defined in OASIS KMIP v2.1 Section 4.47, Table 123 (Table 123: Revocation Reason Attribute Structure). Revoke remains mapped to OASIS KMIP v2.1 Section 6.1.44, Tables 295-297 (Table 295: Revoke Request Payload; Table 296: Revoke Response Payload; Table 297: Revoke Errors). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevocationReason as core::borrow::Borrow<kmipkit_protocol::revoke::RevocationReason>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the raw-preserving RevocationReason value, not a separate KMIP client capability; its public type, raw values, and protocol mapping remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-006, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The raw-preserving Revocation Reason Code maps to OASIS KMIP v2.1 Section 11.48, Table 481 (Table 481: Revocation Reason Code Enumeration); its enclosing Revocation Reason Structure is defined in OASIS KMIP v2.1 Section 4.47, Table 123 (Table 123: Revocation Reason Attribute Structure). Revoke remains mapped to OASIS KMIP v2.1 Section 6.1.44, Tables 295-297 (Table 295: Revoke Request Payload; Table 296: Revoke Response Payload; Table 297: Revoke Errors). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevocationReason as core::borrow::BorrowMut<kmipkit_protocol::revoke::RevocationReason>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the raw-preserving RevocationReason value, not a separate KMIP client capability; its public type, raw values, and protocol mapping remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-006, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The raw-preserving Revocation Reason Code maps to OASIS KMIP v2.1 Section 11.48, Table 481 (Table 481: Revocation Reason Code Enumeration); its enclosing Revocation Reason Structure is defined in OASIS KMIP v2.1 Section 4.47, Table 123 (Table 123: Revocation Reason Attribute Structure). Revoke remains mapped to OASIS KMIP v2.1 Section 6.1.44, Tables 295-297 (Table 295: Revoke Request Payload; Table 296: Revoke Response Payload; Table 297: Revoke Errors). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevocationReason as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the raw-preserving RevocationReason value, not a separate KMIP client capability; its public type, raw values, and protocol mapping remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-006, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The raw-preserving Revocation Reason Code maps to OASIS KMIP v2.1 Section 11.48, Table 481 (Table 481: Revocation Reason Code Enumeration); its enclosing Revocation Reason Structure is defined in OASIS KMIP v2.1 Section 4.47, Table 123 (Table 123: Revocation Reason Attribute Structure). Revoke remains mapped to OASIS KMIP v2.1 Section 6.1.44, Tables 295-297 (Table 295: Revoke Request Payload; Table 296: Revoke Response Payload; Table 297: Revoke Errors). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevocationReason as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the raw-preserving RevocationReason value, not a separate KMIP client capability; its public type, raw values, and protocol mapping remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-006, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The raw-preserving Revocation Reason Code maps to OASIS KMIP v2.1 Section 11.48, Table 481 (Table 481: Revocation Reason Code Enumeration); its enclosing Revocation Reason Structure is defined in OASIS KMIP v2.1 Section 4.47, Table 123 (Table 123: Revocation Reason Attribute Structure). Revoke remains mapped to OASIS KMIP v2.1 Section 6.1.44, Tables 295-297 (Table 295: Revoke Request Payload; Table 296: Revoke Response Payload; Table 297: Revoke Errors). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevocationReason as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the raw-preserving RevocationReason value, not a separate KMIP client capability; its public type, raw values, and protocol mapping remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-006, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The raw-preserving Revocation Reason Code maps to OASIS KMIP v2.1 Section 11.48, Table 481 (Table 481: Revocation Reason Code Enumeration); its enclosing Revocation Reason Structure is defined in OASIS KMIP v2.1 Section 4.47, Table 123 (Table 123: Revocation Reason Attribute Structure). Revoke remains mapped to OASIS KMIP v2.1 Section 6.1.44, Tables 295-297 (Table 295: Revoke Request Payload; Table 296: Revoke Response Payload; Table 297: Revoke Errors). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevocationReason as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the raw-preserving RevocationReason value, not a separate KMIP client capability; its public type, raw values, and protocol mapping remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-006, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The raw-preserving Revocation Reason Code maps to OASIS KMIP v2.1 Section 11.48, Table 481 (Table 481: Revocation Reason Code Enumeration); its enclosing Revocation Reason Structure is defined in OASIS KMIP v2.1 Section 4.47, Table 123 (Table 123: Revocation Reason Attribute Structure). Revoke remains mapped to OASIS KMIP v2.1 Section 6.1.44, Tables 295-297 (Table 295: Revoke Request Payload; Table 296: Revoke Response Payload; Table 297: Revoke Errors). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevocationReason as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the raw-preserving RevocationReason value, not a separate KMIP client capability; its public type, raw values, and protocol mapping remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-006, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The raw-preserving Revocation Reason Code maps to OASIS KMIP v2.1 Section 11.48, Table 481 (Table 481: Revocation Reason Code Enumeration); its enclosing Revocation Reason Structure is defined in OASIS KMIP v2.1 Section 4.47, Table 123 (Table 123: Revocation Reason Attribute Structure). Revoke remains mapped to OASIS KMIP v2.1 Section 6.1.44, Tables 295-297 (Table 295: Revoke Request Payload; Table 296: Revoke Response Payload; Table 297: Revoke Errors). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevocationReason as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the raw-preserving RevocationReason value, not a separate KMIP client capability; its public type, raw values, and protocol mapping remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-006, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The raw-preserving Revocation Reason Code maps to OASIS KMIP v2.1 Section 11.48, Table 481 (Table 481: Revocation Reason Code Enumeration); its enclosing Revocation Reason Structure is defined in OASIS KMIP v2.1 Section 4.47, Table 123 (Table 123: Revocation Reason Attribute Structure). Revoke remains mapped to OASIS KMIP v2.1 Section 6.1.44, Tables 295-297 (Table 295: Revoke Request Payload; Table 296: Revoke Response Payload; Table 297: Revoke Errors). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevocationReason as core::convert::From<kmipkit_protocol::revoke::RevocationReason>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the raw-preserving RevocationReason value, not a separate KMIP client capability; its public type, raw values, and protocol mapping remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-006, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The raw-preserving Revocation Reason Code maps to OASIS KMIP v2.1 Section 11.48, Table 481 (Table 481: Revocation Reason Code Enumeration); its enclosing Revocation Reason Structure is defined in OASIS KMIP v2.1 Section 4.47, Table 123 (Table 123: Revocation Reason Attribute Structure). Revoke remains mapped to OASIS KMIP v2.1 Section 6.1.44, Tables 295-297 (Table 295: Revoke Request Payload; Table 296: Revoke Response Payload; Table 297: Revoke Errors). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevocationReason as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the raw-preserving RevocationReason value, not a separate KMIP client capability; its public type, raw values, and protocol mapping remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-006, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The raw-preserving Revocation Reason Code maps to OASIS KMIP v2.1 Section 11.48, Table 481 (Table 481: Revocation Reason Code Enumeration); its enclosing Revocation Reason Structure is defined in OASIS KMIP v2.1 Section 4.47, Table 123 (Table 123: Revocation Reason Attribute Structure). Revoke remains mapped to OASIS KMIP v2.1 Section 6.1.44, Tables 295-297 (Table 295: Revoke Request Payload; Table 296: Revoke Response Payload; Table 297: Revoke Errors). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevocationReason as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the raw-preserving RevocationReason value, not a separate KMIP client capability; its public type, raw values, and protocol mapping remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-006, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The raw-preserving Revocation Reason Code maps to OASIS KMIP v2.1 Section 11.48, Table 481 (Table 481: Revocation Reason Code Enumeration); its enclosing Revocation Reason Structure is defined in OASIS KMIP v2.1 Section 4.47, Table 123 (Table 123: Revocation Reason Attribute Structure). Revoke remains mapped to OASIS KMIP v2.1 Section 6.1.44, Tables 295-297 (Table 295: Revoke Request Payload; Table 296: Revoke Response Payload; Table 297: Revoke Errors). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevocationReason as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the raw-preserving RevocationReason value, not a separate KMIP client capability; its public type, raw values, and protocol mapping remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-006, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The raw-preserving Revocation Reason Code maps to OASIS KMIP v2.1 Section 11.48, Table 481 (Table 481: Revocation Reason Code Enumeration); its enclosing Revocation Reason Structure is defined in OASIS KMIP v2.1 Section 4.47, Table 123 (Table 123: Revocation Reason Attribute Structure). Revoke remains mapped to OASIS KMIP v2.1 Section 6.1.44, Tables 295-297 (Table 295: Revoke Request Payload; Table 296: Revoke Response Payload; Table 297: Revoke Errors). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevocationReason as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the raw-preserving RevocationReason value, not a separate KMIP client capability; its public type, raw values, and protocol mapping remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-006, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The raw-preserving Revocation Reason Code maps to OASIS KMIP v2.1 Section 11.48, Table 481 (Table 481: Revocation Reason Code Enumeration); its enclosing Revocation Reason Structure is defined in OASIS KMIP v2.1 Section 4.47, Table 123 (Table 123: Revocation Reason Attribute Structure). Revoke remains mapped to OASIS KMIP v2.1 Section 6.1.44, Tables 295-297 (Table 295: Revoke Request Payload; Table 296: Revoke Response Payload; Table 297: Revoke Errors). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevocationReason as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the raw-preserving RevocationReason value, not a separate KMIP client capability; its public type, raw values, and protocol mapping remain unchanged."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-006, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The raw-preserving Revocation Reason Code maps to OASIS KMIP v2.1 Section 11.48, Table 481 (Table 481: Revocation Reason Code Enumeration); its enclosing Revocation Reason Structure is defined in OASIS KMIP v2.1 Section 4.47, Table 123 (Table 123: Revocation Reason Attribute Structure). Revoke remains mapped to OASIS KMIP v2.1 Section 6.1.44, Tables 295-297 (Table 295: Revoke Request Payload; Table 296: Revoke Response Payload; Table 297: Revoke Errors). This inventory-only mapping makes no conformance claim. The exact compiler-observed path appears in specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json.",
+      "exportName": "<kmipkit_protocol::RevocationReason as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation is compiler-visible language behavior of the raw-preserving RevocationReason value, not a separate KMIP client capability; its public type, raw values, and protocol mapping remain unchanged."
     }
   ],
   "capabilities": [
