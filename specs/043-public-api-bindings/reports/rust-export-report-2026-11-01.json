@@ -59500,11 +59500,11 @@
   "counts": {
     "conditionalConditionMismatches": 0,
     "conditionalStateMismatches": 0,
-    "excluded": 5929,
+    "excluded": 5955,
     "issues": 0,
     "kindMismatches": 0,
-    "manifest": 4534,
-    "matched": 4534,
+    "manifest": 4508,
+    "matched": 4508,
     "missingFromManifest": 0,
     "notObserved": 0,
     "observed": 10463
@@ -239686,6 +239686,425 @@
     },
     {
       "aliases": [
+        "<kmipkit::RuntimeMetadataError as alloc::borrow::ToOwned>::Owned"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit::RuntimeMetadataError as alloc::borrow::ToOwned>::Owned",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit::RuntimeMetadataError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit\",\"RuntimeMetadataError\"]}}}}]},\"Owned\",\"assoc_type\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "aliases": [
+        "<kmipkit::RuntimeMetadataError as alloc::borrow::ToOwned>::clone_into"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit::RuntimeMetadataError as alloc::borrow::ToOwned>::clone_into",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit::RuntimeMetadataError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit\",\"RuntimeMetadataError\"]}}}}]},\"clone_into\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "aliases": [
+        "<kmipkit::RuntimeMetadataError as alloc::borrow::ToOwned>::to_owned"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit::RuntimeMetadataError as alloc::borrow::ToOwned>::to_owned",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit::RuntimeMetadataError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit\",\"RuntimeMetadataError\"]}}}}]},\"to_owned\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "aliases": [
+        "<kmipkit::RuntimeMetadataError as alloc::string::ToString>::to_string"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit::RuntimeMetadataError as alloc::string::ToString>::to_string",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"alloc\",\"string\",\"ToString\"],\"kmipkit::RuntimeMetadataError\",\"alloc::string::ToString\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"fmt\",\"Display\"]}}},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit\",\"RuntimeMetadataError\"]}}}}]},\"to_string\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "aliases": [
+        "<kmipkit::RuntimeMetadataError as core::any::Any>::type_id"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit::RuntimeMetadataError as core::any::Any>::type_id",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"any\",\"Any\"],\"kmipkit::RuntimeMetadataError\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit\",\"RuntimeMetadataError\"]}}}}]},\"type_id\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "aliases": [
+        "<kmipkit::RuntimeMetadataError as core::borrow::Borrow<kmipkit::RuntimeMetadataError>>::borrow"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit::RuntimeMetadataError as core::borrow::Borrow<kmipkit::RuntimeMetadataError>>::borrow",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit::RuntimeMetadataError\",\"core::borrow::Borrow<kmipkit::RuntimeMetadataError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit\",\"RuntimeMetadataError\"]}}}}]},\"borrow\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "aliases": [
+        "<kmipkit::RuntimeMetadataError as core::borrow::BorrowMut<kmipkit::RuntimeMetadataError>>::borrow_mut"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit::RuntimeMetadataError as core::borrow::BorrowMut<kmipkit::RuntimeMetadataError>>::borrow_mut",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit::RuntimeMetadataError\",\"core::borrow::BorrowMut<kmipkit::RuntimeMetadataError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit\",\"RuntimeMetadataError\"]}}}}]},\"borrow_mut\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "aliases": [
+        "<kmipkit::RuntimeMetadataError as core::clone::Clone>::clone"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit::RuntimeMetadataError as core::clone::Clone>::clone",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit::RuntimeMetadataError\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 10,
+        "line": 72,
+        "path": "crates/kmipkit/src/lib.rs"
+      },
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "aliases": [
+        "<kmipkit::RuntimeMetadataError as core::clone::Clone>::clone_from"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit::RuntimeMetadataError as core::clone::Clone>::clone_from",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit::RuntimeMetadataError\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone_from\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 10,
+        "line": 72,
+        "path": "crates/kmipkit/src/lib.rs"
+      },
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "aliases": [
+        "<kmipkit::RuntimeMetadataError as core::clone::CloneToUninit>::clone_to_uninit"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit::RuntimeMetadataError as core::clone::CloneToUninit>::clone_to_uninit",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"clone\",\"CloneToUninit\"],\"kmipkit::RuntimeMetadataError\",\"core::clone::CloneToUninit\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit\",\"RuntimeMetadataError\"]}}}}]},\"clone_to_uninit\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "aliases": [
+        "<kmipkit::RuntimeMetadataError as core::cmp::Eq>::assert_receiver_is_total_eq"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit::RuntimeMetadataError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"cmp\",\"Eq\"],\"kmipkit::RuntimeMetadataError\",\"core::cmp::Eq\",{\"params\":[],\"where_predicates\":[]},\"assert_receiver_is_total_eq\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 30,
+        "line": 72,
+        "path": "crates/kmipkit/src/lib.rs"
+      },
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "aliases": [
+        "<kmipkit::RuntimeMetadataError as core::cmp::PartialEq>::eq"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit::RuntimeMetadataError as core::cmp::PartialEq>::eq",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit::RuntimeMetadataError\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"eq\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 34,
+        "line": 72,
+        "path": "crates/kmipkit/src/lib.rs"
+      },
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "aliases": [
+        "<kmipkit::RuntimeMetadataError as core::cmp::PartialEq>::ne"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit::RuntimeMetadataError as core::cmp::PartialEq>::ne",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit::RuntimeMetadataError\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"ne\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 34,
+        "line": 72,
+        "path": "crates/kmipkit/src/lib.rs"
+      },
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "aliases": [
+        "<kmipkit::RuntimeMetadataError as core::convert::From<kmipkit::RuntimeMetadataError>>::from"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::From<kmipkit::RuntimeMetadataError>>::from",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"convert\",\"From\"],\"kmipkit::RuntimeMetadataError\",\"core::convert::From<kmipkit::RuntimeMetadataError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit::RuntimeMetadataError"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "From"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::Into<U>>::into",
+      "implementationId": "90",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit",
+        "RuntimeMetadataError"
+      ],
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit::RuntimeMetadataError"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::TryFrom<U>>::Error",
+      "implementationId": "93",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit",
+        "RuntimeMetadataError"
+      ],
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit::RuntimeMetadataError"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::TryFrom<U>>::try_from",
+      "implementationId": "93",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit",
+        "RuntimeMetadataError"
+      ],
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit::RuntimeMetadataError"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::TryInto<U>>::Error",
+      "implementationId": "92",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit",
+        "RuntimeMetadataError"
+      ],
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit::RuntimeMetadataError"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::TryInto<U>>::try_into",
+      "implementationId": "92",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit",
+        "RuntimeMetadataError"
+      ],
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "aliases": [
+        "<kmipkit::RuntimeMetadataError as core::error::Error>::cause"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit::RuntimeMetadataError as core::error::Error>::cause",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"error\",\"Error\"],\"kmipkit::RuntimeMetadataError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"cause\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 88,
+        "path": "crates/kmipkit/src/lib.rs"
+      },
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "aliases": [
+        "<kmipkit::RuntimeMetadataError as core::error::Error>::description"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit::RuntimeMetadataError as core::error::Error>::description",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"error\",\"Error\"],\"kmipkit::RuntimeMetadataError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"description\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 88,
+        "path": "crates/kmipkit/src/lib.rs"
+      },
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "aliases": [
+        "<kmipkit::RuntimeMetadataError as core::error::Error>::provide"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit::RuntimeMetadataError as core::error::Error>::provide",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"error\",\"Error\"],\"kmipkit::RuntimeMetadataError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"provide\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 88,
+        "path": "crates/kmipkit/src/lib.rs"
+      },
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "aliases": [
+        "<kmipkit::RuntimeMetadataError as core::error::Error>::source"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit::RuntimeMetadataError as core::error::Error>::source",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"error\",\"Error\"],\"kmipkit::RuntimeMetadataError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"source\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 88,
+        "path": "crates/kmipkit/src/lib.rs"
+      },
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "aliases": [
+        "<kmipkit::RuntimeMetadataError as core::error::Error>::type_id"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit::RuntimeMetadataError as core::error::Error>::type_id",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"error\",\"Error\"],\"kmipkit::RuntimeMetadataError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"type_id\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 88,
+        "path": "crates/kmipkit/src/lib.rs"
+      },
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "aliases": [
+        "<kmipkit::RuntimeMetadataError as core::fmt::Debug>::fmt"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit::RuntimeMetadataError as core::fmt::Debug>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit::RuntimeMetadataError\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 23,
+        "line": 72,
+        "path": "crates/kmipkit/src/lib.rs"
+      },
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "aliases": [
+        "<kmipkit::RuntimeMetadataError as core::fmt::Display>::fmt"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit::RuntimeMetadataError as core::fmt::Display>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"fmt\",\"Display\"],\"kmipkit::RuntimeMetadataError\",\"core::fmt::Display\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 79,
+        "path": "crates/kmipkit/src/lib.rs"
+      },
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "aliases": [
         "<kmipkit::RuntimeVersion as alloc::borrow::ToOwned>::Owned"
       ],
       "exportLocations": [],
@@ -364308,451 +364727,6 @@
         "column": 10,
         "line": 56,
         "path": "crates/kmipkit-protocol/src/rng_seed.rs"
-      },
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "aliases": [
-        "<kmipkit::RuntimeMetadataError as alloc::borrow::ToOwned>::Owned"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit::RuntimeMetadataError as alloc::borrow::ToOwned>::Owned",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit::RuntimeMetadataError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit\",\"RuntimeMetadataError\"]}}}}]},\"Owned\",\"assoc_type\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "aliases": [
-        "<kmipkit::RuntimeMetadataError as alloc::borrow::ToOwned>::clone_into"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit::RuntimeMetadataError as alloc::borrow::ToOwned>::clone_into",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit::RuntimeMetadataError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit\",\"RuntimeMetadataError\"]}}}}]},\"clone_into\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "aliases": [
-        "<kmipkit::RuntimeMetadataError as alloc::borrow::ToOwned>::to_owned"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit::RuntimeMetadataError as alloc::borrow::ToOwned>::to_owned",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit::RuntimeMetadataError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit\",\"RuntimeMetadataError\"]}}}}]},\"to_owned\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "aliases": [
-        "<kmipkit::RuntimeMetadataError as alloc::string::ToString>::to_string"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit::RuntimeMetadataError as alloc::string::ToString>::to_string",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"alloc\",\"string\",\"ToString\"],\"kmipkit::RuntimeMetadataError\",\"alloc::string::ToString\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"fmt\",\"Display\"]}}},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit\",\"RuntimeMetadataError\"]}}}}]},\"to_string\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "aliases": [
-        "<kmipkit::RuntimeMetadataError as core::any::Any>::type_id"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit::RuntimeMetadataError as core::any::Any>::type_id",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"any\",\"Any\"],\"kmipkit::RuntimeMetadataError\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit\",\"RuntimeMetadataError\"]}}}}]},\"type_id\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "aliases": [
-        "<kmipkit::RuntimeMetadataError as core::borrow::Borrow<kmipkit::RuntimeMetadataError>>::borrow"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit::RuntimeMetadataError as core::borrow::Borrow<kmipkit::RuntimeMetadataError>>::borrow",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit::RuntimeMetadataError\",\"core::borrow::Borrow<kmipkit::RuntimeMetadataError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit\",\"RuntimeMetadataError\"]}}}}]},\"borrow\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "aliases": [
-        "<kmipkit::RuntimeMetadataError as core::borrow::BorrowMut<kmipkit::RuntimeMetadataError>>::borrow_mut"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit::RuntimeMetadataError as core::borrow::BorrowMut<kmipkit::RuntimeMetadataError>>::borrow_mut",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit::RuntimeMetadataError\",\"core::borrow::BorrowMut<kmipkit::RuntimeMetadataError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit\",\"RuntimeMetadataError\"]}}}}]},\"borrow_mut\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "aliases": [
-        "<kmipkit::RuntimeMetadataError as core::clone::Clone>::clone"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit::RuntimeMetadataError as core::clone::Clone>::clone",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit::RuntimeMetadataError\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 10,
-        "line": 72,
-        "path": "crates/kmipkit/src/lib.rs"
-      },
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "aliases": [
-        "<kmipkit::RuntimeMetadataError as core::clone::Clone>::clone_from"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit::RuntimeMetadataError as core::clone::Clone>::clone_from",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit::RuntimeMetadataError\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone_from\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 10,
-        "line": 72,
-        "path": "crates/kmipkit/src/lib.rs"
-      },
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "aliases": [
-        "<kmipkit::RuntimeMetadataError as core::clone::CloneToUninit>::clone_to_uninit"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit::RuntimeMetadataError as core::clone::CloneToUninit>::clone_to_uninit",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"clone\",\"CloneToUninit\"],\"kmipkit::RuntimeMetadataError\",\"core::clone::CloneToUninit\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit\",\"RuntimeMetadataError\"]}}}}]},\"clone_to_uninit\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "aliases": [
-        "<kmipkit::RuntimeMetadataError as core::cmp::Eq>::assert_receiver_is_total_eq"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit::RuntimeMetadataError as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"cmp\",\"Eq\"],\"kmipkit::RuntimeMetadataError\",\"core::cmp::Eq\",{\"params\":[],\"where_predicates\":[]},\"assert_receiver_is_total_eq\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 30,
-        "line": 72,
-        "path": "crates/kmipkit/src/lib.rs"
-      },
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "aliases": [
-        "<kmipkit::RuntimeMetadataError as core::cmp::PartialEq>::eq"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit::RuntimeMetadataError as core::cmp::PartialEq>::eq",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit::RuntimeMetadataError\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"eq\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 34,
-        "line": 72,
-        "path": "crates/kmipkit/src/lib.rs"
-      },
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "aliases": [
-        "<kmipkit::RuntimeMetadataError as core::cmp::PartialEq>::ne"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit::RuntimeMetadataError as core::cmp::PartialEq>::ne",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit::RuntimeMetadataError\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"ne\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 34,
-        "line": 72,
-        "path": "crates/kmipkit/src/lib.rs"
-      },
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "aliases": [
-        "<kmipkit::RuntimeMetadataError as core::convert::From<kmipkit::RuntimeMetadataError>>::from"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::From<kmipkit::RuntimeMetadataError>>::from",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"convert\",\"From\"],\"kmipkit::RuntimeMetadataError\",\"core::convert::From<kmipkit::RuntimeMetadataError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit::RuntimeMetadataError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::Into<U>>::into",
-      "implementationId": "90",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit",
-        "RuntimeMetadataError"
-      ],
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit::RuntimeMetadataError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::TryFrom<U>>::Error",
-      "implementationId": "93",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit",
-        "RuntimeMetadataError"
-      ],
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit::RuntimeMetadataError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::TryFrom<U>>::try_from",
-      "implementationId": "93",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit",
-        "RuntimeMetadataError"
-      ],
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit::RuntimeMetadataError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::TryInto<U>>::Error",
-      "implementationId": "92",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit",
-        "RuntimeMetadataError"
-      ],
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit::RuntimeMetadataError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::TryInto<U>>::try_into",
-      "implementationId": "92",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit",
-        "RuntimeMetadataError"
-      ],
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "aliases": [
-        "<kmipkit::RuntimeMetadataError as core::error::Error>::cause"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit::RuntimeMetadataError as core::error::Error>::cause",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"error\",\"Error\"],\"kmipkit::RuntimeMetadataError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"cause\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 88,
-        "path": "crates/kmipkit/src/lib.rs"
-      },
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "aliases": [
-        "<kmipkit::RuntimeMetadataError as core::error::Error>::description"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit::RuntimeMetadataError as core::error::Error>::description",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"error\",\"Error\"],\"kmipkit::RuntimeMetadataError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"description\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 88,
-        "path": "crates/kmipkit/src/lib.rs"
-      },
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "aliases": [
-        "<kmipkit::RuntimeMetadataError as core::error::Error>::provide"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit::RuntimeMetadataError as core::error::Error>::provide",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"error\",\"Error\"],\"kmipkit::RuntimeMetadataError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"provide\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 88,
-        "path": "crates/kmipkit/src/lib.rs"
-      },
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "aliases": [
-        "<kmipkit::RuntimeMetadataError as core::error::Error>::source"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit::RuntimeMetadataError as core::error::Error>::source",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"error\",\"Error\"],\"kmipkit::RuntimeMetadataError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"source\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 88,
-        "path": "crates/kmipkit/src/lib.rs"
-      },
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "aliases": [
-        "<kmipkit::RuntimeMetadataError as core::error::Error>::type_id"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit::RuntimeMetadataError as core::error::Error>::type_id",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"error\",\"Error\"],\"kmipkit::RuntimeMetadataError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"type_id\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 88,
-        "path": "crates/kmipkit/src/lib.rs"
-      },
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "aliases": [
-        "<kmipkit::RuntimeMetadataError as core::fmt::Debug>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit::RuntimeMetadataError as core::fmt::Debug>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit::RuntimeMetadataError\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 23,
-        "line": 72,
-        "path": "crates/kmipkit/src/lib.rs"
-      },
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "aliases": [
-        "<kmipkit::RuntimeMetadataError as core::fmt::Display>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit::RuntimeMetadataError as core::fmt::Display>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit\",\"RuntimeMetadataError\"],[\"core\",\"fmt\",\"Display\"],\"kmipkit::RuntimeMetadataError\",\"core::fmt::Display\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 79,
-        "path": "crates/kmipkit/src/lib.rs"
       },
       "packageId": "rust-kmipkit"
     },

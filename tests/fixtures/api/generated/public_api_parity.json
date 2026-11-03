@@ -65554,6 +65554,318 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data.",
+      "exportName": "<kmipkit::RuntimeMetadataError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data.",
+      "exportName": "<kmipkit::RuntimeMetadataError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data.",
+      "exportName": "<kmipkit::RuntimeMetadataError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data.",
+      "exportName": "<kmipkit::RuntimeMetadataError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data.",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data.",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::borrow::Borrow<kmipkit::RuntimeMetadataError>>::borrow",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data.",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::borrow::BorrowMut<kmipkit::RuntimeMetadataError>>::borrow_mut",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data.",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data.",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data.",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data.",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data.",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data.",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data.",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::From<kmipkit::RuntimeMetadataError>>::from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data.",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data.",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data.",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data.",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data.",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data.",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data.",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::error::Error>::description",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data.",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data.",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::error::Error>::source",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data.",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data.",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data.",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
       "evidence": "KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The exact compiler-observed path appears in `specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json`. `RuntimeVersion` derives Clone, Copy, Debug, Eq, and PartialEq in `crates/kmipkit/src/lib.rs`; these standard/blanket trait artifacts add no fields or wire behavior. The runtime-version capability remains mapped through `kmipkit::RuntimeVersion::product_version`, `kmipkit_version_get`, Java `RuntimeMetadata.Version` components, and Python `metadata.Version` components.",
       "exportName": "<kmipkit::RuntimeVersion as alloc::borrow::ToOwned>::Owned",
       "packageId": "rust-kmipkit",

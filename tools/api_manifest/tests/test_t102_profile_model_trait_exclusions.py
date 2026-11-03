@@ -300,9 +300,9 @@ class T102ProfileModelTraitExclusionTests(unittest.TestCase):
             and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(candidates, 2251)
-        self.assertEqual(len(self.manifest["publicDeclarations"]), 7449)
-        self.assertEqual(len(self.manifest["approvedExclusions"]), 7275)
+        self.assertEqual(candidates, 2225)
+        self.assertEqual(len(self.manifest["publicDeclarations"]), 7423)
+        self.assertEqual(len(self.manifest["approvedExclusions"]), 7301)
 
     def _protected_rows(self, owners: object) -> list[dict[str, object]]:
         return sorted(

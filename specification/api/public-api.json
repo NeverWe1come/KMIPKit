@@ -133747,460 +133747,6 @@
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
-      "declarationId": "rust-observed-546fea6c8e23bb594c02",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RuntimeMetadataError as alloc::borrow::ToOwned>::Owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-4fd2a5585416b669276b",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RuntimeMetadataError as alloc::borrow::ToOwned>::clone_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-6987d5456d13cedd3410",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RuntimeMetadataError as alloc::borrow::ToOwned>::to_owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-b1f96cbc33dbc99eb063",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RuntimeMetadataError as alloc::string::ToString>::to_string",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-74ad1eb78bf0d3adcdbc",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-0545030d50a3d97252d7",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::borrow::Borrow<kmipkit::RuntimeMetadataError>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-af7bc195db4864659aa3",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::borrow::BorrowMut<kmipkit::RuntimeMetadataError>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-54bc782752b7fe34a89d",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::clone::Clone>::clone",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-7ca5bd8949f4239bcd84",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::clone::Clone>::clone_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-835be89ed11bdda3663c",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::clone::CloneToUninit>::clone_to_uninit",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-a06c7e0a758a7c210d7c",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-478b70fd73a226c830a5",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::cmp::PartialEq>::eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-e93521149f44bfedf797",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::cmp::PartialEq>::ne",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-9821d6000271ce25a0eb",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::From<kmipkit::RuntimeMetadataError>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-392d0b4d77d67d0c0aa4",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit::RuntimeMetadataError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-c4ea89487c867d5a1ea3",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit::RuntimeMetadataError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-080cd1e4ed9c055a8dc9",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit::RuntimeMetadataError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-fbaa7ec410db5fe1c2a4",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit::RuntimeMetadataError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-97780a5439b82d48caa7",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit::RuntimeMetadataError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-f8bed8ac2c6ee52bb9ad",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::error::Error>::cause",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-9066c572df031f869068",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::error::Error>::description",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-f62ac401dc858fa49b1d",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::error::Error>::provide",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-4fc3594fbb32e883419a",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::error::Error>::source",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-8ec23719b03d760531a7",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::error::Error>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-f9e3d7b339b38dea44ab",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-b1bc3db1621d7530f478",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RuntimeMetadataError as core::fmt::Display>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
       "declarationId": "rust-observed-1891278b922acbd4baf1",
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
@@ -410827,6 +410373,318 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed exact declaration `org.kmipkit.RuntimeMetadata.Version.toString` against KMIPKIT-0043-FR-021. The RuntimeMetadata.Version type, version query, abiVersion, and major/minor/patch components remain mapped; this excludes only generated Java record value behavior."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::RuntimeMetadataError as alloc::borrow::ToOwned>::Owned",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::RuntimeMetadataError as alloc::borrow::ToOwned>::clone_into",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::RuntimeMetadataError as alloc::borrow::ToOwned>::to_owned",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::RuntimeMetadataError as alloc::string::ToString>::to_string",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::borrow::Borrow<kmipkit::RuntimeMetadataError>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::borrow::BorrowMut<kmipkit::RuntimeMetadataError>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::clone::Clone>::clone",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::clone::Clone>::clone_from",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::clone::CloneToUninit>::clone_to_uninit",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::cmp::PartialEq>::eq",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::cmp::PartialEq>::ne",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::From<kmipkit::RuntimeMetadataError>>::from",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::error::Error>::cause",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::error::Error>::description",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::error::Error>::provide",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::error::Error>::source",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::error::Error>::type_id",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::RuntimeMetadataError as core::fmt::Display>::fmt",
+      "reason": "This exact Rust standard-trait implementation is compiler-generated language-level behavior of the local runtime metadata error, not a separate KMIPKit product capability; the payload-free ResourceLimit value and its fixed 128-byte message remain mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Owner KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-013; T102 exclusion authority KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Pinned Rust 1.94.0 report specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json identifies 21 direct and five conditional paths. No OASIS clause applies to this local, payload-free error; runtime_metadata.rs verifies the fixed 128-byte message without echoing caller data."
     },
     {
       "packageId": "rust-kmipkit",

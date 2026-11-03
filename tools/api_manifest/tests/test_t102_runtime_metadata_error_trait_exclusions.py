@@ -105,7 +105,7 @@ class T102RuntimeMetadataErrorTraitExclusionTests(unittest.TestCase):
                 self.assertIn("KMIPKIT-0043-FR-021", row["evidence"])
                 self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
                 self.assertIn("21 direct and five conditional", row["evidence"])
-                self.assertIn("no OASIS clause applies", row["evidence"])
+                self.assertIn("No OASIS clause applies", row["evidence"])
 
     def test_runtime_error_type_and_resource_limit_variant_remain_mapped(self) -> None:
         declarations = {
