@@ -5,7 +5,7 @@ import org.kmipkit.InvalidInputException;
 /** Caller-local pass/fail evidence for one stable requirement identifier. */
 public record ProfileEvidenceRecord(String requirementId, boolean passed) {
     public ProfileEvidenceRecord {
-        if (requirementId == null || requirementId.isBlank()) {
+        if (requirementId == null) {
             throw new InvalidInputException("profile evidence record is invalid");
         }
     }
