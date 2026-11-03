@@ -10126,3 +10126,32 @@ Verification:
 - Shared Rust inventory `--check` passed. Binding export audit `--check` exited 0. `git diff --check` passed.
 
 T102 remains open. This checkpoint is inventory and traceability work only.
+
+
+### T102 - KMIPKIT-0041 root RNG alias trait artifacts (2026-11-03)
+
+The preflight head was `a539b5f7633a88eef5ab17eb9a936c5cc128768c`; the source manifest SHA-256 was `71a3bf01715bb937e7810bfe6a05b2b41a0c38d17274e842e7187c65059b7c76`. The approved functional owner is `specs/027-rng-operations/spec.md` (KMIPKIT-0041, Approved for implementation on 2026-10-11). T031 remains gated binding work until KMIPKIT-0043 integration; T034 remains release and interoperability validation. T102 exclusions cite KMIPKIT-0043-FR-010/021 and the applicable owner requirements.
+
+| Group | Exact paths | Owner requirements | OASIS KMIP v2.1 functional context |
+|---|---:|---|---|
+| Root and protocol `RngRetrieveError` aliases | 26 each; 52 total | KMIPKIT-0041-FR-001/003/005/006 | Section 6.1.49, Table 318 |
+| Root and protocol `RngSeedError` aliases | 26 each; 52 total | KMIPKIT-0041-FR-001/003/005/006 | Section 6.1.50, Table 321 |
+| Root `RngRetrieveRequest` alias | 19 (14 direct, five conditional) | KMIPKIT-0041-FR-001/002/004 | Section 6.1.49, Table 316 |
+| Root `RngSeedRequest` alias | 10 (five direct, five conditional) | KMIPKIT-0041-FR-001/002/004/005 | Section 6.1.50, Table 319 |
+
+The exact-set test `tools/api_manifest/tests/test_t102_rng_root_trait_batch.py` pins 133 root alias paths: 103 direct and 30 conditional. The existing request tests retain exact coverage of the previously excluded protocol request traits and now verify the root aliases separately. `RngRetrieveError` and `RngSeedError` alias `CryptographicOperationError`, whose only error source is payload-free `ResultValidationError`; it stores no response bytes or TTLV. `RngRetrieveRequest` contains only the requested data length. `RngSeedRequest` stores `SecretBytes`; its custom Debug implementation redacts the seed, and the selected trait paths only borrow or move the wrapper. Both responses retain owned response TTLV. `RngRetrieveResponse` additionally stores random output as `SecretBytes`, while `RngSeedResponse` stores the returned data length. No parent, response, or non-trait functional declaration was promoted.
+
+The manifest moves exactly 133 blocked KMIPKIT-0043 candidates to approved exclusions. Public declaration/exclusion totals change from 6,919/7,805 to 6,786/7,938; candidates change from 1,721 to 1,588. The Rust 1.94.0 export audit changes from 4,004 matched / 6,459 excluded to 3,871 matched / 6,592 excluded out of 10,463 observed, with zero missing paths, unobserved paths, issues, kind mismatches, or conditional mismatches. Red `824a2f468`; Green `ff4d59f0e`; Refactor this commit.
+
+Verification:
+
+- Focused root RNG trait and existing Retrieve/Seed request contracts — 8 passed.
+- Full T102 contract suite — 220 passed.
+- Full manifest-v2 suite using the existing offline `uv` environment — 151 passed in 312.622 seconds. The first full run exposed two stale aggregate guards (the new approved owner path and protocol exclusion total); both were updated, then the full suite passed.
+- `python -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
+- Rust export audit `--check` — 10,463 observed, 3,871 matched, 6,592 excluded; zero discrepancies or unobserved/missing paths. Windows emitted the existing optional AWS-LC probe and missing-NASM warnings; audit exited 0.
+- Shared Rust inventory `--check` and binding export audit `--check` passed; C/Java/Python exact matches were 757/757, 1,014/1,014, and 1,140/1,140.
+- Independent QA and security reviews passed with no actionable findings. The security review confirmed the excluded trait paths do not expose retained response TTLV or RNG seed bytes.
+- `git diff --check` passed before the Refactor commit.
+
+T102 remains open. This is manifest inventory and traceability work only; it changes no RNG runtime behavior and makes no protocol-conformance, profile-support, interoperability, or certification claim.

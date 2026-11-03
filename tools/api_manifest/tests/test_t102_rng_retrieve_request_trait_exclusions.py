@@ -146,7 +146,7 @@ class T102RngRetrieveRequestTraitExclusionTests(unittest.TestCase):
         self.assertEqual(set(root_exclusions), expected_root_traits)
         self.assertTrue(all(row["approvalSource"]["path"] == "specs/027-rng-operations/spec.md" for row in root_exclusions.values()))
 
-    def test_candidate_count_moves_only_by_the_nineteen_protocol_paths(self) -> None:
+    def test_candidate_count_reflects_protocol_and_root_alias_exclusions(self) -> None:
         candidate_count = sum(
             row.get("candidateSpecId") == "KMIPKIT-0043" and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]

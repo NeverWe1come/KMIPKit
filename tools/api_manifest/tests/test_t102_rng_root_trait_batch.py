@@ -198,17 +198,6 @@ class T102RngRootTraitBatchTests(unittest.TestCase):
             self.assertEqual(declarations[("rust-kmipkit", type_name)], "blocked")
             self.assertEqual(declarations[("rust-kmipkit", f"{type_name}::new")], "blocked")
 
-        for package, type_name in (
-            ("rust-kmipkit-protocol", "kmipkit_protocol::RngRetrieveRequest"),
-            ("rust-kmipkit-protocol", "kmipkit_protocol::RngSeedRequest"),
-        ):
-            self.assertEqual(declarations[(package, type_name)], "verified")
-            new_traits = {
-                name for (candidate_package, name) in expected_paths()
-                if candidate_package == package and name.startswith(f"<{type_name} as ")
-            }
-            self.assertTrue(new_traits.isdisjoint(declarations))
-
 
 if __name__ == "__main__":
     unittest.main()

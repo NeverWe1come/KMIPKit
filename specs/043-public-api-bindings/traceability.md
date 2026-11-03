@@ -717,3 +717,14 @@ The exact-set contract is `tools/api_manifest/tests/test_t102_credential_error_t
 | `TicketValidationErrorKind` | 42 (21/package; 16 direct, five conditional) | §7.39, Table 391; §11.57, Table 488 |
 
 These OASIS sections define operation and Ticket context; they do not define Rust standard-trait behavior. The four operation errors retain only typed result-validation causes or fixed local categories; Ticket validation errors retain only a payload-free kind. No raw Ticket, response body, or secret value is added to errors or diagnostics. No operation behavior or conformance claim changes.
+
+### T102 - KMIPKIT-0041 root RNG alias trait artifacts
+
+| Rust declaration | Approved owner requirements | Pinned OASIS KMIP v2.1 functional context | Exact trait inventory |
+|---|---|---|---|
+| `kmipkit::RngRetrieveError`, `kmipkit_protocol::RngRetrieveError` | KMIPKIT-0041-FR-001/003/005/006 | Section 6.1.49, Table 318 | 26 paths each (21 direct, five conditional) |
+| `kmipkit::RngSeedError`, `kmipkit_protocol::RngSeedError` | KMIPKIT-0041-FR-001/003/005/006 | Section 6.1.50, Table 321 | 26 paths each (21 direct, five conditional) |
+| `kmipkit::RngRetrieveRequest` | KMIPKIT-0041-FR-001/002/004 | Section 6.1.49, Table 316 | 19 root alias paths (14 direct, five conditional) |
+| `kmipkit::RngSeedRequest` | KMIPKIT-0041-FR-001/002/004/005 | Section 6.1.50, Table 319 | 10 root alias paths (five direct, five conditional) |
+
+The batch adds 133 exact root alias paths to approved exclusions: 103 direct and 30 conditional. The approved owner is `specs/027-rng-operations/spec.md`; T102 authority is KMIPKIT-0043-FR-010/021. OASIS describes the operation payloads and result alternatives, but does not specify Rust standard traits. The payload-free error aliases retain only typed local validation information. RNG Retrieve requests contain the requested data length; RNG Seed requests hold `SecretBytes`, whose Debug output is redacted. The root functional parents remain blocked; the protocol request mappings and prior protocol trait exclusions remain unchanged. Both response declarations remain blocked because they retain response TTLV; `RngRetrieveResponse` also carries random output as `SecretBytes`, while `RngSeedResponse` carries the returned data length. No protocol, profile-support, interoperability, or certification claim is added by this inventory-only change.

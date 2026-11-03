@@ -6255,6 +6255,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "specs/023-key-material-transfer/spec.md",
                 "specs/024-credential-sessions/spec.md",
                 "specs/028-diagnostics-interop/spec.md",
+                "specs/027-rng-operations/spec.md",
             },
         )
 
@@ -6298,7 +6299,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for item in self.checked_in_manifest["approvedExclusions"]
             if item["packageId"] == "rust-kmipkit-protocol"
         ]
-        self.assertEqual(len(rust_exclusions), 4423)
+        self.assertEqual(len(rust_exclusions), 4475)
 
     def test_ttlv_declarations_use_their_approved_shared_spec_owners(self) -> None:
         capabilities = {
