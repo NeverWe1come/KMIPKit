@@ -568,3 +568,14 @@ The exact exclusions are authorized by `KMIPKIT-0043-FR-010` and `KMIPKIT-0043-F
 | `kmipkit_protocol::ReProvisionError` | `KMIPKIT-ELEM-OP-C2S-RE-PROVISION` | Section 6.1.48.1, Table 315: RNG Retrieve Errors (caption anomaly) | 26 paths (21 direct, five conditional) |
 
 The pinned upstream source SHA-256 is `8BF9D914C097E98A6509AA1FFCBF03406F738066E940597AEE93D0A5E07ADDCF`. For Re-Provision, the body heading is `Error Handling - Re-Provision`; Table 315 is captioned `RNG Retrieve Errors` and is placed immediately before Section 6.1.49, `RNG Retrieve`. The approved owner explicitly records the errant caption. The exact-set test verifies all nine `(packageId, exportName)` sets against Rust 1.94.0 direct and conditional report paths. Each error type's parent and six functional/variant declarations remain blocked; none has a `kmipkit::` root alias. The batch changes 189 direct and 45 conditional paths, 234 total. It makes no OASIS conformance, profile-support, interoperability, or certification claim.
+
+### T102 - KMIPKIT-0039 policy control error trait exclusions
+
+| Protocol error declaration | Approved owner requirements | Pinned OASIS KMIP v2.1 error reference | Exact trait inventory |
+|---|---|---|---|
+| `kmipkit_protocol::GetConstraintsError` | Approved `specs/025-policy-controls/spec.md` (KMIPKIT-0039-FR-001/003/004/006/007); `KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS` | Section 6.1.22, Table 231: Get Constraints Errors | 26 paths (21 direct, five conditional); `tools/api_manifest/tests/test_t102_policy_control_error_trait_exclusions.py` |
+| `kmipkit_protocol::GetUsageAllocationError` | Approved `specs/025-policy-controls/spec.md` (KMIPKIT-0039-FR-001/003/004/006/007); `KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION` | Section 6.1.23, Table 234: Get Usage Allocation Errors | 26 paths (21 direct, five conditional); same exact-set test |
+| `kmipkit_protocol::SetConstraintsError` | Approved `specs/025-policy-controls/spec.md` (KMIPKIT-0039-FR-001/003/004/006/007); `KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS` | Section 6.1.52, Table 327: Set Constraints Errors | 26 paths (21 direct, five conditional); same exact-set test |
+| `kmipkit_protocol::SetDefaultsError` | Approved `specs/025-policy-controls/spec.md` (KMIPKIT-0039-FR-001/003/004/006/007); `KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS` | Section 6.1.53, Table 330: Set Defaults Errors | 26 paths (21 direct, five conditional); same exact-set test |
+
+The focused test pins each exact `(packageId, exportName)` set against the Rust 1.94.0 compiler report. The protocol parent and functional rows, root error aliases and their traits/functions, related request/response states, and operation/client states remain unchanged. The 104 exclusions are inventory reconciliation only; T102 remains open and no OASIS conformance claim is made.
