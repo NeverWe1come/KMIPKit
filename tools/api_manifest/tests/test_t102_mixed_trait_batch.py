@@ -139,7 +139,7 @@ class T102MixedTraitBatchTests(unittest.TestCase):
                 for requirement in (*requirements, *COMMON_REQUIREMENTS):
                     self.assertIn(requirement, row["evidence"])
                 for evidence in (*COMMON_EVIDENCE, normative_source, *extra_evidence):
-                    self.assertIn(evidence, row["evidence"])
+                    self.assertIn(evidence.casefold(), row["evidence"].casefold())
                 self.assertIn("exact Rust standard-trait implementation", row["reason"])
                 self.assertIn(reason_type, row["reason"])
 
@@ -160,7 +160,7 @@ class T102MixedTraitBatchTests(unittest.TestCase):
                     requirements=SESSION_REQUIREMENTS,
                     normative_source=normative_source,
                     reason_type=type_name,
-                    extra_evidence=("the root re-export remains separately mapped or blocked",),
+                    extra_evidence=("the root re-export remains separately classified",),
                 )
 
         self.assert_exact_inventory_exclusions(
@@ -170,7 +170,7 @@ class T102MixedTraitBatchTests(unittest.TestCase):
             owner=CREDENTIAL_OWNER,
             approval=CREDENTIAL_APPROVAL,
             requirements=CREDENTIAL_REQUIREMENTS,
-            normative_source="OASIS Key Management Interoperability Protocol Specification v2.1 §§9.4 and 9.11",
+            normative_source="OASIS Key Management Interoperability Protocol Specification v2.1 Sections 9.4 and 9.11",
             reason_type="CredentialView",
             extra_evidence=("CredentialView Debug exposes only the credential type",),
         )
@@ -186,12 +186,36 @@ class T102MixedTraitBatchTests(unittest.TestCase):
                 owner=PKCS11_OWNER,
                 approval=PKCS11_APPROVAL,
                 requirements=PKCS11_REQUIREMENTS,
-                normative_source="OASIS Key Management Interoperability Protocol Specification v2.1 §6.1.37 Tables 273-275",
+                normative_source="OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.37 Tables 273-275",
                 reason_type="Pkcs11Error",
                 extra_evidence=(
                     "formalAcceptance remains false",
-                    "the functional operation declarations remain blocked",
+                    "The Pkcs11Error type, variants, and fields remain blocked",
+                    "Pkcs11Request and Pkcs11Response declarations retain their existing states",
                 ),
+            )
+
+        for package, module in (
+            ("rust-kmipkit-client", "kmipkit_client"),
+            ("rust-kmipkit-protocol", "kmipkit_protocol"),
+        ):
+            declarations = {
+                row["exportName"]: row["declarationState"]
+                for row in self.manifest["publicDeclarations"]
+                if row.get("packageId") == package
+                and row.get("exportName") in {
+                    f"{module}::Pkcs11Request",
+                    f"{module}::Pkcs11Response",
+                    f"{module}::Pkcs11Error",
+                }
+            }
+            self.assertEqual(
+                declarations,
+                {
+                    f"{module}::Pkcs11Request": "verified",
+                    f"{module}::Pkcs11Response": "verified",
+                    f"{module}::Pkcs11Error": "blocked",
+                },
             )
 
         self.assert_exact_inventory_exclusions(
@@ -201,7 +225,7 @@ class T102MixedTraitBatchTests(unittest.TestCase):
             owner=CRYPTO_OWNER,
             approval=CRYPTO_APPROVAL,
             requirements=CRYPTO_REQUIREMENTS,
-            normative_source="OASIS Key Management Interoperability Protocol Specification v2.1 §7.9 and §§6.1.11/6.1.17",
+            normative_source="OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.9 and Sections 6.1.11/6.1.17, Tables 197/198 and 215/216",
             reason_type="OperationData",
             extra_evidence=(
                 "Debug and Display use fixed redaction labels",

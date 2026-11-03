@@ -206,7 +206,7 @@ class T102TicketLoginRequestTraitExclusionTests(unittest.TestCase):
         }
         self.assertEqual(all_target_exclusions, all_pairs)
 
-    def test_protocol_functional_states_and_blocked_root_aliases_are_preserved(self) -> None:
+    def test_protocol_functional_states_and_root_trait_exclusions_are_preserved(self) -> None:
         for name in DIRECT:
             protocol = f"kmipkit_protocol::{name}"
             expected_protocol = {f"{protocol}{suffix}": state for suffix, state in PROTOCOL_STATES[name].items()}
@@ -218,26 +218,28 @@ class T102TicketLoginRequestTraitExclusionTests(unittest.TestCase):
             }
             root = f"kmipkit::{name}"
             expected_root = {f"{root}{suffix}": state for suffix, state in ROOT_STATES[name].items()}
-            expected_root.update({
-                path: "blocked"
-                for path in paths(root, suffixes(DIRECT[name]) | CONDITIONAL)
-            })
             root_states = {
                 x["exportName"]: x["declarationState"] for x in self.manifest["publicDeclarations"]
                 if x.get("packageId") == "rust-kmipkit"
                 and (x.get("exportName") == root
-                     or x.get("exportName", "").startswith(root + "::")
-                     or x.get("exportName", "").startswith(f"<{root} as "))
+                     or x.get("exportName", "").startswith(root + "::"))
+            }
+            root_trait_paths = paths(root, suffixes(DIRECT[name]) | CONDITIONAL)
+            root_trait_exclusions = {
+                x["exportName"] for x in self.manifest["approvedExclusions"]
+                if x.get("packageId") == "rust-kmipkit"
+                and x.get("exportName", "").startswith(f"<{root} as ")
             }
             with self.subTest(type_name=name):
                 self.assertEqual(protocol_states, expected_protocol)
                 self.assertEqual(root_states, expected_root)
+                self.assertEqual(root_trait_exclusions, root_trait_paths)
 
     def test_candidate_count_moves_by_only_the_exact_forty_four_paths(self) -> None:
         self.assertEqual(
             sum(x.get("candidateSpecId") == "KMIPKIT-0043" and x["declarationState"] == "blocked"
                 for x in self.manifest["publicDeclarations"]),
-            1432,
+            1264,
         )
 
 

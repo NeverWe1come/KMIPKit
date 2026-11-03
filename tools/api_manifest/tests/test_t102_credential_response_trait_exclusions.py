@@ -195,7 +195,6 @@ class T102CredentialResponseTraitExclusionTests(unittest.TestCase):
                     f"kmipkit_protocol::{details['module']}::{response_type}",
                 )
                 root_conditional = expected_conditional_traits(root_type)
-                expected_root_paths.update(root_direct | root_conditional)
                 root_rows = {
                     row["exportName"]: row
                     for row in self.manifest["publicDeclarations"]
@@ -203,7 +202,6 @@ class T102CredentialResponseTraitExclusionTests(unittest.TestCase):
                     and (
                         row.get("exportName") == root_type
                         or row.get("exportName", "").startswith(f"{root_type}::")
-                        or row.get("exportName", "").startswith(f"<{root_type} as ")
                     )
                 }
                 self.assertEqual(set(root_rows), expected_root_paths)
@@ -222,7 +220,7 @@ class T102CredentialResponseTraitExclusionTests(unittest.TestCase):
                     if row.get("packageId") == "rust-kmipkit"
                     and row.get("exportName", "").startswith(f"<{root_type} as ")
                 }
-                self.assertEqual(root_exclusions, set())
+                self.assertEqual(root_exclusions, root_direct | root_conditional)
 
 
 if __name__ == "__main__":

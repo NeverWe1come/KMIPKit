@@ -274,12 +274,12 @@ class T102Pkcs11RequestTraitExclusionTests(unittest.TestCase):
                 and row["declarationState"] == "blocked"
                 for row in self.manifest["publicDeclarations"]
             ),
-            1432,
+            1264,
         )
-        self.assertEqual(len(self.manifest["publicDeclarations"]), 6630)
-        self.assertEqual(len(self.manifest["approvedExclusions"]), 8094)
-        self.assertEqual(self.rust_report["counts"]["manifest"], 3715)
-        self.assertEqual(self.rust_report["counts"]["excluded"], 6748)
+        self.assertEqual(len(self.manifest["publicDeclarations"]), 6462)
+        self.assertEqual(len(self.manifest["approvedExclusions"]), 8262)
+        self.assertEqual(self.rust_report["counts"]["manifest"], 3547)
+        self.assertEqual(self.rust_report["counts"]["excluded"], 6916)
         self.assertEqual(self.rust_report["counts"]["observed"], 10463)
 
 

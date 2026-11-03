@@ -190,11 +190,11 @@ class T102Pkcs11ClientRootTraitExclusionTests(unittest.TestCase):
             and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(candidates, 1432)
-        self.assertEqual(len(self.manifest["publicDeclarations"]), 6630)
-        self.assertEqual(len(self.manifest["approvedExclusions"]), 8094)
-        self.assertEqual(self.rust_report["counts"]["manifest"], 3715)
-        self.assertEqual(self.rust_report["counts"]["excluded"], 6748)
+        self.assertEqual(candidates, 1264)
+        self.assertEqual(len(self.manifest["publicDeclarations"]), 6462)
+        self.assertEqual(len(self.manifest["approvedExclusions"]), 8262)
+        self.assertEqual(self.rust_report["counts"]["manifest"], 3547)
+        self.assertEqual(self.rust_report["counts"]["excluded"], 6916)
 
         pkcs11_tasks = (ROOT / "specs" / "026-pkcs11" / "tasks.md").read_text(
             encoding="utf-8"
