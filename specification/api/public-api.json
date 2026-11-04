@@ -85683,14 +85683,93 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "type",
       "exportName": "kmipkit_protocol::CryptographicOperationError",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_execution",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0019-FR-007",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0021-FR-001",
+        "KMIPKIT-0021-FR-010",
+        "KMIPKIT-0021-FR-012",
+        "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0041-FR-001",
+        "KMIPKIT-0041-FR-003",
+        "KMIPKIT-0041-FR-004",
+        "KMIPKIT-0041-FR-005",
+        "KMIPKIT-0041-FR-006",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.32-001",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.50-001",
+        "KMIPKIT-REQ-SPEC-6.1.55-001",
+        "KMIPKIT-REQ-SPEC-6.1.56-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.56-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation \u2014 delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientError"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_PROTOCOL"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ProtocolException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.ClientExecutionError"
+        }
+      },
+      "mappingSemantics": "normalized-client-protocol-error-outcome",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/src/kmipkit/errors.py",
+        "bindings/python/tests/test_client.py",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-client/tests/error_contract.rs",
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/mac_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/sign_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_crypto_protocol_error_outcome_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-96e314fe45ec5995ed17",
@@ -85711,112 +85790,744 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "type",
       "exportName": "kmipkit_protocol::CryptographicOperationErrorKind",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_execution",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0019-FR-007",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0021-FR-001",
+        "KMIPKIT-0021-FR-010",
+        "KMIPKIT-0021-FR-012",
+        "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0041-FR-001",
+        "KMIPKIT-0041-FR-003",
+        "KMIPKIT-0041-FR-004",
+        "KMIPKIT-0041-FR-005",
+        "KMIPKIT-0041-FR-006",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.32-001",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.50-001",
+        "KMIPKIT-REQ-SPEC-6.1.55-001",
+        "KMIPKIT-REQ-SPEC-6.1.56-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.56-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation \u2014 delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientError"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_PROTOCOL"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ProtocolException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.ClientExecutionError"
+        }
+      },
+      "mappingSemantics": "normalized-client-protocol-error-outcome",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/src/kmipkit/errors.py",
+        "bindings/python/tests/test_client.py",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-client/tests/error_contract.rs",
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/mac_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/sign_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_crypto_protocol_error_outcome_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-aee965da4ec896f00c6e",
       "packageId": "rust-kmipkit-protocol",
       "kind": "variant",
       "exportName": "kmipkit_protocol::CryptographicOperationErrorKind::UnexpectedOperation",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_execution",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0019-FR-007",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0021-FR-001",
+        "KMIPKIT-0021-FR-010",
+        "KMIPKIT-0021-FR-012",
+        "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0041-FR-001",
+        "KMIPKIT-0041-FR-003",
+        "KMIPKIT-0041-FR-004",
+        "KMIPKIT-0041-FR-005",
+        "KMIPKIT-0041-FR-006",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.32-001",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.50-001",
+        "KMIPKIT-REQ-SPEC-6.1.55-001",
+        "KMIPKIT-REQ-SPEC-6.1.56-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.56-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation \u2014 delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientError"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_PROTOCOL"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ProtocolException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.ClientExecutionError"
+        }
+      },
+      "mappingSemantics": "normalized-client-protocol-error-outcome",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/src/kmipkit/errors.py",
+        "bindings/python/tests/test_client.py",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-client/tests/error_contract.rs",
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/mac_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/sign_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_crypto_protocol_error_outcome_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-5df1af5ae525c55466ac",
       "packageId": "rust-kmipkit-protocol",
       "kind": "variant",
       "exportName": "kmipkit_protocol::CryptographicOperationErrorKind::MissingResultStatus",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_execution",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0019-FR-007",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0021-FR-001",
+        "KMIPKIT-0021-FR-010",
+        "KMIPKIT-0021-FR-012",
+        "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0041-FR-001",
+        "KMIPKIT-0041-FR-003",
+        "KMIPKIT-0041-FR-004",
+        "KMIPKIT-0041-FR-005",
+        "KMIPKIT-0041-FR-006",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.32-001",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.50-001",
+        "KMIPKIT-REQ-SPEC-6.1.55-001",
+        "KMIPKIT-REQ-SPEC-6.1.56-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.56-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation \u2014 delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientError"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_PROTOCOL"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ProtocolException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.ClientExecutionError"
+        }
+      },
+      "mappingSemantics": "normalized-client-protocol-error-outcome",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/src/kmipkit/errors.py",
+        "bindings/python/tests/test_client.py",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-client/tests/error_contract.rs",
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/mac_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/sign_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_crypto_protocol_error_outcome_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-abeeea38ebad9b8132df",
       "packageId": "rust-kmipkit-protocol",
       "kind": "variant",
       "exportName": "kmipkit_protocol::CryptographicOperationErrorKind::InvalidOperationResult",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_execution",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0019-FR-007",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0021-FR-001",
+        "KMIPKIT-0021-FR-010",
+        "KMIPKIT-0021-FR-012",
+        "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0041-FR-001",
+        "KMIPKIT-0041-FR-003",
+        "KMIPKIT-0041-FR-004",
+        "KMIPKIT-0041-FR-005",
+        "KMIPKIT-0041-FR-006",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.32-001",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.50-001",
+        "KMIPKIT-REQ-SPEC-6.1.55-001",
+        "KMIPKIT-REQ-SPEC-6.1.56-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.56-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation \u2014 delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientError"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_PROTOCOL"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ProtocolException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.ClientExecutionError"
+        }
+      },
+      "mappingSemantics": "normalized-client-protocol-error-outcome",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/src/kmipkit/errors.py",
+        "bindings/python/tests/test_client.py",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-client/tests/error_contract.rs",
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/mac_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/sign_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_crypto_protocol_error_outcome_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-08d95c75fd4fe717bcb9",
       "packageId": "rust-kmipkit-protocol",
       "kind": "variant",
       "exportName": "kmipkit_protocol::CryptographicOperationErrorKind::PendingOutcomeRequired",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_execution",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0019-FR-007",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0021-FR-001",
+        "KMIPKIT-0021-FR-010",
+        "KMIPKIT-0021-FR-012",
+        "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0041-FR-001",
+        "KMIPKIT-0041-FR-003",
+        "KMIPKIT-0041-FR-004",
+        "KMIPKIT-0041-FR-005",
+        "KMIPKIT-0041-FR-006",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.32-001",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.50-001",
+        "KMIPKIT-REQ-SPEC-6.1.55-001",
+        "KMIPKIT-REQ-SPEC-6.1.56-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.56-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation \u2014 delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientError"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_PROTOCOL"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ProtocolException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.ClientExecutionError"
+        }
+      },
+      "mappingSemantics": "normalized-client-protocol-error-outcome",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/src/kmipkit/errors.py",
+        "bindings/python/tests/test_client.py",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-client/tests/error_contract.rs",
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/mac_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/sign_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_crypto_protocol_error_outcome_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-a29f9f365dc9277d032e",
       "packageId": "rust-kmipkit-protocol",
       "kind": "variant",
       "exportName": "kmipkit_protocol::CryptographicOperationErrorKind::NotPendingOutcome",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_execution",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0019-FR-007",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0021-FR-001",
+        "KMIPKIT-0021-FR-010",
+        "KMIPKIT-0021-FR-012",
+        "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0041-FR-001",
+        "KMIPKIT-0041-FR-003",
+        "KMIPKIT-0041-FR-004",
+        "KMIPKIT-0041-FR-005",
+        "KMIPKIT-0041-FR-006",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.32-001",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.50-001",
+        "KMIPKIT-REQ-SPEC-6.1.55-001",
+        "KMIPKIT-REQ-SPEC-6.1.56-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.56-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation \u2014 delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientError"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_PROTOCOL"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ProtocolException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.ClientExecutionError"
+        }
+      },
+      "mappingSemantics": "normalized-client-protocol-error-outcome",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/src/kmipkit/errors.py",
+        "bindings/python/tests/test_client.py",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-client/tests/error_contract.rs",
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/mac_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/sign_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_crypto_protocol_error_outcome_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-e52dff832f88509aeb52",
       "packageId": "rust-kmipkit-protocol",
       "kind": "variant",
       "exportName": "kmipkit_protocol::CryptographicOperationErrorKind::MissingSuccessPayload",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_execution",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0019-FR-007",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0021-FR-001",
+        "KMIPKIT-0021-FR-010",
+        "KMIPKIT-0021-FR-012",
+        "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0041-FR-001",
+        "KMIPKIT-0041-FR-003",
+        "KMIPKIT-0041-FR-004",
+        "KMIPKIT-0041-FR-005",
+        "KMIPKIT-0041-FR-006",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.32-001",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.50-001",
+        "KMIPKIT-REQ-SPEC-6.1.55-001",
+        "KMIPKIT-REQ-SPEC-6.1.56-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.56-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation \u2014 delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientError"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_PROTOCOL"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ProtocolException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.ClientExecutionError"
+        }
+      },
+      "mappingSemantics": "normalized-client-protocol-error-outcome",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/src/kmipkit/errors.py",
+        "bindings/python/tests/test_client.py",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-client/tests/error_contract.rs",
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/mac_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/sign_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_crypto_protocol_error_outcome_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-0d04dbc0cfabf6c87438",
       "packageId": "rust-kmipkit-protocol",
       "kind": "variant",
       "exportName": "kmipkit_protocol::CryptographicOperationErrorKind::MalformedPayload",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_execution",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0019-FR-007",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0021-FR-001",
+        "KMIPKIT-0021-FR-010",
+        "KMIPKIT-0021-FR-012",
+        "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0041-FR-001",
+        "KMIPKIT-0041-FR-003",
+        "KMIPKIT-0041-FR-004",
+        "KMIPKIT-0041-FR-005",
+        "KMIPKIT-0041-FR-006",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.32-001",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.50-001",
+        "KMIPKIT-REQ-SPEC-6.1.55-001",
+        "KMIPKIT-REQ-SPEC-6.1.56-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.56-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation \u2014 delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientError"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_PROTOCOL"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ProtocolException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.ClientExecutionError"
+        }
+      },
+      "mappingSemantics": "normalized-client-protocol-error-outcome",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/src/kmipkit/errors.py",
+        "bindings/python/tests/test_client.py",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-client/tests/error_contract.rs",
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/mac_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/sign_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_crypto_protocol_error_outcome_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-105154cf933c88d0097a",
@@ -184011,14 +184722,93 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "field",
       "exportName": "kmipkit_protocol::CryptographicOperationErrorKind::InvalidOperationResult::0",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_execution",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0019-FR-007",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0021-FR-001",
+        "KMIPKIT-0021-FR-010",
+        "KMIPKIT-0021-FR-012",
+        "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0041-FR-001",
+        "KMIPKIT-0041-FR-003",
+        "KMIPKIT-0041-FR-004",
+        "KMIPKIT-0041-FR-005",
+        "KMIPKIT-0041-FR-006",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.32-001",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.50-001",
+        "KMIPKIT-REQ-SPEC-6.1.55-001",
+        "KMIPKIT-REQ-SPEC-6.1.56-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.56-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation \u2014 delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientError"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_PROTOCOL"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ProtocolException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.ClientExecutionError"
+        }
+      },
+      "mappingSemantics": "normalized-client-protocol-error-outcome",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/src/kmipkit/errors.py",
+        "bindings/python/tests/test_client.py",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-client/tests/error_contract.rs",
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/mac_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/sign_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_crypto_protocol_error_outcome_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-5d00356e6b4d35090915",

@@ -2413,9 +2413,10 @@
             "native-handle-release",
             "native-handle-release-managed-java-value",
             "secret-buffer-wipe",
-            "normalized-client-protocol-error"
+            "normalized-client-protocol-error",
+            "normalized-client-protocol-error-outcome"
           ],
-          "description": "Declares cross-language mapping semantics beyond matching names. Lifecycle values describe cleanup differences. normalized-client-protocol-error limits equivalence to the observable client-execution failure after a Rust response-conversion error is discarded and normalized to the shared Protocol error; it does not claim foreign parser-error identity or direct parser-call parity."
+          "description": "Declares cross-language mapping semantics beyond matching names. Lifecycle values describe cleanup differences. normalized-client-protocol-error limits equivalence to the observable client-execution failure after a Rust response-conversion error is discarded and normalized to the shared Protocol error; it does not claim foreign parser-error identity or direct parser-call parity. normalized-client-protocol-error-outcome maps a source that can produce Protocol or the specifically permitted ProtocolResponse outcome to the complete shared client error surface; response TTLV remains available only for the KMIPKIT-0021-FR-015 Unique Identifier exception."
         },
         "lifecycleSemanticsByLanguage": {
           "type": "object",

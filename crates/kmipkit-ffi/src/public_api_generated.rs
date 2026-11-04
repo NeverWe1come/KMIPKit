@@ -1907,6 +1907,51 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::UsernameAndPasswordCredential::into_ttlv",
     ),
     (
+        "rust-observed-7811b6f9570a85156588",
+        "rust-kmipkit-protocol",
+        "kmipkit_client::ClientError",
+    ),
+    (
+        "rust-observed-a36bbe7fb3c5e9c30b11",
+        "rust-kmipkit-protocol",
+        "kmipkit_client::ClientError",
+    ),
+    (
+        "rust-observed-aee965da4ec896f00c6e",
+        "rust-kmipkit-protocol",
+        "kmipkit_client::ClientError",
+    ),
+    (
+        "rust-observed-5df1af5ae525c55466ac",
+        "rust-kmipkit-protocol",
+        "kmipkit_client::ClientError",
+    ),
+    (
+        "rust-observed-abeeea38ebad9b8132df",
+        "rust-kmipkit-protocol",
+        "kmipkit_client::ClientError",
+    ),
+    (
+        "rust-observed-08d95c75fd4fe717bcb9",
+        "rust-kmipkit-protocol",
+        "kmipkit_client::ClientError",
+    ),
+    (
+        "rust-observed-a29f9f365dc9277d032e",
+        "rust-kmipkit-protocol",
+        "kmipkit_client::ClientError",
+    ),
+    (
+        "rust-observed-e52dff832f88509aeb52",
+        "rust-kmipkit-protocol",
+        "kmipkit_client::ClientError",
+    ),
+    (
+        "rust-observed-0d04dbc0cfabf6c87438",
+        "rust-kmipkit-protocol",
+        "kmipkit_client::ClientError",
+    ),
+    (
         "rust-observed-8ca41d7c884a9320716f",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::DecryptRequest",
@@ -9716,6 +9761,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-4c1ec0269d783a355a29",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::CredentialValue::UsernameAndPassword::0",
+    ),
+    (
+        "rust-observed-64902deab7f46c7b31f6",
+        "rust-kmipkit-protocol",
+        "kmipkit_client::ClientError",
     ),
     (
         "rust-observed-5d00356e6b4d35090915",

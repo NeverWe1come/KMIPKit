@@ -975,6 +975,19 @@ _NORMALIZED_CLIENT_PROTOCOL_ERROR_FAMILY_REQUIREMENTS = {
     **{
         family: frozenset(
             {
+                "KMIPKIT-0019-FR-007", "KMIPKIT-0019-FR-009",
+                "KMIPKIT-0021-FR-001", "KMIPKIT-0021-FR-010",
+                "KMIPKIT-0021-FR-012", "KMIPKIT-0021-FR-015",
+                "KMIPKIT-0041-FR-001", "KMIPKIT-0041-FR-003",
+                "KMIPKIT-0041-FR-004", "KMIPKIT-0041-FR-005",
+                "KMIPKIT-0041-FR-006",
+            }
+        )
+        for family in ("CryptographicOperationError", "CryptographicOperationErrorKind")
+    },
+    **{
+        family: frozenset(
+            {
                 "KMIPKIT-0041-FR-001", "KMIPKIT-0041-FR-003",
                 "KMIPKIT-0041-FR-004", "KMIPKIT-0041-FR-005",
                 "KMIPKIT-0041-FR-006",
@@ -1085,7 +1098,10 @@ def _validate_public_declarations(
             declarations,
         )
         state = declaration.get("declarationState")
-        if declaration.get("mappingSemantics") == "normalized-client-protocol-error":
+        if declaration.get("mappingSemantics") in {
+            "normalized-client-protocol-error",
+            "normalized-client-protocol-error-outcome",
+        }:
             _validate_normalized_client_protocol_error_source(declaration)
         if state == "authorized_wip":
             candidate_spec_id = declaration.get("candidateSpecId")
@@ -1131,7 +1147,10 @@ def _validate_public_declarations(
             if (
                 mappings.get(owning_language, {}).get("packageId") != declaration["packageId"]
                 and declaration.get("mappingSemantics")
-                != "normalized-client-protocol-error"
+                not in {
+                    "normalized-client-protocol-error",
+                    "normalized-client-protocol-error-outcome",
+                }
             ):
                 raise ManifestError("declaration package differs from its owning language mapping")
         if declaration.get("declarationState") == "verified":
@@ -1396,6 +1415,7 @@ def _validate_ready_mapping_targets(
             "native-handle-release-managed-java-value",
             "secret-buffer-wipe",
             "normalized-client-protocol-error",
+            "normalized-client-protocol-error-outcome",
         }:
             raise ManifestError("public declaration uses unknown mapping semantics")
         lifecycle_by_language = declaration.get("lifecycleSemanticsByLanguage")
@@ -1437,6 +1457,31 @@ def _validate_ready_mapping_targets(
             ):
                 raise ManifestError(
                     "normalized client protocol error mapping must use the exact execution surfaces"
+                )
+        elif mapping_semantics == "normalized-client-protocol-error-outcome":
+            expected_mapping = {
+                "rust": {
+                    "packageId": "rust-kmipkit-client",
+                    "name": "kmipkit_client::ClientError",
+                },
+                "c": {"packageId": "c-kmipkit", "name": "KMIPKIT_ERROR_PROTOCOL"},
+                "java": {
+                    "packageId": "java-kmipkit",
+                    "name": "org.kmipkit.ProtocolException",
+                },
+                "python": {
+                    "packageId": "python-kmipkit",
+                    "name": "kmipkit.errors.ClientExecutionError",
+                },
+            }
+            if (
+                declaration.get("capabilityId") != "client_execution"
+                or declaration.get("kind") not in {"type", "variant", "field"}
+                or declaration.get("parityScope") != "four-language"
+                or mappings != expected_mapping
+            ):
+                raise ManifestError(
+                    "normalized client protocol outcome mapping must use the exact execution surfaces"
                 )
         required_languages = (
             ("rust",)
