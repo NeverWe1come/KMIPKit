@@ -10951,6 +10951,14 @@ Verification: the focused serializer mapping, request-trait state, request-build
 
 The macro-lot partition stability check passes. Its separate zero-unresolved completion gate still reports the 109 remaining candidates, so Macro-Lot 2 is not complete.
 
+### T102 Macro-Lot 2 Import and Locate request-member parity (2026-11-04)
+
+Red commit `478a423bf` adds a regression for the six remaining protocol members on each of the approved Import and Locate request models. The expected Red failure records all 12 declarations as blocked and the missing operation inventory evidence. Green commit `c9e4ca634` maps them to the existing C, Java, and Python operation builders, inherits approved owner and requirement IDs from the verified same-package constructors, updates operation declaration/evidence inventories, reconciles stale member-state and parity expectations, and regenerates public API outputs. Refactor commit `41057db8a` extracts the shared target-mapping assertions.
+
+The approved owners are `specs/023-key-material-transfer/spec.md` (KMIPKIT-0037) and `specs/017-managed-object-retrieval/spec.md` (KMIPKIT-0017). Normative sources are OASIS KMIP Specification v2.1 §6.1.25, Tables 238–240, and §6.1.28, Tables 247–249. The exact declaration IDs, constructor anchors, inherited requirement IDs, and source-test citations are listed in `traceability.md`. This records correspondence to existing operation capabilities and adds no runtime code, public symbols, or wire behavior.
+
+Verification: the focused mapping, Locate builder, Import request-state, transfer response-trait, and Get/Locate and Import parity modules pass 21/21. `py -3 -B tools/api_manifest/generate.py --check` verifies all 12 outputs; `cargo fmt --all --check` and `git diff --check` pass. T102 falls 109→97 blocked candidates; public declaration/exclusion totals remain 6,380/8,713. Macro-Lot 2 remains open; the full T102 and 151-test `manifest-v2` suites remain reserved for lot closure. No formal conformance, interoperability, profile-support, or certification claim is made.
+
 Reproduction commands (run from the repository root):
 
 - Red, expected blocked-state and missing operation-evidence failures: `py -3 -B -m unittest -v tools.api_manifest.tests.test_t102_pkcs11_request_serializer_mapping`.

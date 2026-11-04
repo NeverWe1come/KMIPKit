@@ -984,6 +984,30 @@ Each existing protocol serializer below inherits the exact requirement IDs and a
 | Import | `rust-observed-eef9d3b1dc43a901bd90` `ImportRequest::into_ttlv_payload` | `rust-observed-3fb008956f4e09aff689` | §6.1.25, Tables 238–240 |
 | Join Split Key | `rust-observed-1864399564d3d70f4bbb` `JoinSplitKeyRequest::into_ttlv_payload` | `rust-observed-8dd0bcdb27c8ae91a5aa` | §6.1.27, Tables 244–246 |
 
+The six remaining protocol request members are mapped to the same approved operation builders. Each inherits the exact requirement IDs and approved owner from its verified request constructor. `tools/api_manifest/tests/test_t102_import_locate_request_member_mapping.py` pins declaration identities, inherited traceability, cross-language mappings, and the source citations; `test_t102_import_request_trait_exclusions.py` and `test_t102_locate_request_builder_mapping.py` pin the complete request-member inventories.
+
+| KMIP operation | Request member declaration | Constructor anchor | OASIS KMIP v2.1 source |
+|---|---|---|---|
+| Import | `rust-observed-fca2c150feb784fdd203` `ImportRequest::attributes` | `rust-observed-3fb008956f4e09aff689` | §6.1.25, Tables 238–240 |
+| Import | `rust-observed-f05defb53b753257aad1` `ImportRequest::key_wrap_type` | `rust-observed-3fb008956f4e09aff689` | §6.1.25, Tables 238–240 |
+| Import | `rust-observed-b012cd721c307c69208d` `ImportRequest::object` | `rust-observed-3fb008956f4e09aff689` | §6.1.25, Tables 238–240 |
+| Import | `rust-observed-61072f660e5d534e226c` `ImportRequest::object_type` | `rust-observed-3fb008956f4e09aff689` | §6.1.25, Tables 238–240 |
+| Import | `rust-observed-14d3acc960ccab00dbe3` `ImportRequest::replace_existing` | `rust-observed-3fb008956f4e09aff689` | §6.1.25, Tables 238–240 |
+| Import | `rust-observed-5e06cdb2edfa3494515d` `ImportRequest::unique_identifier` | `rust-observed-3fb008956f4e09aff689` | §6.1.25, Tables 238–240 |
+
+## T102 — KMIPKIT-0017 Locate request member parity
+
+The six remaining protocol request members inherit the exact requirement IDs and approved owner from the verified `LocateRequest::new` constructor and map to the existing four-language Locate builder. The owner is approved `specs/017-managed-object-retrieval/spec.md`; OASIS KMIP v2.1 §6.1.28, Tables 247–249, is cited by the owner record and pinned source test.
+
+| Request member declaration | Constructor anchor | OASIS KMIP v2.1 source |
+|---|---|---|
+| `rust-observed-f439a46d07fb7b09a304` `LocateRequest::attributes` | `rust-observed-e07fce825be9d33278e1` | §6.1.28, Tables 247–249 |
+| `rust-observed-71e45ec7ed189cbf589f` `LocateRequest::maximum_items` | `rust-observed-e07fce825be9d33278e1` | §6.1.28, Tables 247–249 |
+| `rust-observed-c545de4134a8f62c3871` `LocateRequest::object_group_member` | `rust-observed-e07fce825be9d33278e1` | §6.1.28, Tables 247–249 |
+| `rust-observed-c0872e13783c072c07fb` `LocateRequest::offset_items` | `rust-observed-e07fce825be9d33278e1` | §6.1.28, Tables 247–249 |
+| `rust-observed-6eb74f84ebb61fd70253` `LocateRequest::storage_status_mask` | `rust-observed-e07fce825be9d33278e1` | §6.1.28, Tables 247–249 |
+| `rust-observed-843c51bfe3611b61603b` `LocateRequest::to_ttlv_payload` | `rust-observed-e07fce825be9d33278e1` | §6.1.28, Tables 247–249 |
+
 ## T102 — KMIPKIT-0042 diagnostics request serializer mappings
 
 Each serializer inherits the exact requirement IDs and approved owner from its verified same-package request constructor, and maps to the existing C, Java, and Python operation builders. `tools/api_manifest/tests/test_t102_diagnostics_request_serializer_mapping.py` pins these identities and the OASIS citations.
