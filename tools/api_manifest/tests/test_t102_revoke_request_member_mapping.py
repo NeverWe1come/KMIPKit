@@ -45,6 +45,25 @@ class T102RevokeRequestMemberMappingTests(unittest.TestCase):
             row["operationId"]: row for row in cls.manifest["operations"]
         }
 
+    def _assert_mapped_member(
+        self,
+        declaration: dict[str, object],
+        constructor: dict[str, object],
+        mappings: dict[str, object],
+        declaration_id: str,
+        export_name: str,
+        operation: dict[str, object],
+    ) -> None:
+        self.assertEqual(export_name, declaration["exportName"])
+        self.assertEqual("verified", declaration["declarationState"])
+        self.assertEqual(OPERATION_ID, declaration["capabilityId"])
+        self.assertEqual(constructor["approvalSource"], declaration["approvalSource"])
+        self.assertEqual(constructor["requirementIds"], declaration["requirementIds"])
+        self.assertEqual("four-language", declaration["parityScope"])
+        self.assertEqual(mappings, declaration["languageMappings"])
+        self.assertIn(MAPPING_EVIDENCE, declaration["parityEvidenceIds"])
+        self.assertIn(declaration_id, operation["declarations"]["rust"])
+
     def test_revoke_request_members_map_to_the_existing_four_language_builder(self) -> None:
         operation = self.operations[OPERATION_ID]
         builder = self.by_name[("c-kmipkit", BUILDER)]
@@ -65,15 +84,14 @@ class T102RevokeRequestMemberMappingTests(unittest.TestCase):
                     "packageId": "rust-kmipkit-protocol",
                     "name": export_name,
                 }
-                self.assertEqual(export_name, declaration["exportName"])
-                self.assertEqual("verified", declaration["declarationState"])
-                self.assertEqual(OPERATION_ID, declaration["capabilityId"])
-                self.assertEqual(constructor["approvalSource"], declaration["approvalSource"])
-                self.assertEqual(constructor["requirementIds"], declaration["requirementIds"])
-                self.assertEqual("four-language", declaration["parityScope"])
-                self.assertEqual(mappings, declaration["languageMappings"])
-                self.assertIn(MAPPING_EVIDENCE, declaration["parityEvidenceIds"])
-                self.assertIn(declaration_id, operation["declarations"]["rust"])
+                self._assert_mapped_member(
+                    declaration,
+                    constructor,
+                    mappings,
+                    declaration_id,
+                    export_name,
+                    operation,
+                )
 
     def test_mapping_pins_approved_owner_and_oasis_request_source(self) -> None:
         spec = (ROOT / OWNER).read_text(encoding="utf-8")
