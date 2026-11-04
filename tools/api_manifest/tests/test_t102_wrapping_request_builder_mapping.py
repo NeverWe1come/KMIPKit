@@ -16,7 +16,7 @@ OASIS = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-
 BASE_BLOCKED = 658
 EXPECTED_BLOCKED = 654
 COMMON_EVIDENCE = {
-    "c": "crates/kmip-ffi/tests/c_api_coverage.rs",
+    "c": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
     "c_consumer": "bindings/c/tests/client_abi_consumer.c",
     "java": "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
     "python": "bindings/python/tests/test_wrapping_request_wire.py",
@@ -96,7 +96,7 @@ class T102WrappingRequestBuilderMappingTests(unittest.TestCase):
                 self.assertEqual(expected["operation"], declaration["capabilityId"])
                 self.assertEqual(expected["owner"], declaration["approvalSource"]["path"])
                 linked_ids = set(declaration["requirementIds"])
-                owner_fr_prefix = next(iter(expected["fr"])).split("-FR-", 1)[0] + "-FR-"
+                owner_fr_prefix = sorted(expected["fr"])[0].split("-FR-", 1)[0] + "-FR-"
                 owner_fr_ids = {
                     value for value in linked_ids if value.startswith(owner_fr_prefix)
                 }
@@ -132,6 +132,23 @@ class T102WrappingRequestBuilderMappingTests(unittest.TestCase):
         self.assertEqual(BASE_BLOCKED, before)
 
     def test_client_and_server_requirement_scope_is_exact(self) -> None:
+        self.assertTrue(
+            {
+                "KMIPKIT-REQ-SPEC-6.1.18-001-001",
+                "KMIPKIT-REQ-SPEC-6.1.18-008",
+                "KMIPKIT-REQ-SPEC-7.18-001-001",
+                "KMIPKIT-REQ-SPEC-7.18-004",
+            }
+            <= set(self.manifest["requirementIds"])
+        )
+        schema = json.loads(
+            (ROOT / "specification" / "api" / "public-api.schema.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        requirement_id_pattern = schema["$defs"]["requirementId"]["pattern"]
+        self.assertRegex("KMIPKIT-REQ-SPEC-7.18-001-001", requirement_id_pattern)
+        self.assertRegex("KMIPKIT-REQ-SPEC-7.18-004", requirement_id_pattern)
         requirements = {
             row["requirement_id"]: row for row in self.catalog["requirements"]
         }

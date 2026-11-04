@@ -324,6 +324,8 @@
     "KMIPKIT-REQ-SPEC-6.1.17-005-001",
     "KMIPKIT-REQ-SPEC-6.1.17-005-002",
     "KMIPKIT-REQ-SPEC-6.1.17-006",
+    "KMIPKIT-REQ-SPEC-6.1.18-001-001",
+    "KMIPKIT-REQ-SPEC-6.1.18-008",
     "KMIPKIT-REQ-SPEC-6.1.19-001",
     "KMIPKIT-REQ-SPEC-6.1.19-002",
     "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -408,6 +410,8 @@
     "KMIPKIT-REQ-SPEC-6.1.7-005",
     "KMIPKIT-REQ-SPEC-7.12-003",
     "KMIPKIT-REQ-SPEC-7.12-005-001",
+    "KMIPKIT-REQ-SPEC-7.18-001-001",
+    "KMIPKIT-REQ-SPEC-7.18-004",
     "KMIPKIT-REQ-SPEC-9.11-001",
     "KMIPKIT-REQ-SPEC-9.11-004-001",
     "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -182956,14 +182960,52 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::ExportRequest::with_key_wrapping_specification",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-EXPORT",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
+        "KMIPKIT-REQ-SPEC-7.18-001-001",
+        "KMIPKIT-REQ-SPEC-7.18-004"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ExportRequest::with_key_wrapping_specification"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_export"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.export"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_export"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_wrapping_request_wire.py",
+        "tools/api_manifest/tests/test_t102_wrapping_request_builder_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-27c208d3d7f52f071e4c",
@@ -184525,14 +184567,50 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::GetRequest::with_key_wrapping_specification",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-REQ-SPEC-7.18-001-001",
+        "KMIPKIT-REQ-SPEC-7.18-004"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::GetRequest::with_key_wrapping_specification"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.get"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_get"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_wrapping_request_wire.py",
+        "tools/api_manifest/tests/test_t102_wrapping_request_builder_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-684a647c13f5225359fa",
@@ -186010,28 +186088,96 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::ImportRequest::with_key_wrap_type",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ImportRequest::with_key_wrap_type"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_import"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.importObject"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_import"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_wrapping_request_wire.py",
+        "tools/api_manifest/tests/test_t102_wrapping_request_builder_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-506281d0cf8e3c41a90e",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::ImportRequest::with_replace_existing",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-008"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ImportRequest::with_replace_existing"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_import"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.importObject"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_import"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_wrapping_request_wire.py",
+        "tools/api_manifest/tests/test_t102_wrapping_request_builder_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-d158c6a986c729f09583",
@@ -453603,7 +453749,8 @@
           "rust-observed-27c208d3d7f52f071e4c",
           "rust-observed-bc4b3a9f02b6b38524fa",
           "rust-observed-ea651cfc24b62abdda90",
-          "rust-observed-5cf48b4b17981987d2f7"
+          "rust-observed-5cf48b4b17981987d2f7",
+          "rust-observed-61aecad439c9a84c7241"
         ],
         "c": [
           "T047:c:01",
@@ -453685,7 +453832,8 @@
           "rust-observed-684a647c13f5225359fa",
           "rust-observed-c2da75d2d210d98b7ea5",
           "rust-observed-6611a6ba852bddfeb702",
-          "rust-observed-e0c241319e5da88830dd"
+          "rust-observed-e0c241319e5da88830dd",
+          "rust-observed-ba1772cec998d92e5148"
         ],
         "c": [
           "T038:get:c:request:01",
@@ -454167,7 +454315,9 @@
           "rust-observed-5da65962704ec72c8c75",
           "rust-observed-8376621b573129f35e03",
           "rust-observed-69cf1abee3b40197e4bd",
-          "rust-observed-9c12c375463794695915"
+          "rust-observed-9c12c375463794695915",
+          "rust-observed-9cd4c6b6fd190aff211f",
+          "rust-observed-506281d0cf8e3c41a90e"
         ],
         "c": [
           "T050:request:c",

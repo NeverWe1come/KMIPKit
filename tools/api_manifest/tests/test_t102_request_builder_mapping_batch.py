@@ -10,11 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 OASIS_HTML = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
-T102_CANDIDATES_AFTER_BATCH = 658
-DEFERRED_TTLV = {
-    "rust-observed-ba1772cec998d92e5148": "kmipkit_protocol::GetRequest::with_key_wrapping_specification",
-    "rust-observed-61aecad439c9a84c7241": "kmipkit_protocol::ExportRequest::with_key_wrapping_specification",
-}
+T102_CANDIDATES_AFTER_BATCH = 654
 NEW_EVIDENCE = {
     "crates/kmipkit-ffi/tests/c_api_coverage.rs",
     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
@@ -182,14 +178,6 @@ class T102RequestBuilderMappingBatchTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
         )
         self.assertEqual(T102_CANDIDATES_AFTER_BATCH, blocked)
-
-    def test_two_deferred_ttlv_rows_remain_blocked(self) -> None:
-        for declaration_id, export_name in DEFERRED_TTLV.items():
-            with self.subTest(declaration=export_name):
-                declaration = self.declarations[declaration_id]
-                self.assertEqual(export_name, declaration["exportName"])
-                self.assertEqual("blocked", declaration["declarationState"])
-                self.assertEqual("KMIPKIT-0043", declaration["candidateSpecId"])
 
     def test_rekey_table_305_request_offset_is_interval_and_uid_is_optional(self) -> None:
         html = OASIS_HTML.read_text(encoding="cp1252")

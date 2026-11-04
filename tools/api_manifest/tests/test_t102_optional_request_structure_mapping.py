@@ -153,8 +153,19 @@ TARGETS = (
     },
 )
 BLOCKED_CANDIDATES_BEFORE_BATCH = 669
-BLOCKED_CANDIDATES_AFTER_BATCH = 658
+BLOCKED_CANDIDATES_AFTER_BATCH = 654
 RECERTIFY_TYPE_ID = "rust-observed-4e379cb3b97bca658dbf"
+WRAPPING_REQUEST_BUILDER_IDS = {
+    "rust-observed-9cd4c6b6fd190aff211f",
+    "rust-observed-506281d0cf8e3c41a90e",
+    "rust-observed-61aecad439c9a84c7241",
+    "rust-observed-ba1772cec998d92e5148",
+}
+WRAPPING_REQUEST_BUILDER_OPERATIONS = {
+    "KMIPKIT-ELEM-OP-C2S-IMPORT",
+    "KMIPKIT-ELEM-OP-C2S-EXPORT",
+    "KMIPKIT-ELEM-OP-C2S-GET",
+}
 RAW_RECERTIFY_DECLARATIONS = {
     "rust-observed-bd90b6e53d6c05c1a6b0",
     "rust-observed-4c37b205dc5bee05df9a",
@@ -280,7 +291,8 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
             BLOCKED_CANDIDATES_BEFORE_BATCH
             - len(target_ids)
             - len(CERTIFY_TARGET_IDS)
-            - 1,
+            - 1
+            - len(WRAPPING_REQUEST_BUILDER_IDS),
             BLOCKED_CANDIDATES_AFTER_BATCH,
         )
         self.assertEqual(
@@ -328,6 +340,15 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                 row.pop("approvalSource", None)
                 row.pop("languageMappings", None)
                 row.pop("parityEvidenceIds", None)
+            if row["declarationId"] in WRAPPING_REQUEST_BUILDER_IDS:
+                row["capabilityId"] = "public_binding_surface"
+                row["requirementIds"] = ["KMIPKIT-0043-FR-021"]
+                row["declarationState"] = "blocked"
+                row["candidateSpecId"] = "KMIPKIT-0043"
+                row["blockedReason"] = blocked_reason
+                row.pop("approvalSource", None)
+                row.pop("languageMappings", None)
+                row.pop("parityEvidenceIds", None)
         self.assertEqual(OTHER_DECLARATIONS_SHA256, canonical_sha256(other_declarations))
 
         other_operations = copy.deepcopy(self.manifest["operations"])
@@ -341,6 +362,11 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                 operation_target_ids.update(CERTIFY_TARGET_IDS)
             if operation["operationId"] == RECERTIFY_OPERATION_ID:
                 operation_target_ids.add(RECERTIFY_TYPE_ID)
+            if operation["operationId"] in WRAPPING_REQUEST_BUILDER_OPERATIONS:
+                operation_target_ids.update(
+                    WRAPPING_REQUEST_BUILDER_IDS
+                    & set(operation["declarations"]["rust"])
+                )
             if operation_target_ids:
                 operation["declarations"]["rust"] = [
                     value for value in operation["declarations"]["rust"]

@@ -169,7 +169,7 @@ EXPECTED = (
 UNCHANGED_DECLARATIONS_SHA256 = "de724b98916761845378dc8e4052676b0c6a6a3aba035bc3c9fe1ff72e62e071"
 UNCHANGED_OPERATIONS_SHA256 = "eb69336ea313c72f6461f5e67655d985c820969697237b4b2b8efc3d79712735"
 OTHER_MANIFEST_SHA256 = "89ce2f39dccd3e4548dc0145da0e8b4463f4f4ae769ed472d80cf44b26679ba6"
-EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = 658
+EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = 654
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",
     "rust-observed-8fff50bdd49a09ae00bf",
@@ -224,6 +224,10 @@ REKEY_KEY_PAIR_FUNCTION_IDS = {
 }
 RETIRED_REKEY_KEY_PAIR_REQUIREMENT = "KMIPKIT-REQ-SPEC-6.1.47-004-002"
 SCALAR_REQUEST_BUILDER_IDS = {
+    "rust-observed-9cd4c6b6fd190aff211f",
+    "rust-observed-506281d0cf8e3c41a90e",
+    "rust-observed-61aecad439c9a84c7241",
+    "rust-observed-ba1772cec998d92e5148",
     "rust-observed-3beea67907cb67493c50",
     "rust-observed-7ef0a3fa4f7211edc2d4",
     "rust-observed-2117b9df5e767118ae4c",
@@ -251,6 +255,7 @@ SCALAR_REQUEST_BUILDER_OPERATIONS = {
     "KMIPKIT-ELEM-OP-C2S-EXPORT",
     "KMIPKIT-ELEM-OP-C2S-RE-KEY",
     "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+    "KMIPKIT-ELEM-OP-C2S-IMPORT",
 }
 
 
@@ -574,7 +579,14 @@ class T102ResponseViewMappingTests(unittest.TestCase):
         other_manifest["requirementIds"] = [
             requirement_id
             for requirement_id in other_manifest["requirementIds"]
-            if requirement_id not in {LOCATE_REQUEST_REQUIREMENT, "KMIPKIT-REQ-SPEC-6.1.45-002-003"}
+            if requirement_id not in {
+                LOCATE_REQUEST_REQUIREMENT,
+                "KMIPKIT-REQ-SPEC-6.1.45-002-003",
+                "KMIPKIT-REQ-SPEC-6.1.18-001-001",
+                "KMIPKIT-REQ-SPEC-6.1.18-008",
+                "KMIPKIT-REQ-SPEC-7.18-001-001",
+                "KMIPKIT-REQ-SPEC-7.18-004",
+            }
         ]
         for function in other_manifest["functions"]:
             if function["id"] == "client_batch_item_recertify":
