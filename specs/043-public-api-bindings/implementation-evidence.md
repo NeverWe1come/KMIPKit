@@ -10864,3 +10864,14 @@ Green commit `cd47bd0cd` maps all six exact declarations to `KMIPKIT-ELEM-OP-C2S
 The compiled C mTLS consumer initially exposed a stale test expectation: `absent_profile_details_preserve_non_profile_error_from_c` expected generic category/cause `(5, 10)` although the established `ERROR_PROTOCOL` mapping is Protocol `(2, 4)` from commit `69bc77177`. The assertion was corrected in `7a3191f16`; no production code changed, and the same C mTLS consumer then passed.
 
 Verification: the focused Get builder, wrapping, and T102 mapping tests pass 9/9; Rust Get request-preservation tests pass 6/6; the compiled C mTLS consumer passes 1/1; Java `GetLocateResponseMappingTest` passes 13/13; Python `test_get_locate_operation.py` passes 27/27 against the workspace native library; `generate.py --check` verifies 12/12 outputs; formatting and `git diff --check` pass. Full T102 and the 151-test `manifest-v2` suite remain reserved for Macro-Lot 2 closure. This mapping makes no formal OASIS conformance, interoperability, profile-support, or certification claim.
+
+Reproduction commands (run from the repository root unless stated otherwise):
+
+- Red, expected to fail with six blocked-state assertions: `python -m unittest tools.api_manifest.tests.test_t102_get_request_mapping -v`.
+- Focused Green mapping/builder/wrapping group: `python -m unittest tools.api_manifest.tests.test_t102_get_request_mapping tools.api_manifest.tests.test_t102_request_builder_mapping_batch tools.api_manifest.tests.test_t102_wrapping_request_builder_mapping -v`.
+- Rust Get request fields: `cargo test -p kmipkit-protocol --lib get_tests::request_preserves`.
+- Compiled C consumer over mTLS: `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage compiled_c_consumer_encodes_check_get_export_rekey_and_allocation_builders_over_mtls`.
+- Java (from `bindings/java`, PowerShell): `.\gradlew.bat --no-daemon test --tests org.kmipkit.extensions.GetLocateResponseMappingTest`.
+- Python (from `bindings/python`, PowerShell, with the workspace native library): `$env:PYTHONPATH='src'; $env:KMIPKIT_NATIVE_LIBRARY='..\..\target\debug\kmipkit_ffi.dll'; uv run --no-project --python 3.12 --with pytest --with cffi python -m pytest -q tests/test_get_locate_operation.py`.
+- Generated API outputs: `python tools/api_manifest/generate.py --check`.
+- Formatting and whitespace: `cargo fmt --all --check` and `git diff --check`.
