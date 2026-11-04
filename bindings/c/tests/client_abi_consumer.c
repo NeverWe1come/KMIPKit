@@ -9389,3 +9389,83 @@ int kmipkit_client_abi_c_consumer_profile_validation_result_contract(void) {
     kmipkit_profile_validation_result_release(result);
     return 1;
 }
+
+static int profile_span_contains(kmipkit_byte_span_v1_t span, const char *needle) {
+    const size_t needle_length = strlen(needle);
+    if (span.data == 0 || span.length < needle_length) {
+        return 0;
+    }
+    for (uint64_t offset = 0; offset <= span.length - needle_length; ++offset) {
+        if (memcmp(span.data + offset, needle, needle_length) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int kmipkit_client_abi_c_consumer_profile_validation_result_exercise(
+    kmipkit_profile_validation_result_t *result,
+    kmipkit_ttlv_structure_t *request) {
+    static const uint8_t context_identifier[] = "context-id-must-not-leak";
+    kmipkit_profile_object_state_v1_t state = {0};
+    kmipkit_profile_validation_context_v1_t context = {0};
+    kmipkit_profile_validation_error_t *error = 0;
+    kmipkit_profile_validation_error_view_v1_t view = {0};
+    kmipkit_byte_span_v1_t profile_id = {0};
+    uint64_t profile_count = 0;
+    uint64_t requirement_count = 0;
+
+    state.struct_size = (uint32_t)sizeof(state);
+    state.abi_version = 1;
+    state.batch_item_index = 0;
+    state.unique_identifier_data = context_identifier;
+    state.unique_identifier_length = sizeof(context_identifier) - 1;
+    state.known_fields = 1;
+    state.boolean_values = 1;
+    context.struct_size = (uint32_t)sizeof(context);
+    context.abi_version = 1;
+    context.object_states = &state;
+    context.object_state_count = 1;
+    view.struct_size = (uint32_t)sizeof(view);
+    view.abi_version = 1;
+
+    if (result == 0 || request == 0 ||
+        kmipkit_profile_validation_result_validate_transport_v1(result, 2) != 0 ||
+        kmipkit_profile_validation_result_profile_id_count_v1(result, &profile_count) != 0 ||
+        profile_count == 0 ||
+        kmipkit_profile_validation_result_requirement_id_count_v1(result, &requirement_count) != 0 ||
+        requirement_count == 0 ||
+        kmipkit_profile_validation_result_profile_id_at_v1(result, 0, &profile_id) != 0 ||
+        !profile_span_equals(profile_id, "KMIPKIT-PROFILE-BASELINE-CLIENT")) {
+        return 0;
+    }
+
+    if (kmipkit_profile_validation_result_validate_request_with_context_v1(
+            result, request, &context) != T076_ERROR_INVALID_INPUT ||
+        kmipkit_last_error_profile_validation_error_get_v1(&error) != 0 || error == 0 ||
+        kmipkit_profile_validation_error_view_get_v1(error, &view) != 0 ||
+        profile_span_contains(
+            (kmipkit_byte_span_v1_t){view.profile_id_data, view.profile_id_length},
+            "request-id-must-not-leak") ||
+        profile_span_contains(
+            (kmipkit_byte_span_v1_t){view.profile_id_data, view.profile_id_length},
+            (const char *)context_identifier) ||
+        profile_span_contains(
+            (kmipkit_byte_span_v1_t){view.requirement_id_data, view.requirement_id_length},
+            "request-id-must-not-leak") ||
+        profile_span_contains(
+            (kmipkit_byte_span_v1_t){view.requirement_id_data, view.requirement_id_length},
+            (const char *)context_identifier) ||
+        profile_span_contains(
+            (kmipkit_byte_span_v1_t){view.error_code_data, view.error_code_length},
+            "request-id-must-not-leak") ||
+        profile_span_contains(
+            (kmipkit_byte_span_v1_t){view.error_code_data, view.error_code_length},
+            (const char *)context_identifier)) {
+        kmipkit_profile_validation_error_release(error);
+        return 0;
+    }
+
+    kmipkit_profile_validation_error_release(error);
+    return 1;
+}

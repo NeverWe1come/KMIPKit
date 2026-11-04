@@ -2,6 +2,15 @@ use super::*;
 use crate::kmipkit_byte_span_v1_t;
 use kmipkit_protocol::ProfileValidationErrorCode;
 
+#[cfg(feature = "coverage-c-consumer")]
+#[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
+unsafe extern "C" {
+    fn kmipkit_client_abi_c_consumer_profile_validation_result_exercise(
+        result: *mut kmipkit_profile_validation_result_t,
+        request: *mut kmipkit_ttlv_structure_t,
+    ) -> i32;
+}
+
 #[test]
 fn c_selection_copies_flat_profile_id_spans_in_caller_order() {
     let bytes = b"baseline_clientconditional_https";
@@ -265,7 +274,7 @@ fn c_profile_result_release_invalidates_result_access_and_borrowed_id_spans() {
 
 #[test]
 fn c_profile_result_validators_reject_null_stale_and_invalid_transport_inputs() {
-    let result = 0_usize as *mut kmipkit_profile_validation_result_t;
+    let mut result = 0_usize as *mut kmipkit_profile_validation_result_t;
     let mut count = u64::MAX;
     assert_eq!(
         unsafe {
@@ -587,6 +596,49 @@ fn c_profile_context_validation_redacts_request_identifiers_and_context_values()
     assert!(!diagnostics.contains(REQUEST_IDENTIFIER));
     assert!(!diagnostics.contains(CONTEXT_IDENTIFIER));
     kmipkit_profile_validation_error_release(error);
+    kmipkit_profile_validation_result_release(result);
+    kmipkit_ttlv_structure_release(request_handle);
+}
+
+#[cfg(feature = "coverage-c-consumer")]
+#[test]
+fn compiled_c_consumer_exercises_ordered_ids_transport_and_redacted_rule_failure() {
+    const REQUEST_IDENTIFIER: &str = "request-id-must-not-leak";
+    let request = profile_request([(
+        0x0000_0031,
+        profile_structure([
+            profile_item(
+                0x0042_0094,
+                Value::text_string(REQUEST_IDENTIFIER.to_owned()),
+            ),
+            profile_item(
+                0x0042_013d,
+                Value::structure(profile_structure([profile_item(
+                    0x0042_00bc,
+                    Value::date_time(1_700_000_001),
+                )])),
+            ),
+        ]),
+    )]);
+    let request_tree = request
+        .with_ttlv(|tree| clone_structure_view(&tree))
+        .expect("the request tree can be cloned for a borrowed C consumer input");
+    let request_handle = make_handle(Kind::Structure, HandleValue::Structure(request_tree));
+    let resolved = ProfileValidationSelection::for_test(["KMIPKIT-PROFILE-BASELINE-CLIENT"])
+        .validate()
+        .expect("the test-only selector resolves the catalogued baseline rules");
+    let result = make_handle(
+        Kind::ProfileValidationResult,
+        HandleValue::ProfileValidationResult(resolved),
+    );
+
+    // SAFETY: both handles are live and have their declared kinds for this C consumer call.
+    assert_eq!(
+        unsafe {
+            kmipkit_client_abi_c_consumer_profile_validation_result_exercise(result, request_handle)
+        },
+        1
+    );
     kmipkit_profile_validation_result_release(result);
     kmipkit_ttlv_structure_release(request_handle);
 }
@@ -943,10 +995,13 @@ fn last_profile_validation_error_is_absent() -> bool {
 }
 
 fn span_text(data: *const u8, length: u64) -> String {
-    assert!(!data.is_null());
     let Ok(length) = usize::try_from(length) else {
         panic!("profile error text length fits usize");
     };
+    if length == 0 {
+        return String::new();
+    }
+    assert!(!data.is_null());
     // SAFETY: the FFI view points into the live profile-error handle and this test keeps that
     // handle open until after the span has been copied.
     let bytes = unsafe { std::slice::from_raw_parts(data, length) };
