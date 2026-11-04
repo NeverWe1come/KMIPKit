@@ -11075,3 +11075,19 @@ Reproduction commands (run from the repository root):
 - Focused Green and Refactor suite: `py -3 -B -m unittest tools.api_manifest.tests.test_t102_derive_key_request_mapping tools.api_manifest.tests.test_t102_transfer_request_serializer_mapping tools.api_manifest.tests.test_t102_macro_lot_partition.T102MacroLotPartitionTests.test_macro_lots_are_disjoint_exhaustive_and_identity_stable`.
 - Generated API outputs: `py -3 -B tools/api_manifest/generate.py --check`.
 - Formatting and whitespace: `cargo fmt --all --check` and `git diff --check`.
+
+
+### T102 Macro-Lot 2 Derive Key derivation-parameter mapping (2026-11-04)
+
+Red `d230cf564` adds exact coverage for 11 existing Rust declarations: `DerivationMethod`, its `from_raw` and `raw` members, `DerivationParameters`, and its seven constructor/builder members. The new contract requires all 11 to map to the verified Derive Key operation inventory. The approved owner is `specs/023-key-material-transfer/spec.md` (KMIPKIT-0037); normative sources are OASIS KMIP Specification v2.1 §6.1.14 Tables 205–207 and §7.12 Table 364.
+
+Green `d782cfa33` maps those declarations to `KMIPKIT-ELEM-OP-C2S-DERIVE-KEY`, inheriting the verified client operation's requirements, approval source, parity evidence, and existing C, Java, and Python builder names. The operation inventory now records all 11 Rust declarations and the focused mapping test. C, Java, and Python use a generic TTLV structure for derivation parameters; the mapping does not assert distinct typed parameter wrappers in those bindings. Generated API outputs were regenerated. Refactor `e03f6b87d` extracts shared source-reading assertions from the focused test without changing its contract. No runtime or wire behavior changed.
+
+Verification: focused Derive Key parameter mapping, Derive Key request mapping, transfer serializer mapping, and macro-lot identity tests pass 7/7. `py -3 -B tools/api_manifest/generate.py --check` verifies all 12 outputs. `cargo fmt --all --check` and `git diff --check` pass. T102 decreases 76→65 blocked candidates; public declaration/exclusion totals remain 6,380/8,713. Macro-Lot 2 remains open; full T102 and the 151-test manifest-v2 suite remain reserved for lot closure. No formal protocol-conformance, interoperability, profile-support, or certification claim is made.
+
+Reproduction commands (run from the repository root):
+
+- Red, expected blocked-state failures: `py -3 -B -m unittest tools.api_manifest.tests.test_t102_derive_key_parameter_mapping`.
+- Focused Green and Refactor suite: `py -3 -B -m unittest tools.api_manifest.tests.test_t102_derive_key_parameter_mapping tools.api_manifest.tests.test_t102_derive_key_request_mapping tools.api_manifest.tests.test_t102_transfer_request_serializer_mapping tools.api_manifest.tests.test_t102_macro_lot_partition.T102MacroLotPartitionTests.test_macro_lots_are_disjoint_exhaustive_and_identity_stable`.
+- Generated API outputs: `py -3 -B tools/api_manifest/generate.py --check`.
+- Formatting and whitespace: `cargo fmt --all --check` and `git diff --check`.
