@@ -101,6 +101,36 @@ class T102CredentialRequestSerializerMappingTests(unittest.TestCase):
             if row["operationId"] == operation_id
         )
 
+    def _assert_mapping(
+        self,
+        operation_spec: dict[str, object],
+        builder: dict[str, object],
+        declaration_id: str,
+        package_id: str,
+        rust_name: str,
+        reference_name: str,
+    ) -> None:
+        declaration = self.declarations[declaration_id]
+        reference = self.by_package_name[(package_id, reference_name)]
+        self.assertEqual(rust_name, declaration["exportName"])
+        self.assertEqual("verified", declaration["declarationState"])
+        self.assertNotIn("candidateSpecId", declaration)
+        self.assertNotIn("blockedReason", declaration)
+        self.assertEqual("associated-item", declaration["kind"])
+        self.assertEqual(operation_spec["capability"], declaration["capabilityId"])
+        self.assertEqual(builder["approvalSource"], declaration["approvalSource"])
+        self.assertEqual(reference["requirementIds"], declaration["requirementIds"])
+
+        expected_mappings = dict(builder["languageMappings"])
+        expected_mappings["rust"] = {"packageId": package_id, "name": rust_name}
+        self.assertEqual(expected_mappings, declaration["languageMappings"])
+        self.assertEqual("four-language", declaration["parityScope"])
+        self.assertTrue(
+            set(builder["parityEvidenceIds"])
+            <= set(declaration["parityEvidenceIds"])
+        )
+        self.assertIn(PARITY_TEST_EVIDENCE_ID, declaration["parityEvidenceIds"])
+
     def test_six_credential_request_serializers_map_to_existing_operation_capabilities(self) -> None:
         for operation_name, operation_spec in OPERATIONS.items():
             builder = self.by_package_name[("c-kmipkit", operation_spec["builder"])]
@@ -114,31 +144,13 @@ class T102CredentialRequestSerializerMappingTests(unittest.TestCase):
                     "targets"
                 ]:
                     with self.subTest(declaration_id=declaration_id):
-                        declaration = self.declarations[declaration_id]
-                        reference = self.by_package_name[(package_id, reference_name)]
-                        self.assertEqual(rust_name, declaration["exportName"])
-                        self.assertEqual("verified", declaration["declarationState"])
-                        self.assertNotIn("candidateSpecId", declaration)
-                        self.assertNotIn("blockedReason", declaration)
-                        self.assertEqual("associated-item", declaration["kind"])
-                        self.assertEqual(operation_spec["capability"], declaration["capabilityId"])
-                        self.assertEqual(builder["approvalSource"], declaration["approvalSource"])
-                        self.assertEqual(reference["requirementIds"], declaration["requirementIds"])
-
-                        expected_mappings = dict(builder["languageMappings"])
-                        expected_mappings["rust"] = {
-                            "packageId": package_id,
-                            "name": rust_name,
-                        }
-                        self.assertEqual(expected_mappings, declaration["languageMappings"])
-                        self.assertEqual("four-language", declaration["parityScope"])
-                        self.assertTrue(
-                            set(builder["parityEvidenceIds"])
-                            <= set(declaration["parityEvidenceIds"])
-                        )
-                        self.assertIn(
-                            PARITY_TEST_EVIDENCE_ID,
-                            declaration["parityEvidenceIds"],
+                        self._assert_mapping(
+                            operation_spec,
+                            builder,
+                            declaration_id,
+                            package_id,
+                            rust_name,
+                            reference_name,
                         )
 
     def test_operation_inventories_include_all_six_serializer_declarations(self) -> None:
