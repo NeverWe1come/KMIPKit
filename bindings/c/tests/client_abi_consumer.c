@@ -7293,6 +7293,10 @@ failure:
 }
 
 int main(int argc, char **argv) {
+    if (KMIPKIT_PROFILE_TRANSPORT_RAW_TTLV_TLS != UINT32_C(1) ||
+        KMIPKIT_PROFILE_TRANSPORT_HTTPS != UINT32_C(2)) {
+        return 26;
+    }
     if (!execute_with_options_and_error_ttlv_clears_outputs()) {
         return 22;
     }

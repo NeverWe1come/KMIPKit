@@ -12,6 +12,13 @@ from kmipkit import client, errors, extensions, ttlv
 _TLS_FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
 
 
+def test_profile_transport_values_are_closed_and_match_the_abi() -> None:
+    assert client.ProfileTransport.RAW_TTLV_TLS.value == 1
+    assert client.ProfileTransport.HTTPS.value == 2
+    with pytest.raises(ValueError):
+        client.ProfileTransport(3)
+
+
 def test_profile_validation_types_expose_caller_owned_state() -> None:
     selection = client.ProfileValidationSelection(("baseline_client",))
     state = (

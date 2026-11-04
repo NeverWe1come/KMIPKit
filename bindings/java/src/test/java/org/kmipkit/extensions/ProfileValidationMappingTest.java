@@ -21,6 +21,12 @@ import org.kmipkit.ttlv.CodecLimits;
 
 final class ProfileValidationMappingTest {
     @Test
+    void profileTransportConstantsMatchTheClosedAbiValues() {
+        assertEquals(1, ProfileTransport.RAW_TTLV_TLS.abiValue());
+        assertEquals(2, ProfileTransport.HTTPS.abiValue());
+    }
+
+    @Test
     void selectionAndContextRetainCallerOwnedValues() {
         var selection = new ProfileValidationSelection(List.of("baseline_client"));
         var state = new ProfileObjectState("object-7").withOriginalCreationDatePresent(false);
