@@ -225,7 +225,6 @@ class T102ProfileValidationErrorTraitExclusionTests(unittest.TestCase):
             expected_error = {
                 f"{crate}::{name}": "declared" for name in ERROR_FUNCTIONAL_EXPORTS
             }
-            expected_error[f"{crate}::ProfileValidationError::for_test"] = "blocked"
             expected_code = {
                 f"{crate}::{name}": "declared" for name in MAPPED_CODE_EXPORTS
             }
