@@ -167,6 +167,23 @@ class T102ExtensionErrorTaxonomyMappingTests(unittest.TestCase):
                 self.assertEqual("Approved", row["approvalSource"]["status"])
                 self.assertIn("KMIPKIT-0012-FR-010/011", row["evidence"])
 
+    def test_ready_common_error_category_properties_map_to_existing_surfaces(self) -> None:
+        for type_name, capability_id, owner_requirement in (
+            ("kmipkit.errors.InvalidInputError", "production_transport", "KMIPKIT-0013-FR-001"),
+            ("kmipkit.errors.ResourceLimitError", "ffi_runtime_metadata", "KMIPKIT-0043-FR-007"),
+        ):
+            with self.subTest(error_type=type_name):
+                error_type = self.declarations[("python-kmipkit", type_name)]
+                category_name = f"{type_name}.category"
+                category = self.declarations[("python-kmipkit", category_name)]
+                self.assertEqual("declared", category["declarationState"])
+                self.assertNotIn("candidateSpecId", category)
+                self.assertEqual(capability_id, category["capabilityId"])
+                self.assertIn(owner_requirement, category["requirementIds"])
+                self.assertIn("KMIPKIT-0043-FR-021", category["requirementIds"])
+                self.assertEqual(error_type["approvalSource"], category["approvalSource"])
+                self.assertEqual(error_type["languageMappings"], category["languageMappings"])
+
     def test_duplicate_key_documentation_covers_both_duplicate_rules(self) -> None:
         errors_source = (ROOT / "bindings/python/src/kmipkit/errors.py").read_text(
             encoding="utf-8"
