@@ -1,4 +1,4 @@
-"""Require complete four-language Get and Locate mappings before release readiness."""
+"""Require four-language Get/Locate mappings for KMIP v2.1 §§6.1.19, 6.1.28, 11.33, and 12.3."""
 
 from __future__ import annotations
 
@@ -14,6 +14,10 @@ GENERATED_PARITY = ROOT / "tests" / "fixtures" / "api" / "generated" / "public_a
 C_HEADER = ROOT / "bindings" / "c" / "include" / "kmipkit.h"
 OWNER_SPEC = "specs/017-managed-object-retrieval/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
+LOCATE_RAW_SELECTOR_TYPES = {
+    "kmipkit_protocol::StorageStatusMask",
+    "kmipkit_protocol::ObjectGroupMember",
+}
 
 OPERATIONS = {
     "KMIPKIT-ELEM-OP-C2S-GET": {
@@ -69,13 +73,11 @@ OPERATIONS = {
                 "kmipkit_protocol::LocateResponse",
                 "kmipkit_protocol::LocateResponse::located_items",
                 "kmipkit_protocol::LocateResponse::unique_identifiers",
-                "kmipkit_protocol::StorageStatusMask",
                 "kmipkit_protocol::StorageStatusMask::from_raw",
                 "kmipkit_protocol::StorageStatusMask::raw",
-                "kmipkit_protocol::ObjectGroupMember",
                 "kmipkit_protocol::ObjectGroupMember::from_raw",
                 "kmipkit_protocol::ObjectGroupMember::raw",
-            },
+            } | LOCATE_RAW_SELECTOR_TYPES,
             "c": {
                 "kmipkit_client_batch_item_locate",
                 "kmipkit_client_batch_item_response_locate",
