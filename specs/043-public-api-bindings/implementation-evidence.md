@@ -10875,3 +10875,16 @@ Reproduction commands (run from the repository root unless stated otherwise):
 - Python (from `bindings/python`, PowerShell, with the workspace native library): `$env:PYTHONPATH='src'; $env:KMIPKIT_NATIVE_LIBRARY='..\..\target\debug\kmipkit_ffi.dll'; uv run --no-project --python 3.12 --with pytest --with cffi python -m pytest -q tests/test_get_locate_operation.py`.
 - Generated API outputs: `python tools/api_manifest/generate.py --check`.
 - Formatting and whitespace: `cargo fmt --all --check` and `git diff --check`.
+
+### T102 Macro-Lot 2 Get Usage Allocation request member parity (2026-11-04)
+
+Red commit `929773f29` requires the four remaining root/protocol request declarations (`to_ttlv_payload` and `unique_identifier`) to appear in the existing four-language Get Usage Allocation capability; the focused test first fails on the four blocked-state assertions. The owner is approved `specs/025-policy-controls/spec.md`, KMIPKIT-0039-FR-001/004 and `KMIPKIT-REQ-SPEC-6.1.23-002-001`; OASIS KMIP Specification v2.1 §6.1.23, Tables 232–234, defines the request and result. Green commit `b7ed2ae20` assigns the corresponding approved constructor/Unique Identifier builder mappings, adds the exact Rust declaration IDs to the operation inventory, and regenerates the public API projections. Refactor commit `eaa1ba5f4` tightens the source assertion to the exact approved owner row and OASIS tables. This records equivalent operation capability, not method-for-method API parity or new runtime behavior.
+
+Verification: the focused mapping, request-builder, and existing Get Usage Allocation parity tests pass 8/8; `python tools/api_manifest/generate.py --check` verifies 12/12 outputs; and `git diff --check` passes. T102 falls 140→136 blocked candidates; public declarations/exclusions remain 6,380/8,713. Macro-Lot 2 remains open; the full T102 and 151-test `manifest-v2` suites remain reserved for lot closure. No protocol conformance or server-interoperability claim is made.
+
+Reproduction commands (run from the repository root):
+
+- Red, expected to fail with four blocked-state assertions: `python -m unittest tools.api_manifest.tests.test_t102_get_usage_allocation_request_mapping -v`.
+- Focused Green mapping and operation checks: `python -m unittest tools.api_manifest.tests.test_t102_get_usage_allocation_request_mapping tools.api_manifest.tests.test_t102_request_builder_mapping_batch tools.api_manifest.tests.test_get_usage_allocation_parity_manifest -v`.
+- Generated API outputs: `python tools/api_manifest/generate.py --check`.
+- Whitespace: `git diff --check`.
