@@ -13,6 +13,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from tools.api_manifest.tests.test_t102_java_ttlv_bridge_exclusions import (
+    EXPECTED_PROFILE_VALIDATION_BRIDGE_EXPORTS,
     EXPECTED_VENDOR_EXTENSION_BRIDGE_MEMBERS,
 )
 
@@ -995,6 +996,10 @@ class BindingExportAuditTests(unittest.TestCase):
             }
         )
         native_members.update(EXPECTED_VENDOR_EXTENSION_BRIDGE_MEMBERS)
+        native_members.update(
+            export_name.removeprefix("org.kmipkit.NativeExtensionRegistry.")
+            for export_name in EXPECTED_PROFILE_VALIDATION_BRIDGE_EXPORTS
+        )
         expected_native = {
             ("java-kmipkit", f"org.kmipkit.NativeExtensionRegistry.{member}")
             for member in native_members
@@ -1089,7 +1094,12 @@ class BindingExportAuditTests(unittest.TestCase):
                         or "KMIPKIT-0007-FR-001" in evidence
                         or "KMIPKIT-0004-FR-001" in evidence
                         or "KMIPKIT-0012-FR-010" in evidence
-                        or "KMIPKIT-0044-FR-001/007" in evidence,
+                        or "KMIPKIT-0044-FR-001/007" in evidence
+                        or (
+                            "KMIPKIT-0043-FR-008" in evidence
+                            and "KMIPKIT-0043-FR-021" in evidence
+                            and "profile-validation JNI plumbing" in evidence
+                        ),
                         # A few older accepted bridge rows carry their exact owner requirement
                         # and an explicit reason instead of a T035/T037/T039 task reference.
                         # Their reviewed owner and FR-021 linkage are checked above.

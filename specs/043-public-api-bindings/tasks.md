@@ -519,3 +519,7 @@ T102 `ProfileValidationResult` Red contract expansion (2026-11-04): adds the exa
 T102 Python CFFI Red (2026-11-04): the live adapter contract fails because `_client_ffi.py` cannot parse the missing `kmipkit_profile_validation_result_t` CFFI declaration. Add the handle type and all result/resolver symbols before testing native-backed Python calls.
 
 T102 focused CI Red (2026-11-04): the result inventory contract is absent from the Script Contracts job's targeted manifest-test list. Add it to the existing focused unittest invocation with its exit-code guard.
+
+T102 Macro-Lot 2 `ProfileValidationResult` Green checkpoint (2026-11-04): maps the 16 Rust result declarations across root/protocol to the approved four-language profile capability; inventories 12 C, 14 Java, and 17 Python facade declarations; records 11 internal JNI bridge exclusions; and adds the private CFFI prototypes and focused CI invocation. Candidate count 173->157; declaration/exclusion counts 6,335/8,698->6,378/8,709. The focused manifest/JNI/partition/export group passes 65/65, Rust/C tests 6/6 plus compiled C consumer 1/1, Java tests 11/11, Python native-library tests 14/14, generator check 12/12, formatting and FFI-only Clippy pass. T102 Macro-Lot 2 remains open; the full T102 and 151-test manifest-v2 suites are deferred to lot closure. See implementation-evidence.md.
+
+Green commits: Java `c0b70308b`, Python `a5e3ede58`, FFI `69bc5863d`, and manifest/CFFI/generated-output/CI `faa9033de`.

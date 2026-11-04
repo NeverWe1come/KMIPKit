@@ -10789,3 +10789,17 @@ The follow-up Red contract also pins the protocol-owned `ProfileValidationResult
 The first live Python adapter check adds an explicit CFFI symbol inventory contract. Red commit `27dfa799f` exposed that `_client_ffi.py` had no `kmipkit_profile_validation_result_t` declaration, so CFFI could not even parse the result pointer type. The focused test fails before calling any native validator; this is a private binding declaration gap, separate from the generated public manifest.
 
 The focused CI job did not yet run the result inventory contract. Its Red check fails on the missing `test_t102_profile_model_reexport_mapping` invocation; the module will be added to the existing targeted Script Contracts command.
+
+### T102 Macro-Lot 2 `ProfileValidationResult` parity — Green (2026-11-04)
+
+The approved KMIPKIT-0010 client profile facade now inventories the result type and seven members through the `kmipkit` and `kmipkit_protocol` Rust reexports. C exposes an owned opaque result handle, resolver, ordered ID accessors, and five validators; Java and Python expose corresponding managed result wrappers and fail-closed exception details. The resolver mappings now point at the actual `ProfileValidationSelection::validate` APIs. Eleven `NativeExtensionRegistry` methods are recorded as KMIPKIT-0043-FR-008/021 implementation-only JNI exclusions. The private Python CFFI declarations and focused CI invocation are synchronized with the public inventory.
+
+The C ABI borrows generic TTLV structure handles for each validation call, preserves their ownership with the caller, returns ID spans borrowed until result release, and stores only safe profile-validation identifiers in diagnostic views. Profile rule failures remain redacted. The selected Baseline remains `evidence_incomplete`; no profile is newly advertised as successfully conformant. Rust/C positive-path fixtures use the existing test-support route and do not add a production selection bypass. OASIS KMIP v2.1 §14.1 and KMIP Profiles v2.1 §§3.1, 5.1.1, 5.1.3, 5.6.3, and 6.1 are profile context only; this batch makes no new protocol conformance claim.
+
+The 16 blocked Rust result declarations are now mapped, reducing T102 from 173 to 157 blocked candidates. The manifest now has 6,378 public declarations and 8,709 approved exclusions. The 12 C, 14 Java, and 17 Python declarations are linked through `client_profile_validation`; all 12 generated outputs are current.
+
+Verification: the focused profile-result manifest, JNI exclusion, partition identity, and export-audit group passes 65/65; Rust FFI result tests pass 6/6; the compiled C ABI consumer passes 1/1; Java `ProfileValidationMappingTest` passes 11/11; Python `test_profile_validation_mapping.py` passes 14/14 against the built native library; `cargo fmt --all --check`, FFI Clippy with `--no-deps`, and `generate.py --check` pass. Full T102 and the 151-test `manifest-v2` suite remain reserved for Macro-Lot 2 closure; 157 candidates remain.
+
+Implementation commits: Java Green `c0b70308b`, Python Green `a5e3ede58`, FFI Green `69bc5863d`, and manifest/CFFI/generated-output/CI Green `faa9033de`. Red contracts and the C consumer consolidation are recorded in the preceding commits and task entries.
+
+The single `test_binding_exports` failure during integration was a stale expected JNI exclusion inventory. Its expectation and owner-evidence predicate now include the 11 exact profile-validation bridge methods; the final 65-test group passes.
