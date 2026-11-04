@@ -153621,7 +153621,18 @@
           "rust-observed-ef324d291b7451ad5843",
           "rust-observed-e1c0811fd3085d61d37e",
           "rust-observed-b0a921a3e52d117b586e",
-          "rust-observed-616ed68521fb27aad6bb"
+          "rust-observed-616ed68521fb27aad6bb",
+          "rust-observed-6b4e7ba39cb4bd340234",
+          "rust-observed-c9c07b2c46007f71efff",
+          "rust-observed-26622f873c7ff432e698",
+          "rust-observed-2a7e6d69030fffb3d878",
+          "rust-observed-6180f713348716efda66",
+          "rust-observed-dc2961ed0d889736434a",
+          "rust-observed-03405735e5d8d2625d78",
+          "rust-observed-802e1ac0317dd6821593",
+          "rust-observed-7e6811850f3485981f29",
+          "rust-observed-27a55bcba38400fa89c6",
+          "rust-observed-c80c500a2247a0f2eeab"
         ]
       },
       "featureSpecId": "KMIPKIT-0037",
@@ -153638,7 +153649,8 @@
         "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs",
-        "tools/api_manifest/tests/test_t102_derive_key_request_mapping.py"
+        "tools/api_manifest/tests/test_t102_derive_key_request_mapping.py",
+        "tools/api_manifest/tests/test_t102_derive_key_parameter_mapping.py"
       ],
       "scope": "client_1_0",
       "section": "6.1.14"
@@ -290756,6 +290768,688 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
+      "declarationId": "rust-observed-6b4e7ba39cb4bd340234",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::DerivationMethod",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_derive_key",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.deriveKey",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_derive_key",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DerivationMethod",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyResponseMappingTest.java",
+        "bindings/python/tests/test_derive_key_operation.py",
+        "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-003",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-004",
+        "KMIPKIT-REQ-SPEC-6.1.14-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-006-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-006-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-007-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-7.12-003",
+        "KMIPKIT-REQ-SPEC-7.12-005-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
+      "declarationId": "rust-observed-c9c07b2c46007f71efff",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::DerivationMethod::from_raw",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_derive_key",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.deriveKey",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_derive_key",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DerivationMethod::from_raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyResponseMappingTest.java",
+        "bindings/python/tests/test_derive_key_operation.py",
+        "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-003",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-004",
+        "KMIPKIT-REQ-SPEC-6.1.14-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-006-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-006-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-007-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-7.12-003",
+        "KMIPKIT-REQ-SPEC-7.12-005-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
+      "declarationId": "rust-observed-26622f873c7ff432e698",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::DerivationMethod::raw",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_derive_key",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.deriveKey",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_derive_key",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DerivationMethod::raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyResponseMappingTest.java",
+        "bindings/python/tests/test_derive_key_operation.py",
+        "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-003",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-004",
+        "KMIPKIT-REQ-SPEC-6.1.14-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-006-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-006-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-007-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-7.12-003",
+        "KMIPKIT-REQ-SPEC-7.12-005-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
+      "declarationId": "rust-observed-2a7e6d69030fffb3d878",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::DerivationParameters",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_derive_key",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.deriveKey",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_derive_key",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DerivationParameters",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyResponseMappingTest.java",
+        "bindings/python/tests/test_derive_key_operation.py",
+        "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-003",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-004",
+        "KMIPKIT-REQ-SPEC-6.1.14-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-006-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-006-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-007-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-7.12-003",
+        "KMIPKIT-REQ-SPEC-7.12-005-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
+      "declarationId": "rust-observed-6180f713348716efda66",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::DerivationParameters::new",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_derive_key",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.deriveKey",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_derive_key",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DerivationParameters::new",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyResponseMappingTest.java",
+        "bindings/python/tests/test_derive_key_operation.py",
+        "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-003",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-004",
+        "KMIPKIT-REQ-SPEC-6.1.14-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-006-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-006-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-007-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-7.12-003",
+        "KMIPKIT-REQ-SPEC-7.12-005-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
+      "declarationId": "rust-observed-dc2961ed0d889736434a",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::DerivationParameters::with_cryptographic_parameters",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_derive_key",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.deriveKey",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_derive_key",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DerivationParameters::with_cryptographic_parameters",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyResponseMappingTest.java",
+        "bindings/python/tests/test_derive_key_operation.py",
+        "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-003",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-004",
+        "KMIPKIT-REQ-SPEC-6.1.14-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-006-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-006-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-007-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-7.12-003",
+        "KMIPKIT-REQ-SPEC-7.12-005-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
+      "declarationId": "rust-observed-03405735e5d8d2625d78",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::DerivationParameters::with_derivation_data",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_derive_key",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.deriveKey",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_derive_key",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DerivationParameters::with_derivation_data",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyResponseMappingTest.java",
+        "bindings/python/tests/test_derive_key_operation.py",
+        "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-003",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-004",
+        "KMIPKIT-REQ-SPEC-6.1.14-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-006-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-006-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-007-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-7.12-003",
+        "KMIPKIT-REQ-SPEC-7.12-005-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
+      "declarationId": "rust-observed-802e1ac0317dd6821593",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::DerivationParameters::with_extension",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_derive_key",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.deriveKey",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_derive_key",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DerivationParameters::with_extension",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyResponseMappingTest.java",
+        "bindings/python/tests/test_derive_key_operation.py",
+        "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-003",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-004",
+        "KMIPKIT-REQ-SPEC-6.1.14-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-006-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-006-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-007-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-7.12-003",
+        "KMIPKIT-REQ-SPEC-7.12-005-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
+      "declarationId": "rust-observed-7e6811850f3485981f29",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::DerivationParameters::with_initialization_vector",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_derive_key",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.deriveKey",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_derive_key",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DerivationParameters::with_initialization_vector",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyResponseMappingTest.java",
+        "bindings/python/tests/test_derive_key_operation.py",
+        "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-003",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-004",
+        "KMIPKIT-REQ-SPEC-6.1.14-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-006-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-006-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-007-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-7.12-003",
+        "KMIPKIT-REQ-SPEC-7.12-005-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
+      "declarationId": "rust-observed-27a55bcba38400fa89c6",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::DerivationParameters::with_iteration_count",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_derive_key",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.deriveKey",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_derive_key",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DerivationParameters::with_iteration_count",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyResponseMappingTest.java",
+        "bindings/python/tests/test_derive_key_operation.py",
+        "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-003",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-004",
+        "KMIPKIT-REQ-SPEC-6.1.14-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-006-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-006-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-007-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-7.12-003",
+        "KMIPKIT-REQ-SPEC-7.12-005-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
+      "declarationId": "rust-observed-c80c500a2247a0f2eeab",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::DerivationParameters::with_salt",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_derive_key",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.deriveKey",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_derive_key",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DerivationParameters::with_salt",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyResponseMappingTest.java",
+        "bindings/python/tests/test_derive_key_operation.py",
+        "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-003",
+        "KMIPKIT-REQ-SPEC-6.1.14-001-004",
+        "KMIPKIT-REQ-SPEC-6.1.14-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-006-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-006-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-007-001",
+        "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-REQ-SPEC-7.12-003",
+        "KMIPKIT-REQ-SPEC-7.12-005-001"
       ]
     },
     {

@@ -10013,6 +10013,61 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::DelegatedLoginResponse::try_from_response_item",
     ),
     (
+        "rust-observed-6b4e7ba39cb4bd340234",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::DerivationMethod",
+    ),
+    (
+        "rust-observed-c9c07b2c46007f71efff",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::DerivationMethod::from_raw",
+    ),
+    (
+        "rust-observed-26622f873c7ff432e698",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::DerivationMethod::raw",
+    ),
+    (
+        "rust-observed-2a7e6d69030fffb3d878",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::DerivationParameters",
+    ),
+    (
+        "rust-observed-6180f713348716efda66",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::DerivationParameters::new",
+    ),
+    (
+        "rust-observed-dc2961ed0d889736434a",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::DerivationParameters::with_cryptographic_parameters",
+    ),
+    (
+        "rust-observed-03405735e5d8d2625d78",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::DerivationParameters::with_derivation_data",
+    ),
+    (
+        "rust-observed-802e1ac0317dd6821593",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::DerivationParameters::with_extension",
+    ),
+    (
+        "rust-observed-7e6811850f3485981f29",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::DerivationParameters::with_initialization_vector",
+    ),
+    (
+        "rust-observed-27a55bcba38400fa89c6",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::DerivationParameters::with_iteration_count",
+    ),
+    (
+        "rust-observed-c80c500a2247a0f2eeab",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::DerivationParameters::with_salt",
+    ),
+    (
         "rust-observed-ba31d7bc77d37f12301b",
         "rust-kmipkit-protocol",
         "kmipkit_client::ClientError::Protocol",
