@@ -16,7 +16,13 @@ APPROVAL_SOURCE = {
         "status": "Approved",
         "evidence": "**Status**: Approved",
     },
-    "rng_kind": {
+    "rng_retrieve_kind": {
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+    },
+    "rng_seed_kind": {
         "kind": "feature-specification",
         "path": "specs/027-rng-operations/spec.md",
         "status": "Approved",
@@ -37,38 +43,49 @@ APPROVAL_SOURCE = {
 }
 REASONS = {
     "crypto_kind": (
-        "This exact Rust kind accessor exposes parser detail that has no foreign API; "
+        "This exact Rust kind accessor is parser-error detail, not a separate client capability; "
         "the corresponding client flow exposes only the normalized shared error outcome."
     ),
-    "rng_kind": (
-        "This exact Rust kind accessor exposes parser detail that has no foreign API; "
+    "rng_retrieve_kind": (
+        "This exact Rust kind accessor is parser-error detail, not a separate client capability; "
+        "the corresponding client flow exposes only the normalized shared error outcome."
+    ),
+    "rng_seed_kind": (
+        "This exact Rust kind accessor is parser-error detail, not a separate client capability; "
         "the corresponding client flow exposes only the normalized shared error outcome."
     ),
     "ticket": (
-        "This exact error taxonomy is emitted by the typed Rust Ticket parser; C, Java, "
-        "and Python use generic TTLV/session APIs and expose no equivalent typed Ticket parser."
+        "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate "
+        "client capability; foreign bindings use generic TTLV/session APIs without a typed parser."
     ),
     "usage": (
-        "This exact Rust error taxonomy refines local Usage Allocation validation; foreign "
-        "context/guard APIs collapse failures to generic invalid-input/status errors."
+        "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate "
+        "client capability; foreign context/guard APIs collapse failures to generic statuses."
     ),
 }
 EVIDENCE = {
     "crypto_kind": (
-        "KMIPKIT-0021 owner; KMIPKIT-0043-FR-010/021. OASIS KMIP v2.1 §§6.1.32, "
-        "6.1.33, 6.1.55, and 6.1.56 govern the operations, not this Rust parser accessor."
+        "KMIPKIT-0021-FR-001/010/012/015; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. "
+        "OASIS KMIP v2.1 Sections 6.1.24, 6.1.32, 6.1.33, 6.1.55, and 6.1.56 govern "
+        "operations, not this Rust accessor."
     ),
-    "rng_kind": (
-        "KMIPKIT-0041-FR-001/003/004/005/006; KMIPKIT-0043-FR-010/021. OASIS KMIP "
-        "v2.1 §6.1.50 governs RNG operations, not this Rust parser accessor."
+    "rng_retrieve_kind": (
+        "KMIPKIT-0041-FR-001/003/004/005/006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. "
+        "OASIS KMIP v2.1 Section 6.1.49 governs RNG Retrieve, not this Rust parser accessor."
+    ),
+    "rng_seed_kind": (
+        "KMIPKIT-0041-FR-001/003/004/005/006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. "
+        "OASIS KMIP v2.1 Section 6.1.50 governs RNG Seed, not this Rust parser accessor."
     ),
     "ticket": (
-        "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010/021. OASIS KMIP v2.1 "
-        "§7.39 Table 391 and §11.57 Table 488 define Ticket data, not this Rust parser taxonomy."
+        "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. "
+        "OASIS KMIP v2.1 "
+        "Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
     ),
     "usage": (
-        "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010/021. OASIS KMIP v2.1 §6.1.23 "
-        "Table 234 gives allocation context; these local Rust errors are not protocol statuses."
+        "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. "
+        "OASIS KMIP v2.1 "
+        "Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
     ),
 }
 
@@ -85,7 +102,8 @@ def expected_exclusions() -> dict[tuple[str, str], str]:
         ("rust-kmipkit-protocol", "kmipkit_protocol"),
     ):
         for error in ("RngRetrieveError", "RngSeedError"):
-            expected[(package, f"{crate}::{error}::kind")] = "rng_kind"
+            category = "rng_retrieve_kind" if error == "RngRetrieveError" else "rng_seed_kind"
+            expected[(package, f"{crate}::{error}::kind")] = category
 
         ticket = f"{crate}::TicketValidationError"
         ticket_kind = f"{crate}::TicketValidationErrorKind"

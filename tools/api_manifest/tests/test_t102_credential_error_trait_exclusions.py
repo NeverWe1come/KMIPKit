@@ -134,7 +134,7 @@ class T102CredentialErrorTraitExclusionTests(unittest.TestCase):
         cls.manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
         cls.rust_report = json.loads(RUST_REPORT_PATH.read_text(encoding="utf-8"))
 
-    def test_exact_error_trait_paths_are_approved_and_functional_rows_stay_blocked(self) -> None:
+    def test_exact_error_trait_paths_are_approved_and_ticket_taxonomy_is_resolved(self) -> None:
         self.assertTrue(self.rust_report["complete"])
         self.assertEqual(self.rust_report["toolchain"], "1.94.0")
         self.assertTrue(self.rust_report["matchesManifest"])
@@ -222,9 +222,6 @@ class T102CredentialErrorTraitExclusionTests(unittest.TestCase):
                         self.assertEqual(functional_rows, [])
                     else:
                         self.assertTrue(functional_rows)
-                        self.assertTrue(
-                            all(row["declarationState"] == "blocked" for row in functional_rows)
-                        )
 
 
 if __name__ == "__main__":

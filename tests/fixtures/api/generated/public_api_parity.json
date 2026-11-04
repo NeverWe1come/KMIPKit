@@ -105649,6 +105649,539 @@
       "exportName": "kmipkit_protocol::ProfileValidationError::for_test",
       "packageId": "rust-kmipkit-protocol",
       "reason": "This exact Rust helper is hidden and compiled only with the `test-support` feature. It constructs local profile-validation errors for cross-crate tests; it is not a product API surface."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0041-FR-001/003/004/005/006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.49 governs RNG Retrieve, not this Rust parser accessor.",
+      "exportName": "kmipkit::RngRetrieveError::kind",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust kind accessor is parser-error detail, not a separate client capability; the corresponding client flow exposes only the normalized shared error outcome."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0041-FR-001/003/004/005/006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.50 governs RNG Seed, not this Rust parser accessor.",
+      "exportName": "kmipkit::RngSeedError::kind",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust kind accessor is parser-error detail, not a separate client capability; the corresponding client flow exposes only the normalized shared error outcome."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy.",
+      "exportName": "kmipkit::TicketValidationError",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy.",
+      "exportName": "kmipkit::TicketValidationError::kind",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy.",
+      "exportName": "kmipkit::TicketValidationErrorKind",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy.",
+      "exportName": "kmipkit::TicketValidationErrorKind::DuplicateField",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy.",
+      "exportName": "kmipkit::TicketValidationErrorKind::FieldOutOfOrder",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy.",
+      "exportName": "kmipkit::TicketValidationErrorKind::InvalidTtlvStructure",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy.",
+      "exportName": "kmipkit::TicketValidationErrorKind::MissingField",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy.",
+      "exportName": "kmipkit::TicketValidationErrorKind::WrongFieldType",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses.",
+      "exportName": "kmipkit::UsageAllocationContextError",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses.",
+      "exportName": "kmipkit::UsageAllocationContextError::AllocationNotSuccessful",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses.",
+      "exportName": "kmipkit::UsageAllocationContextError::CostExceedsAvailable",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses.",
+      "exportName": "kmipkit::UsageAllocationContextError::InvalidAllocationCount",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses.",
+      "exportName": "kmipkit::UsageAllocationContextError::InvalidUsageCost",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses.",
+      "exportName": "kmipkit::UsageAllocationContextError::MismatchedUniqueIdentifier",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses.",
+      "exportName": "kmipkit::UsageAllocationContextError::MissingResolvedIdentifier",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses.",
+      "exportName": "kmipkit::UsageAllocationContextError::MissingUniqueIdentifier",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses.",
+      "exportName": "kmipkit::UsageAllocationContextError::ReservationOverflow",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses.",
+      "exportName": "kmipkit::UsageAllocationContextError::UnsupportedOperation",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses.",
+      "exportName": "kmipkit_client::UsageAllocationContextError",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses.",
+      "exportName": "kmipkit_client::UsageAllocationContextError::AllocationNotSuccessful",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses.",
+      "exportName": "kmipkit_client::UsageAllocationContextError::CostExceedsAvailable",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses.",
+      "exportName": "kmipkit_client::UsageAllocationContextError::InvalidAllocationCount",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses.",
+      "exportName": "kmipkit_client::UsageAllocationContextError::InvalidUsageCost",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses.",
+      "exportName": "kmipkit_client::UsageAllocationContextError::MismatchedUniqueIdentifier",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses.",
+      "exportName": "kmipkit_client::UsageAllocationContextError::MissingResolvedIdentifier",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses.",
+      "exportName": "kmipkit_client::UsageAllocationContextError::MissingUniqueIdentifier",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses.",
+      "exportName": "kmipkit_client::UsageAllocationContextError::ReservationOverflow",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses.",
+      "exportName": "kmipkit_client::UsageAllocationContextError::UnsupportedOperation",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0021-FR-001/010/012/015; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Sections 6.1.24, 6.1.32, 6.1.33, 6.1.55, and 6.1.56 govern operations, not this Rust accessor.",
+      "exportName": "kmipkit_protocol::CryptographicOperationError::kind",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust kind accessor is parser-error detail, not a separate client capability; the corresponding client flow exposes only the normalized shared error outcome."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0041-FR-001/003/004/005/006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.49 governs RNG Retrieve, not this Rust parser accessor.",
+      "exportName": "kmipkit_protocol::RngRetrieveError::kind",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust kind accessor is parser-error detail, not a separate client capability; the corresponding client flow exposes only the normalized shared error outcome."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0041-FR-001/003/004/005/006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.50 governs RNG Seed, not this Rust parser accessor.",
+      "exportName": "kmipkit_protocol::RngSeedError::kind",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust kind accessor is parser-error detail, not a separate client capability; the corresponding client flow exposes only the normalized shared error outcome."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy.",
+      "exportName": "kmipkit_protocol::TicketValidationError",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy.",
+      "exportName": "kmipkit_protocol::TicketValidationError::kind",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy.",
+      "exportName": "kmipkit_protocol::TicketValidationErrorKind",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy.",
+      "exportName": "kmipkit_protocol::TicketValidationErrorKind::DuplicateField",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy.",
+      "exportName": "kmipkit_protocol::TicketValidationErrorKind::FieldOutOfOrder",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy.",
+      "exportName": "kmipkit_protocol::TicketValidationErrorKind::InvalidTtlvStructure",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy.",
+      "exportName": "kmipkit_protocol::TicketValidationErrorKind::MissingField",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy.",
+      "exportName": "kmipkit_protocol::TicketValidationErrorKind::WrongFieldType",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser."
     }
   ],
   "capabilities": [

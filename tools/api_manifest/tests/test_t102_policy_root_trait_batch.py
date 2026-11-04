@@ -257,8 +257,8 @@ class T102PolicyRootTraitBatchTests(unittest.TestCase):
             ("rust-kmipkit", "kmipkit::SetDefaultsError"),
         ):
             parent = declarations[(package, public_type)]
-            self.assertEqual(parent.get("declarationState"), "blocked")
-            self.assertEqual(parent.get("candidateSpecId"), "KMIPKIT-0043")
+            self.assertEqual(parent.get("declarationState"), "declared")
+            self.assertNotIn("candidateSpecId", parent)
 
         for package, public_type in (
             ("rust-kmipkit", "kmipkit::UsageAllocationContextError"),

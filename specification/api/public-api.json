@@ -85772,20 +85772,6 @@
       ]
     },
     {
-      "declarationId": "rust-observed-96e314fe45ec5995ed17",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "kmipkit_protocol::CryptographicOperationError::kind",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
       "declarationId": "rust-observed-a36bbe7fb3c5e9c30b11",
       "packageId": "rust-kmipkit-protocol",
       "kind": "type",
@@ -151550,20 +151536,6 @@
       ]
     },
     {
-      "declarationId": "rust-observed-530506c0274aa0131f08",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "kmipkit::RngRetrieveError::kind",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
       "declarationId": "rust-observed-cc7ddb4e56f0578cd46c",
       "packageId": "rust-kmipkit",
       "kind": "type",
@@ -152071,20 +152043,6 @@
         "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
         "tools/api_manifest/tests/test_t102_rng_error_mapping.py"
       ]
-    },
-    {
-      "declarationId": "rust-observed-9702dc8c4595ce66ffce",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "kmipkit::RngSeedError::kind",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
       "declarationId": "rust-observed-81d88f4213e92e812091",
@@ -155004,118 +154962,6 @@
       }
     },
     {
-      "declarationId": "rust-observed-bb3b21aa7c3753c41fe4",
-      "packageId": "rust-kmipkit",
-      "kind": "type",
-      "exportName": "kmipkit::TicketValidationError",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-336549df24c89f29ba16",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "kmipkit::TicketValidationError::kind",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-0002d1ee26a2cee39644",
-      "packageId": "rust-kmipkit",
-      "kind": "type",
-      "exportName": "kmipkit::TicketValidationErrorKind",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-1186d96892b8c52e844d",
-      "packageId": "rust-kmipkit",
-      "kind": "variant",
-      "exportName": "kmipkit::TicketValidationErrorKind::DuplicateField",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-284445b055f9247fa641",
-      "packageId": "rust-kmipkit",
-      "kind": "variant",
-      "exportName": "kmipkit::TicketValidationErrorKind::FieldOutOfOrder",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-d2d44035de6926e7e0cd",
-      "packageId": "rust-kmipkit",
-      "kind": "variant",
-      "exportName": "kmipkit::TicketValidationErrorKind::InvalidTtlvStructure",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-a392ef888f8a7a204944",
-      "packageId": "rust-kmipkit",
-      "kind": "variant",
-      "exportName": "kmipkit::TicketValidationErrorKind::MissingField",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-732e9c42475167348c58",
-      "packageId": "rust-kmipkit",
-      "kind": "variant",
-      "exportName": "kmipkit::TicketValidationErrorKind::WrongFieldType",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
       "declarationId": "rust-observed-cbcf127d527f51b9dd5f",
       "packageId": "rust-kmipkit",
       "kind": "type",
@@ -155443,146 +155289,6 @@
           "name": "kmipkit.client.UsageAllocationContext.usage_limits_unit"
         }
       }
-    },
-    {
-      "declarationId": "rust-observed-70b50e8c2975c1aba132",
-      "packageId": "rust-kmipkit",
-      "kind": "type",
-      "exportName": "kmipkit::UsageAllocationContextError",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-ffc2817ff1687210fca6",
-      "packageId": "rust-kmipkit",
-      "kind": "variant",
-      "exportName": "kmipkit::UsageAllocationContextError::AllocationNotSuccessful",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-b8665945f2253f079778",
-      "packageId": "rust-kmipkit",
-      "kind": "variant",
-      "exportName": "kmipkit::UsageAllocationContextError::CostExceedsAvailable",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-02e8469939bd93b190a3",
-      "packageId": "rust-kmipkit",
-      "kind": "variant",
-      "exportName": "kmipkit::UsageAllocationContextError::InvalidAllocationCount",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-49c1f378b141053ada75",
-      "packageId": "rust-kmipkit",
-      "kind": "variant",
-      "exportName": "kmipkit::UsageAllocationContextError::InvalidUsageCost",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-2ebbda2d0ad5f07af4de",
-      "packageId": "rust-kmipkit",
-      "kind": "variant",
-      "exportName": "kmipkit::UsageAllocationContextError::MismatchedUniqueIdentifier",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-56dc82a6bc0e1d3dbc9a",
-      "packageId": "rust-kmipkit",
-      "kind": "variant",
-      "exportName": "kmipkit::UsageAllocationContextError::MissingResolvedIdentifier",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-6d63ce63a287ecb03a4c",
-      "packageId": "rust-kmipkit",
-      "kind": "variant",
-      "exportName": "kmipkit::UsageAllocationContextError::MissingUniqueIdentifier",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-2e6935e7f4f99eee5c37",
-      "packageId": "rust-kmipkit",
-      "kind": "variant",
-      "exportName": "kmipkit::UsageAllocationContextError::ReservationOverflow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-05ff52a840800a97d4e3",
-      "packageId": "rust-kmipkit",
-      "kind": "variant",
-      "exportName": "kmipkit::UsageAllocationContextError::UnsupportedOperation",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
       "declarationId": "rust-observed-d1197da70a234b98ce0e",
@@ -176820,146 +176526,6 @@
           "name": "kmipkit.client.UsageAllocationContext.usage_limits_unit"
         }
       }
-    },
-    {
-      "declarationId": "rust-observed-abe45df4d674ac11b773",
-      "packageId": "rust-kmipkit-client",
-      "kind": "type",
-      "exportName": "kmipkit_client::UsageAllocationContextError",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-354822894f46581405ed",
-      "packageId": "rust-kmipkit-client",
-      "kind": "variant",
-      "exportName": "kmipkit_client::UsageAllocationContextError::AllocationNotSuccessful",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-02a187eceb9f6e27283b",
-      "packageId": "rust-kmipkit-client",
-      "kind": "variant",
-      "exportName": "kmipkit_client::UsageAllocationContextError::CostExceedsAvailable",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-e3495c839d15168181dc",
-      "packageId": "rust-kmipkit-client",
-      "kind": "variant",
-      "exportName": "kmipkit_client::UsageAllocationContextError::InvalidAllocationCount",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-74642fc0f7266526581b",
-      "packageId": "rust-kmipkit-client",
-      "kind": "variant",
-      "exportName": "kmipkit_client::UsageAllocationContextError::InvalidUsageCost",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-13e5dc48a527cd3fd619",
-      "packageId": "rust-kmipkit-client",
-      "kind": "variant",
-      "exportName": "kmipkit_client::UsageAllocationContextError::MismatchedUniqueIdentifier",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-9ae3cfebc2ad66648ef1",
-      "packageId": "rust-kmipkit-client",
-      "kind": "variant",
-      "exportName": "kmipkit_client::UsageAllocationContextError::MissingResolvedIdentifier",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-8690a19163327b84ad9c",
-      "packageId": "rust-kmipkit-client",
-      "kind": "variant",
-      "exportName": "kmipkit_client::UsageAllocationContextError::MissingUniqueIdentifier",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-555b95a4569a622326c4",
-      "packageId": "rust-kmipkit-client",
-      "kind": "variant",
-      "exportName": "kmipkit_client::UsageAllocationContextError::ReservationOverflow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-64bbeea1c3d5fce2ec88",
-      "packageId": "rust-kmipkit-client",
-      "kind": "variant",
-      "exportName": "kmipkit_client::UsageAllocationContextError::UnsupportedOperation",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
       "declarationId": "rust-observed-a12db14e16035a175812",
@@ -208643,20 +208209,6 @@
       ]
     },
     {
-      "declarationId": "rust-observed-b86d003cb5c6a15fe19f",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "kmipkit_protocol::RngRetrieveError::kind",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
       "declarationId": "rust-observed-0960b8952bd6dedbf0cb",
       "packageId": "rust-kmipkit-protocol",
       "kind": "type",
@@ -209164,20 +208716,6 @@
         "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
         "tools/api_manifest/tests/test_t102_rng_error_mapping.py"
       ]
-    },
-    {
-      "declarationId": "rust-observed-ecb7facc24970ef637a7",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "kmipkit_protocol::RngSeedError::kind",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
       "declarationId": "rust-observed-d21e1394c64cf4c8a3d4",
@@ -212265,118 +211803,6 @@
           "name": "kmipkit.client.DelegatedLoginResponse.ticket_type_raw"
         }
       }
-    },
-    {
-      "declarationId": "rust-observed-b4b3dc3976d819a9f91b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "type",
-      "exportName": "kmipkit_protocol::TicketValidationError",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-bdd3cecd7bf8bc9ee373",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "kmipkit_protocol::TicketValidationError::kind",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-b5d043a7e4706c6694ee",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "type",
-      "exportName": "kmipkit_protocol::TicketValidationErrorKind",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-39fb625b43dab9c30c5a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "variant",
-      "exportName": "kmipkit_protocol::TicketValidationErrorKind::DuplicateField",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-a901cc2e02478e5f1608",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "variant",
-      "exportName": "kmipkit_protocol::TicketValidationErrorKind::FieldOutOfOrder",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-a385c876b5141f5202e4",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "variant",
-      "exportName": "kmipkit_protocol::TicketValidationErrorKind::InvalidTtlvStructure",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-31f3bdc725291a97fca2",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "variant",
-      "exportName": "kmipkit_protocol::TicketValidationErrorKind::MissingField",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-be0877b6b5b1b8ea6347",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "variant",
-      "exportName": "kmipkit_protocol::TicketValidationErrorKind::WrongFieldType",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
       "declarationId": "rust-observed-d988c6b084ce1e71aad5",
@@ -465459,7 +464885,540 @@
         "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
       },
       "evidence": "KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 require equivalent product facades and exact, reviewed public-surface accounting. The source declaration in `crates/kmipkit-protocol/src/profile.rs` is `#[cfg(feature = \"test-support\")]`, `#[doc(hidden)]`, and explicitly intended for cross-crate client tests. The parent ProfileValidationError and its safe mapped accessors remain product declarations. This exact test constructor has no C, Java, or Python counterpart; the product profile-validation diagnostics remain available through the shared client error details."
-    }
+    },
+      {
+        "packageId": "rust-kmipkit",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit::RngRetrieveError::kind",
+        "reason": "This exact Rust kind accessor is parser-error detail, not a separate client capability; the corresponding client flow exposes only the normalized shared error outcome.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/027-rng-operations/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0041-FR-001/003/004/005/006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.49 governs RNG Retrieve, not this Rust parser accessor."
+      },
+      {
+        "packageId": "rust-kmipkit",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit::RngSeedError::kind",
+        "reason": "This exact Rust kind accessor is parser-error detail, not a separate client capability; the corresponding client flow exposes only the normalized shared error outcome.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/027-rng-operations/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0041-FR-001/003/004/005/006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.50 governs RNG Seed, not this Rust parser accessor."
+      },
+      {
+        "packageId": "rust-kmipkit",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit::TicketValidationError",
+        "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/024-credential-sessions/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
+      },
+      {
+        "packageId": "rust-kmipkit",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit::TicketValidationError::kind",
+        "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/024-credential-sessions/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
+      },
+      {
+        "packageId": "rust-kmipkit",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit::TicketValidationErrorKind",
+        "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/024-credential-sessions/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
+      },
+      {
+        "packageId": "rust-kmipkit",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit::TicketValidationErrorKind::DuplicateField",
+        "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/024-credential-sessions/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
+      },
+      {
+        "packageId": "rust-kmipkit",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit::TicketValidationErrorKind::FieldOutOfOrder",
+        "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/024-credential-sessions/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
+      },
+      {
+        "packageId": "rust-kmipkit",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit::TicketValidationErrorKind::InvalidTtlvStructure",
+        "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/024-credential-sessions/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
+      },
+      {
+        "packageId": "rust-kmipkit",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit::TicketValidationErrorKind::MissingField",
+        "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/024-credential-sessions/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
+      },
+      {
+        "packageId": "rust-kmipkit",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit::TicketValidationErrorKind::WrongFieldType",
+        "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/024-credential-sessions/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
+      },
+      {
+        "packageId": "rust-kmipkit",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit::UsageAllocationContextError",
+        "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/025-policy-controls/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
+      },
+      {
+        "packageId": "rust-kmipkit",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit::UsageAllocationContextError::AllocationNotSuccessful",
+        "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/025-policy-controls/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
+      },
+      {
+        "packageId": "rust-kmipkit",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit::UsageAllocationContextError::CostExceedsAvailable",
+        "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/025-policy-controls/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
+      },
+      {
+        "packageId": "rust-kmipkit",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit::UsageAllocationContextError::InvalidAllocationCount",
+        "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/025-policy-controls/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
+      },
+      {
+        "packageId": "rust-kmipkit",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit::UsageAllocationContextError::InvalidUsageCost",
+        "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/025-policy-controls/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
+      },
+      {
+        "packageId": "rust-kmipkit",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit::UsageAllocationContextError::MismatchedUniqueIdentifier",
+        "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/025-policy-controls/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
+      },
+      {
+        "packageId": "rust-kmipkit",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit::UsageAllocationContextError::MissingResolvedIdentifier",
+        "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/025-policy-controls/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
+      },
+      {
+        "packageId": "rust-kmipkit",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit::UsageAllocationContextError::MissingUniqueIdentifier",
+        "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/025-policy-controls/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
+      },
+      {
+        "packageId": "rust-kmipkit",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit::UsageAllocationContextError::ReservationOverflow",
+        "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/025-policy-controls/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
+      },
+      {
+        "packageId": "rust-kmipkit",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit::UsageAllocationContextError::UnsupportedOperation",
+        "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/025-policy-controls/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
+      },
+      {
+        "packageId": "rust-kmipkit-client",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit_client::UsageAllocationContextError",
+        "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/025-policy-controls/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
+      },
+      {
+        "packageId": "rust-kmipkit-client",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit_client::UsageAllocationContextError::AllocationNotSuccessful",
+        "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/025-policy-controls/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
+      },
+      {
+        "packageId": "rust-kmipkit-client",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit_client::UsageAllocationContextError::CostExceedsAvailable",
+        "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/025-policy-controls/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
+      },
+      {
+        "packageId": "rust-kmipkit-client",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit_client::UsageAllocationContextError::InvalidAllocationCount",
+        "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/025-policy-controls/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
+      },
+      {
+        "packageId": "rust-kmipkit-client",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit_client::UsageAllocationContextError::InvalidUsageCost",
+        "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/025-policy-controls/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
+      },
+      {
+        "packageId": "rust-kmipkit-client",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit_client::UsageAllocationContextError::MismatchedUniqueIdentifier",
+        "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/025-policy-controls/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
+      },
+      {
+        "packageId": "rust-kmipkit-client",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit_client::UsageAllocationContextError::MissingResolvedIdentifier",
+        "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/025-policy-controls/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
+      },
+      {
+        "packageId": "rust-kmipkit-client",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit_client::UsageAllocationContextError::MissingUniqueIdentifier",
+        "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/025-policy-controls/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
+      },
+      {
+        "packageId": "rust-kmipkit-client",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit_client::UsageAllocationContextError::ReservationOverflow",
+        "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/025-policy-controls/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
+      },
+      {
+        "packageId": "rust-kmipkit-client",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit_client::UsageAllocationContextError::UnsupportedOperation",
+        "reason": "This exact Usage Allocation error taxonomy is Rust-only validation detail, not a separate client capability; foreign context/guard APIs collapse failures to generic statuses.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/025-policy-controls/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
+      },
+      {
+        "packageId": "rust-kmipkit-protocol",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit_protocol::CryptographicOperationError::kind",
+        "reason": "This exact Rust kind accessor is parser-error detail, not a separate client capability; the corresponding client flow exposes only the normalized shared error outcome.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/021-hash-mac-signature-operations/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved"
+        },
+        "evidence": "KMIPKIT-0021-FR-001/010/012/015; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Sections 6.1.24, 6.1.32, 6.1.33, 6.1.55, and 6.1.56 govern operations, not this Rust accessor."
+      },
+      {
+        "packageId": "rust-kmipkit-protocol",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit_protocol::RngRetrieveError::kind",
+        "reason": "This exact Rust kind accessor is parser-error detail, not a separate client capability; the corresponding client flow exposes only the normalized shared error outcome.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/027-rng-operations/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0041-FR-001/003/004/005/006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.49 governs RNG Retrieve, not this Rust parser accessor."
+      },
+      {
+        "packageId": "rust-kmipkit-protocol",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit_protocol::RngSeedError::kind",
+        "reason": "This exact Rust kind accessor is parser-error detail, not a separate client capability; the corresponding client flow exposes only the normalized shared error outcome.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/027-rng-operations/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0041-FR-001/003/004/005/006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.50 governs RNG Seed, not this Rust parser accessor."
+      },
+      {
+        "packageId": "rust-kmipkit-protocol",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit_protocol::TicketValidationError",
+        "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/024-credential-sessions/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
+      },
+      {
+        "packageId": "rust-kmipkit-protocol",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit_protocol::TicketValidationError::kind",
+        "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/024-credential-sessions/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
+      },
+      {
+        "packageId": "rust-kmipkit-protocol",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit_protocol::TicketValidationErrorKind",
+        "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/024-credential-sessions/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
+      },
+      {
+        "packageId": "rust-kmipkit-protocol",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit_protocol::TicketValidationErrorKind::DuplicateField",
+        "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/024-credential-sessions/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
+      },
+      {
+        "packageId": "rust-kmipkit-protocol",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit_protocol::TicketValidationErrorKind::FieldOutOfOrder",
+        "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/024-credential-sessions/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
+      },
+      {
+        "packageId": "rust-kmipkit-protocol",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit_protocol::TicketValidationErrorKind::InvalidTtlvStructure",
+        "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/024-credential-sessions/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
+      },
+      {
+        "packageId": "rust-kmipkit-protocol",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit_protocol::TicketValidationErrorKind::MissingField",
+        "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/024-credential-sessions/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
+      },
+      {
+        "packageId": "rust-kmipkit-protocol",
+        "candidateSpecId": "KMIPKIT-0043",
+        "exportName": "kmipkit_protocol::TicketValidationErrorKind::WrongFieldType",
+        "reason": "This exact Ticket parser error taxonomy is Rust-only diagnostic detail, not a separate client capability; foreign bindings use generic TTLV/session APIs without a typed parser.",
+        "approvalSource": {
+          "kind": "feature-specification",
+          "path": "specs/024-credential-sessions/spec.md",
+          "status": "Approved",
+          "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+        },
+        "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
+      }
   ],
   "apiLevels": [
     {
