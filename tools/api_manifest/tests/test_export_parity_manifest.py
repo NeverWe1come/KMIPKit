@@ -54,6 +54,7 @@ EXPECTED_MAPPINGS = {
         "kmipkit_client::ClientRequest::Export",
         "kmipkit_client::ClientBatchOutcome::Export",
         "kmipkit_protocol::ExportRequest",
+        "kmipkit_protocol::ExportRequest::unique_identifier",
         "kmipkit_protocol::ExportResponse",
         "kmipkit_protocol::ExportResponse::object_type",
         "kmipkit_protocol::ExportResponse::unique_identifier",

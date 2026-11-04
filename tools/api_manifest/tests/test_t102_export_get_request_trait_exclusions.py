@@ -69,7 +69,7 @@ FUNCTIONAL_STATES = {
         "": "verified",
         "::into_ttlv_payload": "verified",
         "::new": "verified",
-        "::unique_identifier": "blocked",
+        "::unique_identifier": "verified",
         "::with_unique_identifier": "verified",
         "::with_key_format_type": "verified",
         "::with_key_wrap_type": "verified",
