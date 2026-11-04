@@ -10,6 +10,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::thread;
+use std::time::{Duration, Instant};
 
 #[link(name = "kmipkit_nonce_abi_c_consumer", kind = "static")]
 unsafe extern "C" {
@@ -341,6 +342,98 @@ fn compiled_c_consumer_exposes_profile_readiness_and_catalog_contract() {
     // borrowed from a live handle. Catalog spans point to static generated rows.
     let result = unsafe { kmipkit_client_abi_c_consumer_profile_readiness_contract() };
     assert_eq!(result, 1);
+}
+
+#[test]
+// OASIS KMIP v2.1 §6.1.7 Tables 183–185; §6.1.19 Tables 220–222;
+// §6.1.18 Tables 217–219; §6.1.46 Tables 305–307; §6.1.23 Tables 232–234.
+fn compiled_c_consumer_encodes_check_get_export_rekey_and_allocation_builders_over_mtls() {
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
+    let client_chain = pki.client_identity().certificate_chain_der();
+    let paths = TemporaryCredentialFiles::create([
+        client_chain[0],
+        client_chain[1],
+        pki.client_identity().private_key_der(),
+        pki.authority_certificate_der(),
+    ]);
+    let listener =
+        TcpListener::bind(("127.0.0.1", 0)).expect("an ephemeral local TCP port is available");
+    let port = listener
+        .local_addr()
+        .expect("the listener has a local address")
+        .port();
+    let server_config = mtls_server_config(&pki);
+    listener
+        .set_nonblocking(true)
+        .expect("the test peer accepts with a bounded timeout");
+    // The ordered Create is only the preceding ID Placeholder producer for the GUA item whose
+    // Unique Identifier is omitted; the test does not claim or inspect Create behavior.
+    let peer = thread::spawn(move || {
+        let deadline = Instant::now() + Duration::from_secs(8);
+        let (stream, _) = loop {
+            match listener.accept() {
+                Ok(accepted) => break accepted,
+                Err(error)
+                    if error.kind() == io::ErrorKind::WouldBlock && Instant::now() < deadline =>
+                {
+                    thread::sleep(Duration::from_millis(10));
+                }
+                Err(error) => panic!("the compiled C client connects to the local peer: {error}"),
+            }
+        };
+        stream
+            .set_nonblocking(false)
+            .expect("the accepted peer stream uses blocking reads");
+        stream
+            .set_read_timeout(Some(Duration::from_secs(8)))
+            .expect("the peer read timeout is configured");
+        let connection = ServerConnection::new(server_config)
+            .expect("the TLS 1.3 server connection is configured");
+        let mut tls = StreamOwned::new(connection, stream);
+        let request = read_ttlv_frame(&mut tls).expect("the bounded request frame arrives");
+        let decoded = decode_test_request(&request).expect("the request is valid TTLV");
+        assert_request_builder_wire(&decoded);
+        let _ = tls.get_ref().shutdown(Shutdown::Both);
+    });
+
+    let executable = CString::new("kmipkit_request_builders_c_consumer")
+        .expect("the executable name has no NUL byte");
+    let certificate = CString::new(paths.paths[0].to_string_lossy().as_bytes())
+        .expect("the temporary path has no NUL byte");
+    let authority = CString::new(paths.paths[1].to_string_lossy().as_bytes())
+        .expect("the temporary path has no NUL byte");
+    let private_key = CString::new(paths.paths[2].to_string_lossy().as_bytes())
+        .expect("the temporary path has no NUL byte");
+    let trust_root = CString::new(paths.paths[3].to_string_lossy().as_bytes())
+        .expect("the temporary path has no NUL byte");
+    let port = CString::new(port.to_string()).expect("the port has no NUL byte");
+    let mode = CString::new("request-builders-wire").expect("the mode has no NUL byte");
+    let mut arguments = vec![
+        executable.as_ptr().cast_mut(),
+        certificate.as_ptr().cast_mut(),
+        authority.as_ptr().cast_mut(),
+        private_key.as_ptr().cast_mut(),
+        trust_root.as_ptr().cast_mut(),
+        port.as_ptr().cast_mut(),
+        mode.as_ptr().cast_mut(),
+    ];
+    let argument_count = i32::try_from(arguments.len()).expect("the C argv count fits in i32");
+    let mut limits = std::ptr::null_mut();
+    // SAFETY: `limits` is a writable output slot retained until the synchronous C call returns.
+    let status = unsafe {
+        kmipkit_codec_limits_create(16 * 1024 * 1024, 64, 400_000, &raw mut limits)
+    };
+    assert_eq!(status, 0, "the configured codec limits are created");
+    assert!(!limits.is_null(), "the configured codec limits return a handle");
+    // SAFETY: the argv strings and codec-limits handle remain live for the synchronous C call.
+    let result = unsafe {
+        kmipkit_client_abi_c_consumer_execute_tls(argument_count, arguments.as_mut_ptr(), limits)
+    };
+    // SAFETY: this test owns the limits handle; the C consumer only borrows it.
+    unsafe { kmipkit_codec_limits_release(limits) };
+    assert_eq!(result, 0, "the C consumer builds and transmits ten target requests");
+    peer.join()
+        .expect("the compiled C request-builder mTLS peer completes");
 }
 
 #[test]
@@ -2412,6 +2505,182 @@ fn decode_test_request(encoded: &[u8]) -> Option<Item> {
     let limits = kmipkit_ttlv::codec::CodecLimits::new(8_388_608, 64, 400_000).ok()?;
     kmipkit_ttlv::codec::decode_with_limits(encoded, &limits).ok()
 }
+
+#[derive(Clone, Copy)]
+enum RequestBuilderWireValue {
+    Text(&'static str),
+    Integer(i32),
+    LongInteger(i64),
+    Enumeration(u32),
+    Interval(u32),
+}
+
+#[derive(Clone, Copy)]
+struct RequestBuilderWireField {
+    tag: u32,
+    value: RequestBuilderWireValue,
+}
+
+#[derive(Clone, Copy)]
+struct RequestBuilderWireItem {
+    operation: u32,
+    fields: &'static [RequestBuilderWireField],
+}
+
+fn assert_request_builder_wire(request: &Item) {
+    use RequestBuilderWireValue as V;
+
+    const CHECK_VALUES: &[RequestBuilderWireField] = &[
+        RequestBuilderWireField { tag: 0x0042_0094, value: V::Text("check-text") },
+        RequestBuilderWireField { tag: 0x0042_0096, value: V::LongInteger(3) },
+        RequestBuilderWireField { tag: 0x0042_002c, value: V::Integer(2) },
+        RequestBuilderWireField { tag: 0x0042_0049, value: V::Interval(60) },
+    ];
+    const INTEGER_IDENTIFIER: &[RequestBuilderWireField] = &[
+        RequestBuilderWireField { tag: 0x0042_0094, value: V::Integer(-7) },
+    ];
+    const GET_VALUES: &[RequestBuilderWireField] = &[
+        RequestBuilderWireField { tag: 0x0042_0094, value: V::Text("get-text") },
+        RequestBuilderWireField { tag: 0x0042_0042, value: V::Enumeration(0xf123_4567) },
+        RequestBuilderWireField { tag: 0x0042_00f8, value: V::Enumeration(0xf123_4568) },
+        RequestBuilderWireField { tag: 0x0042_0041, value: V::Enumeration(0xf123_4569) },
+    ];
+    const EXPORT_VALUES: &[RequestBuilderWireField] = &[
+        RequestBuilderWireField { tag: 0x0042_0094, value: V::Text("export-text") },
+        RequestBuilderWireField { tag: 0x0042_0042, value: V::Enumeration(0xfedc_ba98) },
+        RequestBuilderWireField { tag: 0x0042_00f8, value: V::Enumeration(0xfedc_ba99) },
+        RequestBuilderWireField { tag: 0x0042_0041, value: V::Enumeration(0xfedc_ba9a) },
+    ];
+    const REKEY_VALUES: &[RequestBuilderWireField] = &[
+        RequestBuilderWireField { tag: 0x0042_0094, value: V::Text("rekey-text") },
+        RequestBuilderWireField { tag: 0x0042_0058, value: V::Interval(60) },
+    ];
+    const ALLOCATION_VALUES: &[RequestBuilderWireField] = &[
+        RequestBuilderWireField { tag: 0x0042_0094, value: V::Text("allocation-text") },
+        RequestBuilderWireField { tag: 0x0042_0096, value: V::LongInteger(5) },
+    ];
+    const ALLOCATION_IDENTIFIER_OMITTED: &[RequestBuilderWireField] = &[
+        RequestBuilderWireField { tag: 0x0042_0096, value: V::LongInteger(7) },
+    ];
+    const EXPECTED: &[RequestBuilderWireItem] = &[
+        RequestBuilderWireItem { operation: 9, fields: CHECK_VALUES },
+        RequestBuilderWireItem { operation: 9, fields: INTEGER_IDENTIFIER },
+        RequestBuilderWireItem { operation: 10, fields: GET_VALUES },
+        RequestBuilderWireItem { operation: 10, fields: INTEGER_IDENTIFIER },
+        RequestBuilderWireItem { operation: 43, fields: EXPORT_VALUES },
+        RequestBuilderWireItem { operation: 43, fields: INTEGER_IDENTIFIER },
+        RequestBuilderWireItem { operation: 4, fields: REKEY_VALUES },
+        RequestBuilderWireItem { operation: 4, fields: INTEGER_IDENTIFIER },
+        RequestBuilderWireItem { operation: 17, fields: ALLOCATION_VALUES },
+        RequestBuilderWireItem { operation: 17, fields: ALLOCATION_IDENTIFIER_OMITTED },
+    ];
+
+    request.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            panic!("the C consumer sends a Message Structure");
+        };
+        let request_header = message
+            .children()
+            .iter()
+            .find(|item| item.tag().raw() == 0x0042_0077)
+            .expect("the Request Header is present");
+        request_header.with_value(|value| {
+            let ValueView::Structure(header) = value else {
+                panic!("the Request Header is a Structure");
+            };
+            let order_option = header
+                .children()
+                .iter()
+                .find(|item| item.tag().raw() == 0x0042_0010)
+                .expect("the ordered placeholder context sets Batch Order Option");
+            assert!(order_option.with_value(
+                |value| matches!(value, ValueView::Boolean(enabled) if *enabled),
+            ));
+        });
+        let batch_items = message.children()
+            .iter()
+            .filter(|item| item.tag().raw() == 0x0042_000f)
+            .collect::<Vec<_>>();
+        assert_eq!(batch_items.len(), EXPECTED.len() + 1);
+        batch_items[0].with_value(|value| {
+            let ValueView::Structure(batch_item) = value else {
+                panic!("the first batch item is the ID Placeholder producer");
+            };
+            assert_eq!(
+                batch_item.children().iter().map(|item| item.tag().raw()).collect::<Vec<_>>(),
+                [0x0042_005c, 0x0042_0093, 0x0042_0079],
+                "the producer carries Operation, Unique Batch Item ID, and Request Payload"
+            );
+            assert!(batch_item.children()[0].with_value(
+                |value| matches!(value, ValueView::Enumeration(operation) if *operation == 1),
+            ));
+            assert!(batch_item.children()[1].with_value(
+                |value| matches!(value, ValueView::ByteString(id) if id == b"item-0"),
+            ));
+            batch_item.children()[2].with_value(|value| {
+                let ValueView::Structure(payload) = value else {
+                    panic!("the producer Request Payload is a Structure");
+                };
+                assert_eq!(
+                    payload.children().iter().map(|item| item.tag().raw()).collect::<Vec<_>>(),
+                    [0x0042_0057, 0x0042_0125],
+                    "the producer requests a Symmetric Key with an empty Attributes structure"
+                );
+                assert!(payload.children()[0].with_value(
+                    |value| matches!(value, ValueView::Enumeration(object_type) if *object_type == 2),
+                ));
+                assert!(payload.children()[1].with_value(
+                    |value| matches!(value, ValueView::Structure(attributes) if attributes.children().is_empty()),
+                ));
+            });
+        });
+        for (index, (actual, expected)) in batch_items[1..].iter().zip(EXPECTED).enumerate() {
+            let batch_item_index = index + 1;
+            actual.with_value(|value| {
+                let ValueView::Structure(batch_item) = value else {
+                    panic!("builder batch item {batch_item_index} is a Structure");
+                };
+                assert_eq!(
+                    batch_item.children().iter().map(|item| item.tag().raw()).collect::<Vec<_>>(),
+                    [0x0042_005c, 0x0042_0093, 0x0042_0079],
+                    "builder batch item {batch_item_index} includes its unique batch ID"
+                );
+                let operation_matches = batch_item.children()[0].with_value(|value| {
+                    matches!(value, ValueView::Enumeration(operation) if *operation == expected.operation)
+                });
+                assert!(operation_matches, "builder batch item {batch_item_index} carries the expected operation");
+                let expected_batch_item_id = format!("item-{}", index + 1);
+                assert!(batch_item.children()[1].with_value(
+                    |value| matches!(value, ValueView::ByteString(id) if id == expected_batch_item_id.as_bytes()),
+                ), "builder batch item {batch_item_index} carries its exact unique batch ID");
+                batch_item.children()[2].with_value(|value| {
+                    let ValueView::Structure(payload) = value else {
+                        panic!("builder batch item {batch_item_index} Request Payload is a Structure");
+                    };
+                    assert_eq!(payload.children().len(), expected.fields.len());
+                    let tags = payload.children().iter().map(|item| item.tag().raw()).collect::<Vec<_>>();
+                    let expected_tags = expected.fields.iter().map(|field| field.tag).collect::<Vec<_>>();
+                    assert_eq!(tags, expected_tags, "builder batch item {batch_item_index} preserves payload order and presence");
+                    for (field_index, (actual, expected_field)) in
+                        payload.children().iter().zip(expected.fields).enumerate()
+                    {
+                        let matches_value = actual.with_value(|value| match (value, expected_field.value) {
+                            (ValueView::TextString(actual), V::Text(expected)) => actual == expected,
+                            (ValueView::Integer(actual), V::Integer(expected)) => *actual == expected,
+                            (ValueView::LongInteger(actual), V::LongInteger(expected)) => *actual == expected,
+                            (ValueView::Enumeration(actual), V::Enumeration(expected)) => *actual == expected,
+                            (ValueView::Interval(actual), V::Interval(expected)) => *actual == expected,
+                            _ => false,
+                        });
+                        assert!(matches_value, "builder batch item {batch_item_index} field {field_index} has its exact TTLV value and type");
+                    }
+                });
+            });
+        }
+    });
+}
+
+
 
 fn c_cancel_request_issue(encoded: &[u8], expected_correlation: &[u8]) -> &'static str {
     const BATCH_ITEM: u32 = 0x0042_000f;

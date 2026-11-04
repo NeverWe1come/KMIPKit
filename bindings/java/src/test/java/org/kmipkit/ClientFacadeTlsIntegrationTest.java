@@ -98,6 +98,157 @@ final class ClientFacadeTlsIntegrationTest {
     @TempDir
     Path temporaryDirectory;
 
+    // OASIS KMIP v2.1 §6.1.7 Tables 183–185; §6.1.19 Tables 220–222;
+    // §6.1.18 Tables 217–219; §6.1.46 Tables 305–307; §6.1.23 Tables 232–234.
+    @Test
+    void checkGetExportRekeyAndUsageAllocationBuildersEncodeValuesAndOmissionsOverMtls()
+            throws Exception {
+        byte[] serverCertificatePem = testFixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = testFixture("server-key.pem");
+        byte[] clientCertificatePem = testFixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = testFixture("client-key.pem");
+        X509Certificate clientCertificate = testCertificate(clientCertificatePem);
+        SSLServerSocket listener = deterministicMtlsListener(
+                serverCertificatePem, serverPrivateKeyPem, clientCertificate);
+        FutureTask<byte[]> peer = peerThatClosesAfterOneRequest(listener);
+        Thread peerThread = new Thread(peer, "kmipkit-java-request-builder-wire-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        byte[] request;
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityPem(new byte[][] {clientCertificatePem}, clientPrivateKeyPem)
+                        .trustCertificatesPem(new byte[][] {serverCertificatePem})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                        .build();
+                Client client = Client.create(extensions, transport);
+                ClientBatch batch = ClientBatch.create().ordered(true);
+                TtlvStructure createAttributes = TtlvStructure.create()) {
+            batch.add(ClientBatchItem.create(2L, createAttributes, null)
+                    .withUniqueBatchItemId(uniqueBatchItemId(0)));
+            batch.add(ClientBatchItem.check(
+                    UniqueIdentifier.textString("check-text"), 3L, 2, 60L)
+                    .withUniqueBatchItemId(uniqueBatchItemId(1)));
+            batch.add(ClientBatchItem.check(UniqueIdentifier.integer(-7), null, null, null)
+                    .withUniqueBatchItemId(uniqueBatchItemId(2)));
+            batch.add(ClientBatchItem.get(
+                    UniqueIdentifier.textString("get-text"), 0xf1234567L,
+                    0xf1234568L, 0xf1234569L, null)
+                    .withUniqueBatchItemId(uniqueBatchItemId(3)));
+            batch.add(ClientBatchItem.get(UniqueIdentifier.integer(-7), null, null, null, null)
+                    .withUniqueBatchItemId(uniqueBatchItemId(4)));
+            batch.add(ClientBatchItem.export(
+                    UniqueIdentifier.textString("export-text"), 0xfedcba98L,
+                    0xfedcba99L, 0xfedcba9aL, null)
+                    .withUniqueBatchItemId(uniqueBatchItemId(5)));
+            batch.add(ClientBatchItem.export(UniqueIdentifier.integer(-7), null, null, null, null)
+                    .withUniqueBatchItemId(uniqueBatchItemId(6)));
+            batch.add(ClientBatchItem.rekey(
+                    UniqueIdentifier.textString("rekey-text"), 60L, null, null)
+                    .withUniqueBatchItemId(uniqueBatchItemId(7)));
+            batch.add(ClientBatchItem.rekey(UniqueIdentifier.integer(-7), null, null, null)
+                    .withUniqueBatchItemId(uniqueBatchItemId(8)));
+            batch.add(ClientBatchItem.getUsageAllocation(
+                    UniqueIdentifier.textString("allocation-text"), 5L)
+                    .withUniqueBatchItemId(uniqueBatchItemId(9)));
+            batch.add(ClientBatchItem.getUsageAllocation(null, 7L)
+                    .withUniqueBatchItemId(uniqueBatchItemId(10)));
+            assertThrows(TransportException.class,
+                    () -> client.execute(batch, CodecLimits.defaults()));
+            request = peer.get(12, TimeUnit.SECONDS);
+        } finally {
+            listener.close();
+        }
+
+        ByteArrayOutputStream expectedBatchItems = new ByteArrayOutputStream();
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 1),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(0)),
+                structure(0x420079,
+                        enumeration(0x420057, 2),
+                        structure(0x420125))));
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 9),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(1)),
+                structure(0x420079,
+                        item(0x420094, TtlvItemType.TextString.code(),
+                                "check-text".getBytes(StandardCharsets.UTF_8)),
+                        item(0x420096, TtlvItemType.LongInteger.code(), longInteger(3)),
+                        item(0x42002c, TtlvItemType.Integer.code(), integer(2)),
+                        item(0x420049, TtlvItemType.Interval.code(), integer(60)))));
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 9),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(2)),
+                structure(0x420079, item(0x420094, TtlvItemType.Integer.code(), integer(-7)))));
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 10),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(3)),
+                structure(0x420079,
+                        item(0x420094, TtlvItemType.TextString.code(),
+                                "get-text".getBytes(StandardCharsets.UTF_8)),
+                        enumeration(0x420042, 0xf1234567),
+                        enumeration(0x4200f8, 0xf1234568),
+                        enumeration(0x420041, 0xf1234569))));
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 10),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(4)),
+                structure(0x420079, item(0x420094, TtlvItemType.Integer.code(), integer(-7)))));
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 43),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(5)),
+                structure(0x420079,
+                        item(0x420094, TtlvItemType.TextString.code(),
+                                "export-text".getBytes(StandardCharsets.UTF_8)),
+                        enumeration(0x420042, 0xfedcba98),
+                        enumeration(0x4200f8, 0xfedcba99),
+                        enumeration(0x420041, 0xfedcba9a))));
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 43),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(6)),
+                structure(0x420079, item(0x420094, TtlvItemType.Integer.code(), integer(-7)))));
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 4),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(7)),
+                structure(0x420079,
+                        item(0x420094, TtlvItemType.TextString.code(),
+                                "rekey-text".getBytes(StandardCharsets.UTF_8)),
+                        item(0x420058, TtlvItemType.Interval.code(), integer(60)))));
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 4),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(8)),
+                structure(0x420079,
+                        item(0x420094, TtlvItemType.Integer.code(), integer(-7)))));
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 17),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(9)),
+                structure(0x420079,
+                        item(0x420094, TtlvItemType.TextString.code(),
+                                "allocation-text".getBytes(StandardCharsets.UTF_8)),
+                        item(0x420096, TtlvItemType.LongInteger.code(), longInteger(5)))));
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 17),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(10)),
+                structure(0x420079,
+                        item(0x420096, TtlvItemType.LongInteger.code(), longInteger(7)))));
+
+        assertContains(request, expectedBatchItems.toByteArray());
+        assertContains(request, item(0x420010, TtlvItemType.Boolean.code(),
+                new byte[] {0, 0, 0, 0, 0, 0, 0, 1}));
+        assertEquals(2, countOccurrences(request, enumeration(0x42005c, 9)));
+        assertEquals(2, countOccurrences(request, enumeration(0x42005c, 10)));
+        assertEquals(2, countOccurrences(request, enumeration(0x42005c, 43)));
+        assertEquals(2, countOccurrences(request, enumeration(0x42005c, 4)));
+        assertEquals(2, countOccurrences(request, enumeration(0x42005c, 17)));
+        assertTrue(peer.isDone());
+    }
+
     @Test
     void nativeTransportConfigRejectsAggregateMaterialBeforeCopyingAcrossGroups() throws Exception {
         Path keyStorePath = temporaryDirectory.resolve("jni-input-budget.p12");

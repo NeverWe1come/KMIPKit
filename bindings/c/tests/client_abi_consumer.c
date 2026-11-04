@@ -3720,9 +3720,137 @@ cleanup:
     return result;
 }
 
+static void set_text_identifier(
+    kmipkit_unique_identifier_v1_t *identifier, const uint8_t *text, uint64_t text_length) {
+    identifier->struct_size = (uint32_t)sizeof(*identifier);
+    identifier->abi_version = 1;
+    identifier->kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    identifier->text_data = text;
+    identifier->text_length = text_length;
+}
+
+static void set_integer_identifier(
+    kmipkit_unique_identifier_v1_t *identifier, int64_t value) {
+    identifier->struct_size = (uint32_t)sizeof(*identifier);
+    identifier->abi_version = 1;
+    identifier->kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER;
+    identifier->integer_value = value;
+}
+
+static int append_request_builder_item(
+    kmipkit_client_batch_t *batch, kmipkit_client_batch_item_t **item,
+    const uint8_t *batch_item_id, uint64_t batch_item_id_length) {
+    kmipkit_client_batch_item_t *identified_item = 0;
+    if (*item == 0 ||
+        kmipkit_client_batch_item_with_unique_batch_item_id(
+            *item, batch_item_id, batch_item_id_length, &identified_item) != 0 ||
+        identified_item == 0) {
+        kmipkit_client_batch_item_release(*item);
+        *item = 0;
+        return 0;
+    }
+    kmipkit_client_batch_item_release(*item);
+    *item = identified_item;
+    if (kmipkit_client_batch_add_item(batch, item) != 0 || *item != 0) {
+        kmipkit_client_batch_item_release(*item);
+        *item = 0;
+        return 0;
+    }
+    return 1;
+}
+
+static int execute_request_builders_wire_from_c(
+    kmipkit_client_t *client, kmipkit_codec_limits_t *limits) {
+    static const uint8_t check_text[] = "check-text";
+    static const uint8_t get_text[] = "get-text";
+    static const uint8_t export_text[] = "export-text";
+    static const uint8_t rekey_text[] = "rekey-text";
+    static const uint8_t allocation_text[] = "allocation-text";
+    static const uint8_t batch_item_ids[11][8] = {
+        "item-0", "item-1", "item-2", "item-3", "item-4", "item-5",
+        "item-6", "item-7", "item-8", "item-9", "item-10"};
+    kmipkit_unique_identifier_v1_t identifiers[6] = {{0}};
+    kmipkit_client_batch_t *batch = 0;
+    kmipkit_client_batch_response_t *response = 0;
+    kmipkit_client_batch_item_t *item = 0;
+    kmipkit_ttlv_structure_t *create_attributes = 0;
+    int result = 21;
+
+    set_text_identifier(&identifiers[0], check_text, sizeof(check_text) - 1);
+    set_text_identifier(&identifiers[1], get_text, sizeof(get_text) - 1);
+    set_text_identifier(&identifiers[2], export_text, sizeof(export_text) - 1);
+    set_text_identifier(&identifiers[3], rekey_text, sizeof(rekey_text) - 1);
+    set_integer_identifier(&identifiers[4], -7);
+    set_text_identifier(&identifiers[5], allocation_text, sizeof(allocation_text) - 1);
+
+    if (kmipkit_client_batch_create(&batch) != 0 || batch == 0 ||
+        kmipkit_client_batch_set_order_option(batch, 1) != 0 ||
+        kmipkit_ttlv_structure_create(&create_attributes) != 0 ||
+        kmipkit_client_batch_item_create(2, create_attributes, 0, &item) != 0 ||
+        !append_request_builder_item(
+            batch, &item, batch_item_ids[0], strlen((const char *)batch_item_ids[0]))) {
+        goto cleanup;
+    }
+    kmipkit_ttlv_structure_release(create_attributes);
+    create_attributes = 0;
+
+    if (kmipkit_client_batch_item_check(
+            &identifiers[0], 1, 3, 1, 2, 1, 60, &item) != 0 ||
+        !append_request_builder_item(
+            batch, &item, batch_item_ids[1], strlen((const char *)batch_item_ids[1])) ||
+        kmipkit_client_batch_item_check(&identifiers[4], 0, 0, 0, 0, 0, 0, &item) != 0 ||
+        !append_request_builder_item(
+            batch, &item, batch_item_ids[2], strlen((const char *)batch_item_ids[2])) ||
+        kmipkit_client_batch_item_get(
+            &identifiers[1], 1, UINT32_C(0xf1234567), 1, UINT32_C(0xf1234568),
+            1, UINT32_C(0xf1234569), 0, &item) != 0 ||
+        !append_request_builder_item(
+            batch, &item, batch_item_ids[3], strlen((const char *)batch_item_ids[3])) ||
+        kmipkit_client_batch_item_get(&identifiers[4], 0, 0, 0, 0, 0, 0, 0, &item) != 0 ||
+        !append_request_builder_item(
+            batch, &item, batch_item_ids[4], strlen((const char *)batch_item_ids[4])) ||
+        kmipkit_client_batch_item_export(
+            &identifiers[2], 1, UINT32_C(0xfedcba98), 1, UINT32_C(0xfedcba99),
+            1, UINT32_C(0xfedcba9a), 0, &item) != 0 ||
+        !append_request_builder_item(
+            batch, &item, batch_item_ids[5], strlen((const char *)batch_item_ids[5])) ||
+        kmipkit_client_batch_item_export(&identifiers[4], 0, 0, 0, 0, 0, 0, 0, &item) != 0 ||
+        !append_request_builder_item(
+            batch, &item, batch_item_ids[6], strlen((const char *)batch_item_ids[6])) ||
+        kmipkit_client_batch_item_rekey(
+            &identifiers[3], 1, 60, 0, 0, &item) != 0 ||
+        !append_request_builder_item(
+            batch, &item, batch_item_ids[7], strlen((const char *)batch_item_ids[7])) ||
+        kmipkit_client_batch_item_rekey(
+            &identifiers[4], 0, 0, 0, 0, &item) != 0 ||
+        !append_request_builder_item(
+            batch, &item, batch_item_ids[8], strlen((const char *)batch_item_ids[8])) ||
+        kmipkit_client_batch_item_get_usage_allocation(
+            &identifiers[5], 5, &item) != 0 ||
+        !append_request_builder_item(
+            batch, &item, batch_item_ids[9], strlen((const char *)batch_item_ids[9])) ||
+        kmipkit_client_batch_item_get_usage_allocation(
+            0, 7, &item) != 0 ||
+        !append_request_builder_item(
+            batch, &item, batch_item_ids[10], strlen((const char *)batch_item_ids[10]))) {
+        goto cleanup;
+    }
+
+    /* The fake peer closes after capturing the request; a transport error is expected. */
+    result = kmipkit_client_execute(client, &batch, limits, &response) == 0 ? 22 : 0;
+
+cleanup:
+    kmipkit_client_batch_response_release(response);
+    kmipkit_client_batch_release(batch);
+    kmipkit_client_batch_item_release(item);
+    kmipkit_ttlv_structure_release(create_attributes);
+    return result;
+}
+
 static int execute_public_tls_request(
     int argc, char **argv, kmipkit_codec_limits_t *limits,
-    int rekey_key_pair_only, int create_split_key_fixture_only, int cancel_payload_only) {
+    int rekey_key_pair_only, int create_split_key_fixture_only, int cancel_payload_only,
+    int request_builders_wire_only) {
     static const uint8_t host[] = "127.0.0.1";
     static const uint8_t server_name[] = "server.kmipkit.test";
     static const uint32_t expected_statuses[] = {
@@ -3795,7 +3923,8 @@ static int execute_public_tls_request(
     if (port_end == argv[5] || *port_end != '\0' || port == 0 || port > 65535UL) {
         return 2;
     }
-    if (!rekey_key_pair_only && !create_split_key_fixture_only && !cancel_payload_only) {
+    if (!rekey_key_pair_only && !create_split_key_fixture_only && !cancel_payload_only &&
+        !request_builders_wire_only) {
         for (uint64_t index = 0; index < UINT64_C(3); ++index) {
             uint64_t parsed_status = 0;
             if (!parse_fixture_hex(
@@ -3889,6 +4018,7 @@ static int execute_public_tls_request(
     }
     transport = 0; /* consumed by client */
     if (!rekey_key_pair_only && !create_split_key_fixture_only && !cancel_payload_only &&
+        !request_builders_wire_only &&
         (!baseline_profile_fails_closed_before_c_transport_write(client, limits) ||
          !unknown_profile_fails_closed_before_c_transport_write(client, limits))) {
         result = 29;
@@ -3918,6 +4048,10 @@ static int execute_public_tls_request(
         }
         result = execute_cancel_payload_request_from_c(
             client, limits, correlation, correlation_length);
+        goto cleanup;
+    }
+    if (request_builders_wire_only) {
+        result = execute_request_builders_wire_from_c(client, limits);
         goto cleanup;
     }
     if (kmipkit_client_batch_create(&batch) != 0) {
@@ -6751,6 +6885,7 @@ int kmipkit_client_abi_c_consumer_execute_tls(
     int rekey_key_pair_only = 0;
     int create_split_key_fixture_only = 0;
     int cancel_payload_only = 0;
+    int request_builders_wire_only = 0;
     if (argv == 0 || limits == 0) {
         return 22;
     }
@@ -6765,11 +6900,15 @@ int kmipkit_client_abi_c_consumer_execute_tls(
     } else if (argc == 8 && argv[6] != 0 && argv[7] != 0 &&
                strcmp(argv[6], "cancel-payload") == 0) {
         cancel_payload_only = 1;
+    } else if (argc == 7 && argv[6] != 0 &&
+               strcmp(argv[6], "request-builders-wire") == 0) {
+        request_builders_wire_only = 1;
     } else if (argc < 16) {
         return 22;
     }
     return execute_public_tls_request(
-        argc, argv, limits, rekey_key_pair_only, create_split_key_fixture_only, cancel_payload_only);
+        argc, argv, limits, rekey_key_pair_only, create_split_key_fixture_only, cancel_payload_only,
+        request_builders_wire_only);
 }
 
 static int request_batch_item_unique_id_accessor_preserves_presence_and_bytes(void) {
