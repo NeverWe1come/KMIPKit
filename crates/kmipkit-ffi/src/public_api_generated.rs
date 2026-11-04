@@ -9508,6 +9508,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::Pkcs11Request",
     ),
     (
+        "rust-observed-dc0d9f8db2cc819081a5",
+        "rust-kmipkit-client",
+        "kmipkit_client::Pkcs11Request::into_ttlv_payload",
+    ),
+    (
         "rust-observed-394218a1365a78a151c9",
         "rust-kmipkit-client",
         "kmipkit_client::Pkcs11Request::new",
@@ -11216,6 +11221,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-06388da385cbdb21e069",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::Pkcs11Request",
+    ),
+    (
+        "rust-observed-0ca4edbce90ed942c680",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Pkcs11Request::into_ttlv_payload",
     ),
     (
         "rust-observed-d01612e554e6a0987fb1",
