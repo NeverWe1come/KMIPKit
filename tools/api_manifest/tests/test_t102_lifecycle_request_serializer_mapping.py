@@ -139,40 +139,44 @@ class T102LifecycleRequestSerializerMappingTests(unittest.TestCase):
             if row["operationId"] == operation_id
         )
 
+    def _assert_operation_mapping(self, operation_spec: dict[str, object]) -> None:
+        builder = self.by_package_name[("c-kmipkit", operation_spec["builder"])]
+        operation = self._operation_row(operation_spec["capability"])
+        declaration_id, rust_name, reference_name = operation_spec["target"]
+        declaration = self.declarations[declaration_id]
+        reference = self.by_package_name[("rust-kmipkit-protocol", reference_name)]
+
+        self.assertEqual(operation_spec["name"], operation["name"])
+        self.assertEqual(operation_spec["capability"], builder["capabilityId"])
+        self.assertEqual(OWNER, builder["approvalSource"]["path"])
+        self.assertEqual(rust_name, declaration["exportName"])
+        self.assertEqual("verified", declaration["declarationState"])
+        self.assertNotIn("candidateSpecId", declaration)
+        self.assertNotIn("blockedReason", declaration)
+        self.assertEqual("associated-item", declaration["kind"])
+        self.assertEqual(operation_spec["capability"], declaration["capabilityId"])
+        self.assertEqual(builder["approvalSource"], declaration["approvalSource"])
+        self.assertEqual(reference["requirementIds"], declaration["requirementIds"])
+
+        expected_mappings = dict(builder["languageMappings"])
+        expected_mappings["rust"] = {
+            "packageId": "rust-kmipkit-protocol",
+            "name": rust_name,
+        }
+        self.assertEqual(expected_mappings, declaration["languageMappings"])
+        self.assertEqual("four-language", declaration["parityScope"])
+        self.assertTrue(
+            set(builder["parityEvidenceIds"])
+            <= set(declaration["parityEvidenceIds"])
+        )
+        self.assertIn(PARITY_TEST_EVIDENCE_ID, declaration["parityEvidenceIds"])
+        self.assertIn(declaration_id, operation["declarations"]["rust"])
+        self.assertIn(PARITY_TEST_EVIDENCE_ID, operation["parityEvidenceIds"])
+
     def test_eight_lifecycle_request_serializers_map_to_existing_capabilities(self) -> None:
         for operation_name, operation_spec in OPERATIONS.items():
-            builder = self.by_package_name[("c-kmipkit", operation_spec["builder"])]
-            operation = self._operation_row(operation_spec["capability"])
             with self.subTest(operation=operation_name):
-                self.assertEqual(operation_spec["name"], operation["name"])
-                self.assertEqual(operation_spec["capability"], builder["capabilityId"])
-                self.assertEqual(OWNER, builder["approvalSource"]["path"])
-                declaration_id, rust_name, reference_name = operation_spec["target"]
-                declaration = self.declarations[declaration_id]
-                reference = self.by_package_name[("rust-kmipkit-protocol", reference_name)]
-                self.assertEqual(rust_name, declaration["exportName"])
-                self.assertEqual("verified", declaration["declarationState"])
-                self.assertNotIn("candidateSpecId", declaration)
-                self.assertNotIn("blockedReason", declaration)
-                self.assertEqual("associated-item", declaration["kind"])
-                self.assertEqual(operation_spec["capability"], declaration["capabilityId"])
-                self.assertEqual(builder["approvalSource"], declaration["approvalSource"])
-                self.assertEqual(reference["requirementIds"], declaration["requirementIds"])
-
-                expected_mappings = dict(builder["languageMappings"])
-                expected_mappings["rust"] = {
-                    "packageId": "rust-kmipkit-protocol",
-                    "name": rust_name,
-                }
-                self.assertEqual(expected_mappings, declaration["languageMappings"])
-                self.assertEqual("four-language", declaration["parityScope"])
-                self.assertTrue(
-                    set(builder["parityEvidenceIds"])
-                    <= set(declaration["parityEvidenceIds"])
-                )
-                self.assertIn(PARITY_TEST_EVIDENCE_ID, declaration["parityEvidenceIds"])
-                self.assertIn(declaration_id, operation["declarations"]["rust"])
-                self.assertIn(PARITY_TEST_EVIDENCE_ID, operation["parityEvidenceIds"])
+                self._assert_operation_mapping(operation_spec)
 
     def test_mapping_cites_the_approved_owner_and_exact_oasis_tables(self) -> None:
         specification = (ROOT / OWNER).read_text(encoding="utf-8")
