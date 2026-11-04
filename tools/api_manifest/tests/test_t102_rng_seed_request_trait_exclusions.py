@@ -129,8 +129,9 @@ class T102RngSeedRequestTraitExclusionTests(unittest.TestCase):
         verified = {
             "kmipkit_protocol::RngSeedRequest",
             "kmipkit_protocol::RngSeedRequest::new",
+            "kmipkit_protocol::RngSeedRequest::to_ttlv_payload",
         }
-        blocked = {"kmipkit_protocol::RngSeedRequest::to_ttlv_payload"}
+        blocked: set[str] = set()
         self.assertEqual(set(protocol_rows), verified | blocked)
         self.assertEqual(
             {name for name, row in protocol_rows.items() if row["declarationState"] == "verified"},
@@ -167,8 +168,7 @@ class T102RngSeedRequestTraitExclusionTests(unittest.TestCase):
         self.assertEqual(set(root_rows), expected_root_declarations)
         self.assertEqual(root_rows["kmipkit::RngSeedRequest"]["declarationState"], "verified")
         self.assertEqual(root_rows["kmipkit::RngSeedRequest::new"]["declarationState"], "verified")
-        self.assertEqual(root_rows["kmipkit::RngSeedRequest::to_ttlv_payload"]["declarationState"], "blocked")
-        self.assertEqual(root_rows["kmipkit::RngSeedRequest::to_ttlv_payload"].get("candidateSpecId"), "KMIPKIT-0043")
+        self.assertEqual(root_rows["kmipkit::RngSeedRequest::to_ttlv_payload"]["declarationState"], "verified")
         expected_root_traits = {
             name.replace("<kmipkit_protocol::RngSeedRequest", "<kmipkit::RngSeedRequest", 1)
             for name in EXPECTED_PROTOCOL_TRAIT_EXPORTS

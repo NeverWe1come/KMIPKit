@@ -122,8 +122,8 @@ class T102RngRetrieveRequestTraitExclusionTests(unittest.TestCase):
         self.assertEqual(protocol_rows, {
             PROTOCOL_TYPE: "verified",
             f"{PROTOCOL_TYPE}::new": "verified",
-            f"{PROTOCOL_TYPE}::data_length": "blocked",
-            f"{PROTOCOL_TYPE}::to_ttlv_payload": "blocked",
+            f"{PROTOCOL_TYPE}::data_length": "verified",
+            f"{PROTOCOL_TYPE}::to_ttlv_payload": "verified",
         })
 
         expected_root_traits = {path.replace(PROTOCOL_TYPE, ROOT_TYPE, 1) for path in EXPECTED}
@@ -144,7 +144,7 @@ class T102RngRetrieveRequestTraitExclusionTests(unittest.TestCase):
         self.assertEqual(root_rows[ROOT_TYPE], "verified")
         self.assertEqual(root_rows[f"{ROOT_TYPE}::new"], "verified")
         self.assertEqual(root_rows[f"{ROOT_TYPE}::data_length"], "blocked")
-        self.assertEqual(root_rows[f"{ROOT_TYPE}::to_ttlv_payload"], "blocked")
+        self.assertEqual(root_rows[f"{ROOT_TYPE}::to_ttlv_payload"], "verified")
 
         root_exclusions = {
             row["exportName"]: row

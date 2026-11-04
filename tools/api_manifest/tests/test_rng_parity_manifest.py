@@ -10,6 +10,17 @@ ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 OWNER_SPEC = "specs/027-rng-operations/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
+REQUEST_RUST_MAPPINGS = {
+    "RngRetrieve": {
+        "kmipkit::RngRetrieveRequest::to_ttlv_payload",
+        "kmipkit_protocol::RngRetrieveRequest::data_length",
+        "kmipkit_protocol::RngRetrieveRequest::to_ttlv_payload",
+    },
+    "RngSeed": {
+        "kmipkit::RngSeedRequest::to_ttlv_payload",
+        "kmipkit_protocol::RngSeedRequest::to_ttlv_payload",
+    },
+}
 OPERATIONS = {
     "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE": {
         "name": "RNG Retrieve",
@@ -22,15 +33,12 @@ OPERATIONS = {
         "mappings": {
             "rust": {
                 "kmipkit_client::Client::rng_retrieve",
-                "kmipkit::RngRetrieveRequest::to_ttlv_payload",
                 "kmipkit_protocol::RngRetrieveRequest::new",
-                "kmipkit_protocol::RngRetrieveRequest::data_length",
-                "kmipkit_protocol::RngRetrieveRequest::to_ttlv_payload",
                 "kmipkit_protocol::RngRetrieveResponse::try_from_pending_response_item",
                 "kmipkit_protocol::RngRetrieveResponse::data",
                 "kmipkit_protocol::RngRetrieveResponse::with_ttlv",
                 "kmipkit::RngRetrieveResponse::try_from_pending_response_item",
-            },
+            } | REQUEST_RUST_MAPPINGS["RngRetrieve"],
             "c": {
                 "kmipkit_client_batch_item_rng_retrieve",
                 "kmipkit_client_batch_item_response_rng_retrieve",
@@ -61,14 +69,12 @@ OPERATIONS = {
         "mappings": {
             "rust": {
                 "kmipkit_client::Client::rng_seed",
-                "kmipkit::RngSeedRequest::to_ttlv_payload",
                 "kmipkit_protocol::RngSeedRequest::new",
-                "kmipkit_protocol::RngSeedRequest::to_ttlv_payload",
                 "kmipkit_protocol::RngSeedResponse::try_from_pending_response_item",
                 "kmipkit_protocol::RngSeedResponse::data_length",
                 "kmipkit_protocol::RngSeedResponse::with_ttlv",
                 "kmipkit::RngSeedResponse::try_from_pending_response_item",
-            },
+            } | REQUEST_RUST_MAPPINGS["RngSeed"],
             "c": {
                 "kmipkit_client_batch_item_rng_seed",
                 "kmipkit_client_batch_item_response_rng_seed",
