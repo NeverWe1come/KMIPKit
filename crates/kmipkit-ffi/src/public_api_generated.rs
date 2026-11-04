@@ -7653,6 +7653,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::RngRetrieveRequest",
     ),
     (
+        "rust-observed-8d05cc2232f54e35deb9",
+        "rust-kmipkit",
+        "kmipkit::RngRetrieveRequest::data_length",
+    ),
+    (
         "rust-observed-68192f268559f21a900c",
         "rust-kmipkit",
         "kmipkit::RngRetrieveRequest::new",
