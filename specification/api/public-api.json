@@ -66619,7 +66619,6 @@
         }
       }
     },
-
     {
       "declarationId": "java-observed-af3ebee89c44b6509a5c",
       "packageId": "java-kmipkit",
@@ -66664,7 +66663,6 @@
         }
       }
     },
-
     {
       "declarationId": "java-observed-ff345b808a6bde18d992",
       "packageId": "java-kmipkit",
@@ -67176,7 +67174,6 @@
         }
       }
     },
-
     {
       "declarationId": "java-observed-c68c4b51e0df8de65534",
       "packageId": "java-kmipkit",
@@ -67220,7 +67217,6 @@
         }
       }
     },
-
     {
       "declarationId": "java-observed-4b9b36a6e7629e7b442e",
       "packageId": "java-kmipkit",
@@ -86347,62 +86343,6 @@
       ]
     },
     {
-      "declarationId": "rust-observed-105154cf933c88d0097a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "type",
-      "exportName": "kmipkit_protocol::CryptographicOperationResponseContext",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-d61e7db174296bffc941",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "variant",
-      "exportName": "kmipkit_protocol::CryptographicOperationResponseContext::SinglePart",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-c7f9909f0622669a2532",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "variant",
-      "exportName": "kmipkit_protocol::CryptographicOperationResponseContext::MultipartNonFinal",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-4733cafd49358dd11b06",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "variant",
-      "exportName": "kmipkit_protocol::CryptographicOperationResponseContext::MultipartFinal",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
       "declarationId": "rust-observed-a3ec2f8705724f6d8611",
       "packageId": "rust-kmipkit-protocol",
       "kind": "type",
@@ -86957,20 +86897,6 @@
         "specs/028-diagnostics-interop/traceability.md",
         "tools/api_manifest/tests/test_validate_parity_manifest.py"
       ]
-    },
-    {
-      "declarationId": "rust-observed-cea44457a95c424fbf76",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "type",
-      "exportName": "kmipkit_protocol::VerificationResponseContext",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
       "declarationId": "rust-observed-8ca41d7c884a9320716f",
@@ -147540,7 +147466,7 @@
         }
       }
     },
-        {
+    {
       "declarationId": "rust-observed-6058f94568d4e15fa53e",
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
@@ -148903,7 +148829,7 @@
         }
       }
     },
-        {
+    {
       "declarationId": "rust-observed-9f1aa2332742556e5b24",
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
@@ -150917,7 +150843,7 @@
         }
       }
     },
-        {
+    {
       "declarationId": "rust-observed-96756151b5761cf5ed38",
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
@@ -152035,7 +151961,7 @@
         }
       }
     },
-        {
+    {
       "declarationId": "rust-observed-c16d06347ca5d62a3686",
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
@@ -154554,7 +154480,7 @@
         }
       }
     },
-        {
+    {
       "declarationId": "rust-observed-480a7b8eada6ab8078aa",
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
@@ -155526,7 +155452,7 @@
         }
       }
     },
-        {
+    {
       "declarationId": "rust-observed-406f1ab5b147b43150b0",
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
@@ -176910,7 +176836,7 @@
         }
       }
     },
-        {
+    {
       "declarationId": "rust-observed-dc0d9f8db2cc819081a5",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
@@ -187026,7 +186952,7 @@
         }
       }
     },
-        {
+    {
       "declarationId": "rust-observed-923757de0192b8de546c",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
@@ -191445,7 +191371,7 @@
         "crates/kmipkit-protocol/tests/unit/get_constraints_tests.rs"
       ]
     },
-        {
+    {
       "declarationId": "rust-observed-0acd1d324fb7e26bfe6e",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
@@ -202663,7 +202589,7 @@
         }
       }
     },
-        {
+    {
       "declarationId": "rust-observed-ab8fa6fdfc3d8c9d625b",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
@@ -203781,7 +203707,7 @@
         }
       }
     },
-        {
+    {
       "declarationId": "rust-observed-e3c50df8a6beb061cb4c",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
@@ -206258,7 +206184,7 @@
         }
       }
     },
-        {
+    {
       "declarationId": "rust-observed-0ca4edbce90ed942c680",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
@@ -217576,7 +217502,7 @@
         }
       }
     },
-        {
+    {
       "declarationId": "rust-observed-c7d39ab287f72cc407c3",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
@@ -218548,7 +218474,7 @@
         }
       }
     },
-        {
+    {
       "declarationId": "rust-observed-d3c9f0f386e25d092f21",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
@@ -221975,48 +221901,6 @@
         "specs/028-diagnostics-interop/traceability.md",
         "tools/api_manifest/tests/test_validate_parity_manifest.py"
       ]
-    },
-    {
-      "declarationId": "rust-observed-4978456989659fff3b83",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "variant",
-      "exportName": "kmipkit_protocol::VerificationResponseContext::MultipartFinal",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-523db7d4167b1d768b5b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "variant",
-      "exportName": "kmipkit_protocol::VerificationResponseContext::MultipartNonFinal",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-fea788ac7ff4e43be1be",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "variant",
-      "exportName": "kmipkit_protocol::VerificationResponseContext::SinglePart",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
       "declarationId": "rust-observed-4c6d6a9625864ba8b0a4",
@@ -295885,7 +295769,7 @@
           }
         }
     },
-          {
+    {
         "declarationId": "rust-observed-588ab2af9c9ed62d1df9",
         "packageId": "rust-kmipkit",
         "kind": "type",
@@ -295926,7 +295810,7 @@
           }
         }
       },
-          {
+    {
         "declarationId": "rust-observed-9f26ca2a4bf9bb8500a7",
         "packageId": "rust-kmipkit",
         "kind": "associated-item",
@@ -295967,7 +295851,7 @@
           }
         }
       },
-          {
+    {
         "declarationId": "rust-observed-9421ac57a21076faab3c",
         "packageId": "rust-kmipkit",
         "kind": "associated-item",
@@ -296008,7 +295892,7 @@
           }
         }
       },
-          {
+    {
         "declarationId": "rust-observed-8e629fe63c5a868cffb0",
         "packageId": "rust-kmipkit",
         "kind": "associated-item",
@@ -296049,7 +295933,7 @@
           }
         }
       },
-          {
+    {
         "declarationId": "rust-observed-44e976cf69128201bbf9",
         "packageId": "rust-kmipkit",
         "kind": "associated-item",
@@ -296090,7 +295974,7 @@
           }
         }
       },
-          {
+    {
         "declarationId": "rust-observed-befcb8add4d35cef17c0",
         "packageId": "rust-kmipkit",
         "kind": "associated-item",
@@ -296131,7 +296015,7 @@
           }
         }
       },
-          {
+    {
         "declarationId": "rust-observed-6c02dc52fb3facc62a81",
         "packageId": "rust-kmipkit",
         "kind": "associated-item",
@@ -296172,7 +296056,7 @@
           }
         }
       },
-          {
+    {
         "declarationId": "rust-observed-e671c2f32b4fc3d3ddbd",
         "packageId": "rust-kmipkit",
         "kind": "associated-item",
@@ -296336,7 +296220,7 @@
           }
         }
     },
-          {
+    {
         "declarationId": "rust-observed-f671976fb848774b6d2b",
         "packageId": "rust-kmipkit",
         "kind": "associated-item",
@@ -298618,7 +298502,7 @@
         }
       }
     },
-          {
+    {
         "declarationId": "rust-observed-8e28138d47369d292336",
         "packageId": "rust-kmipkit-client",
         "kind": "associated-item",
@@ -303849,7 +303733,7 @@
           }
         }
     },
-          {
+    {
         "declarationId": "rust-observed-198f4369467eb2ee9ca9",
         "packageId": "rust-kmipkit-protocol",
         "kind": "type",
@@ -303890,7 +303774,7 @@
           }
         }
       },
-          {
+    {
         "declarationId": "rust-observed-ad476ba9011ac33a1524",
         "packageId": "rust-kmipkit-protocol",
         "kind": "associated-item",
@@ -303931,7 +303815,7 @@
           }
         }
       },
-          {
+    {
         "declarationId": "rust-observed-61ee2a44a3675abd2fa9",
         "packageId": "rust-kmipkit-protocol",
         "kind": "associated-item",
@@ -303972,7 +303856,7 @@
           }
         }
       },
-          {
+    {
         "declarationId": "rust-observed-d5a66cb8a62e2b82990d",
         "packageId": "rust-kmipkit-protocol",
         "kind": "associated-item",
@@ -304013,7 +303897,7 @@
           }
         }
       },
-          {
+    {
         "declarationId": "rust-observed-0f9f8566cd89b4d4446e",
         "packageId": "rust-kmipkit-protocol",
         "kind": "associated-item",
@@ -304054,7 +303938,7 @@
           }
         }
       },
-          {
+    {
         "declarationId": "rust-observed-c73e4e5722a89fcd5b3d",
         "packageId": "rust-kmipkit-protocol",
         "kind": "associated-item",
@@ -304095,7 +303979,7 @@
           }
         }
       },
-          {
+    {
         "declarationId": "rust-observed-05559886e2313eace4fb",
         "packageId": "rust-kmipkit-protocol",
         "kind": "associated-item",
@@ -304136,7 +304020,7 @@
           }
         }
       },
-          {
+    {
         "declarationId": "rust-observed-db54d46a5888e91b89e1",
         "packageId": "rust-kmipkit-protocol",
         "kind": "associated-item",
@@ -304300,7 +304184,7 @@
           }
         }
     },
-          {
+    {
         "declarationId": "rust-observed-3b754742e2a98f054cc5",
         "packageId": "rust-kmipkit-protocol",
         "kind": "associated-item",
@@ -368662,7 +368546,7 @@
         }
       }
     },
-      {
+    {
         "declarationId": "T102:profile-validation-result:c-handle",
         "packageId": "c-kmipkit",
         "kind": "type",
@@ -368710,7 +368594,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:c-release",
         "packageId": "c-kmipkit",
         "kind": "c-symbol",
@@ -368758,7 +368642,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-                  {
+    {
         "declarationId": "T102:profile-validation-result:c-resolve",
         "packageId": "c-kmipkit",
         "kind": "c-symbol",
@@ -368833,7 +368717,7 @@
           ]
         }
       },
-            {
+    {
         "declarationId": "T102:profile-validation-result:c-profile_id_count_v1",
         "packageId": "c-kmipkit",
         "kind": "c-symbol",
@@ -368906,7 +368790,7 @@
           ]
         }
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:c-profile_id_at_v1",
         "packageId": "c-kmipkit",
         "kind": "c-symbol",
@@ -368984,7 +368868,7 @@
           ]
         }
       },
-            {
+    {
         "declarationId": "T102:profile-validation-result:c-requirement_id_count_v1",
         "packageId": "c-kmipkit",
         "kind": "c-symbol",
@@ -369057,7 +368941,7 @@
           ]
         }
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:c-requirement_id_at_v1",
         "packageId": "c-kmipkit",
         "kind": "c-symbol",
@@ -369135,7 +369019,7 @@
           ]
         }
       },
-            {
+    {
         "declarationId": "T102:profile-validation-result:c-validate_transport",
         "packageId": "c-kmipkit",
         "kind": "c-symbol",
@@ -369205,7 +369089,7 @@
           ]
         }
       },
-            {
+    {
         "declarationId": "T102:profile-validation-result:c-validate_request",
         "packageId": "c-kmipkit",
         "kind": "c-symbol",
@@ -369277,7 +369161,7 @@
           ]
         }
       },
-                  {
+    {
         "declarationId": "T102:profile-validation-result:c-validate_request_with_context",
         "packageId": "c-kmipkit",
         "kind": "c-symbol",
@@ -369357,7 +369241,7 @@
           ]
         }
       },
-            {
+    {
         "declarationId": "T102:profile-validation-result:c-validate_response",
         "packageId": "c-kmipkit",
         "kind": "c-symbol",
@@ -369435,7 +369319,7 @@
           ]
         }
       },
-                  {
+    {
         "declarationId": "T102:profile-validation-result:c-validate_response_with_context",
         "packageId": "c-kmipkit",
         "kind": "c-symbol",
@@ -369521,7 +369405,7 @@
           ]
         }
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:java-kmipkit:java-type",
         "packageId": "java-kmipkit",
         "kind": "type",
@@ -369569,7 +369453,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:java-kmipkit:java-profile-ids",
         "packageId": "java-kmipkit",
         "kind": "java-member",
@@ -369617,7 +369501,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:java-kmipkit:java-requirement-ids",
         "packageId": "java-kmipkit",
         "kind": "java-member",
@@ -369665,7 +369549,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:java-kmipkit:java-validate_request",
         "packageId": "java-kmipkit",
         "kind": "java-member",
@@ -369713,7 +369597,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:java-kmipkit:java-validate_request_with_context",
         "packageId": "java-kmipkit",
         "kind": "java-member",
@@ -369761,7 +369645,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:java-kmipkit:java-validate_response",
         "packageId": "java-kmipkit",
         "kind": "java-member",
@@ -369809,7 +369693,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:java-kmipkit:java-validate_response_with_context",
         "packageId": "java-kmipkit",
         "kind": "java-member",
@@ -369857,7 +369741,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:java-kmipkit:java-validate_transport",
         "packageId": "java-kmipkit",
         "kind": "java-member",
@@ -369905,7 +369789,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:java-kmipkit:java-close",
         "packageId": "java-kmipkit",
         "kind": "java-member",
@@ -369953,7 +369837,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:java-kmipkit:java-to-string",
         "packageId": "java-kmipkit",
         "kind": "java-member",
@@ -370001,7 +369885,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-            {
+    {
         "declarationId": "T102:profile-validation-result:java-kmipkit:java-select",
         "packageId": "java-kmipkit",
         "kind": "java-member",
@@ -370049,7 +369933,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:java-kmipkit:java-error-type",
         "packageId": "java-kmipkit",
         "kind": "type",
@@ -370097,7 +369981,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:java-kmipkit:java-error-init",
         "packageId": "java-kmipkit",
         "kind": "java-member",
@@ -370145,7 +370029,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:java-kmipkit:java-error-detail",
         "packageId": "java-kmipkit",
         "kind": "java-member",
@@ -370193,7 +370077,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:python-kmipkit:python-type",
         "packageId": "python-kmipkit",
         "kind": "type",
@@ -370241,7 +370125,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:python-kmipkit:python-init",
         "packageId": "python-kmipkit",
         "kind": "python-export",
@@ -370289,7 +370173,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:python-kmipkit:python-profile_ids",
         "packageId": "python-kmipkit",
         "kind": "python-export",
@@ -370337,7 +370221,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:python-kmipkit:python-requirement_ids",
         "packageId": "python-kmipkit",
         "kind": "python-export",
@@ -370385,7 +370269,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:python-kmipkit:python-validate_request",
         "packageId": "python-kmipkit",
         "kind": "python-export",
@@ -370433,7 +370317,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:python-kmipkit:python-validate_request_with_context",
         "packageId": "python-kmipkit",
         "kind": "python-export",
@@ -370481,7 +370365,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:python-kmipkit:python-validate_response",
         "packageId": "python-kmipkit",
         "kind": "python-export",
@@ -370529,7 +370413,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:python-kmipkit:python-validate_response_with_context",
         "packageId": "python-kmipkit",
         "kind": "python-export",
@@ -370577,7 +370461,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:python-kmipkit:python-validate_transport",
         "packageId": "python-kmipkit",
         "kind": "python-export",
@@ -370625,7 +370509,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:python-kmipkit:python-close",
         "packageId": "python-kmipkit",
         "kind": "python-export",
@@ -370673,7 +370557,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:python-kmipkit:python-enter",
         "packageId": "python-kmipkit",
         "kind": "python-export",
@@ -370721,7 +370605,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:python-kmipkit:python-exit",
         "packageId": "python-kmipkit",
         "kind": "python-export",
@@ -370769,7 +370653,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-            {
+    {
         "declarationId": "T102:profile-validation-result:python-kmipkit:python-select",
         "packageId": "python-kmipkit",
         "kind": "python-export",
@@ -370817,7 +370701,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:python-kmipkit:python-error-type",
         "packageId": "python-kmipkit",
         "kind": "type",
@@ -370865,7 +370749,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:python-kmipkit:python-error-init",
         "packageId": "python-kmipkit",
         "kind": "python-export",
@@ -370913,7 +370797,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:python-kmipkit:python-error-profile_validation",
         "packageId": "python-kmipkit",
         "kind": "field",
@@ -370961,7 +370845,7 @@
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
       },
-      {
+    {
         "declarationId": "T102:profile-validation-result:python-kmipkit:python-error-details",
         "packageId": "python-kmipkit",
         "kind": "field",
@@ -384962,9 +384846,6 @@
       },
       "evidence": "The four extension-specific categories are separately inventoried with exact Rust, C, Java, and Python mappings under KMIPKIT-0012-FR-010/011; each named error variant is mapped individually. The enum type itself is not an independent product capability."
     },
-
-
-
     {
       "packageId": "rust-kmipkit",
       "exportName": "kmipkit::ProtocolErrorKind::InvalidInput",
@@ -384977,7 +384858,6 @@
       },
       "evidence": "KMIPKIT-0003-FR-001, KMIPKIT-0003-FR-005, KMIPKIT-0003-FR-006; the owning error contract is Rust-specific in implementation, while KMIPKIT-0007 maps safe error status/category/cause data to C, Java, and Python. This exact local diagnostic representation is not required to preserve those public semantics."
     },
-
     {
       "packageId": "rust-kmipkit",
       "exportName": "kmipkit::ProtocolErrorKind::InvalidValue",
@@ -389047,9 +388927,6 @@
       },
       "evidence": "The four extension-specific categories are separately inventoried with exact Rust, C, Java, and Python mappings under KMIPKIT-0012-FR-010/011; each named error variant is mapped individually. The enum type itself is not an independent product capability."
     },
-
-
-
     {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "kmipkit_protocol::ProtocolErrorKind::InvalidInput",
@@ -389062,7 +388939,6 @@
       },
       "evidence": "KMIPKIT-0003-FR-001, KMIPKIT-0003-FR-005, KMIPKIT-0003-FR-006; the owning error contract is Rust-specific in implementation, while KMIPKIT-0007 maps safe error status/category/cause data to C, Java, and Python. This exact local diagnostic representation is not required to preserve those public semantics."
     },
-
     {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "kmipkit_protocol::ProtocolErrorKind::InvalidValue",
@@ -476748,7 +476624,7 @@
       },
       "evidence": "KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 require equivalent product facades and exact, reviewed public-surface accounting. The source declaration in `crates/kmipkit-protocol/src/profile.rs` is `#[cfg(feature = \"test-support\")]`, `#[doc(hidden)]`, and explicitly intended for cross-crate client tests. The parent ProfileValidationError and its safe mapped accessors remain product declarations. This exact test constructor has no C, Java, or Python counterpart; the product profile-validation diagnostics remain available through the shared client error details."
     },
-      {
+    {
         "packageId": "rust-kmipkit",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit::RngRetrieveError::kind",
@@ -476761,7 +476637,7 @@
         },
         "evidence": "KMIPKIT-0041-FR-001/003/004/005/006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.49 governs RNG Retrieve, not this Rust parser accessor."
       },
-      {
+    {
         "packageId": "rust-kmipkit",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit::RngSeedError::kind",
@@ -476774,7 +476650,7 @@
         },
         "evidence": "KMIPKIT-0041-FR-001/003/004/005/006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.50 governs RNG Seed, not this Rust parser accessor."
       },
-      {
+    {
         "packageId": "rust-kmipkit",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit::TicketValidationError",
@@ -476787,7 +476663,7 @@
         },
         "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
       },
-      {
+    {
         "packageId": "rust-kmipkit",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit::TicketValidationError::kind",
@@ -476800,7 +476676,7 @@
         },
         "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
       },
-      {
+    {
         "packageId": "rust-kmipkit",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit::TicketValidationErrorKind",
@@ -476813,7 +476689,7 @@
         },
         "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
       },
-      {
+    {
         "packageId": "rust-kmipkit",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit::TicketValidationErrorKind::DuplicateField",
@@ -476826,7 +476702,7 @@
         },
         "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
       },
-      {
+    {
         "packageId": "rust-kmipkit",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit::TicketValidationErrorKind::FieldOutOfOrder",
@@ -476839,7 +476715,7 @@
         },
         "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
       },
-      {
+    {
         "packageId": "rust-kmipkit",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit::TicketValidationErrorKind::InvalidTtlvStructure",
@@ -476852,7 +476728,7 @@
         },
         "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
       },
-      {
+    {
         "packageId": "rust-kmipkit",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit::TicketValidationErrorKind::MissingField",
@@ -476865,7 +476741,7 @@
         },
         "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
       },
-      {
+    {
         "packageId": "rust-kmipkit",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit::TicketValidationErrorKind::WrongFieldType",
@@ -476878,7 +476754,7 @@
         },
         "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
       },
-      {
+    {
         "packageId": "rust-kmipkit",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit::UsageAllocationContextError",
@@ -476891,7 +476767,7 @@
         },
         "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
       },
-      {
+    {
         "packageId": "rust-kmipkit",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit::UsageAllocationContextError::AllocationNotSuccessful",
@@ -476904,7 +476780,7 @@
         },
         "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
       },
-      {
+    {
         "packageId": "rust-kmipkit",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit::UsageAllocationContextError::CostExceedsAvailable",
@@ -476917,7 +476793,7 @@
         },
         "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
       },
-      {
+    {
         "packageId": "rust-kmipkit",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit::UsageAllocationContextError::InvalidAllocationCount",
@@ -476930,7 +476806,7 @@
         },
         "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
       },
-      {
+    {
         "packageId": "rust-kmipkit",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit::UsageAllocationContextError::InvalidUsageCost",
@@ -476943,7 +476819,7 @@
         },
         "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
       },
-      {
+    {
         "packageId": "rust-kmipkit",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit::UsageAllocationContextError::MismatchedUniqueIdentifier",
@@ -476956,7 +476832,7 @@
         },
         "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
       },
-      {
+    {
         "packageId": "rust-kmipkit",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit::UsageAllocationContextError::MissingResolvedIdentifier",
@@ -476969,7 +476845,7 @@
         },
         "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
       },
-      {
+    {
         "packageId": "rust-kmipkit",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit::UsageAllocationContextError::MissingUniqueIdentifier",
@@ -476982,7 +476858,7 @@
         },
         "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
       },
-      {
+    {
         "packageId": "rust-kmipkit",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit::UsageAllocationContextError::ReservationOverflow",
@@ -476995,7 +476871,7 @@
         },
         "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
       },
-      {
+    {
         "packageId": "rust-kmipkit",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit::UsageAllocationContextError::UnsupportedOperation",
@@ -477008,7 +476884,7 @@
         },
         "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
       },
-      {
+    {
         "packageId": "rust-kmipkit-client",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit_client::UsageAllocationContextError",
@@ -477021,7 +476897,7 @@
         },
         "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
       },
-      {
+    {
         "packageId": "rust-kmipkit-client",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit_client::UsageAllocationContextError::AllocationNotSuccessful",
@@ -477034,7 +476910,7 @@
         },
         "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
       },
-      {
+    {
         "packageId": "rust-kmipkit-client",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit_client::UsageAllocationContextError::CostExceedsAvailable",
@@ -477047,7 +476923,7 @@
         },
         "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
       },
-      {
+    {
         "packageId": "rust-kmipkit-client",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit_client::UsageAllocationContextError::InvalidAllocationCount",
@@ -477060,7 +476936,7 @@
         },
         "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
       },
-      {
+    {
         "packageId": "rust-kmipkit-client",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit_client::UsageAllocationContextError::InvalidUsageCost",
@@ -477073,7 +476949,7 @@
         },
         "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
       },
-      {
+    {
         "packageId": "rust-kmipkit-client",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit_client::UsageAllocationContextError::MismatchedUniqueIdentifier",
@@ -477086,7 +476962,7 @@
         },
         "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
       },
-      {
+    {
         "packageId": "rust-kmipkit-client",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit_client::UsageAllocationContextError::MissingResolvedIdentifier",
@@ -477099,7 +476975,7 @@
         },
         "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
       },
-      {
+    {
         "packageId": "rust-kmipkit-client",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit_client::UsageAllocationContextError::MissingUniqueIdentifier",
@@ -477112,7 +476988,7 @@
         },
         "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
       },
-      {
+    {
         "packageId": "rust-kmipkit-client",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit_client::UsageAllocationContextError::ReservationOverflow",
@@ -477125,7 +477001,7 @@
         },
         "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
       },
-      {
+    {
         "packageId": "rust-kmipkit-client",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit_client::UsageAllocationContextError::UnsupportedOperation",
@@ -477138,7 +477014,7 @@
         },
         "evidence": "KMIPKIT-0039-FR-005/009; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.23/Table 234 gives allocation context; local Rust errors are not protocol statuses."
       },
-      {
+    {
         "packageId": "rust-kmipkit-protocol",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit_protocol::CryptographicOperationError::kind",
@@ -477151,7 +477027,7 @@
         },
         "evidence": "KMIPKIT-0021-FR-001/010/012/015; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Sections 6.1.24, 6.1.32, 6.1.33, 6.1.55, and 6.1.56 govern operations, not this Rust accessor."
       },
-      {
+    {
         "packageId": "rust-kmipkit-protocol",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit_protocol::RngRetrieveError::kind",
@@ -477164,7 +477040,7 @@
         },
         "evidence": "KMIPKIT-0041-FR-001/003/004/005/006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.49 governs RNG Retrieve, not this Rust parser accessor."
       },
-      {
+    {
         "packageId": "rust-kmipkit-protocol",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit_protocol::RngSeedError::kind",
@@ -477177,7 +477053,7 @@
         },
         "evidence": "KMIPKIT-0041-FR-001/003/004/005/006; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 6.1.50 governs RNG Seed, not this Rust parser accessor."
       },
-      {
+    {
         "packageId": "rust-kmipkit-protocol",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit_protocol::TicketValidationError",
@@ -477190,7 +477066,7 @@
         },
         "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
       },
-      {
+    {
         "packageId": "rust-kmipkit-protocol",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit_protocol::TicketValidationError::kind",
@@ -477203,7 +477079,7 @@
         },
         "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
       },
-      {
+    {
         "packageId": "rust-kmipkit-protocol",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit_protocol::TicketValidationErrorKind",
@@ -477216,7 +477092,7 @@
         },
         "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
       },
-      {
+    {
         "packageId": "rust-kmipkit-protocol",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit_protocol::TicketValidationErrorKind::DuplicateField",
@@ -477229,7 +477105,7 @@
         },
         "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
       },
-      {
+    {
         "packageId": "rust-kmipkit-protocol",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit_protocol::TicketValidationErrorKind::FieldOutOfOrder",
@@ -477242,7 +477118,7 @@
         },
         "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
       },
-      {
+    {
         "packageId": "rust-kmipkit-protocol",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit_protocol::TicketValidationErrorKind::InvalidTtlvStructure",
@@ -477255,7 +477131,7 @@
         },
         "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
       },
-      {
+    {
         "packageId": "rust-kmipkit-protocol",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit_protocol::TicketValidationErrorKind::MissingField",
@@ -477268,7 +477144,7 @@
         },
         "evidence": "KMIPKIT-0038-FR-001/002/005/008; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021. OASIS KMIP v2.1 Section 7.39/Table 391 and Section 11.57/Table 488 define Ticket data, not this taxonomy."
       },
-      {
+    {
         "packageId": "rust-kmipkit-protocol",
         "candidateSpecId": "KMIPKIT-0043",
         "exportName": "kmipkit_protocol::TicketValidationErrorKind::WrongFieldType",
@@ -477801,7 +477677,7 @@
       },
       "evidence": "Exact export `kmipkit.errors.raise_for_status` is exercised by `bindings/python/tests/test_metadata.py::test_internal_status_raises_redacted_generic_error`; it raises the fixed generic category for internal status and is called by the adapter implementation. The exception categories remain independently mapped. KMIPKIT-0043-FR-009; KMIPKIT-0043-FR-013; KMIPKIT-0043-FR-021."
     },
-      {
+    {
         "approvalSource": {
           "kind": "feature-specification",
           "path": "specs/043-public-api-bindings/spec.md",
@@ -477813,7 +477689,7 @@
         "packageId": "java-kmipkit",
         "reason": "This internal profile-validation JNI plumbing only bridges the public facade to the KMIPKit C ABI; it is not a separate product capability."
       },
-      {
+    {
         "approvalSource": {
           "kind": "feature-specification",
           "path": "specs/043-public-api-bindings/spec.md",
@@ -477825,7 +477701,7 @@
         "packageId": "java-kmipkit",
         "reason": "This internal profile-validation JNI plumbing only bridges the public facade to the KMIPKit C ABI; it is not a separate product capability."
       },
-      {
+    {
         "approvalSource": {
           "kind": "feature-specification",
           "path": "specs/043-public-api-bindings/spec.md",
@@ -477837,7 +477713,7 @@
         "packageId": "java-kmipkit",
         "reason": "This internal profile-validation JNI plumbing only bridges the public facade to the KMIPKit C ABI; it is not a separate product capability."
       },
-      {
+    {
         "approvalSource": {
           "kind": "feature-specification",
           "path": "specs/043-public-api-bindings/spec.md",
@@ -477849,7 +477725,7 @@
         "packageId": "java-kmipkit",
         "reason": "This internal profile-validation JNI plumbing only bridges the public facade to the KMIPKit C ABI; it is not a separate product capability."
       },
-      {
+    {
         "approvalSource": {
           "kind": "feature-specification",
           "path": "specs/043-public-api-bindings/spec.md",
@@ -477861,7 +477737,7 @@
         "packageId": "java-kmipkit",
         "reason": "This internal profile-validation JNI plumbing only bridges the public facade to the KMIPKit C ABI; it is not a separate product capability."
       },
-      {
+    {
         "approvalSource": {
           "kind": "feature-specification",
           "path": "specs/043-public-api-bindings/spec.md",
@@ -477873,7 +477749,7 @@
         "packageId": "java-kmipkit",
         "reason": "This internal profile-validation JNI plumbing only bridges the public facade to the KMIPKit C ABI; it is not a separate product capability."
       },
-      {
+    {
         "approvalSource": {
           "kind": "feature-specification",
           "path": "specs/043-public-api-bindings/spec.md",
@@ -477885,7 +477761,7 @@
         "packageId": "java-kmipkit",
         "reason": "This internal profile-validation JNI plumbing only bridges the public facade to the KMIPKit C ABI; it is not a separate product capability."
       },
-      {
+    {
         "approvalSource": {
           "kind": "feature-specification",
           "path": "specs/043-public-api-bindings/spec.md",
@@ -477897,7 +477773,7 @@
         "packageId": "java-kmipkit",
         "reason": "This internal profile-validation JNI plumbing only bridges the public facade to the KMIPKit C ABI; it is not a separate product capability."
       },
-      {
+    {
         "approvalSource": {
           "kind": "feature-specification",
           "path": "specs/043-public-api-bindings/spec.md",
@@ -477909,7 +477785,7 @@
         "packageId": "java-kmipkit",
         "reason": "This internal profile-validation JNI plumbing only bridges the public facade to the KMIPKit C ABI; it is not a separate product capability."
       },
-      {
+    {
         "approvalSource": {
           "kind": "feature-specification",
           "path": "specs/043-public-api-bindings/spec.md",
@@ -477921,7 +477797,7 @@
         "packageId": "java-kmipkit",
         "reason": "This internal profile-validation JNI plumbing only bridges the public facade to the KMIPKit C ABI; it is not a separate product capability."
       },
-      {
+    {
         "approvalSource": {
           "kind": "feature-specification",
           "path": "specs/043-public-api-bindings/spec.md",
@@ -477993,6 +477869,110 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed against KMIPKIT-0010-FR-001, KMIPKIT-0010-FR-002, KMIPKIT-0010-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The 44 child declarations under this module remain individually inventoried and mapped in all four languages under client_profile_readiness. The generated Rust module name is a namespace boundary only; the foreign bindings expose the profile catalog and readiness APIs without a corresponding module container. This exclusion removes only the Rust namespace container."
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::CryptographicOperationResponseContext",
+      "reason": "This Rust response-framing context type or variant is an internal adapter value. The five cryptographic operation results and shared correlation/framing behavior are represented by equivalent typed results and batch metadata in Rust, C, Java, and Python.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved (PR #70 merged into `release/1.0.0` on 2026-10-09; merge commit `be5c73c2198daab4b6877dc319f728f927399feb`)"
+      },
+      "evidence": "T102 reviewed exact declaration rust-observed-105154cf933c88d0097a (kmipkit_protocol::CryptographicOperationResponseContext). OASIS KMIP 2.1 Section 6.1.24, Tables 235-237; Section 6.1.32, Tables 259-261; Section 6.1.33, Tables 262-264; Section 6.1.55, Tables 334-336; and Section 6.1.56, Tables 337-339. The client derives this local framing context from each typed request; foreign callers receive the corresponding typed operation results and shared batch metadata. This exclusion does not resolve KMIPKIT-DISC-048; final multipart Validity Indicator handling remains open. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022. Evidence test: tools/api_manifest/tests/test_t102_response_context_exclusions.py.",
+      "candidateSpecId": "KMIPKIT-0043"
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::CryptographicOperationResponseContext::SinglePart",
+      "reason": "This Rust response-framing context type or variant is an internal adapter value. The five cryptographic operation results and shared correlation/framing behavior are represented by equivalent typed results and batch metadata in Rust, C, Java, and Python.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved (PR #70 merged into `release/1.0.0` on 2026-10-09; merge commit `be5c73c2198daab4b6877dc319f728f927399feb`)"
+      },
+      "evidence": "T102 reviewed exact declaration rust-observed-d61e7db174296bffc941 (kmipkit_protocol::CryptographicOperationResponseContext::SinglePart). OASIS KMIP 2.1 Section 6.1.24, Tables 235-237; Section 6.1.32, Tables 259-261; Section 6.1.33, Tables 262-264; Section 6.1.55, Tables 334-336; and Section 6.1.56, Tables 337-339. The client derives this local framing context from each typed request; foreign callers receive the corresponding typed operation results and shared batch metadata. This exclusion does not resolve KMIPKIT-DISC-048; final multipart Validity Indicator handling remains open. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022. Evidence test: tools/api_manifest/tests/test_t102_response_context_exclusions.py.",
+      "candidateSpecId": "KMIPKIT-0043"
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::CryptographicOperationResponseContext::MultipartNonFinal",
+      "reason": "This Rust response-framing context type or variant is an internal adapter value. The five cryptographic operation results and shared correlation/framing behavior are represented by equivalent typed results and batch metadata in Rust, C, Java, and Python.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved (PR #70 merged into `release/1.0.0` on 2026-10-09; merge commit `be5c73c2198daab4b6877dc319f728f927399feb`)"
+      },
+      "evidence": "T102 reviewed exact declaration rust-observed-c7f9909f0622669a2532 (kmipkit_protocol::CryptographicOperationResponseContext::MultipartNonFinal). OASIS KMIP 2.1 Section 6.1.24, Tables 235-237; Section 6.1.32, Tables 259-261; Section 6.1.33, Tables 262-264; Section 6.1.55, Tables 334-336; and Section 6.1.56, Tables 337-339. The client derives this local framing context from each typed request; foreign callers receive the corresponding typed operation results and shared batch metadata. This exclusion does not resolve KMIPKIT-DISC-048; final multipart Validity Indicator handling remains open. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022. Evidence test: tools/api_manifest/tests/test_t102_response_context_exclusions.py.",
+      "candidateSpecId": "KMIPKIT-0043"
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::CryptographicOperationResponseContext::MultipartFinal",
+      "reason": "This Rust response-framing context type or variant is an internal adapter value. The five cryptographic operation results and shared correlation/framing behavior are represented by equivalent typed results and batch metadata in Rust, C, Java, and Python.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved (PR #70 merged into `release/1.0.0` on 2026-10-09; merge commit `be5c73c2198daab4b6877dc319f728f927399feb`)"
+      },
+      "evidence": "T102 reviewed exact declaration rust-observed-4733cafd49358dd11b06 (kmipkit_protocol::CryptographicOperationResponseContext::MultipartFinal). OASIS KMIP 2.1 Section 6.1.24, Tables 235-237; Section 6.1.32, Tables 259-261; Section 6.1.33, Tables 262-264; Section 6.1.55, Tables 334-336; and Section 6.1.56, Tables 337-339. The client derives this local framing context from each typed request; foreign callers receive the corresponding typed operation results and shared batch metadata. This exclusion does not resolve KMIPKIT-DISC-048; final multipart Validity Indicator handling remains open. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022. Evidence test: tools/api_manifest/tests/test_t102_response_context_exclusions.py.",
+      "candidateSpecId": "KMIPKIT-0043"
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::VerificationResponseContext",
+      "reason": "This Rust response-framing context type or variant is an internal adapter value. The five cryptographic operation results and shared correlation/framing behavior are represented by equivalent typed results and batch metadata in Rust, C, Java, and Python.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved (PR #70 merged into `release/1.0.0` on 2026-10-09; merge commit `be5c73c2198daab4b6877dc319f728f927399feb`)"
+      },
+      "evidence": "T102 reviewed exact declaration rust-observed-cea44457a95c424fbf76 (kmipkit_protocol::VerificationResponseContext). OASIS KMIP 2.1 Section 6.1.24, Tables 235-237; Section 6.1.32, Tables 259-261; Section 6.1.33, Tables 262-264; Section 6.1.55, Tables 334-336; and Section 6.1.56, Tables 337-339. The client derives this local framing context from each typed request; foreign callers receive the corresponding typed operation results and shared batch metadata. This exclusion does not resolve KMIPKIT-DISC-048; final multipart Validity Indicator handling remains open. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022. Evidence test: tools/api_manifest/tests/test_t102_response_context_exclusions.py.",
+      "candidateSpecId": "KMIPKIT-0043"
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::VerificationResponseContext::MultipartFinal",
+      "reason": "This Rust response-framing context type or variant is an internal adapter value. The five cryptographic operation results and shared correlation/framing behavior are represented by equivalent typed results and batch metadata in Rust, C, Java, and Python.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved (PR #70 merged into `release/1.0.0` on 2026-10-09; merge commit `be5c73c2198daab4b6877dc319f728f927399feb`)"
+      },
+      "evidence": "T102 reviewed exact declaration rust-observed-4978456989659fff3b83 (kmipkit_protocol::VerificationResponseContext::MultipartFinal). OASIS KMIP 2.1 Section 6.1.24, Tables 235-237; Section 6.1.32, Tables 259-261; Section 6.1.33, Tables 262-264; Section 6.1.55, Tables 334-336; and Section 6.1.56, Tables 337-339. The client derives this local framing context from each typed request; foreign callers receive the corresponding typed operation results and shared batch metadata. This exclusion does not resolve KMIPKIT-DISC-048; final multipart Validity Indicator handling remains open. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022. Evidence test: tools/api_manifest/tests/test_t102_response_context_exclusions.py.",
+      "candidateSpecId": "KMIPKIT-0043"
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::VerificationResponseContext::MultipartNonFinal",
+      "reason": "This Rust response-framing context type or variant is an internal adapter value. The five cryptographic operation results and shared correlation/framing behavior are represented by equivalent typed results and batch metadata in Rust, C, Java, and Python.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved (PR #70 merged into `release/1.0.0` on 2026-10-09; merge commit `be5c73c2198daab4b6877dc319f728f927399feb`)"
+      },
+      "evidence": "T102 reviewed exact declaration rust-observed-523db7d4167b1d768b5b (kmipkit_protocol::VerificationResponseContext::MultipartNonFinal). OASIS KMIP 2.1 Section 6.1.24, Tables 235-237; Section 6.1.32, Tables 259-261; Section 6.1.33, Tables 262-264; Section 6.1.55, Tables 334-336; and Section 6.1.56, Tables 337-339. The client derives this local framing context from each typed request; foreign callers receive the corresponding typed operation results and shared batch metadata. This exclusion does not resolve KMIPKIT-DISC-048; final multipart Validity Indicator handling remains open. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022. Evidence test: tools/api_manifest/tests/test_t102_response_context_exclusions.py.",
+      "candidateSpecId": "KMIPKIT-0043"
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::VerificationResponseContext::SinglePart",
+      "reason": "This Rust response-framing context type or variant is an internal adapter value. The five cryptographic operation results and shared correlation/framing behavior are represented by equivalent typed results and batch metadata in Rust, C, Java, and Python.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved (PR #70 merged into `release/1.0.0` on 2026-10-09; merge commit `be5c73c2198daab4b6877dc319f728f927399feb`)"
+      },
+      "evidence": "T102 reviewed exact declaration rust-observed-fea788ac7ff4e43be1be (kmipkit_protocol::VerificationResponseContext::SinglePart). OASIS KMIP 2.1 Section 6.1.24, Tables 235-237; Section 6.1.32, Tables 259-261; Section 6.1.33, Tables 262-264; Section 6.1.55, Tables 334-336; and Section 6.1.56, Tables 337-339. The client derives this local framing context from each typed request; foreign callers receive the corresponding typed operation results and shared batch metadata. This exclusion does not resolve KMIPKIT-DISC-048; final multipart Validity Indicator handling remains open. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022. Evidence test: tools/api_manifest/tests/test_t102_response_context_exclusions.py.",
+      "candidateSpecId": "KMIPKIT-0043"
     }
   ],
   "apiLevels": [
