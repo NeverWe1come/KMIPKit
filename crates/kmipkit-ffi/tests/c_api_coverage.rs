@@ -2649,6 +2649,10 @@ const REKEY_KEY_PAIR_UID_AND_OFFSET: &[RequestBuilderWireField] = &[
         value: V::Interval(86_400),
     },
 ];
+const REKEY_KEY_PAIR_OFFSET_ONLY: &[RequestBuilderWireField] = &[RequestBuilderWireField {
+    tag: 0x0042_0058,
+    value: V::Interval(86_400),
+}];
 const JOIN_SPLIT_KEY_SECRET_DATA_TYPE: &[RequestBuilderWireField] = &[
     RequestBuilderWireField {
         tag: 0x0042_0057,
@@ -2716,6 +2720,10 @@ const REQUEST_BUILDER_WIRE_EXPECTED: &[RequestBuilderWireItem] = &[
     RequestBuilderWireItem {
         operation: 2,
         fields: EMPTY_VALUES,
+    },
+    RequestBuilderWireItem {
+        operation: 0x1d,
+        fields: REKEY_KEY_PAIR_OFFSET_ONLY,
     },
     RequestBuilderWireItem {
         operation: 0x1d,
@@ -4101,7 +4109,9 @@ fn rekey_key_pair_success_response() -> Vec<u8> {
 }
 
 fn request_builder_wire_response() -> Vec<u8> {
-    const OPERATIONS: [u32; 16] = [1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x29];
+    const OPERATIONS: [u32; 17] = [
+        1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x1d, 0x29,
+    ];
     let version = structure(
         0x0042_0069,
         [integer(0x0042_006A, 2), integer(0x0042_006B, 1)],
@@ -4126,7 +4136,7 @@ fn request_builder_wire_response() -> Vec<u8> {
                 enumeration(0x0042_005C, *operation),
                 ttlv_item(0x0042_0093, 0x08, batch_id.as_bytes()),
             ];
-            if index == 13 || index == 14 {
+            if index == 13 || index == 14 || index == 15 {
                 let (private_identifier, public_identifier) = if index == 13 {
                     (
                         b"placeholder-private".as_slice(),

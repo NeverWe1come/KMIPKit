@@ -176,18 +176,21 @@ final class ClientFacadeTlsIntegrationTest {
                     .withUniqueBatchItemId(uniqueBatchItemId(12)));
             batch.add(ClientBatchItem.createKeyPair(null, null, null, null, null, null)
                     .withUniqueBatchItemId(uniqueBatchItemId(13)));
+            batch.add(ClientBatchItem.rekeyKeyPair(null, 86_400L, null, null, null, null, null, null)
+                    .withUniqueBatchItemId(uniqueBatchItemId(14)));
             batch.add(ClientBatchItem.rekeyKeyPair(
                             UniqueIdentifier.textString("private-key-to-rekey"),
                             86_400L, null, null, null, null, null, null)
-                    .withUniqueBatchItemId(uniqueBatchItemId(14)));
-            batch.add(ClientBatchItem.joinSplitKey(7L, List.of(splitReference), 1L, null, null)
                     .withUniqueBatchItemId(uniqueBatchItemId(15)));
+            batch.add(ClientBatchItem.joinSplitKey(7L, List.of(splitReference), 1L, null, null)
+                    .withUniqueBatchItemId(uniqueBatchItemId(16)));
             try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
                     ClientBatchItemResult createPairResult = response.itemAt(13);
                     ClientBatchItemResult rekeyPairResult = response.itemAt(14);
                     ClientBatchItemResult.RekeyKeyPairResponse rekeyPairResponse =
-                            rekeyPairResult.rekeyKeyPairResponse().orElseThrow()) {
-                assertEquals(16, response.itemCount());
+                            rekeyPairResult.rekeyKeyPairResponse().orElseThrow();
+                    ClientBatchItemResult explicitRekeyPairResult = response.itemAt(15)) {
+                assertEquals(17, response.itemCount());
                 assertEquals(0, createPairResult.resultStatus());
                 ClientBatchItemResult.CreateKeyPairResponse createPairResponse =
                         createPairResult.createKeyPairResponse().orElseThrow();
@@ -196,6 +199,7 @@ final class ClientFacadeTlsIntegrationTest {
                 assertEquals(0, rekeyPairResult.resultStatus());
                 assertEquals("replacement-private", rekeyPairResponse.privateKeyUniqueIdentifier().text());
                 assertEquals("replacement-public", rekeyPairResponse.publicKeyUniqueIdentifier().text());
+                assertEquals(0, explicitRekeyPairResult.resultStatus());
             }
             request = peer.get(12, TimeUnit.SECONDS);
         } finally {
@@ -295,12 +299,17 @@ final class ClientFacadeTlsIntegrationTest {
                 enumeration(0x42005c, 0x1d),
                 item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(14)),
                 structure(0x420079,
+                        item(0x420058, TtlvItemType.Interval.code(), integer(86_400)))));
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 0x1d),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(15)),
+                structure(0x420079,
                         item(0x420066, TtlvItemType.TextString.code(),
                                 "private-key-to-rekey".getBytes(StandardCharsets.UTF_8)),
                         item(0x420058, TtlvItemType.Interval.code(), integer(86_400)))));
         expectedBatchItems.write(structure(0x42000f,
                 enumeration(0x42005c, 0x29),
-                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(15)),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(16)),
                 structure(0x420079,
                         enumeration(0x420057, 7),
                         item(0x420094, TtlvItemType.TextString.code(),
@@ -316,7 +325,7 @@ final class ClientFacadeTlsIntegrationTest {
         assertEquals(2, countOccurrences(request, enumeration(0x42005c, 4)));
         assertEquals(2, countOccurrences(request, enumeration(0x42005c, 17)));
         assertEquals(2, countOccurrences(request, enumeration(0x42005c, 7)));
-        assertEquals(1, countOccurrences(request, enumeration(0x42005c, 0x1d)));
+        assertEquals(2, countOccurrences(request, enumeration(0x42005c, 0x1d)));
         assertEquals(1, countOccurrences(request, enumeration(0x42005c, 0x29)));
         assertEquals(1, countOccurrences(request, enumeration(0x42005c, 2)));
         assertTrue(peer.isDone());
@@ -5973,7 +5982,7 @@ final class ClientFacadeTlsIntegrationTest {
     }
 
     private static byte[] requestBuilderWireResponseMessage() throws Exception {
-        int[] operations = {1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x29};
+        int[] operations = {1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x1d, 0x29};
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
@@ -5982,7 +5991,7 @@ final class ClientFacadeTlsIntegrationTest {
         for (int index = 0; index < operations.length; index++) {
             byte[] operation = enumeration(0x42005c, operations[index]);
             byte[] batchItemId = item(0x420093, 8, uniqueBatchItemId(index));
-            if (index == 13 || index == 14) {
+            if (index == 13 || index == 14 || index == 15) {
                 String privateIdentifier = index == 13 ? "placeholder-private" : "replacement-private";
                 String publicIdentifier = index == 13 ? "placeholder-public" : "replacement-public";
                 byte[] payload = structure(0x42007c,
