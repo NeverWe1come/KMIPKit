@@ -1040,3 +1040,16 @@ Both Rust serializer declarations inherit the exact requirement IDs and approved
 |---|---|---|---|---|
 | `rust-observed-dc0d9f8db2cc819081a5` `kmipkit_client::Pkcs11Request::into_ttlv_payload` | `rust-observed-394218a1365a78a151c9` `kmipkit_client::Pkcs11Request::new` | KMIPKIT-0040-FR-001–008; KMIPKIT-0043-FR-004/005/007–013/017/018/021/022 | §6.1.37, Tables 273–275 | `crates/kmipkit-client/src/lib.rs`; `crates/kmipkit-protocol/src/pkcs11.rs`; `crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs`; `tools/api_manifest/tests/test_t102_pkcs11_request_serializer_mapping.py` |
 | `rust-observed-0ca4edbce90ed942c680` `kmipkit_protocol::Pkcs11Request::into_ttlv_payload` | `rust-observed-d01612e554e6a0987fb1` `kmipkit_protocol::Pkcs11Request::new` | KMIPKIT-0040-FR-001–008; KMIPKIT-0043-FR-004/005/007–013/017/018/021/022 | §6.1.37, Tables 273–275 | `crates/kmipkit-protocol/src/pkcs11.rs`; `crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs`; `tools/api_manifest/tests/test_t102_pkcs11_request_serializer_mapping.py` |
+
+## T102 — KMIPKIT-0036 lifecycle request identifier member mappings
+
+These protocol request members map to the existing four-language operation builders. Each row inherits its approved owner and requirement IDs from the verified same-package constructor; C, Java, and Python mappings name the corresponding existing operation builder. The contract is checked by `tools/api_manifest/tests/test_t102_lifecycle_request_identifier_member_mapping.py`, which also pins the exact operation tables and source tests. This records API capability correspondence and does not add wire behavior or claim server acceptance.
+
+| KMIP operation | Rust declaration ID and export | Verified constructor anchor | OASIS KMIP Specification v2.1 |
+|---|---|---|---|
+| Check | `rust-observed-0cac70728b14d2cc2029` `kmipkit_protocol::CheckRequest::unique_identifier` | `rust-observed-3beea67907cb67493c50` `CheckRequest::new` | §6.1.7, Tables 183–185 |
+| Obtain Lease | `rust-observed-c2c1ef4a9b7cde16f0b8` `kmipkit_protocol::ObtainLeaseRequest::unique_identifier` | `rust-observed-b7d375d733bafb2963b7` `ObtainLeaseRequest::new` | §6.1.35, Tables 268–270 |
+| Re-certify | `rust-observed-1f4d5ae1f197c06d274f` `RecertifyRequest::certificate_request_unique_identifier` | `rust-observed-e98ebdedfd3bd6dc5178` `RecertifyRequest::new` | §6.1.45, Tables 300–302 |
+| Re-certify | `rust-observed-e1413e6ad346eed590c5` `RecertifyRequest::unique_identifier` | `rust-observed-e98ebdedfd3bd6dc5178` `RecertifyRequest::new` | §6.1.45, Tables 300–302 |
+| Re-key | `rust-observed-c0e54cfc91f60a80e3b9` `kmipkit_protocol::RekeyRequest::unique_identifier` | `rust-observed-4781288042e981f6d3bd` `RekeyRequest::new` | §6.1.46, Tables 305–307 |
+| Re-key Key Pair | `rust-observed-0f930bd1ba867141cf20` `RekeyKeyPairRequest::private_key_unique_identifier` | `rust-observed-87194cce123787c123e6` `RekeyKeyPairRequest::new` | §6.1.47, Tables 310–312 |

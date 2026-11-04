@@ -10981,3 +10981,18 @@ Reproduction commands (run from the repository root):
 - Focused Green mapping/state/builder/parity group: `py -3 -B -m unittest -v tools.api_manifest.tests.test_t102_pkcs11_request_serializer_mapping tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions tools.api_manifest.tests.test_t102_pkcs11_request_builder_mapping_batch tools.api_manifest.tests.test_pkcs11_parity_manifest`.
 - Generated API outputs: `py -3 -B tools/api_manifest/generate.py --check`.
 - Formatting and whitespace: `cargo fmt --all --check` and `git diff --check`.
+
+### T102 Macro-Lot 2 lifecycle request identifier member parity (2026-11-04)
+
+Red commit `a4d047673` adds an executable contract for six blocked Rust request members: Check and Obtain Lease `unique_identifier`, Re-certify `certificate_request_unique_identifier` and `unique_identifier`, Re-key `unique_identifier`, and Re-key Key Pair `private_key_unique_identifier`. The targeted mapping test fails on the six blocked-state assertions. It pins approved KMIPKIT-0036 ownership and OASIS KMIP Specification v2.1 §6.1.7 Tables 183–185, §6.1.35 Tables 268–270, §6.1.45 Tables 300–302, §6.1.46 Tables 305–307, and §6.1.47 Tables 310–312.
+
+Green commit `ec3466109` maps those declarations to their existing operation capabilities, inherits owner and requirement IDs from each verified same-package request constructor, maps C/Java/Python to the corresponding existing builders, updates operation inventories and state/count contracts, and regenerates all public API projections. It also reconciles the Re-certify and Re-key exact declaration sets and adds existing operation parity evidence to three pre-existing Re-certify rows. No runtime code, public symbol, or wire behavior changes. Refactor commit `421dc0a68` extracts the shared per-declaration assertions without changing behavior.
+
+Verification: the focused lifecycle mapping, trait-state, request-serializer, Check, Obtain Lease, Re-certify, Re-key, and Re-key Key Pair modules pass 26/26. `py -3 -B tools/api_manifest/generate.py --check` verifies 12/12 outputs; `cargo fmt --all --check` and `git diff --check` pass. T102 decreases 89→83 blocked candidates; public declaration/exclusion totals remain 6,380/8,713. The full T102 and 151-test `manifest-v2` suites remain reserved for Macro-Lot 2 closure. No protocol-conformance, interoperability, profile-support, or certification claim is made.
+
+Reproduction commands (run from the repository root):
+
+- Red, expected six blocked-state failures: `py -3 -B -m unittest -v tools.api_manifest.tests.test_t102_lifecycle_request_identifier_member_mapping`.
+- Focused Green mapping/state/builder/operation group: `py -3 -B -m unittest -v tools.api_manifest.tests.test_t102_lifecycle_request_identifier_member_mapping tools.api_manifest.tests.test_t102_lifecycle_request_trait_exclusions tools.api_manifest.tests.test_t102_lifecycle_request_serializer_mapping tools.api_manifest.tests.test_check_parity_manifest tools.api_manifest.tests.test_obtain_lease_parity_manifest tools.api_manifest.tests.test_recertify_parity_manifest tools.api_manifest.tests.test_rekey_parity_manifest tools.api_manifest.tests.test_rekey_key_pair_parity_manifest`.
+- Generated API outputs: `py -3 -B tools/api_manifest/generate.py --check`.
+- Formatting and whitespace: `cargo fmt --all --check` and `git diff --check`.
