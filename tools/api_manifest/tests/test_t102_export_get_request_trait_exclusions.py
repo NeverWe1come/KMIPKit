@@ -74,7 +74,7 @@ FUNCTIONAL_STATES = {
         "::with_key_format_type": "verified",
         "::with_key_wrap_type": "verified",
         "::with_key_compression_type": "verified",
-        "::with_key_wrapping_specification": "blocked",
+        "::with_key_wrapping_specification": "verified",
     },
     "GetRequest": {
         "": "verified",
@@ -89,7 +89,7 @@ FUNCTIONAL_STATES = {
         "::with_key_format_type": "verified",
         "::with_key_wrap_type": "verified",
         "::with_key_compression_type": "verified",
-        "::with_key_wrapping_specification": "blocked",
+        "::with_key_wrapping_specification": "verified",
     },
 }
 
