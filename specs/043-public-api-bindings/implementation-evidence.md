@@ -10996,3 +10996,18 @@ Reproduction commands (run from the repository root):
 - Focused Green mapping/state/builder/operation group: `py -3 -B -m unittest -v tools.api_manifest.tests.test_t102_lifecycle_request_identifier_member_mapping tools.api_manifest.tests.test_t102_lifecycle_request_trait_exclusions tools.api_manifest.tests.test_t102_lifecycle_request_serializer_mapping tools.api_manifest.tests.test_check_parity_manifest tools.api_manifest.tests.test_obtain_lease_parity_manifest tools.api_manifest.tests.test_recertify_parity_manifest tools.api_manifest.tests.test_rekey_parity_manifest tools.api_manifest.tests.test_rekey_key_pair_parity_manifest`.
 - Generated API outputs: `py -3 -B tools/api_manifest/generate.py --check`.
 - Formatting and whitespace: `cargo fmt --all --check` and `git diff --check`.
+
+### T102 Macro-Lot 2 Interop Function member parity (2026-11-04)
+
+Red `54ae8e4fd` adds a regression for the existing `kmipkit_protocol::InteropRequest::interop_function` declaration. The test first failed because that declaration was still blocked and absent from the operation mapping evidence. Its approved owner is `specs/028-diagnostics-interop/spec.md` (KMIPKIT-0042); OASIS KMIP Specification v2.1 §6.1.26 Tables 241–243 defines the Interop request and response. The existing protocol test confirms standard, vendor, and future function values remain representable.
+
+Green `f8cbce89c` maps the declaration to the existing Interop capability and C, Java, and Python operation builders, inheriting the approved requirement IDs from the verified Rust constructor. It adds the declaration and test evidence to the operation inventory, updates the T102 total and stale Interop/Log state expectations, and regenerates the public API projections. Refactor `70899d7f4` extracts the capability-mapping assertions in the focused test. This inventory mapping adds no runtime behavior or public symbol.
+
+Verification: the focused mapping, Interop parity, diagnostics serializer, and Interop/Log state modules pass 15/15. `py -3 -B tools/api_manifest/generate.py --check` verifies all 12 outputs; `cargo fmt --all --check` and `git diff --check` pass. T102 decreases 83→82 blocked candidates; public declaration/exclusion totals remain 6,380/8,713. Macro-Lot 2 remains open; the full T102 and 151-test `manifest-v2` suites remain reserved for lot closure. No formal protocol-conformance, server-interoperability, profile-support, or certification claim is made.
+
+Reproduction commands (run from the repository root):
+
+- Red, expected blocked-state and missing operation-inventory failures: `py -3 -B -m unittest tools.api_manifest.tests.test_t102_interop_function_member_mapping`.
+- Focused Green mapping, parity, serializer, and state group: `py -3 -B -m unittest tools.api_manifest.tests.test_t102_interop_function_member_mapping tools.api_manifest.tests.test_interop_parity_manifest tools.api_manifest.tests.test_t102_diagnostics_request_serializer_mapping tools.api_manifest.tests.test_t102_interop_request_trait_exclusions tools.api_manifest.tests.test_t102_interop_log_error_trait_exclusions`.
+- Generated API outputs: `py -3 -B tools/api_manifest/generate.py --check`.
+- Formatting and whitespace: `cargo fmt --all --check` and `git diff --check`.
