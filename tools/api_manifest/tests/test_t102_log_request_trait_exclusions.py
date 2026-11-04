@@ -150,11 +150,10 @@ class T102LogRequestTraitExclusionTests(unittest.TestCase):
             "kmipkit_protocol::LogRequest",
             "kmipkit_protocol::LogRequest::new",
             "kmipkit_protocol::LogRequest::into_ttlv_payload",
-        }
-        blocked = {
             "kmipkit_protocol::LogRequest::with_extension",
             "kmipkit_protocol::LogRequest::with_log_message",
         }
+        blocked = set()
         self.assertEqual(set(protocol_rows), verified | blocked)
         self.assertEqual(
             {

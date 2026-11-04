@@ -43,9 +43,9 @@ ERROR_SUFFIXES = {
     "::MissingResultStatus":"declared", "::UnexpectedOperation":"declared",
 }
 RELATED_STATES = {
-    "InteropRequest":{"":"verified", "::interop_function":"verified", "::into_ttlv_payload":"verified", "::new":"verified", "::with_extension":"blocked", "::with_interop_identifier":"blocked"},
+    "InteropRequest":{"":"verified", "::interop_function":"verified", "::into_ttlv_payload":"verified", "::new":"verified", "::with_extension":"verified", "::with_interop_identifier":"verified"},
     "InteropResponse":{"":"verified", "::result":"verified", "::try_from_response_item":"verified", "::with_ttlv":"verified"},
-    "LogRequest":{"":"verified", "::into_ttlv_payload":"verified", "::new":"verified", "::with_extension":"blocked", "::with_log_message":"blocked"},
+    "LogRequest":{"":"verified", "::into_ttlv_payload":"verified", "::new":"verified", "::with_extension":"verified", "::with_log_message":"verified"},
     "LogResponse":{"":"verified", "::result":"verified", "::try_from_response_item":"verified", "::with_ttlv":"verified"},
 }
 
