@@ -139,7 +139,7 @@ EXPECTED_VENDOR_EXTENSION_BRIDGE_MEMBERS = frozenset(
         "VALIDATED_VALUE",
     }
 )
-EXPECTED_REMAINING_VENDOR_EXTENSION_BRIDGE_MEMBERS = frozenset(
+EXPECTED_NON_FACADE_VENDOR_EXTENSION_BRIDGE_MEMBERS = frozenset(
     {
         "BATCH_ITEM",
         "PATH",
@@ -158,8 +158,6 @@ EXPECTED_REMAINING_VENDOR_EXTENSION_BRIDGE_MEMBERS = frozenset(
         "release",
     }
 )
-
-
 class JavaTtlvBridgeExclusionTests(unittest.TestCase):
     def setUp(self) -> None:
         self.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
@@ -198,13 +196,16 @@ class JavaTtlvBridgeExclusionTests(unittest.TestCase):
                     self.assertIn("KMIPKIT-0004-FR-", exclusion["evidence"])
                 self.assertNotIn((PACKAGE, export_name), self.declarations)
 
-    def test_neighboring_codec_bridge_export_stays_unresolved(self) -> None:
+    def test_unreferenced_codec_limits_bridge_export_has_exact_exclusion(self) -> None:
         for export_name in ("org.kmipkit.NativeExtensionRegistry.codecLimitsCreate",):
             with self.subTest(export_name=export_name):
-                declaration = self.declarations[(PACKAGE, export_name)]
-                self.assertEqual("blocked", declaration["declarationState"])
-                self.assertEqual("KMIPKIT-0043", declaration["candidateSpecId"])
-                self.assertNotIn((PACKAGE, export_name), self.exclusions)
+                exclusion = self.exclusions[(PACKAGE, export_name)]
+                self.assertEqual(OWNER_SPEC, exclusion["approvalSource"]["path"])
+                self.assertEqual("Approved", exclusion["approvalSource"]["status"])
+                self.assertIn("unreferenced JNI handle factory", exclusion["reason"])
+                self.assertIn("KMIPKIT-0043-FR-008", exclusion["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+                self.assertNotIn((PACKAGE, export_name), self.declarations)
 
     def test_timestamp_sequence_jni_bridge_is_excluded_under_approved_owner(self) -> None:
         actual_exclusions = {
@@ -292,7 +293,7 @@ class JavaTtlvBridgeExclusionTests(unittest.TestCase):
                 self.assertIn(f"NativeExtensionRegistry.{member}", source_text)
                 self.assertNotIn((PACKAGE, export_name), self.declarations)
 
-    def test_non_facade_vendor_extension_bridge_exports_remain_blocked(self) -> None:
+    def test_non_facade_vendor_extension_bridge_exports_have_exact_exclusions(self) -> None:
         prefix = "org.kmipkit.NativeExtensionRegistry."
         actual_blocked_members = {
             name.removeprefix(prefix)
@@ -302,8 +303,47 @@ class JavaTtlvBridgeExclusionTests(unittest.TestCase):
             and self.declarations[(package, name)]["declarationState"] == "blocked"
             and self.declarations[(package, name)].get("candidateSpecId") == "KMIPKIT-0043"
         }
-        self.assertEqual(EXPECTED_REMAINING_VENDOR_EXTENSION_BRIDGE_MEMBERS, actual_blocked_members)
-        self.assertNotIn((PACKAGE, "org.kmipkit.NativeExtensionRegistry"), self.exclusions)
+        self.assertEqual(frozenset(), actual_blocked_members)
+
+        java_sources = [
+            path
+            for path in (ROOT / "bindings" / "java" / "src" / "main" / "java").rglob("*.java")
+            if path.name != "NativeExtensionRegistry.java"
+        ]
+        source_text = "\n".join(path.read_text(encoding="utf-8") for path in java_sources)
+
+        actual_exclusions = {
+            name.removeprefix(prefix)
+            for package, name in self.exclusions
+            if package == PACKAGE
+            and name.startswith(prefix)
+            and name.removeprefix(prefix)
+            in EXPECTED_NON_FACADE_VENDOR_EXTENSION_BRIDGE_MEMBERS
+        }
+        self.assertEqual(
+            EXPECTED_NON_FACADE_VENDOR_EXTENSION_BRIDGE_MEMBERS,
+            actual_exclusions,
+        )
+        for member in sorted(EXPECTED_NON_FACADE_VENDOR_EXTENSION_BRIDGE_MEMBERS):
+            export_name = prefix + member
+            exclusion = self.exclusions[(PACKAGE, export_name)]
+            with self.subTest(export_name=export_name):
+                self.assertEqual(OWNER_SPEC, exclusion["approvalSource"]["path"])
+                self.assertEqual("Approved", exclusion["approvalSource"]["status"])
+                self.assertIn("internal vendor-extension JNI plumbing", exclusion["reason"])
+                self.assertIn("KMIPKIT-0043-FR-008", exclusion["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+                self.assertNotIn((PACKAGE, export_name), self.declarations)
+                if member == "codecLimitsCreate":
+                    self.assertNotIn(f"NativeExtensionRegistry.{member}", source_text)
+                else:
+                    self.assertIn(f"NativeExtensionRegistry.{member}", source_text)
+        bridge_type = self.exclusions[(PACKAGE, "org.kmipkit.NativeExtensionRegistry")]
+        self.assertEqual(OWNER_SPEC, bridge_type["approvalSource"]["path"])
+        self.assertEqual("Approved", bridge_type["approvalSource"]["status"])
+        self.assertIn("internal JNI bridge", bridge_type["reason"])
+        self.assertIn("KMIPKIT-0043-FR-008", bridge_type["evidence"])
+        self.assertIn("KMIPKIT-0043-FR-021", bridge_type["evidence"])
 
 
 if __name__ == "__main__":
