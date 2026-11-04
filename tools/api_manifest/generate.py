@@ -973,6 +973,16 @@ _NORMALIZED_CLIENT_PROTOCOL_ERROR_FAMILY_REQUIREMENTS = {
     },
     "Pkcs11Error": frozenset({"KMIPKIT-0040-FR-001", "KMIPKIT-0040-FR-004"}),
     **{
+        family: frozenset(
+            {
+                "KMIPKIT-0041-FR-001", "KMIPKIT-0041-FR-003",
+                "KMIPKIT-0041-FR-004", "KMIPKIT-0041-FR-005",
+                "KMIPKIT-0041-FR-006",
+            }
+        )
+        for family in ("RngRetrieveError", "RngSeedError")
+    },
+    **{
         family: frozenset({"KMIPKIT-0042-FR-001", "KMIPKIT-0042-FR-004"})
         for family in ("InteropError", "LogError")
     },

@@ -11,7 +11,7 @@
 //! `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-10-DATA-LENGTH`, and
 //! `KMIPKIT-REQ-SPEC-6.1.50-001`.
 
-use kmipkit_protocol::{RngSeedRequest, SecretBytes};
+use kmipkit_protocol::{ProtocolCauseCategory, RngSeedRequest, SecretBytes};
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestDeliveryState;
 use kmipkit_ttlv::ValueView;
@@ -22,6 +22,7 @@ use crate::execute::{
     ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientOperation, ClientRequest,
 };
 use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
+use crate::{ClientCauseCategory, ClientErrorCategory};
 
 const RNG_SEED: u32 = 0x0000_0026;
 const DATA: u32 = 0x0042_00C2;
@@ -189,6 +190,18 @@ fn rng_seed_malformed_response_error_does_not_expose_seed_bytes() {
         )
         .expect_err("a successful Table 320 response requires Data Length");
 
+    assert_eq!(error.category(), ClientErrorCategory::Protocol);
+    assert_eq!(
+        error.cause_category(),
+        Some(ClientCauseCategory::Protocol(
+            ProtocolCauseCategory::InvalidValue
+        ))
+    );
+    assert_eq!(
+        error.delivery_state(),
+        Some(RequestDeliveryState::ResponseStarted)
+    );
+    assert!(error.response_ttlv().is_none());
     assert!(!error.to_string().contains("KMIP_RNG_SEED_SECRET_SENTINEL"));
     assert!(!format!("{error:?}").contains("KMIP_RNG_SEED_SECRET_SENTINEL"));
     assert_eq!(transport.borrow().exchange_count(), 1);
