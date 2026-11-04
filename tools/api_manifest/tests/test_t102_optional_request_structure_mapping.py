@@ -153,7 +153,7 @@ TARGETS = (
     },
 )
 BLOCKED_CANDIDATES_BEFORE_BATCH = 669
-BLOCKED_CANDIDATES_AFTER_BATCH = 654
+BLOCKED_CANDIDATES_AFTER_BATCH = 648
 RECERTIFY_TYPE_ID = "rust-observed-4e379cb3b97bca658dbf"
 WRAPPING_REQUEST_BUILDER_IDS = {
     "rust-observed-9cd4c6b6fd190aff211f",
@@ -173,6 +173,14 @@ RAW_RECERTIFY_DECLARATIONS = {
 RECERTIFY_OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"
 RECERTIFY_OPERATION_ADDED_EVIDENCE = {
     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+}
+PKCS11_REQUEST_SETTER_IDS = {
+    "rust-observed-60273eccedf62e75a65e",
+    "rust-observed-b1e7666a5a57f054a891",
+    "rust-observed-37ff26bed9cff3029512",
+    "rust-observed-837fc199aac73b1ffd00",
+    "rust-observed-cc71aab290dc65b5928f",
+    "rust-observed-573ae1d0de80ffa2884b",
 }
 OTHER_DECLARATIONS_SHA256 = "160f02f1f8feedc737fbb24570c134ff3d6855ec0812a6e7e3ffacb4de5e152b"
 OTHER_OPERATIONS_SHA256 = "17ecaeb860c429b0f92509ccf4fd6a8a9b83f0cefd2ed9a358f099fe0463c8d5"
@@ -292,7 +300,8 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
             - len(target_ids)
             - len(CERTIFY_TARGET_IDS)
             - 1
-            - len(WRAPPING_REQUEST_BUILDER_IDS),
+            - len(WRAPPING_REQUEST_BUILDER_IDS)
+            - len(PKCS11_REQUEST_SETTER_IDS),
             BLOCKED_CANDIDATES_AFTER_BATCH,
         )
         self.assertEqual(
@@ -349,6 +358,15 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                 row.pop("approvalSource", None)
                 row.pop("languageMappings", None)
                 row.pop("parityEvidenceIds", None)
+            if row["declarationId"] in PKCS11_REQUEST_SETTER_IDS:
+                row["capabilityId"] = "public_binding_surface"
+                row["requirementIds"] = ["KMIPKIT-0043-FR-021"]
+                row["declarationState"] = "blocked"
+                row["candidateSpecId"] = "KMIPKIT-0043"
+                row["blockedReason"] = blocked_reason
+                row.pop("approvalSource", None)
+                row.pop("languageMappings", None)
+                row.pop("parityEvidenceIds", None)
         self.assertEqual(OTHER_DECLARATIONS_SHA256, canonical_sha256(other_declarations))
 
         other_operations = copy.deepcopy(self.manifest["operations"])
@@ -367,6 +385,8 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                     WRAPPING_REQUEST_BUILDER_IDS
                     & set(operation["declarations"]["rust"])
                 )
+            if operation["operationId"] == "KMIPKIT-ELEM-OP-C2S-PKCS-11":
+                operation_target_ids.update(PKCS11_REQUEST_SETTER_IDS)
             if operation_target_ids:
                 operation["declarations"]["rust"] = [
                     value for value in operation["declarations"]["rust"]

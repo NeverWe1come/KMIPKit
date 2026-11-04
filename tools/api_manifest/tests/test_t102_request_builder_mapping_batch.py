@@ -10,7 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 OASIS_HTML = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
-T102_CANDIDATES_AFTER_BATCH = 654
+T102_CANDIDATES_AFTER_BATCH = 648
 NEW_EVIDENCE = {
     "crates/kmipkit-ffi/tests/c_api_coverage.rs",
     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",

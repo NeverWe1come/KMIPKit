@@ -45,6 +45,14 @@ WRAPPING_REQUEST_BUILDER_IDS = {
     "rust-observed-61aecad439c9a84c7241",
     "rust-observed-ba1772cec998d92e5148",
 }
+PKCS11_REQUEST_SETTER_IDS = {
+    "rust-observed-60273eccedf62e75a65e",
+    "rust-observed-b1e7666a5a57f054a891",
+    "rust-observed-37ff26bed9cff3029512",
+    "rust-observed-837fc199aac73b1ffd00",
+    "rust-observed-cc71aab290dc65b5928f",
+    "rust-observed-573ae1d0de80ffa2884b",
+}
 RECERTIFY_TYPE_ID = "rust-observed-4e379cb3b97bca658dbf"
 RAW_CERTIFY_EVIDENCE = {
     "bindings/c/tests/client_abi_consumer.c",
@@ -156,7 +164,13 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
         )
         self.assertEqual(BLOCKED_BEFORE - len(target_ids), BLOCKED_AFTER)
         self.assertEqual(4, len(WRAPPING_REQUEST_BUILDER_IDS))
-        self.assertEqual(BLOCKED_AFTER - 1 - len(WRAPPING_REQUEST_BUILDER_IDS), blocked)
+        self.assertEqual(
+            BLOCKED_AFTER
+            - 1
+            - len(WRAPPING_REQUEST_BUILDER_IDS)
+            - len(PKCS11_REQUEST_SETTER_IDS),
+            blocked,
+        )
         self.assertEqual(
             "verified",
             self.declarations[RECERTIFY_TYPE_ID]["declarationState"],
@@ -282,6 +296,18 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                 declaration.pop("approvalSource", None)
                 declaration.pop("languageMappings", None)
                 declaration.pop("parityEvidenceIds", None)
+            if declaration["declarationId"] in PKCS11_REQUEST_SETTER_IDS:
+                declaration["capabilityId"] = "public_binding_surface"
+                declaration["requirementIds"] = ["KMIPKIT-0043-FR-021"]
+                declaration["declarationState"] = "blocked"
+                declaration["candidateSpecId"] = "KMIPKIT-0043"
+                declaration["blockedReason"] = (
+                    "The public Rust declaration has no resolved owner in the approved dependency inventory; "
+                    "assign an owner before advertising it."
+                )
+                declaration.pop("approvalSource", None)
+                declaration.pop("languageMappings", None)
+                declaration.pop("parityEvidenceIds", None)
         self.assertEqual(DECLARATIONS_SHA256, canonical_sha256(other_declarations))
         other_operations = copy.deepcopy(self.manifest["operations"])
         for operation in other_operations:
@@ -312,6 +338,12 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                     declaration_id
                     for declaration_id in operation["declarations"]["rust"]
                     if declaration_id not in WRAPPING_REQUEST_BUILDER_IDS
+                ]
+            if operation["operationId"] == "KMIPKIT-ELEM-OP-C2S-PKCS-11":
+                operation["declarations"]["rust"] = [
+                    declaration_id
+                    for declaration_id in operation["declarations"]["rust"]
+                    if declaration_id not in PKCS11_REQUEST_SETTER_IDS
                 ]
         self.assertEqual(OPERATIONS_SHA256, canonical_sha256(other_operations))
 

@@ -157,13 +157,13 @@ class T102Pkcs11RequestTraitExclusionTests(unittest.TestCase):
         verified = {
             "kmipkit_protocol::Pkcs11Request",
             "kmipkit_protocol::Pkcs11Request::new",
+            "kmipkit_protocol::Pkcs11Request::with_correlation_value",
+            "kmipkit_protocol::Pkcs11Request::with_input_parameters",
+            "kmipkit_protocol::Pkcs11Request::with_interface",
         }
         blocked = {
             "kmipkit_protocol::Pkcs11Request::into_ttlv_payload",
-            "kmipkit_protocol::Pkcs11Request::with_correlation_value",
             "kmipkit_protocol::Pkcs11Request::with_extension",
-            "kmipkit_protocol::Pkcs11Request::with_input_parameters",
-            "kmipkit_protocol::Pkcs11Request::with_interface",
         }
         self.assertEqual(set(protocol_rows), verified | blocked)
         self.assertEqual(
@@ -241,6 +241,9 @@ class T102Pkcs11RequestTraitExclusionTests(unittest.TestCase):
             {
                 "kmipkit_client::Pkcs11Request",
                 "kmipkit_client::Pkcs11Request::new",
+                "kmipkit_client::Pkcs11Request::with_correlation_value",
+                "kmipkit_client::Pkcs11Request::with_input_parameters",
+                "kmipkit_client::Pkcs11Request::with_interface",
             },
         )
         self.assertEqual(
@@ -253,6 +256,9 @@ class T102Pkcs11RequestTraitExclusionTests(unittest.TestCase):
             - {
                 "kmipkit_client::Pkcs11Request",
                 "kmipkit_client::Pkcs11Request::new",
+                "kmipkit_client::Pkcs11Request::with_correlation_value",
+                "kmipkit_client::Pkcs11Request::with_input_parameters",
+                "kmipkit_client::Pkcs11Request::with_interface",
             },
         )
 

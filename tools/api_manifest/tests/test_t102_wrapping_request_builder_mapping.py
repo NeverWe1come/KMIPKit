@@ -14,7 +14,8 @@ MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 CATALOG = ROOT / "specification" / "catalog" / "kmip-2.1.json"
 OASIS = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
 BASE_BLOCKED = 658
-EXPECTED_BLOCKED = 654
+EXPECTED_BLOCKED = 648
+PKCS11_MAPPED_CANDIDATES = 6
 COMMON_EVIDENCE = {
     "c": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
     "c_consumer": "bindings/c/tests/client_abi_consumer.c",
@@ -128,7 +129,7 @@ class T102WrappingRequestBuilderMappingTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
         )
         self.assertEqual(EXPECTED_BLOCKED, blocked)
-        before = blocked + len(TARGETS)
+        before = blocked + len(TARGETS) + PKCS11_MAPPED_CANDIDATES
         self.assertEqual(BASE_BLOCKED, before)
 
     def test_client_and_server_requirement_scope_is_exact(self) -> None:

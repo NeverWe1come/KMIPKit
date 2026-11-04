@@ -169,7 +169,7 @@ EXPECTED = (
 UNCHANGED_DECLARATIONS_SHA256 = "de724b98916761845378dc8e4052676b0c6a6a3aba035bc3c9fe1ff72e62e071"
 UNCHANGED_OPERATIONS_SHA256 = "eb69336ea313c72f6461f5e67655d985c820969697237b4b2b8efc3d79712735"
 OTHER_MANIFEST_SHA256 = "89ce2f39dccd3e4548dc0145da0e8b4463f4f4ae769ed472d80cf44b26679ba6"
-EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = 654
+EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = 648
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",
     "rust-observed-8fff50bdd49a09ae00bf",
@@ -256,6 +256,14 @@ SCALAR_REQUEST_BUILDER_OPERATIONS = {
     "KMIPKIT-ELEM-OP-C2S-RE-KEY",
     "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
     "KMIPKIT-ELEM-OP-C2S-IMPORT",
+}
+PKCS11_REQUEST_SETTER_IDS = {
+    "rust-observed-60273eccedf62e75a65e",
+    "rust-observed-b1e7666a5a57f054a891",
+    "rust-observed-37ff26bed9cff3029512",
+    "rust-observed-837fc199aac73b1ffd00",
+    "rust-observed-cc71aab290dc65b5928f",
+    "rust-observed-573ae1d0de80ffa2884b",
 }
 
 
@@ -422,7 +430,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
         target_ids.update(REKEY_STRUCTURE_IDS)
         target_ids.update(JOIN_SPLIT_STRUCTURE_IDS)
         target_ids.update(RECERTIFY_STRUCTURE_IDS)
-        affected_operation_ids = target_ids | SCALAR_REQUEST_BUILDER_IDS | {
+        affected_operation_ids = target_ids | SCALAR_REQUEST_BUILDER_IDS | PKCS11_REQUEST_SETTER_IDS | {
             JOIN_SPLIT_SECRET_DATA_TYPE_ID,
             REKEY_KEY_PAIR_UID_ID,
             *REKEY_KEY_PAIR_STRUCTURE_IDS,
@@ -505,6 +513,18 @@ class T102ResponseViewMappingTests(unittest.TestCase):
                 declaration.pop("approvalSource", None)
                 declaration.pop("languageMappings", None)
                 declaration.pop("parityEvidenceIds", None)
+            if declaration["declarationId"] in PKCS11_REQUEST_SETTER_IDS:
+                declaration["capabilityId"] = "public_binding_surface"
+                declaration["requirementIds"] = ["KMIPKIT-0043-FR-021"]
+                declaration["declarationState"] = "blocked"
+                declaration["candidateSpecId"] = "KMIPKIT-0043"
+                declaration["blockedReason"] = (
+                    "The public Rust declaration has no resolved owner in the approved dependency inventory; "
+                    "assign an owner before advertising it."
+                )
+                declaration.pop("approvalSource", None)
+                declaration.pop("languageMappings", None)
+                declaration.pop("parityEvidenceIds", None)
             if declaration["declarationId"] in LOCATE_DECLARATIONS_WITH_MISATTRIBUTED_SERVER_REQUIREMENT:
                 requirements = set(declaration["requirementIds"])
                 requirements.discard(LOCATE_REQUEST_REQUIREMENT)
@@ -537,6 +557,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
         })
         target_operations.update({JOIN_SPLIT_OPERATION_ID, REKEY_KEY_PAIR_OPERATION_ID})
         target_operations.update(SCALAR_REQUEST_BUILDER_OPERATIONS)
+        target_operations.add("KMIPKIT-ELEM-OP-C2S-PKCS-11")
         normalized_operations = copy.deepcopy(self.manifest["operations"])
         for operation in normalized_operations:
             if operation["operationId"] in target_operations:
