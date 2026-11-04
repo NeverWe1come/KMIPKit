@@ -85,6 +85,17 @@ final class RegisterOpaqueContextParityTest {
         assertThrows(InvalidInputException.class, () -> ClientBatchItem.register(null));
     }
 
+    @Test
+    void protectionStorageMasksCanBeAddedAndSubmitted() {
+        var masks = TtlvStructure.create();
+        var request = RegisterRequest.create(OPAQUE_OBJECT_TYPE, TtlvStructure.create(), opaqueObject())
+                .withProtectionStorageMasks(masks);
+
+        try (masks; var item = ClientBatchItem.register(request)) {
+            assertNotNull(item);
+        }
+    }
+
     private static TtlvItem opaqueObject() {
         TtlvStructure fields = TtlvStructure.create();
         fields = TtlvStructure.withItem(

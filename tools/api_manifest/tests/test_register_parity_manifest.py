@@ -44,17 +44,20 @@ EXPECTED_MAPPINGS = {
         "kmipkit_client::ClientRequest::Register",
         "kmipkit_client::ClientBatchOutcome::register_response",
         "kmipkit_protocol::RegisterRequest",
+        "kmipkit_protocol::RegisterRequest::with_protection_storage_masks",
         "kmipkit_protocol::RegisterResponse",
         "kmipkit_protocol::RegisterResponse::unique_identifier",
         "kmipkit_protocol::RegisterResponse::with_ttlv",
     },
     "c": {
         "kmipkit_client_batch_item_register",
+        "kmipkit_register_request_with_protection_storage_masks",
         "kmipkit_client_batch_item_response_register",
         "kmipkit_client_batch_item_response_register_ttlv",
     },
     "java": {
         "org.kmipkit.extensions.ClientBatchItem.register",
+        "org.kmipkit.extensions.RegisterRequest.withProtectionStorageMasks",
         "org.kmipkit.extensions.ClientBatchItemResult.registerResponse",
         "org.kmipkit.extensions.ClientBatchItemResult.RegisterResponse",
         "org.kmipkit.extensions.ClientBatchItemResult.RegisterResponse.uniqueIdentifier",
@@ -63,6 +66,7 @@ EXPECTED_MAPPINGS = {
     },
     "python": {
         "kmipkit.extensions.client_batch_item_register",
+        "kmipkit.extensions.RegisterRequest.with_protection_storage_masks",
         "kmipkit.client.BatchItemResult.register_response",
         "kmipkit.client.RegisterResponse",
         "kmipkit.client.RegisterResponse.unique_identifier",
