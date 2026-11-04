@@ -104,21 +104,43 @@ class T102LifecycleRequestIdentifierMemberMappingTests(unittest.TestCase):
                 self.assertEqual("Approved", builder["approvalSource"]["status"])
                 for declaration_id, export_name in spec["targets"]:
                     with self.subTest(declaration=export_name):
-                        declaration = self.declarations[declaration_id]
-                        mappings = dict(builder["languageMappings"])
-                        mappings["rust"] = {
-                            "packageId": "rust-kmipkit-protocol",
-                            "name": export_name,
-                        }
-                        self.assertEqual(export_name, declaration["exportName"])
-                        self.assertEqual("verified", declaration["declarationState"])
-                        self.assertEqual(spec["capability"], declaration["capabilityId"])
-                        self.assertEqual(constructor["approvalSource"], declaration["approvalSource"])
-                        self.assertEqual(constructor["requirementIds"], declaration["requirementIds"])
-                        self.assertEqual("four-language", declaration["parityScope"])
-                        self.assertEqual(mappings, declaration["languageMappings"])
-                        self.assertIn(MAPPING_EVIDENCE, declaration["parityEvidenceIds"])
-                        self.assertIn(declaration_id, operation["declarations"]["rust"])
+                        self._assert_target_mapping(
+                            spec,
+                            operation,
+                            builder,
+                            constructor,
+                            declaration_id,
+                            export_name,
+                        )
+
+    def _assert_target_mapping(
+        self,
+        spec: dict[str, object],
+        operation: dict,
+        builder: dict,
+        constructor: dict,
+        declaration_id: str,
+        export_name: str,
+    ) -> None:
+        declaration = self.declarations[declaration_id]
+        mappings = dict(builder["languageMappings"])
+        mappings["rust"] = {
+            "packageId": "rust-kmipkit-protocol",
+            "name": export_name,
+        }
+        self.assertEqual(export_name, declaration["exportName"])
+        self.assertEqual("verified", declaration["declarationState"])
+        self.assertEqual(spec["capability"], declaration["capabilityId"])
+        self.assertEqual(
+            constructor["approvalSource"], declaration["approvalSource"]
+        )
+        self.assertEqual(
+            constructor["requirementIds"], declaration["requirementIds"]
+        )
+        self.assertEqual("four-language", declaration["parityScope"])
+        self.assertEqual(mappings, declaration["languageMappings"])
+        self.assertIn(MAPPING_EVIDENCE, declaration["parityEvidenceIds"])
+        self.assertIn(declaration_id, operation["declarations"]["rust"])
 
     def test_each_mapping_cites_approved_owner_and_exact_oasis_request_source(self) -> None:
         specification = (ROOT / OWNER).read_text(encoding="utf-8")
