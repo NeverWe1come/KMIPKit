@@ -83,6 +83,9 @@ REQUEST_DECLARATIONS = {
     "rust-observed-3b7ec1d8b422ce2f856a",
     "rust-observed-a305050686931a657f67",
     "rust-observed-18147c6b3bc743f37b88",
+    "rust-observed-0cad07b4f1010a7d9a55",  # RecertifyRequest::with_attributes
+    "rust-observed-6e9fb656f103c43fa2de",  # RecertifyRequest::with_protection_storage_masks
+    "rust-observed-4e379cb3b97bca658dbf",  # RecertifyRequest::with_certificate_request_type
     "T058:recertify:constructor:c",
     "T058:recertify:constructor:java",
     "T058:recertify:constructor:python",
@@ -156,6 +159,18 @@ PARITY_EVIDENCE = {
     "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
     "tools/api_manifest/tests/test_recertify_parity_manifest.py",
 }
+TYPE_ONLY_PARITY_EVIDENCE = {
+    "bindings/c/tests/client_abi_consumer.c",
+    "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+    "bindings/python/tests/test_recertify_operation.py",
+    "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+    "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
+}
+REQUEST_BUILDER_WIRE_DECLARATIONS = {
+    "rust-observed-0cad07b4f1010a7d9a55",
+    "rust-observed-4e379cb3b97bca658dbf",
+    "rust-observed-6e9fb656f103c43fa2de",
+}
 EXPECTED_MAPPINGS = {
     "rust": {
         "kmipkit_client::Client::recertify",
@@ -224,7 +239,12 @@ class RecertifyParityManifestTests(unittest.TestCase):
                 declaration = self.declarations[declaration_id]
                 self.assertIn(declaration["capabilityId"], {OPERATION_ID, "client_execution"})
                 self.assertEqual("verified", declaration["declarationState"])
-                self.assertTrue(PARITY_EVIDENCE <= set(declaration["parityEvidenceIds"]))
+                required_evidence = (
+                    TYPE_ONLY_PARITY_EVIDENCE
+                    if declaration_id in REQUEST_BUILDER_WIRE_DECLARATIONS
+                    else PARITY_EVIDENCE
+                )
+                self.assertTrue(required_evidence <= set(declaration["parityEvidenceIds"]))
                 self.assertEqual("four-language", declaration["parityScope"])
                 self.assertEqual(LANGUAGES, set(declaration["languageMappings"]))
                 self.assertEqual(OWNER_SPEC, declaration["approvalSource"]["path"])
@@ -252,7 +272,7 @@ class RecertifyParityManifestTests(unittest.TestCase):
             if row.get("capabilityId") == OPERATION_ID
         ]
         declarations_by_id = {row["declarationId"]: row for row in operation_declarations}
-        self.assertEqual(43, len(operation_declarations))
+        self.assertEqual(46, len(operation_declarations))
         self.assertEqual(set(declarations_by_id), REQUEST_DECLARATIONS | NON_REQUEST_DECLARATIONS)
         active_declarations = {
             row["declarationId"] for row in operation_declarations

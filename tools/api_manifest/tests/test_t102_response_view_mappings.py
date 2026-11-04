@@ -28,6 +28,7 @@ from tools.api_manifest.tests.test_t102_locate_request_builder_mapping import (
 )
 from tools.api_manifest.tests.test_t102_recertify_rekey_key_pair_builder_mapping import (
     RECERTIFY,
+    RECERTIFY_TYPE_ID,
     REKEY_KEY_PAIR,
     TARGETS as RECERTIFY_REKEY_KEY_PAIR_TARGETS,
 )
@@ -168,7 +169,7 @@ EXPECTED = (
 UNCHANGED_DECLARATIONS_SHA256 = "de724b98916761845378dc8e4052676b0c6a6a3aba035bc3c9fe1ff72e62e071"
 UNCHANGED_OPERATIONS_SHA256 = "eb69336ea313c72f6461f5e67655d985c820969697237b4b2b8efc3d79712735"
 OTHER_MANIFEST_SHA256 = "89ce2f39dccd3e4548dc0145da0e8b4463f4f4ae769ed472d80cf44b26679ba6"
-EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = 659
+EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = 658
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",
     "rust-observed-8fff50bdd49a09ae00bf",
@@ -423,6 +424,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
             *REKEY_STRUCTURE_IDS,
             *JOIN_SPLIT_STRUCTURE_IDS,
             *RECERTIFY_STRUCTURE_IDS,
+            RECERTIFY_TYPE_ID,
             *(target["id"] for target in CERTIFY_TARGETS),
         }
         unchanged_declarations = copy.deepcopy([
@@ -434,10 +436,23 @@ class T102ResponseViewMappingTests(unittest.TestCase):
             if declaration["declarationId"] in {
                 "rust-observed-e0a06a71290bee987cc7",
                 "rust-observed-5722377217051635233d",
+                "rust-observed-bd90b6e53d6c05c1a6b0",
+                "rust-observed-4c37b205dc5bee05df9a",
             }:
                 declaration["parityEvidenceIds"].remove(
                     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
                 )
+            if declaration["declarationId"] == RECERTIFY_TYPE_ID:
+                declaration["capabilityId"] = "public_binding_surface"
+                declaration["requirementIds"] = ["KMIPKIT-0043-FR-021"]
+                declaration["declarationState"] = "blocked"
+                declaration["candidateSpecId"] = "KMIPKIT-0043"
+                declaration[
+                    "blockedReason"
+                ] = "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+                declaration.pop("approvalSource", None)
+                declaration.pop("languageMappings", None)
+                declaration.pop("parityEvidenceIds", None)
             if declaration["declarationId"] in {
                 target["id"] for target in CERTIFY_TARGETS
             }:
@@ -540,6 +555,13 @@ class T102ResponseViewMappingTests(unittest.TestCase):
                         for value in operation["parityEvidenceIds"]
                         if value not in CERTIFY_OPERATION_ADDED_EVIDENCE
                     ]
+                if operation["operationId"] == RECERTIFY:
+                    operation["parityEvidenceIds"] = [
+                        value
+                        for value in operation["parityEvidenceIds"]
+                        if value
+                        != "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
+                    ]
         self.assertEqual(
             UNCHANGED_OPERATIONS_SHA256,
             canonical_sha256(normalized_operations),
@@ -555,6 +577,12 @@ class T102ResponseViewMappingTests(unittest.TestCase):
             if requirement_id not in {LOCATE_REQUEST_REQUIREMENT, "KMIPKIT-REQ-SPEC-6.1.45-002-003"}
         ]
         for function in other_manifest["functions"]:
+            if function["id"] == "client_batch_item_recertify":
+                function["c"]["documentation"][0] = (
+                    "Creates a typed Re-certify item. Certificate Request Type is present only with "
+                    "Certificate Request Value; request bytes are staged as sensitive data and wiped "
+                    "after the synchronous ABI call."
+                )
             if function["id"] in {
                 "client_batch_item_recertify",
                 "client_batch_item_response_recertify",

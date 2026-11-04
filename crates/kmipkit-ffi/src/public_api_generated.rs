@@ -9993,6 +9993,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::RecertifyRequest::with_attributes",
     ),
     (
+        "rust-observed-4e379cb3b97bca658dbf",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RecertifyRequest::with_certificate_request_type",
+    ),
+    (
         "rust-observed-a305050686931a657f67",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::RecertifyRequest::with_certificate_request_unique_identifier",

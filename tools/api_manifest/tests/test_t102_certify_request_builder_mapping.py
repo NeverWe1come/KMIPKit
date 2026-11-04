@@ -35,6 +35,11 @@ RAW_CERTIFY_DECLARATIONS = {
     "rust-observed-e0a06a71290bee987cc7",
     "rust-observed-5722377217051635233d",
 }
+RAW_RECERTIFY_DECLARATIONS = {
+    "rust-observed-bd90b6e53d6c05c1a6b0",
+    "rust-observed-4c37b205dc5bee05df9a",
+}
+RECERTIFY_TYPE_ID = "rust-observed-4e379cb3b97bca658dbf"
 RAW_CERTIFY_EVIDENCE = {
     "bindings/c/tests/client_abi_consumer.c",
     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
@@ -144,7 +149,11 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
         )
         self.assertEqual(BLOCKED_BEFORE - len(target_ids), BLOCKED_AFTER)
-        self.assertEqual(BLOCKED_AFTER, blocked)
+        self.assertEqual(BLOCKED_AFTER - 1, blocked)
+        self.assertEqual(
+            "verified",
+            self.declarations[RECERTIFY_TYPE_ID]["declarationState"],
+        )
         self.assertEqual(6_470, len(self.manifest["publicDeclarations"]))
         self.assertEqual(8_554, len(self.manifest["approvedExclusions"]))
 
@@ -238,10 +247,22 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
             row for row in self.manifest["publicDeclarations"] if row["declarationId"] not in target_ids
         ])
         for declaration in other_declarations:
-            if declaration["declarationId"] in RAW_CERTIFY_DECLARATIONS:
+            if declaration["declarationId"] in RAW_CERTIFY_DECLARATIONS | RAW_RECERTIFY_DECLARATIONS:
                 declaration["parityEvidenceIds"].remove(
                     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
                 )
+            if declaration["declarationId"] == RECERTIFY_TYPE_ID:
+                declaration["capabilityId"] = "public_binding_surface"
+                declaration["requirementIds"] = ["KMIPKIT-0043-FR-021"]
+                declaration["declarationState"] = "blocked"
+                declaration["candidateSpecId"] = "KMIPKIT-0043"
+                declaration["blockedReason"] = (
+                    "The public Rust declaration has no resolved owner in the approved dependency inventory; "
+                    "assign an owner before advertising it."
+                )
+                declaration.pop("approvalSource", None)
+                declaration.pop("languageMappings", None)
+                declaration.pop("parityEvidenceIds", None)
         self.assertEqual(DECLARATIONS_SHA256, canonical_sha256(other_declarations))
         other_operations = copy.deepcopy(self.manifest["operations"])
         for operation in other_operations:
@@ -253,6 +274,15 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                 operation["parityEvidenceIds"] = [
                     evidence_id for evidence_id in operation["parityEvidenceIds"]
                     if evidence_id not in OPERATION_ADDED_EVIDENCE
+                ]
+            if operation["operationId"] == "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY":
+                operation["declarations"]["rust"] = [
+                    declaration_id for declaration_id in operation["declarations"]["rust"]
+                    if declaration_id != RECERTIFY_TYPE_ID
+                ]
+                operation["parityEvidenceIds"] = [
+                    evidence_id for evidence_id in operation["parityEvidenceIds"]
+                    if evidence_id != "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
                 ]
         self.assertEqual(OPERATIONS_SHA256, canonical_sha256(other_operations))
 

@@ -153,7 +153,16 @@ TARGETS = (
     },
 )
 BLOCKED_CANDIDATES_BEFORE_BATCH = 669
-BLOCKED_CANDIDATES_AFTER_BATCH = 659
+BLOCKED_CANDIDATES_AFTER_BATCH = 658
+RECERTIFY_TYPE_ID = "rust-observed-4e379cb3b97bca658dbf"
+RAW_RECERTIFY_DECLARATIONS = {
+    "rust-observed-bd90b6e53d6c05c1a6b0",
+    "rust-observed-4c37b205dc5bee05df9a",
+}
+RECERTIFY_OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"
+RECERTIFY_OPERATION_ADDED_EVIDENCE = {
+    "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+}
 OTHER_DECLARATIONS_SHA256 = "160f02f1f8feedc737fbb24570c134ff3d6855ec0812a6e7e3ffacb4de5e152b"
 OTHER_OPERATIONS_SHA256 = "17ecaeb860c429b0f92509ccf4fd6a8a9b83f0cefd2ed9a358f099fe0463c8d5"
 def canonical_sha256(value: object) -> str:
@@ -268,8 +277,15 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
         )
         self.assertEqual(
-            BLOCKED_CANDIDATES_BEFORE_BATCH - len(target_ids) - len(CERTIFY_TARGET_IDS),
+            BLOCKED_CANDIDATES_BEFORE_BATCH
+            - len(target_ids)
+            - len(CERTIFY_TARGET_IDS)
+            - 1,
             BLOCKED_CANDIDATES_AFTER_BATCH,
+        )
+        self.assertEqual(
+            "verified",
+            self.declarations[RECERTIFY_TYPE_ID]["declarationState"],
         )
         self.assertEqual(BLOCKED_CANDIDATES_AFTER_BATCH, blocked)
         self.assertEqual(6_470, len(self.manifest["publicDeclarations"]))
@@ -289,10 +305,20 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
             if row["declarationId"] in {
                 "rust-observed-e0a06a71290bee987cc7",
                 "rust-observed-5722377217051635233d",
+                *RAW_RECERTIFY_DECLARATIONS,
             }:
                 row["parityEvidenceIds"].remove(
                     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
                 )
+            if row["declarationId"] == RECERTIFY_TYPE_ID:
+                row["capabilityId"] = "public_binding_surface"
+                row["requirementIds"] = ["KMIPKIT-0043-FR-021"]
+                row["declarationState"] = "blocked"
+                row["candidateSpecId"] = "KMIPKIT-0043"
+                row["blockedReason"] = blocked_reason
+                row.pop("approvalSource", None)
+                row.pop("languageMappings", None)
+                row.pop("parityEvidenceIds", None)
             if row["declarationId"] in CERTIFY_TARGET_IDS:
                 row["capabilityId"] = "public_binding_surface"
                 row["requirementIds"] = ["KMIPKIT-0043-FR-021"]
@@ -313,6 +339,8 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
             }
             if operation["operationId"] == CERTIFY_OPERATION_ID:
                 operation_target_ids.update(CERTIFY_TARGET_IDS)
+            if operation["operationId"] == RECERTIFY_OPERATION_ID:
+                operation_target_ids.add(RECERTIFY_TYPE_ID)
             if operation_target_ids:
                 operation["declarations"]["rust"] = [
                     value for value in operation["declarations"]["rust"]
@@ -322,6 +350,11 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                 operation["parityEvidenceIds"] = [
                     evidence_id for evidence_id in operation["parityEvidenceIds"]
                     if evidence_id not in CERTIFY_OPERATION_ADDED_EVIDENCE
+                ]
+            if operation["operationId"] == RECERTIFY_OPERATION_ID:
+                operation["parityEvidenceIds"] = [
+                    evidence_id for evidence_id in operation["parityEvidenceIds"]
+                    if evidence_id not in RECERTIFY_OPERATION_ADDED_EVIDENCE
                 ]
         self.assertEqual(OTHER_OPERATIONS_SHA256, canonical_sha256(other_operations))
 

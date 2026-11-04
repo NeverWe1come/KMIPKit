@@ -154,13 +154,13 @@ class T102RecertifyRekeyKeyPairBuilderMappingTests(unittest.TestCase):
         for operation_id, declaration_ids in expected.items():
             self.assertTrue(declaration_ids.issubset(set(operations[operation_id]["declarations"]["rust"])))
 
-    def test_t102_candidate_total_excludes_exactly_these_six_rows(self) -> None:
+    def test_t102_candidate_total_after_recertify_type_mapping(self) -> None:
         blocked = sum(
             row.get("declarationState") == "blocked"
             and row.get("candidateSpecId") == "KMIPKIT-0043"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(659, blocked)
+        self.assertEqual(658, blocked)
         self.assertEqual(6_470, len(self.manifest["publicDeclarations"]))
         self.assertEqual(8_554, len(self.manifest["approvedExclusions"]))
 
@@ -185,10 +185,11 @@ class T102RecertifyRekeyKeyPairBuilderMappingTests(unittest.TestCase):
         self.assertEqual(658, blocked)
         self.assertEqual(6_470, len(self.manifest["publicDeclarations"]))
         self.assertEqual(8_554, len(self.manifest["approvedExclusions"]))
-        for blocked_id in (
-            "rust-observed-e98ebdedfd3bd6dc5178",
-            "rust-observed-be7b44dc6c8bae24ad53",
-        ):
+        self.assertEqual(
+            "verified",
+            self.declarations["rust-observed-e98ebdedfd3bd6dc5178"]["declarationState"],
+        )
+        for blocked_id in ("rust-observed-be7b44dc6c8bae24ad53",):
             self.assertEqual("blocked", self.declarations[blocked_id]["declarationState"])
 
     def test_recertify_type_and_value_condition_and_description_are_source_pinned(self) -> None:
@@ -213,7 +214,7 @@ class T102RecertifyRekeyKeyPairBuilderMappingTests(unittest.TestCase):
             self.assertTrue(RAW_RECERTIFY_EVIDENCE.issubset(set(declaration["parityEvidenceIds"])))
         self.assertIn(JAVA_WIRE, operations[RECERTIFY]["parityEvidenceIds"])
         proofs = {
-            "bindings/c/tests/client_abi_consumer.c": "metadata_v2.operation != UINT32_C(7)",
+            "bindings/c/tests/client_abi_consumer.c": "recertify_metadata.operation != UINT32_C(7)",
             JAVA_WIRE: "assertEquals(0x07, item.operation());",
             "bindings/python/tests/test_recertify_operation.py": "assert item.operation == 0x07",
         }

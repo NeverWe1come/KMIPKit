@@ -18720,7 +18720,7 @@
           "internal"
         ],
         "documentation": [
-          "Creates a typed Re-certify item. Certificate Request Type is present only with Certificate Request Value; request bytes are staged as sensitive data and wiped after the synchronous ABI call."
+          "Creates a typed Re-certify item. Certificate Request Type is optional and may appear without Certificate Request Value; it is required if Certificate Request Value is present. Request bytes are staged as sensitive data and wiped after the synchronous ABI call."
         ]
       },
       "java": {
@@ -138809,6 +138809,7 @@
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RecertifyMappingTest.java",
         "bindings/python/tests/test_recertify_operation.py",
         "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs",
@@ -163166,6 +163167,7 @@
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RecertifyMappingTest.java",
         "bindings/python/tests/test_recertify_operation.py",
         "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs",
@@ -193024,14 +193026,49 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::RecertifyRequest::with_certificate_request_type",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-REQ-SPEC-6.1.45-008"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RecertifyRequest::with_certificate_request_type"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_recertify"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.recertify"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_recertify"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_recertify_operation.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_recertify_rekey_key_pair_builder_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-a305050686931a657f67",
@@ -455700,6 +455737,7 @@
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RecertifyMappingTest.java",
         "bindings/python/tests/test_recertify_operation.py",
         "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs",
