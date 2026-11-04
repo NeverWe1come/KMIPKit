@@ -218,10 +218,13 @@ class T102CredentialErrorTraitExclusionTests(unittest.TestCase):
                             or row.get("exportName", "").startswith(public_type + "::")
                         )
                     ]
-                    self.assertTrue(functional_rows)
-                    self.assertTrue(
-                        all(row["declarationState"] == "blocked" for row in functional_rows)
-                    )
+                    if type_name in {"TicketValidationError", "TicketValidationErrorKind"}:
+                        self.assertEqual(functional_rows, [])
+                    else:
+                        self.assertTrue(functional_rows)
+                        self.assertTrue(
+                            all(row["declarationState"] == "blocked" for row in functional_rows)
+                        )
 
 
 if __name__ == "__main__":

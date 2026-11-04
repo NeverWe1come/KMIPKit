@@ -192,14 +192,14 @@ class T102RngRootTraitBatchTests(unittest.TestCase):
         )
         self.assertEqual(candidate_count, T102_BLOCKED_CANDIDATES)
 
-    def test_root_parents_and_non_trait_rng_paths_remain_blocked(self) -> None:
+    def test_root_parents_remain_declared_and_kind_accessors_are_excluded(self) -> None:
         declarations = {
             (row.get("packageId"), row.get("exportName")): row["declarationState"]
             for row in self.manifest["publicDeclarations"]
         }
         for package, type_name in ERROR_PREFIXES:
             self.assertEqual(declarations[(package, type_name)], "declared")
-            self.assertEqual(declarations[(package, f"{type_name}::kind")], "blocked")
+            self.assertNotIn((package, f"{type_name}::kind"), declarations)
         for type_name, _, _ in REQUESTS:
             self.assertEqual(declarations[("rust-kmipkit", type_name)], "verified")
             self.assertEqual(declarations[("rust-kmipkit", f"{type_name}::new")], "verified")

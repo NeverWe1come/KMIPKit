@@ -91,14 +91,7 @@ class T102RngErrorMappingTests(unittest.TestCase):
                 )
                 self.assertTrue(PARITY_EVIDENCE <= set(row["parityEvidenceIds"]))
 
-    def test_rng_kind_accessors_and_direct_response_parsers_remain_blocked(self) -> None:
-        for identity in ERROR_EXPORTS:
-            package_id, export_name = identity
-            with self.subTest(export_name=export_name):
-                kind = self.declarations[(package_id, f"{export_name}::kind")]
-                self.assertEqual(kind["declarationState"], "blocked")
-                self.assertEqual(kind["candidateSpecId"], "KMIPKIT-0043")
-
+    def test_direct_response_parsers_remain_blocked(self) -> None:
         for response_name in {response for response in ERROR_EXPORTS.values()}:
             parser = self.declarations[("rust-kmipkit-protocol", f"{response_name}::try_from_response_item")]
             self.assertEqual(parser["declarationState"], "blocked")

@@ -255,12 +255,16 @@ class T102PolicyRootTraitBatchTests(unittest.TestCase):
             ("rust-kmipkit", "kmipkit::GetUsageAllocationError"),
             ("rust-kmipkit", "kmipkit::SetConstraintsError"),
             ("rust-kmipkit", "kmipkit::SetDefaultsError"),
-            ("rust-kmipkit", "kmipkit::UsageAllocationContextError"),
-            ("rust-kmipkit-client", "kmipkit_client::UsageAllocationContextError"),
         ):
             parent = declarations[(package, public_type)]
             self.assertEqual(parent.get("declarationState"), "blocked")
             self.assertEqual(parent.get("candidateSpecId"), "KMIPKIT-0043")
+
+        for package, public_type in (
+            ("rust-kmipkit", "kmipkit::UsageAllocationContextError"),
+            ("rust-kmipkit-client", "kmipkit_client::UsageAllocationContextError"),
+        ):
+            self.assertNotIn((package, public_type), declarations)
 
         for public_type in (
             "kmipkit::GetConstraintsRequest",

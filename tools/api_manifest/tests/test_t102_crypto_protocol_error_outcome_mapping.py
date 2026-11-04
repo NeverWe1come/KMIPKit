@@ -147,13 +147,7 @@ class T102CryptoProtocolErrorOutcomeMappingTests(unittest.TestCase):
                 self.assertTrue(required <= set(row["requirementIds"]))
                 self.assertTrue(PARITY_EVIDENCE <= set(row["parityEvidenceIds"]))
 
-    def test_kind_accessor_and_operation_specific_parsers_remain_blocked(self) -> None:
-        kind = self.declarations[
-            ("rust-kmipkit-protocol", "kmipkit_protocol::CryptographicOperationError::kind")
-        ]
-        self.assertEqual(kind["declarationState"], "blocked")
-        self.assertEqual(kind["candidateSpecId"], "KMIPKIT-0043")
-
+    def test_operation_specific_parsers_remain_blocked(self) -> None:
         for identity in DIRECT_PARSERS:
             with self.subTest(export=identity[1]):
                 row = self.declarations[identity]
