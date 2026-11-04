@@ -21,6 +21,7 @@ EXPECTED_MAPPINGS = {
         "kmipkit_client::ClientBatchOutcome::Interop",
         "kmipkit_protocol::InteropRequest",
         "kmipkit_protocol::InteropRequest::new",
+        "kmipkit_protocol::InteropRequest::interop_function",
         "kmipkit_protocol::InteropResponse",
         "kmipkit_protocol::InteropResponse::with_ttlv",
     },
