@@ -162,7 +162,7 @@ EXPECTED = (
 UNCHANGED_DECLARATIONS_SHA256 = "2acce4bd039fb5d594376f03e1f25f7ecf11f167e14b8a9d9488b22743381593"
 UNCHANGED_OPERATIONS_SHA256 = "eb69336ea313c72f6461f5e67655d985c820969697237b4b2b8efc3d79712735"
 OTHER_MANIFEST_SHA256 = "89ce2f39dccd3e4548dc0145da0e8b4463f4f4ae769ed472d80cf44b26679ba6"
-EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = 675
+EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = 669
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",
     "rust-observed-8fff50bdd49a09ae00bf",
@@ -175,12 +175,21 @@ LOCATE_REQUEST_REQUIREMENT = "KMIPKIT-REQ-SPEC-6.1.28-007"
 LOCATE_SERVER_ONLY_REQUIREMENT = "KMIPKIT-REQ-SPEC-6.1.28-011"
 JOIN_SPLIT_SECRET_DATA_TYPE_ID = "rust-observed-7c003b4ec061b8499a9e"
 REKEY_KEY_PAIR_UID_ID = "rust-observed-3fc6c1f77db9dabbee97"
+REKEY_KEY_PAIR_STRUCTURE_IDS = {
+    "rust-observed-9deea2dde23e9a92294d",
+    "rust-observed-f67674816d29b1f2879f",
+    "rust-observed-c084e31187a809b1d6bb",
+    "rust-observed-f428c5bc2011a1634a10",
+    "rust-observed-d51793dbfa80b42a8e94",
+    "rust-observed-1bdba1f1266aff84ed52",
+}
 JOIN_SPLIT_OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY"
 REKEY_KEY_PAIR_OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR"
 REQUEST_BUILDER_BATCH_EVIDENCE = {
     "crates/kmipkit-ffi/tests/c_api_coverage.rs",
     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
     "tools/api_manifest/tests/test_t102_join_split_key_secret_data_type_mapping.py",
+    "tools/api_manifest/tests/test_t102_rekey_key_pair_structure_mapping.py",
 }
 REKEY_OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-RE-KEY"
 RETIRED_REKEY_REQUIREMENT = "KMIPKIT-REQ-SPEC-6.1.46-004-002"
@@ -383,6 +392,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
         affected_operation_ids = target_ids | SCALAR_REQUEST_BUILDER_IDS | {
             JOIN_SPLIT_SECRET_DATA_TYPE_ID,
             REKEY_KEY_PAIR_UID_ID,
+            *REKEY_KEY_PAIR_STRUCTURE_IDS,
         }
         unchanged_declarations = copy.deepcopy([
             row
@@ -393,6 +403,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
             if declaration["declarationId"] in {
                 JOIN_SPLIT_SECRET_DATA_TYPE_ID,
                 REKEY_KEY_PAIR_UID_ID,
+                *REKEY_KEY_PAIR_STRUCTURE_IDS,
             }:
                 declaration["capabilityId"] = "public_binding_surface"
                 declaration["requirementIds"] = ["KMIPKIT-0043-FR-021"]

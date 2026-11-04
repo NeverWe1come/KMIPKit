@@ -84,7 +84,7 @@ EXPECTED_ALIAS_PAIRS = (
     ('rust-kmipkit-client', 'kmipkit_client::Pkcs11Response::with_return_code', 'rust-kmipkit-protocol', 'kmipkit_protocol::Pkcs11Response::with_return_code'),
     ('rust-kmipkit-protocol', 'kmipkit_protocol::ProfileValidationSelection::validate', 'rust-kmipkit-client', 'kmipkit_client::ProfileValidationSelection::validate'),
 )
-EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = 675
+EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = 669
 
 
 class T102ApprovedAliasMappingTests(unittest.TestCase):

@@ -142,12 +142,6 @@ class T102JoinSplitKeySecretDataTypeMappingTests(unittest.TestCase):
             "kmipkit_protocol::JoinSplitKeyRequest::with_protection_storage_masks",
             "kmipkit_protocol::RekeyKeyPairRequest::into_ttlv_payload",
             "kmipkit_protocol::RekeyKeyPairRequest::private_key_unique_identifier",
-            "kmipkit_protocol::RekeyKeyPairRequest::with_common_attributes",
-            "kmipkit_protocol::RekeyKeyPairRequest::with_common_protection_storage_masks",
-            "kmipkit_protocol::RekeyKeyPairRequest::with_private_key_attributes",
-            "kmipkit_protocol::RekeyKeyPairRequest::with_private_protection_storage_masks",
-            "kmipkit_protocol::RekeyKeyPairRequest::with_public_key_attributes",
-            "kmipkit_protocol::RekeyKeyPairRequest::with_public_protection_storage_masks",
         }
         actual_blocked = {
             row["exportName"]
@@ -182,7 +176,7 @@ class T102JoinSplitKeySecretDataTypeMappingTests(unittest.TestCase):
             row.get("candidateSpecId") == "KMIPKIT-0043" and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(675, blocked)
+        self.assertEqual(669, blocked)
         self.assertEqual(6_470, len(self.manifest["publicDeclarations"]))
         self.assertEqual(8_554, len(self.manifest["approvedExclusions"]))
 
