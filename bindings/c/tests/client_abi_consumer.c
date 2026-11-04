@@ -153,7 +153,7 @@ static int absent_profile_details_preserve_non_profile_error_from_c(void) {
             &error_status, &error_category, &error_cause, &error_delivery) != 0) {
         goto cleanup;
     }
-    result = error_status == status && error_category == 5 && error_cause == 10 &&
+    result = error_status == status && error_category == 2 && error_cause == 4 &&
         error_delivery == 0;
 
 cleanup:
