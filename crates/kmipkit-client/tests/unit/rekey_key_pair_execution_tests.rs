@@ -199,7 +199,7 @@ fn rekey_key_pair_sends_table_310_and_returns_both_identifiers_once() {
         Some(true)
     );
     let debug = format!("{:?}", outcome.response());
-    assert!(debug.starts_with("RekeyKeyPair("));
+    assert_eq!(debug, "RekeyKeyPair");
     assert!(!debug.contains("replacement-private-key"));
     assert!(!debug.contains("replacement-public-key"));
     assert_eq!(

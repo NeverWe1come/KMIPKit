@@ -99,13 +99,15 @@ pub(crate) fn assert_lifecycle_outcome_surface(
         response.result().status().raw(),
         outcome.result().status().raw()
     );
-    assert!(
-        format!("{response:?}").starts_with(response_debug_name),
-        "response debug output should identify {response_debug_name}"
+    let response_debug_name = response_debug_name.trim_end_matches('(');
+    assert_eq!(
+        format!("{response:?}"),
+        response_debug_name,
+        "response debug output should contain only the redacted {response_debug_name} label"
     );
     let outcome_debug = format!("{outcome:?}");
     assert!(
-        outcome_debug.contains(response_debug_name.trim_end_matches('(')),
+        outcome_debug.contains(response_debug_name),
         "outcome debug output should identify {response_debug_name}"
     );
     assert!(

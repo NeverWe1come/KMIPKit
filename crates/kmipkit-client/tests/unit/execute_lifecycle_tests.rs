@@ -378,7 +378,7 @@ fn successful_empty_discover_versions_list_is_preserved() {
     assert!(response_view.set_attribute().is_none());
     assert!(response_view.get_attributes().is_none());
     assert!(response_view.get_attribute_list().is_none());
-    assert!(format!("{response_view:?}").starts_with("DiscoverVersions("));
+    assert_eq!(format!("{response_view:?}"), "DiscoverVersions");
 
     assert_eq!(
         result
@@ -447,7 +447,7 @@ fn server_failure_result_is_preserved_as_a_completed_operation_result() {
     assert!(response_view.set_attribute().is_none());
     assert!(response_view.get_attributes().is_none());
     assert!(response_view.get_attribute_list().is_none());
-    assert!(format!("{response_view:?}").starts_with("DiscoverVersions("));
+    assert_eq!(format!("{response_view:?}"), "DiscoverVersions");
 }
 
 #[test]
