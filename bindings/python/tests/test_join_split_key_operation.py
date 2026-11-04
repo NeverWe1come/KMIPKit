@@ -2,14 +2,27 @@ from __future__ import annotations
 
 # KMIP Specification v2.1 §6.1.27, Tables 244–246.
 
+import ssl
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 
+from _test_support import (
+    mtls_transport_config,
+    operation_response_message,
+    read_ttlv_frame,
+    start_tls13_mtls_peer,
+    ttlv_enumeration,
+    ttlv_item,
+)
 from kmipkit import client, errors, extensions, ttlv
 from kmipkit._client_ffi import ffi
 from kmipkit._ffi import ffi as ttlv_ffi, lib as ttlv_lib
 from kmipkit import _handles
+
+_TLS_FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
+_JOIN_SPLIT_BATCH_ID = b"join-split-wire-0"
 
 
 def _split_reference(identifier: str, threshold: int):
@@ -85,6 +98,75 @@ def test_join_split_key_builder_preserves_repeated_reference_order_and_per_entry
         ("kmipkit_split_key_reference_release", 101),
         ("kmipkit_split_key_reference_release", 102),
     ]
+
+
+def _capture_join_split_request(secret_data_type: int | None) -> bytes:
+    received: list[bytes] = []
+
+    def handle(stream: ssl.SSLSocket) -> None:
+        received.append(read_ttlv_frame(stream))
+        stream.sendall(
+            operation_response_message(
+                0x29,
+                _JOIN_SPLIT_BATCH_ID,
+                payload_items=(ttlv_item(0x0042_0094, 7, b"joined-key"),),
+            )
+        )
+
+    port, failures, peer = start_tls13_mtls_peer(_TLS_FIXTURES, handle)
+    configuration = extensions.create_client_configuration(
+        extensions.create_client_extension_registry(
+            (), extensions.default_extension_registry_limits()
+        )
+    )
+    limits = ttlv.codec_limits_defaults()
+    reference = extensions.SplitKeyReference(
+        extensions.UniqueIdentifier.text_string("split-key"), 1
+    )
+    result = None
+    batch = None
+    try:
+        with (
+            configuration,
+            client.Client.create(
+                configuration, mtls_transport_config(port, _TLS_FIXTURES)
+            ) as kmip,
+        ):
+            batch = client.Batch.create()
+            item = extensions.client_batch_item_join_split_key(
+                7, [reference], secret_data_type=secret_data_type
+            )
+            batch.add_item(
+                extensions.with_unique_batch_item_id(item, _JOIN_SPLIT_BATCH_ID)
+            )
+            result = kmip.execute(batch, limits)
+        assert failures.empty(), "the mTLS peer must complete one Join Split Key exchange"
+        assert len(received) == 1
+        assert result is not None and len(result.items) == 1
+        assert result.items[0].join_split_key_response is not None
+        return received[0]
+    finally:
+        reference.close()
+        if batch is not None:
+            batch.close()
+        if result is not None:
+            result.close()
+        limits.close()
+        peer.join(timeout=4)
+        if peer.is_alive():
+            raise AssertionError("mTLS peer did not finish")
+        if not failures.empty():
+            raise failures.get()
+
+
+def test_join_split_secret_data_type_and_omission_are_encoded_over_mtls() -> None:
+    # OASIS KMIP 2.1 §6.1.27 Table 244; §11.52 Table 483.
+    typed_request = _capture_join_split_request(0x81234568)
+    omitted_request = _capture_join_split_request(None)
+
+    encoded_secret_data_type = ttlv_enumeration(0x0042_0086, 0x81234568)
+    assert encoded_secret_data_type in typed_request
+    assert b"\x42\x00\x86" not in omitted_request
 
 
 def test_join_split_key_builder_rejects_missing_and_insufficient_threshold_context_before_native_call(
