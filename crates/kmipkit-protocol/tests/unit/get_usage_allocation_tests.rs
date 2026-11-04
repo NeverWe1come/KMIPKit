@@ -16,6 +16,7 @@ const USAGE_LIMITS_COUNT: u32 = 0x0042_0096;
 const VENDOR_MEMBER: u32 = 0x0054_1234;
 const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
 const OBJECT_ID: &str = "usage-object-23";
+const DEBUG_IDENTIFIER_SENTINEL: &str = "KMIP_USAGE_ALLOCATION_IDENTIFIER_SENTINEL";
 
 fn response_item(message: &ResponseMessage) -> crate::ResponseBatchItemView<'_> {
     message
@@ -79,6 +80,15 @@ fn table_232_preserves_optional_identifier_and_required_long_integer_count() {
         explicit.view().children()[1].item_type(),
         ItemType::LongInteger
     );
+}
+
+#[test]
+fn request_debug_redacts_explicit_unique_identifier() {
+    let request = GetUsageAllocationRequest::new(9).with_unique_identifier(
+        UniqueIdentifier::TextString(DEBUG_IDENTIFIER_SENTINEL.to_owned()),
+    );
+
+    assert!(!format!("{request:?}").contains(DEBUG_IDENTIFIER_SENTINEL));
 }
 
 #[test]

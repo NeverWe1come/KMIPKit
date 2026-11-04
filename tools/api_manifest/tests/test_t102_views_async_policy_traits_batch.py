@@ -388,15 +388,24 @@ class T102ViewsAsyncPolicyTraitsBatchTests(unittest.TestCase):
                 for owner_package, prefix, owner_path in HOLDOUT_OWNERS
                 if package == owner_package and export_name.startswith(prefix)
             )
+            owner_id = {
+                "specs/007-client-execution/spec.md": "KMIPKIT-0007",
+                "specs/023-key-material-transfer/spec.md": "KMIPKIT-0037",
+                "specs/027-rng-operations/spec.md": "KMIPKIT-0041",
+                "specs/025-policy-controls/spec.md": "KMIPKIT-0039",
+            }[owner]
             exclusion = exclusions[path]
+            self.assertEqual(owner_id, exclusion["candidateSpecId"])
             self.assertEqual(owner, exclusion["approvalSource"]["path"])
             self.assertEqual("Approved", exclusion["approvalSource"]["status"])
             self.assertIn("exact Rust standard-trait implementation", exclusion["reason"])
             self.assertIn("not a separate KMIPKit product capability", exclusion["reason"])
             for requirement in T102_REQUIREMENTS:
                 self.assertIn(requirement, exclusion["evidence"])
+            if "core::fmt::Debug>::fmt" in export_name:
+                self.assertIn("KMIPKIT-0043-FR-013", exclusion["evidence"])
             if "ClientResponseView" in export_name and "core::fmt::Debug" in export_name:
-                self.assertIn("Debug output for this view now emits only the operation label", exclusion["evidence"])
+                self.assertIn("this Debug path emits only the operation label", exclusion["evidence"])
             if "RngRetrieveResponse" in export_name and "core::fmt::Debug" in export_name:
                 self.assertIn("KMIP_RNG_RETRIEVE_RESPONSE_SECRET_SENTINEL", exclusion["evidence"])
 
