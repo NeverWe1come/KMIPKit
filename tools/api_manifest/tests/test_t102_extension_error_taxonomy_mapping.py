@@ -109,7 +109,6 @@ class T102ExtensionErrorTaxonomyMappingTests(unittest.TestCase):
                 }
                 exports = (
                     ("java-kmipkit", expected["java"]),
-                    ("java-kmipkit", f"{expected['java']}.<init>"),
                     ("python-kmipkit", expected["python"]),
                     ("python-kmipkit", f"{expected['python']}.category"),
                 )
@@ -126,9 +125,30 @@ class T102ExtensionErrorTaxonomyMappingTests(unittest.TestCase):
                         self.assertEqual("Approved", row["approvalSource"]["status"])
                         self.assertEqual(mappings, row["languageMappings"])
 
-                if category_id == "duplicate_key":
-                    duplicate = self.declarations[("python-kmipkit", expected["python"])]
-                    self.assertIn("KMIPKIT-0012-FR-003", duplicate["requirementIds"])
+                if category_id in {"compatibility_mismatch", "duplicate_key"}:
+                    for key in exports:
+                        self.assertIn("KMIPKIT-0012-FR-003", self.declarations[key]["requirementIds"])
+
+    def test_java_exception_constructors_are_exact_nonparity_exclusions(self) -> None:
+        exclusions = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.manifest["approvedExclusions"]
+        }
+        declarations = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.manifest["publicDeclarations"]
+        }
+        for expected in CATEGORIES.values():
+            constructor = f"{expected['java']}.<init>"
+            key = ("java-kmipkit", constructor)
+            with self.subTest(constructor=constructor):
+                self.assertFalse(key in declarations, f"constructor must not be declared: {constructor}")
+                row = exclusions[key]
+                self.assertIn("caller-supplied String message", row["reason"])
+                self.assertIn("no equivalent constructor", row["reason"])
+                self.assertIn("KMIPKIT-0012-FR-010", row["evidence"])
+                self.assertEqual(OWNER_SPEC, row["approvalSource"]["path"])
+                self.assertEqual("Approved", row["approvalSource"]["status"])
 
     def test_rust_error_variants_are_exactly_mapped_from_both_public_crates(self) -> None:
         for category_id, expected in CATEGORIES.items():
@@ -146,6 +166,8 @@ class T102ExtensionErrorTaxonomyMappingTests(unittest.TestCase):
                     row = self.declarations[key]
                     self.assertEqual("declared", row["declarationState"])
                     self.assertEqual("vendor_extension_registry", row["capabilityId"])
+                    if category_id in {"compatibility_mismatch", "duplicate_key"}:
+                        self.assertIn("KMIPKIT-0012-FR-003", row["requirementIds"])
                     expected_mappings = dict(mappings)
                     expected_mappings["rust"] = {"packageId": package_id, "name": key[1]}
                     self.assertEqual(expected_mappings, row["languageMappings"])
