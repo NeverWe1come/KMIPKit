@@ -58,6 +58,52 @@ class T102BindingInternalErrorExclusionTests(unittest.TestCase):
         header = C_HEADER.read_text(encoding="utf-8")
         self.assertIn("#define KMIPKIT_ERROR_INTERNAL ((int32_t)7)", header)
 
+    def test_language_specific_error_helpers_and_constructor_are_exact_exclusions(self) -> None:
+        expected = {
+            ("python-kmipkit", "kmipkit.errors.raise_for_status"),
+            ("java-kmipkit", "org.kmipkit.ResourceLimitException.<init>"),
+        }
+        missing = expected - self.exclusions.keys()
+        self.assertFalse(missing, f"expected exact exclusions are missing: {sorted(missing)}")
+        if missing:
+            return
+        for key in sorted(expected):
+            with self.subTest(export=key[1]):
+                self.assertFalse(key in self.declarations, f"blocked declaration remains: {key}")
+                exclusion = self.exclusions[key]
+                self.assertEqual("KMIPKIT-0043", exclusion["candidateSpecId"])
+                self.assertEqual(OWNER_SPEC, exclusion["approvalSource"]["path"])
+                self.assertEqual("Approved", exclusion["approvalSource"]["status"])
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+
+        helper = self.exclusions[("python-kmipkit", "kmipkit.errors.raise_for_status")]
+        self.assertIn("binding-only status helper", helper["reason"])
+        self.assertIn("test_internal_status_raises_redacted_generic_error", helper["evidence"])
+        for requirement_id in (
+            "KMIPKIT-0043-FR-009",
+            "KMIPKIT-0043-FR-013",
+        ):
+            self.assertIn(requirement_id, helper["evidence"])
+
+        constructor = self.exclusions[("java-kmipkit", "org.kmipkit.ResourceLimitException.<init>")]
+        self.assertIn("caller-supplied String message", constructor["reason"])
+        self.assertIn("fieldless RuntimeMetadataError::ResourceLimit", constructor["reason"])
+        for requirement_id in (
+            "KMIPKIT-0043-FR-007",
+            "KMIPKIT-0043-FR-010",
+            "KMIPKIT-0043-FR-013",
+        ):
+            self.assertIn(requirement_id, constructor["evidence"])
+
+        for key in (
+            ("java-kmipkit", "org.kmipkit.ResourceLimitException"),
+            ("python-kmipkit", "kmipkit.errors.ResourceLimitError"),
+        ):
+            with self.subTest(mapped_error_type=key[1]):
+                declaration = self.declarations[key]
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual("ffi_runtime_metadata", declaration["capabilityId"])
+
 
 if __name__ == "__main__":
     unittest.main()
