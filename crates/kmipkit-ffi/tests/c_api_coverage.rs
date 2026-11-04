@@ -2537,173 +2537,173 @@ struct RequestBuilderWireItem {
     fields: &'static [RequestBuilderWireField],
 }
 
-fn assert_request_builder_wire(request: &Item) {
-    use RequestBuilderWireValue as V;
+use RequestBuilderWireValue as V;
 
-    const CHECK_VALUES: &[RequestBuilderWireField] = &[
-        RequestBuilderWireField {
-            tag: 0x0042_0094,
-            value: V::Text("check-text"),
-        },
-        RequestBuilderWireField {
-            tag: 0x0042_0096,
-            value: V::LongInteger(3),
-        },
-        RequestBuilderWireField {
-            tag: 0x0042_002c,
-            value: V::Integer(2),
-        },
-        RequestBuilderWireField {
-            tag: 0x0042_0049,
-            value: V::Interval(60),
-        },
-    ];
-    const INTEGER_IDENTIFIER: &[RequestBuilderWireField] = &[RequestBuilderWireField {
+const CHECK_VALUES: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
         tag: 0x0042_0094,
-        value: V::Integer(-7),
-    }];
-    const GET_VALUES: &[RequestBuilderWireField] = &[
-        RequestBuilderWireField {
-            tag: 0x0042_0094,
-            value: V::Text("get-text"),
-        },
-        RequestBuilderWireField {
-            tag: 0x0042_0042,
-            value: V::Enumeration(0xf123_4567),
-        },
-        RequestBuilderWireField {
-            tag: 0x0042_00f8,
-            value: V::Enumeration(0xf123_4568),
-        },
-        RequestBuilderWireField {
-            tag: 0x0042_0041,
-            value: V::Enumeration(0xf123_4569),
-        },
-    ];
-    const EXPORT_VALUES: &[RequestBuilderWireField] = &[
-        RequestBuilderWireField {
-            tag: 0x0042_0094,
-            value: V::Text("export-text"),
-        },
-        RequestBuilderWireField {
-            tag: 0x0042_0042,
-            value: V::Enumeration(0xfedc_ba98),
-        },
-        RequestBuilderWireField {
-            tag: 0x0042_00f8,
-            value: V::Enumeration(0xfedc_ba99),
-        },
-        RequestBuilderWireField {
-            tag: 0x0042_0041,
-            value: V::Enumeration(0xfedc_ba9a),
-        },
-    ];
-    const REKEY_VALUES: &[RequestBuilderWireField] = &[
-        RequestBuilderWireField {
-            tag: 0x0042_0094,
-            value: V::Text("rekey-text"),
-        },
-        RequestBuilderWireField {
-            tag: 0x0042_0058,
-            value: V::Interval(60),
-        },
-    ];
-    const ALLOCATION_VALUES: &[RequestBuilderWireField] = &[
-        RequestBuilderWireField {
-            tag: 0x0042_0094,
-            value: V::Text("allocation-text"),
-        },
-        RequestBuilderWireField {
-            tag: 0x0042_0096,
-            value: V::LongInteger(5),
-        },
-    ];
-    const ALLOCATION_IDENTIFIER_OMITTED: &[RequestBuilderWireField] = &[RequestBuilderWireField {
+        value: V::Text("check-text"),
+    },
+    RequestBuilderWireField {
         tag: 0x0042_0096,
-        value: V::LongInteger(7),
-    }];
-    const RECERTIFY_VALUES: &[RequestBuilderWireField] = &[
-        RequestBuilderWireField {
-            tag: 0x0042_0094,
-            value: V::Text("recertify-text"),
-        },
-        RequestBuilderWireField {
-            tag: 0x0042_0139,
-            value: V::Text("certificate-request-text"),
-        },
-        RequestBuilderWireField {
-            tag: 0x0042_0058,
-            value: V::Interval(86_400),
-        },
-    ];
-    const RECERTIFY_OPTIONALS_OMITTED: &[RequestBuilderWireField] = &[RequestBuilderWireField {
+        value: V::LongInteger(3),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_002c,
+        value: V::Integer(2),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0049,
+        value: V::Interval(60),
+    },
+];
+const INTEGER_IDENTIFIER: &[RequestBuilderWireField] = &[RequestBuilderWireField {
+    tag: 0x0042_0094,
+    value: V::Integer(-7),
+}];
+const GET_VALUES: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
         tag: 0x0042_0094,
-        value: V::Text("recertify-omit-text"),
-    }];
-    const REKEY_KEY_PAIR_PLACEHOLDER: &[RequestBuilderWireField] = &[RequestBuilderWireField {
+        value: V::Text("get-text"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0042,
+        value: V::Enumeration(0xf123_4567),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_00f8,
+        value: V::Enumeration(0xf123_4568),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0041,
+        value: V::Enumeration(0xf123_4569),
+    },
+];
+const EXPORT_VALUES: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
+        tag: 0x0042_0094,
+        value: V::Text("export-text"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0042,
+        value: V::Enumeration(0xfedc_ba98),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_00f8,
+        value: V::Enumeration(0xfedc_ba99),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0041,
+        value: V::Enumeration(0xfedc_ba9a),
+    },
+];
+const REKEY_VALUES: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
+        tag: 0x0042_0094,
+        value: V::Text("rekey-text"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0058,
+        value: V::Interval(60),
+    },
+];
+const ALLOCATION_VALUES: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
+        tag: 0x0042_0094,
+        value: V::Text("allocation-text"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0096,
+        value: V::LongInteger(5),
+    },
+];
+const ALLOCATION_IDENTIFIER_OMITTED: &[RequestBuilderWireField] = &[RequestBuilderWireField {
+    tag: 0x0042_0096,
+    value: V::LongInteger(7),
+}];
+const RECERTIFY_VALUES: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
+        tag: 0x0042_0094,
+        value: V::Text("recertify-text"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0139,
+        value: V::Text("certificate-request-text"),
+    },
+    RequestBuilderWireField {
         tag: 0x0042_0058,
         value: V::Interval(86_400),
-    }];
-    const EMPTY_VALUES: &[RequestBuilderWireField] = &[];
-    const EXPECTED: &[RequestBuilderWireItem] = &[
-        RequestBuilderWireItem {
-            operation: 9,
-            fields: CHECK_VALUES,
-        },
-        RequestBuilderWireItem {
-            operation: 9,
-            fields: INTEGER_IDENTIFIER,
-        },
-        RequestBuilderWireItem {
-            operation: 10,
-            fields: GET_VALUES,
-        },
-        RequestBuilderWireItem {
-            operation: 10,
-            fields: INTEGER_IDENTIFIER,
-        },
-        RequestBuilderWireItem {
-            operation: 43,
-            fields: EXPORT_VALUES,
-        },
-        RequestBuilderWireItem {
-            operation: 43,
-            fields: INTEGER_IDENTIFIER,
-        },
-        RequestBuilderWireItem {
-            operation: 4,
-            fields: REKEY_VALUES,
-        },
-        RequestBuilderWireItem {
-            operation: 4,
-            fields: INTEGER_IDENTIFIER,
-        },
-        RequestBuilderWireItem {
-            operation: 17,
-            fields: ALLOCATION_VALUES,
-        },
-        RequestBuilderWireItem {
-            operation: 17,
-            fields: ALLOCATION_IDENTIFIER_OMITTED,
-        },
-        RequestBuilderWireItem {
-            operation: 7,
-            fields: RECERTIFY_VALUES,
-        },
-        RequestBuilderWireItem {
-            operation: 7,
-            fields: RECERTIFY_OPTIONALS_OMITTED,
-        },
-        RequestBuilderWireItem {
-            operation: 2,
-            fields: EMPTY_VALUES,
-        },
-        RequestBuilderWireItem {
-            operation: 0x1d,
-            fields: REKEY_KEY_PAIR_PLACEHOLDER,
-        },
-    ];
+    },
+];
+const RECERTIFY_OPTIONALS_OMITTED: &[RequestBuilderWireField] = &[RequestBuilderWireField {
+    tag: 0x0042_0094,
+    value: V::Text("recertify-omit-text"),
+}];
+const REKEY_KEY_PAIR_PLACEHOLDER: &[RequestBuilderWireField] = &[RequestBuilderWireField {
+    tag: 0x0042_0058,
+    value: V::Interval(86_400),
+}];
+const EMPTY_VALUES: &[RequestBuilderWireField] = &[];
+const REQUEST_BUILDER_WIRE_EXPECTED: &[RequestBuilderWireItem] = &[
+    RequestBuilderWireItem {
+        operation: 9,
+        fields: CHECK_VALUES,
+    },
+    RequestBuilderWireItem {
+        operation: 9,
+        fields: INTEGER_IDENTIFIER,
+    },
+    RequestBuilderWireItem {
+        operation: 10,
+        fields: GET_VALUES,
+    },
+    RequestBuilderWireItem {
+        operation: 10,
+        fields: INTEGER_IDENTIFIER,
+    },
+    RequestBuilderWireItem {
+        operation: 43,
+        fields: EXPORT_VALUES,
+    },
+    RequestBuilderWireItem {
+        operation: 43,
+        fields: INTEGER_IDENTIFIER,
+    },
+    RequestBuilderWireItem {
+        operation: 4,
+        fields: REKEY_VALUES,
+    },
+    RequestBuilderWireItem {
+        operation: 4,
+        fields: INTEGER_IDENTIFIER,
+    },
+    RequestBuilderWireItem {
+        operation: 17,
+        fields: ALLOCATION_VALUES,
+    },
+    RequestBuilderWireItem {
+        operation: 17,
+        fields: ALLOCATION_IDENTIFIER_OMITTED,
+    },
+    RequestBuilderWireItem {
+        operation: 7,
+        fields: RECERTIFY_VALUES,
+    },
+    RequestBuilderWireItem {
+        operation: 7,
+        fields: RECERTIFY_OPTIONALS_OMITTED,
+    },
+    RequestBuilderWireItem {
+        operation: 2,
+        fields: EMPTY_VALUES,
+    },
+    RequestBuilderWireItem {
+        operation: 0x1d,
+        fields: REKEY_KEY_PAIR_PLACEHOLDER,
+    },
+];
 
+fn assert_request_builder_wire(request: &Item) {
     request.with_value(|value| {
         let ValueView::Structure(message) = value else {
             panic!("the C consumer sends a Message Structure");
@@ -2713,100 +2713,128 @@ fn assert_request_builder_wire(request: &Item) {
             .iter()
             .find(|item| item.tag().raw() == 0x0042_0077)
             .expect("the Request Header is present");
-        request_header.with_value(|value| {
-            let ValueView::Structure(header) = value else {
-                panic!("the Request Header is a Structure");
-            };
-            let order_option = header
-                .children()
-                .iter()
-                .find(|item| item.tag().raw() == 0x0042_0010)
-                .expect("the ordered placeholder context sets Batch Order Option");
-            assert!(order_option.with_value(
-                |value| matches!(value, ValueView::Boolean(enabled) if *enabled),
-            ));
-        });
-        let batch_items = message.children()
+        assert_request_header_ordered(request_header);
+
+        let batch_items = message
+            .children()
             .iter()
             .filter(|item| item.tag().raw() == 0x0042_000f)
             .collect::<Vec<_>>();
-        assert_eq!(batch_items.len(), EXPECTED.len() + 1);
-        batch_items[0].with_value(|value| {
-            let ValueView::Structure(batch_item) = value else {
-                panic!("the first batch item is the ID Placeholder producer");
-            };
-            assert_eq!(
-                batch_item.children().iter().map(|item| item.tag().raw()).collect::<Vec<_>>(),
-                [0x0042_005c, 0x0042_0093, 0x0042_0079],
-                "the producer carries Operation, Unique Batch Item ID, and Request Payload"
-            );
-            assert!(batch_item.children()[0].with_value(
-                |value| matches!(value, ValueView::Enumeration(operation) if *operation == 1),
-            ));
-            assert!(batch_item.children()[1].with_value(
-                |value| matches!(value, ValueView::ByteString(id) if id == b"item-0"),
-            ));
-            batch_item.children()[2].with_value(|value| {
-                let ValueView::Structure(payload) = value else {
-                    panic!("the producer Request Payload is a Structure");
-                };
-                assert_eq!(
-                    payload.children().iter().map(|item| item.tag().raw()).collect::<Vec<_>>(),
-                    [0x0042_0057, 0x0042_0125],
-                    "the producer requests a Symmetric Key with an empty Attributes structure"
-                );
-                assert!(payload.children()[0].with_value(
-                    |value| matches!(value, ValueView::Enumeration(object_type) if *object_type == 2),
-                ));
-                assert!(payload.children()[1].with_value(
-                    |value| matches!(value, ValueView::Structure(attributes) if attributes.children().is_empty()),
-                ));
-            });
-        });
-        for (index, (actual, expected)) in batch_items[1..].iter().zip(EXPECTED).enumerate() {
-            let batch_item_index = index + 1;
-            actual.with_value(|value| {
-                let ValueView::Structure(batch_item) = value else {
-                    panic!("builder batch item {batch_item_index} is a Structure");
-                };
-                assert_eq!(
-                    batch_item.children().iter().map(|item| item.tag().raw()).collect::<Vec<_>>(),
-                    [0x0042_005c, 0x0042_0093, 0x0042_0079],
-                    "builder batch item {batch_item_index} includes its unique batch ID"
-                );
-                let operation_matches = batch_item.children()[0].with_value(|value| {
-                    matches!(value, ValueView::Enumeration(operation) if *operation == expected.operation)
-                });
-                assert!(operation_matches, "builder batch item {batch_item_index} carries the expected operation");
-                let expected_batch_item_id = format!("item-{}", index + 1);
-                assert!(batch_item.children()[1].with_value(
-                    |value| matches!(value, ValueView::ByteString(id) if id == expected_batch_item_id.as_bytes()),
-                ), "builder batch item {batch_item_index} carries its exact unique batch ID");
-                batch_item.children()[2].with_value(|value| {
-                    let ValueView::Structure(payload) = value else {
-                        panic!("builder batch item {batch_item_index} Request Payload is a Structure");
-                    };
-                    assert_eq!(payload.children().len(), expected.fields.len());
-                    let tags = payload.children().iter().map(|item| item.tag().raw()).collect::<Vec<_>>();
-                    let expected_tags = expected.fields.iter().map(|field| field.tag).collect::<Vec<_>>();
-                    assert_eq!(tags, expected_tags, "builder batch item {batch_item_index} preserves payload order and presence");
-                    for (field_index, (actual, expected_field)) in
-                        payload.children().iter().zip(expected.fields).enumerate()
-                    {
-                        let matches_value = actual.with_value(|value| match (value, expected_field.value) {
-                            (ValueView::TextString(actual), V::Text(expected)) => actual == expected,
-                            (ValueView::Integer(actual), V::Integer(expected)) => *actual == expected,
-                            (ValueView::LongInteger(actual), V::LongInteger(expected)) => *actual == expected,
-                            (ValueView::Enumeration(actual), V::Enumeration(expected)) => *actual == expected,
-                            (ValueView::Interval(actual), V::Interval(expected)) => *actual == expected,
-                            _ => false,
-                        });
-                        assert!(matches_value, "builder batch item {batch_item_index} field {field_index} has its exact TTLV value and type");
-                    }
-                });
-            });
+        assert_eq!(batch_items.len(), REQUEST_BUILDER_WIRE_EXPECTED.len() + 1);
+        assert_placeholder_producer(batch_items[0]);
+        for (index, (actual, expected)) in batch_items[1..]
+            .iter()
+            .zip(REQUEST_BUILDER_WIRE_EXPECTED)
+            .enumerate()
+        {
+            assert_request_builder_item(actual, expected, index);
         }
     });
+}
+
+fn assert_request_header_ordered(request_header: &Item) {
+    request_header.with_value(|value| {
+        let ValueView::Structure(header) = value else {
+            panic!("the Request Header is a Structure");
+        };
+        let order_option = header
+            .children()
+            .iter()
+            .find(|item| item.tag().raw() == 0x0042_0010)
+            .expect("the ordered placeholder context sets Batch Order Option");
+        assert!(
+            order_option
+                .with_value(|value| matches!(value, ValueView::Boolean(enabled) if *enabled),)
+        );
+    });
+}
+
+fn assert_placeholder_producer(batch_item: &Item) {
+    batch_item.with_value(|value| {
+        let ValueView::Structure(batch_item) = value else {
+            panic!("the first batch item is the ID Placeholder producer");
+        };
+        assert_eq!(
+            batch_item.children().iter().map(|item| item.tag().raw()).collect::<Vec<_>>(),
+            [0x0042_005c, 0x0042_0093, 0x0042_0079],
+            "the producer carries Operation, Unique Batch Item ID, and Request Payload"
+        );
+        assert!(batch_item.children()[0].with_value(
+            |value| matches!(value, ValueView::Enumeration(operation) if *operation == 1),
+        ));
+        assert!(batch_item.children()[1].with_value(
+            |value| matches!(value, ValueView::ByteString(id) if id == b"item-0"),
+        ));
+        batch_item.children()[2].with_value(|value| {
+            let ValueView::Structure(payload) = value else {
+                panic!("the producer Request Payload is a Structure");
+            };
+            assert_eq!(
+                payload.children().iter().map(|item| item.tag().raw()).collect::<Vec<_>>(),
+                [0x0042_0057, 0x0042_0125],
+                "the producer requests a Symmetric Key with an empty Attributes structure"
+            );
+            assert!(payload.children()[0].with_value(
+                |value| matches!(value, ValueView::Enumeration(object_type) if *object_type == 2),
+            ));
+            assert!(payload.children()[1].with_value(
+                |value| matches!(value, ValueView::Structure(attributes) if attributes.children().is_empty()),
+            ));
+        });
+    });
+}
+
+fn assert_request_builder_item(actual: &Item, expected: &RequestBuilderWireItem, index: usize) {
+    let batch_item_index = index + 1;
+    actual.with_value(|value| {
+        let ValueView::Structure(batch_item) = value else {
+            panic!("builder batch item {batch_item_index} is a Structure");
+        };
+        assert_eq!(
+            batch_item.children().iter().map(|item| item.tag().raw()).collect::<Vec<_>>(),
+            [0x0042_005c, 0x0042_0093, 0x0042_0079],
+            "builder batch item {batch_item_index} includes its unique batch ID"
+        );
+        assert!(batch_item.children()[0].with_value(
+            |value| matches!(value, ValueView::Enumeration(operation) if *operation == expected.operation),
+        ), "builder batch item {batch_item_index} carries the expected operation");
+        let expected_batch_item_id = format!("item-{}", index + 1);
+        assert!(batch_item.children()[1].with_value(
+            |value| matches!(value, ValueView::ByteString(id) if id == expected_batch_item_id.as_bytes()),
+        ), "builder batch item {batch_item_index} carries its exact unique batch ID");
+        batch_item.children()[2].with_value(|value| {
+            let ValueView::Structure(payload) = value else {
+                panic!("builder batch item {batch_item_index} Request Payload is a Structure");
+            };
+            assert_eq!(payload.children().len(), expected.fields.len());
+            let tags = payload.children().iter().map(|item| item.tag().raw()).collect::<Vec<_>>();
+            let expected_tags = expected.fields.iter().map(|field| field.tag).collect::<Vec<_>>();
+            assert_eq!(
+                tags,
+                expected_tags,
+                "builder batch item {batch_item_index} preserves payload order and presence"
+            );
+            for (field_index, (actual, expected_field)) in
+                payload.children().iter().zip(expected.fields).enumerate()
+            {
+                assert!(
+                    request_builder_wire_field_matches(actual, expected_field.value),
+                    "builder batch item {batch_item_index} field {field_index} has its exact TTLV value and type"
+                );
+            }
+        });
+    });
+}
+
+fn request_builder_wire_field_matches(actual: &Item, expected: RequestBuilderWireValue) -> bool {
+    actual.with_value(|value| match (value, expected) {
+        (ValueView::TextString(actual), V::Text(expected)) => actual == expected,
+        (ValueView::Integer(actual), V::Integer(expected)) => *actual == expected,
+        (ValueView::LongInteger(actual), V::LongInteger(expected)) => *actual == expected,
+        (ValueView::Enumeration(actual), V::Enumeration(expected))
+        | (ValueView::Interval(actual), V::Interval(expected)) => *actual == expected,
+        _ => false,
+    })
 }
 
 fn c_cancel_request_issue(encoded: &[u8], expected_correlation: &[u8]) -> &'static str {
