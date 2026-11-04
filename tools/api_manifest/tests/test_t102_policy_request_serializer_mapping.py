@@ -94,10 +94,19 @@ class T102PolicyRequestSerializerMappingTests(unittest.TestCase):
             for row in cls.manifest["publicDeclarations"]
         }
 
+    def _operation_row(self, operation_id: str) -> dict[str, object]:
+        return next(
+            row
+            for row in self.manifest["operations"]
+            if row["operationId"] == operation_id
+        )
+
     def test_only_the_six_policy_request_serializers_map_to_their_operation(self) -> None:
         for operation_name, operation_spec in OPERATIONS.items():
             builder = self.by_package_name[("c-kmipkit", operation_spec["builder"])]
+            operation = self._operation_row(operation_spec["capability"])
             with self.subTest(operation=operation_name):
+                self.assertEqual(operation_spec["name"], operation["name"])
                 self.assertEqual(operation_spec["capability"], builder["capabilityId"])
                 self.assertEqual(OWNER, builder["approvalSource"]["path"])
 
@@ -134,11 +143,7 @@ class T102PolicyRequestSerializerMappingTests(unittest.TestCase):
 
     def test_operation_inventories_include_all_six_serializer_declarations(self) -> None:
         for operation_name, operation_spec in OPERATIONS.items():
-            operation = next(
-                row
-                for row in self.manifest["operations"]
-                if row["operationId"] == operation_spec["capability"]
-            )
+            operation = self._operation_row(operation_spec["capability"])
             expected_ids = {
                 target[0] for target in operation_spec["targets"]
             }
