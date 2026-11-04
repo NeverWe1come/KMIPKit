@@ -1738,6 +1738,10 @@ def _validate_references(manifest: dict[str, Any]) -> None:
             (record["packageId"], record["exportName"]): record
             for record in manifest["publicDeclarations"]
         }
+        exclusions_by_path = {
+            (record["packageId"], record["exportName"]): record
+            for record in manifest.get("approvedExclusions", [])
+        }
         for error in manifest["errorCategories"]:
             mapping_state = error.get("mappingState")
             if manifest.get("formatVersion") == 2:
@@ -1751,8 +1755,18 @@ def _validate_references(manifest: dict[str, Any]) -> None:
                 ("python-kmipkit", "pythonException", "type", "python"),
             ):
                 export_name = error[field]
-                declaration = declarations_by_path.get((package, export_name))
-                if declaration is None or declaration["kind"] != kind:
+                export_path = (package, export_name)
+                declaration = declarations_by_path.get(export_path)
+                if declaration is None:
+                    if (
+                        mapping_state == "blocked"
+                        and export_path in exclusions_by_path
+                    ):
+                        continue
+                    raise ManifestError(
+                        "error category references an undeclared language export"
+                    )
+                if declaration["kind"] != kind:
                     raise ManifestError(
                         "error category references an undeclared language export"
                     )

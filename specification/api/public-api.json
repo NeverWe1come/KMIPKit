@@ -60070,21 +60070,6 @@
       "blockedReason": "This public JNI bridge has no approved behavior owner in the current API inventory."
     },
     {
-      "declarationId": "python-kmipkit-error",
-      "packageId": "python-kmipkit",
-      "kind": "type",
-      "exportName": "kmipkit.errors.KmipKitError",
-      "capabilityId": "ffi_runtime_metadata",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-013"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The generic binding-level internal error status and base exception have no semantically equivalent public Rust error type. ClientCauseCategory::Other is a client execution cause category (code 10), not the KMIPKit FFI internal status (code 7); keep this export blocked until a reviewed Rust equivalent or approved exclusion exists."
-    },
-    {
       "declarationId": "python-raise-for-status",
       "packageId": "python-kmipkit",
       "kind": "function",
@@ -66396,35 +66381,6 @@
           "name": "kmipkit.errors.InvalidInputError"
         }
       }
-    },
-    {
-      "declarationId": "java-observed-d645cd79e0aaa7fea0bb",
-      "packageId": "java-kmipkit",
-      "kind": "type",
-      "exportName": "org.kmipkit.KmipException",
-      "capabilityId": "ffi_runtime_metadata",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-013"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The generic binding-level internal error status and base exception have no semantically equivalent public Rust error type. ClientCauseCategory::Other is a client execution cause category (code 10), not the KMIPKit FFI internal status (code 7); keep this export blocked until a reviewed Rust equivalent or approved exclusion exists."
-    },
-    {
-      "declarationId": "java-observed-98e651f58bd4a1934fb4",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.KmipException.<init>",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
     },
     {
       "declarationId": "java-observed-c5ab19c94b9cf49e4854",
@@ -127415,21 +127371,6 @@
       }
     },
     {
-      "declarationId": "KMIPKIT_ERROR_INTERNAL:c",
-      "packageId": "c-kmipkit",
-      "kind": "constant",
-      "exportName": "KMIPKIT_ERROR_INTERNAL",
-      "capabilityId": "ffi_runtime_metadata",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-013"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The generic binding-level internal error status and base exception have no semantically equivalent public Rust error type. ClientCauseCategory::Other is a client execution cause category (code 10), not the KMIPKit FFI internal status (code 7); keep this export blocked until a reviewed Rust equivalent or approved exclusion exists."
-    },
-    {
       "declarationId": "t011-observed-c-compatibility_mismatch",
       "packageId": "c-kmipkit",
       "kind": "constant",
@@ -128068,20 +128009,6 @@
           "name": "kmipkit.errors.InvalidInputError"
         }
       }
-    },
-    {
-      "declarationId": "t011-observed-python-kmipkiterror-category",
-      "packageId": "python-kmipkit",
-      "kind": "python-export",
-      "exportName": "kmipkit.errors.KmipKitError.category",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This public Python package export is observable, but it has no reviewed logical capability or cross-language declaration mapping in the current inventory."
     },
     {
       "declarationId": "t011-observed-python-resourcelimiterror-category",
@@ -453098,6 +453025,66 @@
         "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
       },
       "evidence": "The observed Java signature is a public constructor accepting String. Mapping it to the error category class falsely claims constructor parity and can display arbitrary caller text. KMIPKIT-0012-FR-010/011 require equivalent safe error capabilities, not identical Java construction signatures; actual JNI failures use fixed redacted messages."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "KMIPKIT_ERROR_INTERNAL",
+      "reason": "This stable generic FFI status code is specific to panic containment. It has no equivalent public Rust error category and remains represented only by the blocked internal error category; retain its ABI value without claiming cross-language product-error parity.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-005 and KMIPKIT-0043-FR-021. The FFI internal status and generic binding exceptions remain distinct from the Rust client execution cause category; see docs/architecture/ffi-and-bindings.md for the stable panic-fallback ABI contract."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.KmipException",
+      "reason": "This generic FFI base exception supports Java error translation and subclasses but has no equivalent public Rust error category. Keep the internal category blocked and do not claim product-error parity for this language-specific wrapper.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-005 and KMIPKIT-0043-FR-021. The FFI internal status and generic binding exceptions remain distinct from the Rust client execution cause category; see docs/architecture/ffi-and-bindings.md for the stable panic-fallback ABI contract."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.KmipException.<init>",
+      "reason": "This generic FFI base exception constructor accepts a caller-supplied Java message and has no equivalent public Rust error category. It is wrapper construction plumbing, not a cross-language product-error capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-005 and KMIPKIT-0043-FR-021. The FFI internal status and generic binding exceptions remain distinct from the Rust client execution cause category; see docs/architecture/ffi-and-bindings.md for the stable panic-fallback ABI contract."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.errors.KmipKitError",
+      "reason": "This generic FFI base exception supports Python error translation and subclasses but has no equivalent public Rust error category. Keep the internal category blocked and do not claim product-error parity for this language-specific wrapper.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-005 and KMIPKIT-0043-FR-021. The FFI internal status and generic binding exceptions remain distinct from the Rust client execution cause category; see docs/architecture/ffi-and-bindings.md for the stable panic-fallback ABI contract."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.errors.KmipKitError.category",
+      "reason": "This Python-only string marker labels the generic FFI fallback and has no equivalent public Rust error category. Keep the internal category blocked rather than mapping it to the distinct client cause Other.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-005 and KMIPKIT-0043-FR-021. The FFI internal status and generic binding exceptions remain distinct from the Rust client execution cause category; see docs/architecture/ffi-and-bindings.md for the stable panic-fallback ABI contract."
     }
   ],
   "apiLevels": [
