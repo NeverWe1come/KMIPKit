@@ -159,6 +159,37 @@ fn request_preserves_optional_identifier_when_certificate_request_value_is_prese
 }
 
 #[test]
+fn request_allows_certificate_request_type_without_request_value() {
+    // OASIS KMIP Specification v2.1 §6.1.45, Table 300. The Type is
+    // required when the Certificate Request is present; Type alone is valid.
+    let identifier = UniqueIdentifier::TextString("certificate-type-only".to_owned());
+    let payload = RecertifyRequest::new()
+        .with_unique_identifier(identifier.clone())
+        .with_certificate_request_type(5)
+        .into_ttlv_payload()
+        .expect("Type without Certificate Request Value is valid with an explicit identifier");
+
+    assert_eq!(
+        field_tags(&payload),
+        [UNIQUE_IDENTIFIER, CERTIFICATE_REQUEST_TYPE]
+    );
+    assert_eq!(
+        payload.view().children()[0].with_value(|value| match value {
+            ValueView::TextString(value) => Some(value.to_owned()),
+            _ => None,
+        }),
+        Some("certificate-type-only".to_owned())
+    );
+    assert_eq!(
+        payload.view().children()[1].with_value(|value| match value {
+            ValueView::Enumeration(value) => Some(*value),
+            _ => None,
+        }),
+        Some(5)
+    );
+}
+
+#[test]
 fn request_preserves_id_placeholder_when_certificate_request_value_is_present() {
     let payload = RecertifyRequest::new()
         .with_unique_identifier(UniqueIdentifier::Enumeration(1))

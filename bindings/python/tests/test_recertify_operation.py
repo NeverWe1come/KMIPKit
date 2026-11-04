@@ -81,7 +81,9 @@ def _recertify_response_message() -> bytes:
     return _ttlv_structure(0x42007B, response_header, response_item)
 
 
-def _capture_recertify_structure_request(with_structures: bool) -> bytes:
+def _capture_recertify_structure_request(
+    with_structures: bool, *, certificate_request_type: int | None = None
+) -> bytes:
     received: list[bytes] = []
 
     def handle(stream: ssl.SSLSocket) -> None:
@@ -121,7 +123,8 @@ def _capture_recertify_structure_request(with_structures: bool) -> bytes:
                 else:
                     batch.add_item(
                         extensions.client_batch_item_recertify(
-                            extensions.UniqueIdentifier.text_string("certificate-7")
+                            extensions.UniqueIdentifier.text_string("certificate-7"),
+                            certificate_request_type=certificate_request_type,
                         )
                     )
                 result = kmip_client.execute(batch, limits)
@@ -426,6 +429,25 @@ def test_recertify_optional_structures_are_captured_in_order_and_can_be_omitted(
     assert present.index(expected_attributes) < present.index(expected_masks)
     assert b"\x42\x01\x25" not in omitted
     assert b"\x42\x01\x5f" not in omitted
+
+
+def test_recertify_type_without_value_emits_exact_table_300_fields_over_mtls() -> None:
+    # OASIS KMIP Specification v2.1 §6.1.45, Table 300.
+    request = _capture_recertify_structure_request(
+        False, certificate_request_type=5
+    )
+    expected_payload = _ttlv_structure(
+        0x420079,
+        _ttlv_item(0x420094, 7, b"certificate-7"),
+        _ttlv_item(0x420019, 5, struct.pack(">I", 5)),
+    )
+    assert expected_payload in request
+    assert request.index(_ttlv_item(0x420094, 7, b"certificate-7")) < request.index(
+        _ttlv_item(0x420019, 5, struct.pack(">I", 5))
+    )
+    assert b"\x42\x01\x40" not in request
+    assert b"\x42\x01\x25" not in request
+    assert b"\x42\x01\x5f" not in request
 
 
 def test_recertify_round_trips_through_native_client_over_mtls_and_retains_ttlv(

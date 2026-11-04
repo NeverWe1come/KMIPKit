@@ -2672,6 +2672,16 @@ const RECERTIFY_OPTIONALS_OMITTED: &[RequestBuilderWireField] = &[RequestBuilder
     tag: 0x0042_0094,
     value: V::Text("recertify-omit-text"),
 }];
+const RECERTIFY_TYPE_ONLY: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
+        tag: 0x0042_0094,
+        value: V::Text("recertify-type-only"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0019,
+        value: V::Enumeration(5),
+    },
+];
 const CERTIFY_VALUES_FULL: &[RequestBuilderWireField] = &[
     RequestBuilderWireField {
         tag: 0x0042_0094,
@@ -2874,6 +2884,10 @@ const REQUEST_BUILDER_WIRE_EXPECTED: &[RequestBuilderWireItem] = &[
     RequestBuilderWireItem {
         operation: 6,
         fields: CERTIFY_TYPE_ONLY,
+    },
+    RequestBuilderWireItem {
+        operation: 7,
+        fields: RECERTIFY_TYPE_ONLY,
     },
 ];
 
@@ -4277,8 +4291,8 @@ fn rekey_key_pair_success_response() -> Vec<u8> {
 }
 
 fn request_builder_wire_response() -> Vec<u8> {
-    const OPERATIONS: [u32; 22] = [
-        1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x1d, 0x29, 0x29, 6, 6, 6, 6,
+    const OPERATIONS: [u32; 23] = [
+        1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x1d, 0x29, 0x29, 6, 6, 6, 6, 7,
     ];
     let version = structure(
         0x0042_0069,

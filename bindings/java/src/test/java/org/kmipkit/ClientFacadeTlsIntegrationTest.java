@@ -228,6 +228,10 @@ final class ClientFacadeTlsIntegrationTest {
             batch.add(ClientBatchItem.certify(
                             UniqueIdentifier.textString("certify-type-only"), 1L, null, null, null)
                     .withUniqueBatchItemId(uniqueBatchItemId(21)));
+            batch.add(ClientBatchItem.recertify(
+                            UniqueIdentifier.textString("recertify-type-only"), null,
+                            5L, null, null, null, null)
+                    .withUniqueBatchItemId(uniqueBatchItemId(22)));
             try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
                     ClientBatchItemResult createPairResult = response.itemAt(13);
                     ClientBatchItemResult rekeyPairResult = response.itemAt(14);
@@ -238,7 +242,7 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult certifyResult19 = response.itemAt(19);
                     ClientBatchItemResult certifyResult20 = response.itemAt(20);
                     ClientBatchItemResult certifyResult21 = response.itemAt(21)) {
-                assertEquals(22, response.itemCount());
+                assertEquals(23, response.itemCount());
                 assertEquals(0, createPairResult.resultStatus());
                 ClientBatchItemResult.CreateKeyPairResponse createPairResponse =
                         createPairResult.createKeyPairResponse().orElseThrow();
@@ -424,6 +428,13 @@ final class ClientFacadeTlsIntegrationTest {
                         item(0x420094, TtlvItemType.TextString.code(),
                                 "certify-type-only".getBytes(StandardCharsets.UTF_8)),
                         enumeration(0x420019, 1))));
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 7),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(22)),
+                structure(0x420079,
+                        item(0x420094, TtlvItemType.TextString.code(),
+                                "recertify-type-only".getBytes(StandardCharsets.UTF_8)),
+                        enumeration(0x420019, 5))));
 
         assertContains(request, expectedBatchItems.toByteArray());
         assertContains(request, item(0x420010, TtlvItemType.Boolean.code(),
@@ -433,7 +444,7 @@ final class ClientFacadeTlsIntegrationTest {
         assertEquals(2, countOccurrences(request, enumeration(0x42005c, 43)));
         assertEquals(2, countOccurrences(request, enumeration(0x42005c, 4)));
         assertEquals(2, countOccurrences(request, enumeration(0x42005c, 17)));
-        assertEquals(2, countOccurrences(request, enumeration(0x42005c, 7)));
+        assertEquals(3, countOccurrences(request, enumeration(0x42005c, 7)));
         assertEquals(2, countOccurrences(request, enumeration(0x42005c, 0x1d)));
         assertEquals(2, countOccurrences(request, enumeration(0x42005c, 0x29)));
         assertEquals(4, countOccurrences(request, enumeration(0x42005c, 6)));
@@ -6105,7 +6116,7 @@ final class ClientFacadeTlsIntegrationTest {
 
     private static byte[] requestBuilderWireResponseMessage() throws Exception {
         int[] operations = {
-            1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x1d, 0x29, 0x29, 6, 6, 6, 6
+            1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x1d, 0x29, 0x29, 6, 6, 6, 6, 7
         };
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));

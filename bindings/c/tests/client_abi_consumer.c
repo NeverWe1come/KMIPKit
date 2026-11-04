@@ -3775,12 +3775,12 @@ static int execute_request_builders_wire_from_c(
     static const uint8_t join_split_attribute_text[] = "join-split-attributes";
     static const uint8_t split_key_text[] = "join-split-id";
     static const uint8_t private_key_text[] = "private-key-to-rekey";
-    static const uint8_t batch_item_ids[22][8] = {
+    static const uint8_t batch_item_ids[23][8] = {
         "item-0", "item-1", "item-2", "item-3", "item-4", "item-5",
         "item-6", "item-7", "item-8", "item-9", "item-10", "item-11",
         "item-12", "item-13", "item-14", "item-15", "item-16", "item-17",
-        "item-18", "item-19", "item-20", "item-21"};
-    kmipkit_unique_identifier_v1_t identifiers[15] = {{0}};
+        "item-18", "item-19", "item-20", "item-21", "item-22"};
+    kmipkit_unique_identifier_v1_t identifiers[16] = {{0}};
     kmipkit_client_batch_t *batch = 0;
     kmipkit_client_batch_response_t *response = 0;
     kmipkit_client_batch_item_response_t *response_item = 0;
@@ -3819,6 +3819,9 @@ static int execute_request_builders_wire_from_c(
     set_text_identifier(&identifiers[12], certify_no_type_text, sizeof(certify_no_type_text) - 1);
     set_text_identifier(&identifiers[13], certify_no_structures_text, sizeof(certify_no_structures_text) - 1);
     set_text_identifier(&identifiers[14], certify_type_only_text, sizeof(certify_type_only_text) - 1);
+    set_text_identifier(
+        &identifiers[15], (const uint8_t *)"recertify-type-only",
+        sizeof("recertify-type-only") - 1);
     const kmipkit_byte_span_v1_t certify_request_value = {
         certify_request_sentinel, sizeof(certify_request_sentinel) - 1};
 
@@ -3975,14 +3978,18 @@ static int execute_request_builders_wire_from_c(
         kmipkit_client_batch_item_certify(
             &identifiers[14], 1, 1, 0, 0, 0, &item) != 0 ||
         !append_request_builder_item(
-            batch, &item, batch_item_ids[21], strlen((const char *)batch_item_ids[21]))) {
+            batch, &item, batch_item_ids[21], strlen((const char *)batch_item_ids[21])) ||
+        kmipkit_client_batch_item_recertify(
+            &identifiers[15], 0, 1, 5, 0, 0, 0, 0, 0, &item) != 0 ||
+        !append_request_builder_item(
+            batch, &item, batch_item_ids[22], strlen((const char *)batch_item_ids[22]))) {
         goto cleanup;
     }
 
     /* The fake peer supplies ID Placeholder context and success/failure batch results. */
     if (kmipkit_client_execute(client, &batch, limits, &response) != 0 || response == 0 ||
         kmipkit_client_batch_response_item_count(response, &response_count) != 0 ||
-        response_count != 22) {
+        response_count != 23) {
         result = 22;
         goto cleanup;
     }
@@ -4000,6 +4007,18 @@ static int execute_request_builders_wire_from_c(
         kmipkit_client_batch_item_response_release(response_item);
         response_item = 0;
     }
+    kmipkit_client_batch_item_metadata_v2_t recertify_metadata = {0};
+    recertify_metadata.struct_size = (uint32_t)sizeof(recertify_metadata);
+    recertify_metadata.abi_version = 2;
+    if (kmipkit_client_batch_response_item_at(response, 22, &response_item) != 0 ||
+        response_item == 0 ||
+        kmipkit_client_batch_item_response_metadata_v2(response_item, &recertify_metadata) != 0 ||
+        recertify_metadata.operation != UINT32_C(7)) {
+        result = 24;
+        goto cleanup;
+    }
+    kmipkit_client_batch_item_response_release(response_item);
+    response_item = 0;
     result = 0;
 
 cleanup:

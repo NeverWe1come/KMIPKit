@@ -214,8 +214,8 @@ class T102RecertifyRekeyKeyPairBuilderMappingTests(unittest.TestCase):
         self.assertIn(JAVA_WIRE, operations[RECERTIFY]["parityEvidenceIds"])
         proofs = {
             "bindings/c/tests/client_abi_consumer.c": "metadata_v2.operation != UINT32_C(7)",
-            JAVA_WIRE: "recertifyResult.metadataV2().operation()",
-            "bindings/python/tests/test_recertify_operation.py": "metadata_v2.operation == 0x07",
+            JAVA_WIRE: "assertEquals(0x07, item.operation());",
+            "bindings/python/tests/test_recertify_operation.py": "assert item.operation == 0x07",
         }
         for path, proof in proofs.items():
             self.assertTrue(proof in (ROOT / path).read_text(encoding="utf-8"), path)
