@@ -13,6 +13,22 @@ ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 CATALOG = ROOT / "specification" / "catalog" / "kmip-2.1.json"
 OASIS_HTML = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+MASK_WIRE_FIXTURE_SOURCES = (
+    "bindings/c/tests/client_abi_consumer.c",
+    "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+    "bindings/python/tests/test_rekey_native_integration.py",
+    "bindings/python/tests/test_recertify_operation.py",
+    "bindings/python/tests/test_join_split_key_operation.py",
+    "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+    "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+    "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs",
+    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+    "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
+    "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+    "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs",
+    "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
+    "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs",
+)
 OWNER = "specs/022-object-lifecycle/spec.md"
 TARGETS = (
     {
@@ -64,7 +80,6 @@ TARGETS = (
         "java": "org.kmipkit.extensions.ClientBatchItem.joinSplitKey",
         "python": "kmipkit.extensions.client_batch_item_join_split_key",
         "evidence": {
-            "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs",
             "crates/kmipkit-ffi/tests/c_api_coverage.rs",
             "bindings/c/tests/client_abi_consumer.c",
             "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
@@ -211,11 +226,24 @@ class T102RekeyStructureMappingTests(unittest.TestCase):
 
         catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
         elements = {row["element_id"]: row for row in catalog["elements"]}
+        self.assertIn("Table 117: Protection Storage Mask", text)
+        self.assertIn("Protection Storage Mask Integer", text)
+        self.assertEqual("Protection Storage Masks", elements["KMIPKIT-ELEM-TAG-42015F"]["name"])
+        self.assertEqual("Protection Storage Mask", elements["KMIPKIT-ELEM-TAG-42015E"]["name"])
+        self.assertEqual("42015F", elements["KMIPKIT-ELEM-TAG-42015F"]["wire_value"])
+        self.assertEqual("42015E", elements["KMIPKIT-ELEM-TAG-42015E"]["wire_value"])
         for target in TARGETS:
             tag_id = f"KMIPKIT-ELEM-TAG-{target['tag']:06X}"
             self.assertIn(tag_id, elements)
             self.assertEqual("assigned", elements[tag_id]["allocation"])
             self.assertEqual("client_1_0", elements[tag_id]["scope_state"])
+
+    def test_structure_wire_fixtures_use_integer_mask_child_tag(self) -> None:
+        for relative_path in MASK_WIRE_FIXTURE_SOURCES:
+            with self.subTest(path=relative_path):
+                source = (ROOT / relative_path).read_text(encoding="utf-8").lower().replace("_", "")
+                self.assertIn("42015e", source)
+                self.assertNotIn("420160", source)
 
     def test_only_these_six_rows_leave_the_t102_blocked_inventory(self) -> None:
         target_ids = {target["id"] for target in TARGETS}
