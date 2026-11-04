@@ -88,7 +88,6 @@ OPERATIONS = {
         "normative": {
             "KMIPKIT-REQ-SPEC-6.1.46-001",
             "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-            "KMIPKIT-REQ-SPEC-6.1.46-004-002",
         },
         "targets": (
             ("rust-observed-4781288042e981f6d3bd", "kmipkit_protocol::RekeyRequest::new"),
@@ -159,6 +158,11 @@ class T102RequestBuilderMappingBatchTests(unittest.TestCase):
                     self.assertEqual(operation["capability"], declaration["capabilityId"])
                     self.assertEqual(builder["approvalSource"], declaration["approvalSource"])
                     self.assertEqual(builder["requirementIds"], declaration["requirementIds"])
+                    if operation_name == "rekey":
+                        self.assertNotIn(
+                            "KMIPKIT-REQ-SPEC-6.1.46-004-002",
+                            declaration["requirementIds"],
+                        )
                     expected_mappings = dict(builder["languageMappings"])
                     expected_mappings["rust"] = {
                         "packageId": (

@@ -10,15 +10,21 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+CATALOG = ROOT / "specification" / "catalog" / "kmip-2.1.json"
 GENERATED_PARITY = ROOT / "tests" / "fixtures" / "api" / "generated" / "public_api_parity.json"
 TRACEABILITY = ROOT / "specs" / "043-public-api-bindings" / "traceability.md"
 OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-RE-KEY"
+RETIRED_NO_OFFSET_REQUIREMENT = "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+REKEY_FUNCTION_IDS = {
+    "client_batch_item_rekey",
+    "client_batch_item_response_rekey",
+    "client_batch_item_response_rekey_ttlv",
+}
 OWNER_SPEC = "specs/022-object-lifecycle/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 OWNER_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-6.1.46-001",
     "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-    "KMIPKIT-REQ-SPEC-6.1.46-004-002",
 }
 API_REQUIREMENTS = {
     f"KMIPKIT-0043-FR-{index:03}"
@@ -72,6 +78,7 @@ EXPECTED_MAPPINGS = {
 class RekeyParityManifestTests(unittest.TestCase):
     def setUp(self) -> None:
         self.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        self.catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
         self.operations = [
             row for row in self.manifest["operations"] if row["operationId"] == OPERATION_ID
         ]
@@ -118,6 +125,37 @@ class RekeyParityManifestTests(unittest.TestCase):
         self.assertEqual({}, missing)
         self.assertTrue(OWNER_REQUIREMENTS | API_REQUIREMENTS <= linked_requirements)
 
+    def test_retired_no_offset_requirement_is_not_attributed_to_rekey_client_rows(self) -> None:
+        retired = next(
+            row for row in self.catalog["requirements"]
+            if row["requirement_id"] == RETIRED_NO_OFFSET_REQUIREMENT
+        )
+        self.assertEqual("not_applicable", retired["role"])
+        self.assertEqual("not_applicable", retired["direction"])
+        self.assertEqual("out_of_scope", retired["scope_state"])
+        self.assertEqual("retired", retired["status"])
+
+        declarations = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("capabilityId") == OPERATION_ID
+        ]
+        self.assertEqual(42, len(declarations))
+        functions = {
+            row["id"]: row for row in self.manifest["functions"]
+            if row["id"] in REKEY_FUNCTION_IDS
+        }
+        self.assertEqual(REKEY_FUNCTION_IDS, set(functions))
+        violations = [
+            row["declarationId"] for row in declarations
+            if RETIRED_NO_OFFSET_REQUIREMENT in row.get("requirementIds", [])
+        ]
+        violations.extend(
+            function_id for function_id, row in functions.items()
+            if RETIRED_NO_OFFSET_REQUIREMENT in row.get("requirementIds", [])
+        )
+        self.assertEqual([], violations)
+        self.assertIn(RETIRED_NO_OFFSET_REQUIREMENT, self.manifest["requirementIds"])
+
     def test_rekey_traceability_links_normative_and_api_requirements(self) -> None:
         rows = [line for line in TRACEABILITY.read_text(encoding="utf-8").splitlines()
                 if line.startswith("| T059 |")]
@@ -127,6 +165,7 @@ class RekeyParityManifestTests(unittest.TestCase):
             rows[0],
         ))
         self.assertTrue(OWNER_REQUIREMENTS | API_REQUIREMENTS <= linked_ids)
+        self.assertNotIn(RETIRED_NO_OFFSET_REQUIREMENT, linked_ids)
 
     def test_generated_parity_inventory_contains_rekey_mapping(self) -> None:
         generated = json.loads(GENERATED_PARITY.read_text(encoding="utf-8"))
