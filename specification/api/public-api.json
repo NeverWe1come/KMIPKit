@@ -103775,20 +103775,6 @@
       }
     },
     {
-      "declarationId": "rust-observed-4cf3d4ce779128e2e777",
-      "packageId": "rust-kmipkit-client",
-      "kind": "module",
-      "exportName": "kmipkit_client::extension_registry",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
       "declarationId": "rust-observed-bfeba021b67e4bbe0605",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
@@ -372947,6 +372933,19 @@
         "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
       },
       "evidence": "The implementation is guarded by #[cfg(feature = \"test-support\")] in crates/kmipkit-protocol/src/profile.rs, is re-exported through the listed Rust crate paths, and is documented as unavailable for application use. The default product API and four-language profile selection capability remain represented separately."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "candidateSpecId": "KMIPKIT-0043",
+      "exportName": "kmipkit_client::extension_registry",
+      "reason": "This exact Rust module is a namespace container rather than an independent callable or data capability. Its child registry types and functions remain inventoried under the vendor-extension capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "The 20 child declarations are separately inventoried under vendor_extension_registry and retain their four-language mappings; this exclusion removes only the Rust namespace container. KMIPKIT-0043-FR-020 and KMIPKIT-0043-FR-021. The owning registry behavior remains specified in specs/012-vendor-extension-registry/spec.md and traced to OASIS KMIP Specification v2.1 §8.3 Table 396, §9.13 Table 418, and §7.13 Table 365; those protocol clauses do not define language module structure."
     },
     {
       "packageId": "rust-kmipkit-protocol",

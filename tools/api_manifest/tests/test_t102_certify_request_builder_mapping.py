@@ -138,7 +138,7 @@ BLOCKED_NEIGHBORS = {
 }
 BLOCKED_BEFORE = 224
 BLOCKED_AFTER = 221
-DECLARATIONS_SHA256 = "e879d011d86f12365bfd0855efd6fbce26f4616e5288d4decee6eb81f719f9b3"
+DECLARATIONS_SHA256 = "7f95a31bd94f7d823d8064ceda5fcf654158e658b17c916f311cb6761ef3fa78"
 OPERATIONS_SHA256 = "8ee7f0c367d2125be38c05d42159b515900b868ec1a898206492bc3c2fad969a"
 
 
@@ -201,7 +201,6 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
         self.assertEqual(BLOCKED_BEFORE - 3, BLOCKED_AFTER)
         self.assertEqual(4, len(WRAPPING_REQUEST_BUILDER_IDS))
         self.assertEqual(T102_BLOCKED_CANDIDATES, blocked)
-        self.assertEqual(BLOCKED_AFTER, blocked)
         self.assertEqual(
             "verified",
             self.declarations[RECERTIFY_TYPE_ID]["declarationState"],

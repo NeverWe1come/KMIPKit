@@ -14163,6 +14163,19 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "The 20 child declarations are separately inventoried under vendor_extension_registry and retain their four-language mappings; this exclusion removes only the Rust namespace container. KMIPKIT-0043-FR-020 and KMIPKIT-0043-FR-021. The owning registry behavior remains specified in specs/012-vendor-extension-registry/spec.md and traced to OASIS KMIP Specification v2.1 §8.3 Table 396, §9.13 Table 418, and §7.13 Table 365; those protocol clauses do not define language module structure.",
+      "exportName": "kmipkit_client::extension_registry",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust module is a namespace container rather than an independent callable or data capability. Its child registry types and functions remain inventoried under the vendor-extension capability."
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Approved — scope preauthorized by the maintainer's direct instruction to execute the roadmap autonomously.",
         "kind": "feature-specification",
         "path": "specs/003-core-types-errors/spec.md",
