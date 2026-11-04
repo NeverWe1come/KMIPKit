@@ -178,7 +178,7 @@ class T102RecertifyRekeyKeyPairBuilderMappingTests(unittest.TestCase):
         for operation_id, declaration_ids in expected.items():
             self.assertTrue(declaration_ids.issubset(set(operations[operation_id]["declarations"]["rust"])))
 
-    def test_t102_candidate_total_after_recertify_type_mapping(self) -> None:
+    def test_t102_candidate_total_after_recertify_builder_mapping(self) -> None:
         blocked = sum(
             row.get("declarationState") == "blocked"
             and row.get("candidateSpecId") == "KMIPKIT-0043"
@@ -213,7 +213,11 @@ class T102RecertifyRekeyKeyPairBuilderMappingTests(unittest.TestCase):
             "verified",
             self.declarations["rust-observed-e98ebdedfd3bd6dc5178"]["declarationState"],
         )
-        for blocked_id in ("rust-observed-be7b44dc6c8bae24ad53",):
+        for blocked_id in (
+            "rust-observed-1f4d5ae1f197c06d274f",
+            "rust-observed-d7bf84b1a5fd4c705597",
+            "rust-observed-e1413e6ad346eed590c5",
+        ):
             self.assertEqual("blocked", self.declarations[blocked_id]["declarationState"])
 
     def test_recertify_type_and_value_condition_and_description_are_source_pinned(self) -> None:
@@ -245,12 +249,17 @@ class T102RecertifyRekeyKeyPairBuilderMappingTests(unittest.TestCase):
         self.assertEqual(expected_mappings, declaration["languageMappings"])
         self.assertTrue(RECERTIFY_VALUE_EVIDENCE.issubset(set(declaration["parityEvidenceIds"])))
 
-        for path in (
-            "bindings/c/tests/client_abi_consumer.c",
-            JAVA_WIRE,
-            "bindings/python/tests/test_recertify_operation.py",
-        ):
-            self.assertIn("recertify-request-sentinel", (ROOT / path).read_text(encoding="utf-8"))
+        operations = {row["operationId"]: row for row in self.manifest["operations"]}
+        self.assertIn(RECERTIFY_VALUE_ID, operations[RECERTIFY]["declarations"]["rust"])
+
+        binding_evidence = {
+            "bindings/c/tests/client_abi_consumer.c": "recertify_request_sentinel",
+            JAVA_WIRE: "recertify-request-sentinel",
+            "bindings/python/tests/test_recertify_operation.py": "recertify-request-sentinel",
+            C_WIRE: "recertify-request-sentinel",
+        }
+        for path, proof in binding_evidence.items():
+            self.assertIn(proof, (ROOT / path).read_text(encoding="utf-8"), path)
 
     def test_raw_recertify_operation_has_direct_metadata_evidence_in_each_binding(self) -> None:
         self.assertEqual(2, len(RAW_RECERTIFY_DECLARATIONS))

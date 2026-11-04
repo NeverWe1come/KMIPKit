@@ -3772,6 +3772,7 @@ static int execute_request_builders_wire_from_c(
     static const uint8_t certify_no_structures_text[] = "certify-no-structures";
     static const uint8_t certify_type_only_text[] = "certify-type-only";
     static const uint8_t certify_request_sentinel[] = "certify-request-sentinel";
+    static const uint8_t recertify_request_sentinel[] = "recertify-request-sentinel";
     static const uint8_t join_split_attribute_text[] = "join-split-attributes";
     static const uint8_t split_key_text[] = "join-split-id";
     static const uint8_t private_key_text[] = "private-key-to-rekey";
@@ -3850,6 +3851,8 @@ static int execute_request_builders_wire_from_c(
         sizeof("get-wrapped") - 1);
     const kmipkit_byte_span_v1_t certify_request_value = {
         certify_request_sentinel, sizeof(certify_request_sentinel) - 1};
+    const kmipkit_byte_span_v1_t recertify_request_value = {
+        recertify_request_sentinel, sizeof(recertify_request_sentinel) - 1};
 
     if (kmipkit_client_batch_create(&batch) != 0 || batch == 0 ||
         kmipkit_client_batch_set_order_option(batch, 1) != 0 ||
@@ -4071,7 +4074,7 @@ static int execute_request_builders_wire_from_c(
         !append_request_builder_item(
             batch, &item, batch_item_ids[21], strlen((const char *)batch_item_ids[21])) ||
         kmipkit_client_batch_item_recertify(
-            &identifiers[15], 0, 1, 5, 0, 0, 0, 0, 0, &item) != 0 ||
+            &identifiers[15], 0, 1, 5, &recertify_request_value, 0, 0, 0, 0, &item) != 0 ||
         !append_request_builder_item(
             batch, &item, batch_item_ids[22], strlen((const char *)batch_item_ids[22]))) {
         goto cleanup;

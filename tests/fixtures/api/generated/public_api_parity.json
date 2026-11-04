@@ -155695,7 +155695,8 @@
           "rust-observed-a305050686931a657f67",
           "rust-observed-18147c6b3bc743f37b88",
           "rust-observed-0cad07b4f1010a7d9a55",
-          "rust-observed-6e9fb656f103c43fa2de"
+          "rust-observed-6e9fb656f103c43fa2de",
+          "rust-observed-be7b44dc6c8bae24ad53"
         ]
       },
       "featureSpecId": "KMIPKIT-0036",
@@ -304278,6 +304279,55 @@
         "KMIPKIT-0036-FR-001",
         "KMIPKIT-0036-FR-004",
         "KMIPKIT-0036-FR-008"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
+      "declarationId": "rust-observed-be7b44dc6c8bae24ad53",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::RecertifyRequest::with_certificate_request_value",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_recertify",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.recertify",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_recertify",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RecertifyRequest::with_certificate_request_value",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_recertify_operation.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_recertify_rekey_key_pair_builder_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-REQ-SPEC-6.1.45-008"
       ]
     },
     {

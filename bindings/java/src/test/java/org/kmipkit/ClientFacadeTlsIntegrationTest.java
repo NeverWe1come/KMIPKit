@@ -234,7 +234,8 @@ final class ClientFacadeTlsIntegrationTest {
                     .withUniqueBatchItemId(uniqueBatchItemId(21)));
             batch.add(ClientBatchItem.recertify(
                             UniqueIdentifier.textString("recertify-type-only"), null,
-                            5L, null, null, null, null)
+                            5L, "recertify-request-sentinel".getBytes(StandardCharsets.US_ASCII),
+                            null, null, null)
                     .withUniqueBatchItemId(uniqueBatchItemId(22)));
             batch.add(ClientBatchItem.importObject(
                             UniqueIdentifier.textString("import-replace-omitted"),
@@ -458,7 +459,9 @@ final class ClientFacadeTlsIntegrationTest {
                 structure(0x420079,
                         item(0x420094, TtlvItemType.TextString.code(),
                                 "recertify-type-only".getBytes(StandardCharsets.UTF_8)),
-                        enumeration(0x420019, 5))));
+                        enumeration(0x420019, 5),
+                        item(0x420140, TtlvItemType.ByteString.code(),
+                                "recertify-request-sentinel".getBytes(StandardCharsets.US_ASCII)))));
         byte[] wrappedAnyObject = wrappedImportAnyObjectBytes();
         byte[] importCommon = concatTtlv(
                 enumeration(0x420057, 2),

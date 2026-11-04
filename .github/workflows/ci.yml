@@ -384,7 +384,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B -m unittest tools.api_manifest.tests.test_t102_usage_allocation_context_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_certify_request_builder_mapping tools.api_manifest.tests.test_t102_client_extension_registry_namespace -v
+          & $python -B -m unittest tools.api_manifest.tests.test_t102_certify_request_builder_mapping tools.api_manifest.tests.test_t102_client_extension_registry_namespace tools.api_manifest.tests.test_t102_recertify_rekey_key_pair_builder_mapping -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B -m unittest tools.api_manifest.tests.test_binding_exports -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

@@ -499,7 +499,7 @@ def test_recertify_round_trips_through_native_client_over_mtls_and_retains_ttlv(
                     extensions.client_batch_item_recertify(
                         extensions.UniqueIdentifier.text_string("certificate-7"),
                         certificate_request_type=5,
-                        certificate_request_value=b"test-certificate-request",
+                        certificate_request_value=b"recertify-request-sentinel",
                     )
                 )
                 result = kmip_client.execute(batch, limits)
@@ -507,7 +507,7 @@ def test_recertify_round_trips_through_native_client_over_mtls_and_retains_ttlv(
         assert peer_failures.empty(), "the loopback mTLS peer must complete its response"
         assert len(received_requests) == 1
         assert _ttlv_item(0x42005C, 5, struct.pack(">I", 0x07)) in received_requests[0]
-        assert _ttlv_item(0x420140, 8, b"test-certificate-request") in received_requests[0]
+        assert _ttlv_item(0x420140, 8, b"recertify-request-sentinel") in received_requests[0]
         assert result is not None and len(result.items) == 1
         item = result.items[0]
         assert item.operation == 0x07

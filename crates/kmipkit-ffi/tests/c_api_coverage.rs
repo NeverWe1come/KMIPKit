@@ -2673,7 +2673,7 @@ const RECERTIFY_OPTIONALS_OMITTED: &[RequestBuilderWireField] = &[RequestBuilder
     tag: 0x0042_0094,
     value: V::Text("recertify-omit-text"),
 }];
-const RECERTIFY_TYPE_ONLY: &[RequestBuilderWireField] = &[
+const RECERTIFY_WITH_REQUEST_VALUE: &[RequestBuilderWireField] = &[
     RequestBuilderWireField {
         tag: 0x0042_0094,
         value: V::Text("recertify-type-only"),
@@ -2681,6 +2681,10 @@ const RECERTIFY_TYPE_ONLY: &[RequestBuilderWireField] = &[
     RequestBuilderWireField {
         tag: 0x0042_0019,
         value: V::Enumeration(5),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0140,
+        value: V::ByteString(b"recertify-request-sentinel"),
     },
 ];
 const CERTIFY_VALUES_FULL: &[RequestBuilderWireField] = &[
@@ -2888,7 +2892,7 @@ const REQUEST_BUILDER_WIRE_EXPECTED: &[RequestBuilderWireItem] = &[
     },
     RequestBuilderWireItem {
         operation: 7,
-        fields: RECERTIFY_TYPE_ONLY,
+        fields: RECERTIFY_WITH_REQUEST_VALUE,
     },
 ];
 
