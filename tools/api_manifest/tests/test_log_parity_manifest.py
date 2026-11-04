@@ -40,6 +40,7 @@ EXPECTED_MAPPINGS = {
         "kmipkit_client::ClientBatchOutcome::Log",
         "kmipkit_protocol::LogRequest",
         "kmipkit_protocol::LogRequest::new",
+        "kmipkit_protocol::LogRequest::into_ttlv_payload",
         "kmipkit_protocol::LogResponse",
         "kmipkit_protocol::LogResponse::result",
         "kmipkit_protocol::LogResponse::try_from_response_item",

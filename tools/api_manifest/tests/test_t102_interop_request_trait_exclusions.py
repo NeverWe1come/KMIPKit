@@ -160,10 +160,10 @@ class T102InteropRequestTraitExclusionTests(unittest.TestCase):
         verified = {
             "kmipkit_protocol::InteropRequest",
             "kmipkit_protocol::InteropRequest::new",
+            "kmipkit_protocol::InteropRequest::into_ttlv_payload",
         }
         blocked = {
             "kmipkit_protocol::InteropRequest::interop_function",
-            "kmipkit_protocol::InteropRequest::into_ttlv_payload",
             "kmipkit_protocol::InteropRequest::with_extension",
             "kmipkit_protocol::InteropRequest::with_interop_identifier",
         }

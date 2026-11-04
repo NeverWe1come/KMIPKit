@@ -149,9 +149,9 @@ class T102LogRequestTraitExclusionTests(unittest.TestCase):
         verified = {
             "kmipkit_protocol::LogRequest",
             "kmipkit_protocol::LogRequest::new",
+            "kmipkit_protocol::LogRequest::into_ttlv_payload",
         }
         blocked = {
-            "kmipkit_protocol::LogRequest::into_ttlv_payload",
             "kmipkit_protocol::LogRequest::with_extension",
             "kmipkit_protocol::LogRequest::with_log_message",
         }
