@@ -27,6 +27,12 @@ EVIDENCE = {
     "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs",
     "tools/api_manifest/tests/test_t102_pkcs11_request_builder_mapping_batch.py",
 }
+OWNER_REQUIREMENTS = [
+    "KMIPKIT-0040-FR-001",
+    "KMIPKIT-0040-FR-004",
+    "KMIPKIT-0040-FR-005",
+    "KMIPKIT-0040-FR-008",
+]
 TARGETS = (
     (
         "rust-observed-60273eccedf62e75a65e",
@@ -95,7 +101,15 @@ class T102Pkcs11RequestBuilderMappingBatchTests(unittest.TestCase):
                 self.assertEqual("associated-item", declaration["kind"])
                 self.assertEqual(CAPABILITY, declaration["capabilityId"])
                 self.assertEqual(builder["approvalSource"], declaration["approvalSource"])
-                self.assertEqual(builder["requirementIds"], declaration["requirementIds"])
+                api_requirements = [
+                    requirement_id
+                    for requirement_id in builder["requirementIds"]
+                    if requirement_id.startswith("KMIPKIT-0043-")
+                ]
+                self.assertEqual(
+                    OWNER_REQUIREMENTS + api_requirements,
+                    declaration["requirementIds"],
+                )
                 self.assertNotIn("candidateSpecId", declaration)
                 self.assertNotIn("blockedReason", declaration)
 
