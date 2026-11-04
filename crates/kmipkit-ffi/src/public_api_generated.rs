@@ -10928,6 +10928,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::LogoutResponse::try_from_response_item",
     ),
     (
+        "rust-observed-a27e6fe2eb857da91200",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ObjectGroupMember",
+    ),
+    (
         "rust-observed-d8e26ff8ff859475a2cd",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::ObjectGroupMember::from_raw",
@@ -11981,6 +11986,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-19988f12ad3d7d42d5cd",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::SplitKeyReference::with_split_key_threshold",
+    ),
+    (
+        "rust-observed-ddea2a06a9c5a084209d",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::StorageStatusMask",
     ),
     (
         "rust-observed-f81808570c0e448ffebc",
