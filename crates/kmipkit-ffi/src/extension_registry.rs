@@ -301,8 +301,8 @@ thread_local! {
         const { std::cell::RefCell::new(None) };
 }
 
-fn record_ffi_error(status: i32) -> i32 {
-    let (category, cause) = match status {
+fn ffi_error_metadata(status: i32) -> (u32, u32) {
+    match status {
         ERROR_PROTOCOL => (ERROR_CATEGORY_PROTOCOL, ERROR_CAUSE_PROTOCOL_OTHER),
         ERROR_INVALID_INPUT | ERROR_INVALID_IDENTITY => {
             (ERROR_CATEGORY_VALIDATION, ERROR_CAUSE_INVALID_INPUT)
@@ -312,7 +312,11 @@ fn record_ffi_error(status: i32) -> i32 {
         | ERROR_INVALID_SCHEMA
         | ERROR_RESOURCE_LIMIT => (ERROR_CATEGORY_VALIDATION, ERROR_CAUSE_OTHER),
         _ => (ERROR_CATEGORY_OTHER, ERROR_CAUSE_OTHER),
-    };
+    }
+}
+
+fn record_ffi_error(status: i32) -> i32 {
+    let (category, cause) = ffi_error_metadata(status);
     LAST_ERROR.with(|last_error| {
         last_error.set(LastError {
             status,
