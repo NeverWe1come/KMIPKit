@@ -10940,3 +10940,20 @@ Red `5160b6008` requires the existing protocol serializers for Interop and Log t
 Green `7e9e0d1db` maps both serializers to the existing C, Java, and Python operation builders, inherits the approved owner and requirement IDs from each verified request constructor, adds them to operation inventory, updates the Log declaration parity contract and request-state regressions, and regenerates the public API projections. Refactor `632a5465c` extracts shared mapping assertions. This is an inventory and parity mapping change; it adds no runtime behavior or public symbol.
 
 Verification: focused serializer, Interop/Log trait-state, and operation-parity tests pass 16/16; `python tools/api_manifest/generate.py --check` verifies 12/12 outputs; `cargo fmt --all --check` and `git diff --check` pass. T102 falls 113→111 blocked candidates; public declaration/exclusion totals remain 6,380/8,713. Macro-Lot 2 remains open and full T102 plus the 151-test `manifest-v2` suites remain reserved for lot closure. No formal conformance, server-interoperability, or certification claim is made.
+
+### T102 Macro-Lot 2 PKCS#11 request serializer parity (2026-11-04)
+
+Red commit `07a63891a` adds a regression requiring both existing PKCS#11 request serializer declarations to map to their approved four-language operation capability. It fails because both declarations are blocked and the operation inventory lacks the new mapping evidence. The approved owner is `specs/026-pkcs11/spec.md` (KMIPKIT-0040); OASIS KMIP Specification v2.1 §6.1.37 Tables 273–275 defines the operation and Table 273 the request. Exact declaration and constructor IDs are recorded in `traceability.md`.
+
+Green commit `3d177a7ab` maps the client-root re-export and protocol serializer to the existing operation builder, inheriting each verified constructor's owner and requirement IDs. It adds both declaration IDs and the mapping test to the operation inventory, updates PKCS#11 declaration-state assertions and the T102 candidate total, then regenerates the public API outputs. Refactor commit `acc35c0e8` extracts shared assertions for both declarations. No runtime or wire behavior changes.
+
+Verification: the focused serializer mapping, request-trait state, request-builder, and PKCS#11 parity modules pass 18/18. `py -3 -B tools/api_manifest/generate.py --check` verifies 12/12 outputs; `cargo fmt --all --check` and `git diff --check` pass. T102 falls 111→109 blocked candidates; public declaration/exclusion totals remain 6,380/8,713. Macro-Lot 2 remains open and full T102 plus the 151-test `manifest-v2` suites remain reserved for lot closure. This mapping is capability-level inventory evidence and makes no formal conformance, interoperability, profile-support, or certification claim.
+
+The macro-lot partition stability check passes. Its separate zero-unresolved completion gate still reports the 109 remaining candidates, so Macro-Lot 2 is not complete.
+
+Reproduction commands (run from the repository root):
+
+- Red, expected blocked-state and missing operation-evidence failures: `py -3 -B -m unittest -v tools.api_manifest.tests.test_t102_pkcs11_request_serializer_mapping`.
+- Focused Green mapping/state/builder/parity group: `py -3 -B -m unittest -v tools.api_manifest.tests.test_t102_pkcs11_request_serializer_mapping tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions tools.api_manifest.tests.test_t102_pkcs11_request_builder_mapping_batch tools.api_manifest.tests.test_pkcs11_parity_manifest`.
+- Generated API outputs: `py -3 -B tools/api_manifest/generate.py --check`.
+- Formatting and whitespace: `cargo fmt --all --check` and `git diff --check`.

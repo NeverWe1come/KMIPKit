@@ -992,3 +992,12 @@ Each serializer inherits the exact requirement IDs and approved owner from its v
 |---|---|---|---|
 | Interop | `rust-observed-df96e7ac424e101c5d7e` `InteropRequest::into_ttlv_payload` | `rust-observed-8ccc622656c4b1a98d12` | §6.1.26, Tables 241–243 |
 | Log | `rust-observed-15c579db14e795367130` `LogRequest::into_ttlv_payload` | `rust-observed-cec93256aaf868b4b77f` | §6.1.29, Tables 250–252 |
+
+## T102 — KMIPKIT-0040 PKCS#11 request serializer mappings
+
+Both Rust serializer declarations inherit the exact requirement IDs and approved owner from their verified same-package constructor anchors. They map to the already implemented four-language PKCS#11 operation capability; the client-root declaration is the public re-export from `crates/kmipkit-client/src/lib.rs`, and the protocol implementation is in `crates/kmipkit-protocol/src/pkcs11.rs`. OASIS KMIP Specification v2.1 §6.1.37 Tables 273–275 defines the operation; Table 273 is the request. `tools/api_manifest/tests/test_t102_pkcs11_request_serializer_mapping.py` checks declaration identity, owner and requirement inheritance, language mappings, operation inventory, and the exact source citation. The mapping establishes API capability correspondence only.
+
+| Rust declaration | Constructor anchor | Inherited requirement set | OASIS KMIP v2.1 source | Implementation and test evidence |
+|---|---|---|---|---|
+| `rust-observed-dc0d9f8db2cc819081a5` `kmipkit_client::Pkcs11Request::into_ttlv_payload` | `rust-observed-394218a1365a78a151c9` `kmipkit_client::Pkcs11Request::new` | KMIPKIT-0040-FR-001–008; KMIPKIT-0043-FR-004/005/007–013/017/018/021/022 | §6.1.37, Tables 273–275 | `crates/kmipkit-client/src/lib.rs`; `crates/kmipkit-protocol/src/pkcs11.rs`; `crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs`; `tools/api_manifest/tests/test_t102_pkcs11_request_serializer_mapping.py` |
+| `rust-observed-0ca4edbce90ed942c680` `kmipkit_protocol::Pkcs11Request::into_ttlv_payload` | `rust-observed-d01612e554e6a0987fb1` `kmipkit_protocol::Pkcs11Request::new` | KMIPKIT-0040-FR-001–008; KMIPKIT-0043-FR-004/005/007–013/017/018/021/022 | §6.1.37, Tables 273–275 | `crates/kmipkit-protocol/src/pkcs11.rs`; `crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs`; `tools/api_manifest/tests/test_t102_pkcs11_request_serializer_mapping.py` |
