@@ -27,6 +27,15 @@ DECLARATIONS = (
 
 
 class T102LogRequestMemberMappingTests(unittest.TestCase):
+    def read_source(self, *parts: str) -> str:
+        return ROOT.joinpath(*parts).read_text(encoding="utf-8")
+
+    def assert_source_contains(self, parts: tuple[str, ...], *fragments: str) -> None:
+        source = self.read_source(*parts)
+        for fragment in fragments:
+            with self.subTest(path="/".join(parts), fragment=fragment):
+                self.assertIn(fragment, source)
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
@@ -75,30 +84,37 @@ class T102LogRequestMemberMappingTests(unittest.TestCase):
                 self.assertIn(MAPPING_EVIDENCE, self.operation["parityEvidenceIds"])
 
     def test_mapping_is_grounded_in_oasis_tables_redaction_and_binding_builders(self) -> None:
-        owner = (ROOT / OWNER).read_text(encoding="utf-8")
-        self.assertIn(
+        self.assert_source_contains(
+            tuple(OWNER.split("/")),
             "| Log | KMIPKIT-ELEM-OP-C2S-LOG | §6.1.29 | 250 | 251 | 252 |",
-            owner,
         )
-        protocol_tests = (
-            ROOT / "crates/kmipkit-protocol/tests/unit/log_operation_tests.rs"
-        ).read_text(encoding="utf-8")
-        self.assertIn("table_250_required_message_is_preserved_and_redacted", protocol_tests)
-        self.assertIn(
+        self.assert_source_contains(
+            ("crates", "kmipkit-protocol", "tests", "unit", "log_operation_tests.rs"),
+            "table_250_required_message_is_preserved_and_redacted",
             "unknown_request_extensions_preserve_order_without_overriding_table_fields",
-            protocol_tests,
         )
-
-        c_header = (ROOT / "bindings/c/include/kmipkit.h").read_text(encoding="utf-8")
-        self.assertIn("kmipkit_client_batch_item_log", c_header)
-        java_source = (
-            ROOT / "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java"
-        ).read_text(encoding="utf-8")
-        self.assertIn("log(byte[] logMessage)", java_source)
-        python_source = (ROOT / "bindings/python/src/kmipkit/extensions.py").read_text(
-            encoding="utf-8"
+        self.assert_source_contains(
+            ("bindings", "c", "include", "kmipkit.h"),
+            "kmipkit_client_batch_item_log",
         )
-        self.assertIn("def client_batch_item_log(", python_source)
+        self.assert_source_contains(
+            (
+                "bindings",
+                "java",
+                "src",
+                "main",
+                "java",
+                "org",
+                "kmipkit",
+                "extensions",
+                "ClientBatchItem.java",
+            ),
+            "log(byte[] logMessage)",
+        )
+        self.assert_source_contains(
+            ("bindings", "python", "src", "kmipkit", "extensions.py"),
+            "def client_batch_item_log(",
+        )
 
         self.assertEqual(
             T102_BLOCKED_CANDIDATES,
