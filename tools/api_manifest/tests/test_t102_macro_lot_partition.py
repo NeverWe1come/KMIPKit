@@ -79,6 +79,44 @@ class T102MacroLotPartitionTests(unittest.TestCase):
             name = item["exportName"]
             self.assertFalse(" as " in name or "Error" in name, name)
 
+    def test_macro_lot_two_reconciles_every_exact_candidate(self) -> None:
+        lot2 = self.partition["macroLots"]["2"]["declarations"]
+        public = {
+            (row["declarationId"], row["packageId"], row["exportName"]): row
+            for row in self.manifest["publicDeclarations"]
+        }
+        exclusions = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.manifest["approvedExclusions"]
+        }
+
+        unresolved = []
+        for item in lot2:
+            identity = (
+                item["declarationId"],
+                item["packageId"],
+                item["exportName"],
+            )
+            public_row = public.get(identity)
+            exclusion = exclusions.get((item["packageId"], item["exportName"]))
+            self.assertTrue(
+                public_row is not None or exclusion is not None,
+                f"baseline candidate identity disappeared: {identity}",
+            )
+            if public_row is not None and (
+                public_row.get("declarationState") == "blocked"
+                and public_row.get("candidateSpecId") == "KMIPKIT-0043"
+            ):
+                unresolved.append(identity)
+            elif public_row is not None:
+                self.assertIn(public_row.get("declarationState"), {"declared", "verified"})
+                self.assertNotIn("blockedReason", public_row)
+                self.assertNotIn("candidateSpecId", public_row)
+            else:
+                self.assertEqual("Approved", exclusion["approvalSource"]["status"])
+
+        self.assertEqual([], unresolved, f"Macro-Lot 2 still has {len(unresolved)} blocked candidates")
+
 
 if __name__ == "__main__":
     unittest.main()
