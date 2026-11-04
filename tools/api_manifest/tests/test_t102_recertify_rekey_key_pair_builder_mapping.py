@@ -9,6 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+CATALOG = ROOT / "specification" / "catalog" / "kmip-2.1.json"
 OASIS_HTML = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
 OWNER = "specs/022-object-lifecycle/spec.md"
 RECERTIFY = "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"
@@ -17,6 +18,32 @@ JAVA_WIRE = "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationT
 C_WIRE = "crates/kmipkit-ffi/tests/c_api_coverage.rs"
 WIRE_EVIDENCE = {JAVA_WIRE, C_WIRE}
 NEW_EVIDENCE = WIRE_EVIDENCE | {"tools/api_manifest/tests/test_t102_recertify_rekey_key_pair_builder_mapping.py"}
+RECERTIFY_TYPE_ID = "rust-observed-4e379cb3b97bca658dbf"
+RECERTIFY_TYPE_NAME = "kmipkit_protocol::RecertifyRequest::with_certificate_request_type"
+RECERTIFY_TYPE_REQUIREMENTS = {
+    "KMIPKIT-0036-FR-001",
+    "KMIPKIT-0036-FR-002",
+    "KMIPKIT-0036-FR-004",
+    "KMIPKIT-0036-FR-006",
+    "KMIPKIT-0036-FR-008",
+    "KMIPKIT-REQ-SPEC-6.1.45-008",
+}
+RECERTIFY_TYPE_EVIDENCE = {
+    "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
+    "bindings/c/tests/client_abi_consumer.c",
+    JAVA_WIRE,
+    "bindings/python/tests/test_recertify_operation.py",
+    "tools/api_manifest/tests/test_t102_recertify_rekey_key_pair_builder_mapping.py",
+}
+RAW_RECERTIFY_DECLARATIONS = {
+    "rust-observed-bd90b6e53d6c05c1a6b0",
+    "rust-observed-4c37b205dc5bee05df9a",
+}
+RAW_RECERTIFY_EVIDENCE = {
+    "bindings/c/tests/client_abi_consumer.c",
+    JAVA_WIRE,
+    "bindings/python/tests/test_recertify_operation.py",
+}
 
 TARGETS = {
     "rust-observed-e98ebdedfd3bd6dc5178": (
@@ -87,6 +114,8 @@ class T102RecertifyRekeyKeyPairBuilderMappingTests(unittest.TestCase):
             (row["packageId"], row["exportName"]): row
             for row in cls.manifest["publicDeclarations"]
         }
+        cls.catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+        cls.elements = {row["element_id"]: row for row in cls.catalog["elements"]}
 
     def test_only_the_exact_six_rows_map_with_their_direct_requirement_subsets(self) -> None:
         self.assertEqual(6, len(TARGETS))
@@ -134,6 +163,62 @@ class T102RecertifyRekeyKeyPairBuilderMappingTests(unittest.TestCase):
         self.assertEqual(659, blocked)
         self.assertEqual(6_470, len(self.manifest["publicDeclarations"]))
         self.assertEqual(8_554, len(self.manifest["approvedExclusions"]))
+
+    def test_recertify_type_is_a_seventh_exact_mapping_with_value_absent(self) -> None:
+        declaration = self.declarations[RECERTIFY_TYPE_ID]
+        self.assertEqual(RECERTIFY_TYPE_NAME, declaration["exportName"])
+        self.assertEqual("verified", declaration["declarationState"])
+        self.assertEqual(RECERTIFY, declaration["capabilityId"])
+        self.assertEqual(RECERTIFY_TYPE_REQUIREMENTS, set(declaration["requirementIds"]))
+        self.assertEqual("four-language", declaration["parityScope"])
+        builder = self.by_name[("c-kmipkit", "kmipkit_client_batch_item_recertify")]
+        expected_mappings = dict(builder["languageMappings"])
+        expected_mappings["rust"] = {"packageId": "rust-kmipkit-protocol", "name": RECERTIFY_TYPE_NAME}
+        self.assertEqual(expected_mappings, declaration["languageMappings"])
+        self.assertTrue(RECERTIFY_TYPE_EVIDENCE.issubset(set(declaration["parityEvidenceIds"])))
+
+        blocked = sum(
+            row.get("declarationState") == "blocked"
+            and row.get("candidateSpecId") == "KMIPKIT-0043"
+            for row in self.manifest["publicDeclarations"]
+        )
+        self.assertEqual(658, blocked)
+        self.assertEqual(6_470, len(self.manifest["publicDeclarations"]))
+        self.assertEqual(8_554, len(self.manifest["approvedExclusions"]))
+        for blocked_id in (
+            "rust-observed-e98ebdedfd3bd6dc5178",
+            "rust-observed-be7b44dc6c8bae24ad53",
+        ):
+            self.assertEqual("blocked", self.declarations[blocked_id]["declarationState"])
+
+    def test_recertify_type_and_value_condition_and_description_are_source_pinned(self) -> None:
+        oasis = " ".join(re.sub(
+            r"<[^>]+>", " ", OASIS_HTML.read_text(encoding="cp1252")
+        ).split())
+        self.assertIn("Table 300: Re-certify Request Payload", oasis)
+        self.assertRegex(oasis, r"Certificate Request Type No An Enumeration object.*?It is REQUIRED if the Certificate Request is present\.")
+        self.assertRegex(oasis, r"Certificate Request Value No A Byte String object with the certificate request\.")
+        self.assertEqual("Certificate Request Type", self.elements["KMIPKIT-ELEM-TAG-420019"]["name"])
+        self.assertIn("KMIPKIT-ELEM-ENUMERATION-TAG", self.elements["KMIPKIT-ELEM-TAG-420019"]["parent_element_ids"])
+        source = MANIFEST.read_text(encoding="utf-8")
+        self.assertTrue("Certificate Request Type is optional and may appear without Certificate Request Value" in source)
+        self.assertFalse("Certificate Request Type is present only with Certificate Request Value" in source)
+
+    def test_raw_recertify_operation_has_direct_metadata_evidence_in_each_binding(self) -> None:
+        self.assertEqual(2, len(RAW_RECERTIFY_DECLARATIONS))
+        operations = {row["operationId"]: row for row in self.manifest["operations"]}
+        for declaration_id in RAW_RECERTIFY_DECLARATIONS:
+            declaration = self.declarations[declaration_id]
+            self.assertIn("ClientOperation::Recertify", declaration["exportName"])
+            self.assertTrue(RAW_RECERTIFY_EVIDENCE.issubset(set(declaration["parityEvidenceIds"])))
+        self.assertIn(JAVA_WIRE, operations[RECERTIFY]["parityEvidenceIds"])
+        proofs = {
+            "bindings/c/tests/client_abi_consumer.c": "metadata_v2.operation != UINT32_C(7)",
+            JAVA_WIRE: "recertifyResult.metadataV2().operation()",
+            "bindings/python/tests/test_recertify_operation.py": "metadata_v2.operation == 0x07",
+        }
+        for path, proof in proofs.items():
+            self.assertTrue(proof in (ROOT / path).read_text(encoding="utf-8"), path)
 
     def test_approved_tables_define_the_wire_fields_and_placeholder_behavior(self) -> None:
         html = OASIS_HTML.read_text(encoding="cp1252")
