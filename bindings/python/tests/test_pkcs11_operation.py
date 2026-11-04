@@ -272,7 +272,7 @@ def test_pkcs11_cffi_constructor_accepts_absent_correlation_value() -> None:
 def test_pkcs11_constructor_accepts_caller_ordered_opaque_payload_extensions() -> None:
     function = ttlv.ttlv_structure_create()
     extension = ttlv.ttlv_decode(
-        bytes.fromhex("0054123405000000040000000700000000")
+        bytes.fromhex("54123405000000040000000700000000")
     )
     try:
         item = extensions.client_batch_item_pkcs11(
@@ -281,7 +281,6 @@ def test_pkcs11_constructor_accepts_caller_ordered_opaque_payload_extensions() -
         item.close()
     finally:
         extension.close()
-        function.close()
         function.close()
 
 
