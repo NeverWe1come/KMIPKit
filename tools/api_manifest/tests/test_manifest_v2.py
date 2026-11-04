@@ -4891,9 +4891,6 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         }
         operation_builder_evidence = {
             "Certify": {
-                "bindings/c/tests/client_abi_consumer.c",
-                "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-                "bindings/python/tests/test_certify_operation.py",
                 "crates/kmipkit-ffi/tests/c_api_coverage.rs",
                 "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs",
                 "tools/api_manifest/tests/test_t102_certify_request_builder_mapping.py",

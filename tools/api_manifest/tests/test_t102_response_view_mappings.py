@@ -432,6 +432,13 @@ class T102ResponseViewMappingTests(unittest.TestCase):
         ])
         for declaration in unchanged_declarations:
             if declaration["declarationId"] in {
+                "rust-observed-e0a06a71290bee987cc7",
+                "rust-observed-5722377217051635233d",
+            }:
+                declaration["parityEvidenceIds"].remove(
+                    "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
+                )
+            if declaration["declarationId"] in {
                 target["id"] for target in CERTIFY_TARGETS
             }:
                 declaration["capabilityId"] = "public_binding_surface"

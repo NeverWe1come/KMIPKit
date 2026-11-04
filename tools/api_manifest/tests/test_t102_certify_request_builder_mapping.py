@@ -184,6 +184,17 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
             self.assertIn("ClientOperation::Certify", declaration["exportName"])
             self.assertTrue(RAW_CERTIFY_EVIDENCE <= set(declaration["parityEvidenceIds"]))
 
+        proof_sources = {
+            "bindings/c/tests/client_abi_consumer.c": "metadata.operation != UINT32_C(6)",
+            "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java": "metadataV2().operation()",
+            "bindings/python/tests/test_certify_operation.py":
+                "[item.metadata_v2.operation for item in result.items] == [6, 6, 6, 6]",
+        }
+        for evidence_path, proof in proof_sources.items():
+            with self.subTest(evidence=evidence_path):
+                source = (ROOT / evidence_path).read_text(encoding="utf-8")
+                self.assertTrue(proof in source, evidence_path)
+
         manifest_v2 = (ROOT / "tools/api_manifest/tests/test_manifest_v2.py").read_text(encoding="utf-8")
         certify_builder_block = manifest_v2.split('"Certify": {', 1)[1].split("},", 1)[0]
         self.assertNotIn("bindings/c/tests/client_abi_consumer.c", certify_builder_block)
@@ -205,13 +216,32 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
         for language, path in sources.items():
             text = path.read_text(encoding="utf-8")
             with self.subTest(language=language):
-                self.assertIn("certify-type-only", text)
-                self.assertIn("420019", text)
-                self.assertIn("420140", text)
+                self.assertTrue("certify-type-only" in text, f"{language} type-only wire case")
+        c_source = sources["c"].read_text(encoding="utf-8")
+        self.assertTrue("&identifiers[14], 1, 1, 0, 0, 0, &item" in c_source)
+        java_source = sources["java"].read_text(encoding="utf-8")
+        self.assertTrue("enumeration(0x420019, 1)" in java_source)
+        python_source = sources["python"].read_text(encoding="utf-8")
+        self.assertTrue("ttlv_enumeration(0x420019, 1)" in python_source)
+        ffi_wire = (ROOT / "crates/kmipkit-ffi/tests/c_api_coverage.rs").read_text(encoding="utf-8")
+        start = ffi_wire.index("const CERTIFY_TYPE_ONLY: &[RequestBuilderWireField]")
+        end = ffi_wire.index("];", start)
+        expected_fields = ffi_wire[start:end]
+        self.assertTrue("0x0042_0019" in expected_fields and "V::Enumeration(1)" in expected_fields)
+        for omitted_tag in ("0x0042_0140", "0x0042_0125", "0x0042_015f"):
+            self.assertTrue(omitted_tag not in expected_fields, omitted_tag)
+        self.assertTrue("fields: CERTIFY_TYPE_ONLY" in ffi_wire)
 
     def test_non_target_declarations_and_operation_rows_match_snapshot(self) -> None:
         target_ids = {target["id"] for target in TARGETS}
-        other_declarations = [row for row in self.manifest["publicDeclarations"] if row["declarationId"] not in target_ids]
+        other_declarations = copy.deepcopy([
+            row for row in self.manifest["publicDeclarations"] if row["declarationId"] not in target_ids
+        ])
+        for declaration in other_declarations:
+            if declaration["declarationId"] in RAW_CERTIFY_DECLARATIONS:
+                declaration["parityEvidenceIds"].remove(
+                    "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
+                )
         self.assertEqual(DECLARATIONS_SHA256, canonical_sha256(other_declarations))
         other_operations = copy.deepcopy(self.manifest["operations"])
         for operation in other_operations:

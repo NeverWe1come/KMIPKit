@@ -31,7 +31,7 @@ def _certify_wire_response_message() -> bytes:
         0x42007A,
         version,
         ttlv_item(0x420092, 9, struct.pack(">q", 1)),
-        ttlv_item(0x42000D, 2, struct.pack(">i", 3)),
+        ttlv_item(0x42000D, 2, struct.pack(">i", 4)),
     )
     items = tuple(
         ttlv_structure(
@@ -41,7 +41,7 @@ def _certify_wire_response_message() -> bytes:
             ttlv_enumeration(0x42007F, 1),
             ttlv_enumeration(0x42007E, 5),
         )
-        for item_id in (b"item-18", b"item-19", b"item-20")
+        for item_id in (b"item-18", b"item-19", b"item-20", b"item-21")
     )
     return ttlv_structure(0x42007B, header, *items)
 
@@ -217,6 +217,13 @@ def test_certify_builders_encode_table_179_fields_and_omissions_over_mtls() -> N
                             None,
                             None,
                         ),
+                        (
+                            b"item-21",
+                            "certify-type-only",
+                            1,
+                            None,
+                            None,
+                        ),
                     ):
                         item = extensions.client_batch_item_certify(
                             extensions.UniqueIdentifier.text_string(identifier),
@@ -273,6 +280,16 @@ def test_certify_builders_encode_table_179_fields_and_omissions_over_mtls() -> N
                     ttlv_item(0x420140, 8, b"certify-request-sentinel"),
                 ),
             ),
+            ttlv_structure(
+                0x42000F,
+                ttlv_enumeration(0x42005C, 6),
+                ttlv_item(0x420093, 8, b"item-21"),
+                ttlv_structure(
+                    0x420079,
+                    ttlv_item(0x420094, 7, b"certify-type-only"),
+                    ttlv_enumeration(0x420019, 1),
+                ),
+            ),
         )
         order_option = ttlv_item(
             0x420010, 6, b"\x00\x00\x00\x00\x00\x00\x00\x01"
@@ -286,8 +303,10 @@ def test_certify_builders_encode_table_179_fields_and_omissions_over_mtls() -> N
             request.index(expected_items[0])
             < request.index(expected_items[1])
             < request.index(expected_items[2])
+            < request.index(expected_items[3])
         ), "Certify items retain batch order"
-        assert result is not None and len(result.items) == 3
+        assert result is not None and len(result.items) == 4
+        assert [item.metadata_v2.operation for item in result.items] == [6, 6, 6, 6]
     finally:
         if batch is not None:
             batch.close()

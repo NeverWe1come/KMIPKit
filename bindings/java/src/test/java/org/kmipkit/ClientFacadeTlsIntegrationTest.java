@@ -225,13 +225,20 @@ final class ClientFacadeTlsIntegrationTest {
                             1L, "certify-request-sentinel".getBytes(StandardCharsets.US_ASCII),
                             null, null)
                     .withUniqueBatchItemId(uniqueBatchItemId(20)));
+            batch.add(ClientBatchItem.certify(
+                            UniqueIdentifier.textString("certify-type-only"), 1L, null, null, null)
+                    .withUniqueBatchItemId(uniqueBatchItemId(21)));
             try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
                     ClientBatchItemResult createPairResult = response.itemAt(13);
                     ClientBatchItemResult rekeyPairResult = response.itemAt(14);
                     ClientBatchItemResult.RekeyKeyPairResponse rekeyPairResponse =
                             rekeyPairResult.rekeyKeyPairResponse().orElseThrow();
-                    ClientBatchItemResult explicitRekeyPairResult = response.itemAt(15)) {
-                assertEquals(21, response.itemCount());
+                    ClientBatchItemResult explicitRekeyPairResult = response.itemAt(15);
+                    ClientBatchItemResult certifyResult18 = response.itemAt(18);
+                    ClientBatchItemResult certifyResult19 = response.itemAt(19);
+                    ClientBatchItemResult certifyResult20 = response.itemAt(20);
+                    ClientBatchItemResult certifyResult21 = response.itemAt(21)) {
+                assertEquals(22, response.itemCount());
                 assertEquals(0, createPairResult.resultStatus());
                 ClientBatchItemResult.CreateKeyPairResponse createPairResponse =
                         createPairResult.createKeyPairResponse().orElseThrow();
@@ -241,6 +248,10 @@ final class ClientFacadeTlsIntegrationTest {
                 assertEquals("replacement-private", rekeyPairResponse.privateKeyUniqueIdentifier().text());
                 assertEquals("replacement-public", rekeyPairResponse.publicKeyUniqueIdentifier().text());
                 assertEquals(0, explicitRekeyPairResult.resultStatus());
+                assertEquals(6, certifyResult18.metadataV2().operation());
+                assertEquals(6, certifyResult19.metadataV2().operation());
+                assertEquals(6, certifyResult20.metadataV2().operation());
+                assertEquals(6, certifyResult21.metadataV2().operation());
             }
             request = peer.get(12, TimeUnit.SECONDS);
         } finally {
@@ -406,6 +417,13 @@ final class ClientFacadeTlsIntegrationTest {
                         enumeration(0x420019, 1),
                         item(0x420140, TtlvItemType.ByteString.code(),
                                 "certify-request-sentinel".getBytes(StandardCharsets.US_ASCII)))));
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 6),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(21)),
+                structure(0x420079,
+                        item(0x420094, TtlvItemType.TextString.code(),
+                                "certify-type-only".getBytes(StandardCharsets.UTF_8)),
+                        enumeration(0x420019, 1))));
 
         assertContains(request, expectedBatchItems.toByteArray());
         assertContains(request, item(0x420010, TtlvItemType.Boolean.code(),
@@ -418,7 +436,7 @@ final class ClientFacadeTlsIntegrationTest {
         assertEquals(2, countOccurrences(request, enumeration(0x42005c, 7)));
         assertEquals(2, countOccurrences(request, enumeration(0x42005c, 0x1d)));
         assertEquals(2, countOccurrences(request, enumeration(0x42005c, 0x29)));
-        assertEquals(3, countOccurrences(request, enumeration(0x42005c, 6)));
+        assertEquals(4, countOccurrences(request, enumeration(0x42005c, 6)));
         assertEquals(1, countOccurrences(request, enumeration(0x42005c, 2)));
         assertTrue(peer.isDone());
     }
@@ -6086,7 +6104,9 @@ final class ClientFacadeTlsIntegrationTest {
     }
 
     private static byte[] requestBuilderWireResponseMessage() throws Exception {
-        int[] operations = {1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x1d, 0x29, 0x29, 6, 6, 6};
+        int[] operations = {
+            1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x1d, 0x29, 0x29, 6, 6, 6, 6
+        };
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),

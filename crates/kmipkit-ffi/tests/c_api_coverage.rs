@@ -441,7 +441,7 @@ fn compiled_c_consumer_encodes_check_get_export_rekey_and_allocation_builders_ov
     unsafe { kmipkit_codec_limits_release(limits) };
     assert_eq!(
         result, 0,
-        "the C consumer builds and decodes twenty-one ordered items"
+        "the C consumer builds and decodes twenty-two ordered items"
     );
     peer.join()
         .expect("the compiled C request-builder mTLS peer completes");
@@ -2727,6 +2727,16 @@ const CERTIFY_STRUCTURES_OMITTED: &[RequestBuilderWireField] = &[
         value: V::ByteString(b"certify-request-sentinel"),
     },
 ];
+const CERTIFY_TYPE_ONLY: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
+        tag: 0x0042_0094,
+        value: V::Text("certify-type-only"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0019,
+        value: V::Enumeration(1),
+    },
+];
 const REKEY_KEY_PAIR_UID_AND_OFFSET: &[RequestBuilderWireField] = &[
     RequestBuilderWireField {
         tag: 0x0042_0066,
@@ -2860,6 +2870,10 @@ const REQUEST_BUILDER_WIRE_EXPECTED: &[RequestBuilderWireItem] = &[
     RequestBuilderWireItem {
         operation: 6,
         fields: CERTIFY_STRUCTURES_OMITTED,
+    },
+    RequestBuilderWireItem {
+        operation: 6,
+        fields: CERTIFY_TYPE_ONLY,
     },
 ];
 
@@ -4263,8 +4277,8 @@ fn rekey_key_pair_success_response() -> Vec<u8> {
 }
 
 fn request_builder_wire_response() -> Vec<u8> {
-    const OPERATIONS: [u32; 21] = [
-        1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x1d, 0x29, 0x29, 6, 6, 6,
+    const OPERATIONS: [u32; 22] = [
+        1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x1d, 0x29, 0x29, 6, 6, 6, 6,
     ];
     let version = structure(
         0x0042_0069,

@@ -242989,6 +242989,7 @@
       "packageId": "rust-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/CertifyJavaFacadeTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/CertifyResponseMappingTest.java",
         "bindings/python/tests/test_certify_operation.py",
@@ -265482,6 +265483,7 @@
       "packageId": "rust-kmipkit-client",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/CertifyJavaFacadeTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/CertifyResponseMappingTest.java",
         "bindings/python/tests/test_certify_operation.py",

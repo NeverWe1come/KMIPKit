@@ -3770,18 +3770,20 @@ static int execute_request_builders_wire_from_c(
     static const uint8_t certify_public_key_text[] = "certify-public-key";
     static const uint8_t certify_no_type_text[] = "certify-no-type";
     static const uint8_t certify_no_structures_text[] = "certify-no-structures";
+    static const uint8_t certify_type_only_text[] = "certify-type-only";
     static const uint8_t certify_request_sentinel[] = "certify-request-sentinel";
     static const uint8_t join_split_attribute_text[] = "join-split-attributes";
     static const uint8_t split_key_text[] = "join-split-id";
     static const uint8_t private_key_text[] = "private-key-to-rekey";
-    static const uint8_t batch_item_ids[21][8] = {
+    static const uint8_t batch_item_ids[22][8] = {
         "item-0", "item-1", "item-2", "item-3", "item-4", "item-5",
         "item-6", "item-7", "item-8", "item-9", "item-10", "item-11",
         "item-12", "item-13", "item-14", "item-15", "item-16", "item-17",
-        "item-18", "item-19", "item-20"};
-    kmipkit_unique_identifier_v1_t identifiers[14] = {{0}};
+        "item-18", "item-19", "item-20", "item-21"};
+    kmipkit_unique_identifier_v1_t identifiers[15] = {{0}};
     kmipkit_client_batch_t *batch = 0;
     kmipkit_client_batch_response_t *response = 0;
+    kmipkit_client_batch_item_response_t *response_item = 0;
     kmipkit_client_batch_item_t *item = 0;
     kmipkit_split_key_reference_t *split_key_reference = 0;
     kmipkit_ttlv_structure_t *create_attributes = 0;
@@ -3798,6 +3800,7 @@ static int execute_request_builders_wire_from_c(
     kmipkit_ttlv_value_t *certify_attribute_value = 0;
     kmipkit_ttlv_value_t *certify_mask_value = 0;
     int result = 21;
+    uint64_t response_count = 0;
 
     set_text_identifier(&identifiers[0], check_text, sizeof(check_text) - 1);
     set_text_identifier(&identifiers[1], get_text, sizeof(get_text) - 1);
@@ -3815,6 +3818,7 @@ static int execute_request_builders_wire_from_c(
     set_text_identifier(&identifiers[11], certify_public_key_text, sizeof(certify_public_key_text) - 1);
     set_text_identifier(&identifiers[12], certify_no_type_text, sizeof(certify_no_type_text) - 1);
     set_text_identifier(&identifiers[13], certify_no_structures_text, sizeof(certify_no_structures_text) - 1);
+    set_text_identifier(&identifiers[14], certify_type_only_text, sizeof(certify_type_only_text) - 1);
     const kmipkit_byte_span_v1_t certify_request_value = {
         certify_request_sentinel, sizeof(certify_request_sentinel) - 1};
 
@@ -3967,12 +3971,34 @@ static int execute_request_builders_wire_from_c(
         kmipkit_client_batch_item_certify(
             &identifiers[13], 1, 1, &certify_request_value, 0, 0, &item) != 0 ||
         !append_request_builder_item(
-            batch, &item, batch_item_ids[20], strlen((const char *)batch_item_ids[20]))) {
+            batch, &item, batch_item_ids[20], strlen((const char *)batch_item_ids[20])) ||
+        kmipkit_client_batch_item_certify(
+            &identifiers[14], 1, 1, 0, 0, 0, &item) != 0 ||
+        !append_request_builder_item(
+            batch, &item, batch_item_ids[21], strlen((const char *)batch_item_ids[21]))) {
         goto cleanup;
     }
 
     /* The fake peer supplies ID Placeholder context and success/failure batch results. */
-    result = kmipkit_client_execute(client, &batch, limits, &response) == 0 ? 0 : 22;
+    if (kmipkit_client_execute(client, &batch, limits, &response) != 0 || response == 0 ||
+        kmipkit_client_batch_response_item_count(response, &response_count) != 0 ||
+        response_count != 22) {
+        result = 22;
+        goto cleanup;
+    }
+    for (uint64_t index = 18; index < 22; ++index) {
+        kmipkit_client_batch_item_metadata_v2_t metadata = {0};
+        metadata.struct_size = (uint32_t)sizeof(metadata);
+        metadata.abi_version = 2;
+        if (kmipkit_client_batch_response_item_at(response, index, &response_item) != 0 ||
+            response_item == 0 ||
+            kmipkit_client_batch_item_response_metadata_v2(response_item, &metadata) != 0 ||
+            metadata.operation != UINT32_C(6)) {
+            result = 23;
+            goto cleanup;
+        }
+    }
+    result = 0;
 
 cleanup:
     kmipkit_client_batch_response_release(response);
