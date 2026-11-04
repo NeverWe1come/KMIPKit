@@ -16,6 +16,7 @@ REKEY_KEY_PAIR = "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR"
 JAVA_WIRE = "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
 C_WIRE = "crates/kmipkit-ffi/tests/c_api_coverage.rs"
 WIRE_EVIDENCE = {JAVA_WIRE, C_WIRE}
+NEW_EVIDENCE = WIRE_EVIDENCE | {"tools/api_manifest/tests/test_t102_recertify_rekey_key_pair_builder_mapping.py"}
 
 TARGETS = {
     "rust-observed-e98ebdedfd3bd6dc5178": (
@@ -106,7 +107,7 @@ class T102RecertifyRekeyKeyPairBuilderMappingTests(unittest.TestCase):
                 expected_mappings = dict(builder["languageMappings"])
                 expected_mappings["rust"] = {"packageId": "rust-kmipkit-protocol", "name": export_name}
                 self.assertEqual(expected_mappings, declaration["languageMappings"])
-                self.assertTrue(WIRE_EVIDENCE.issubset(set(declaration["parityEvidenceIds"])))
+                self.assertTrue(NEW_EVIDENCE.issubset(set(declaration["parityEvidenceIds"])))
 
         for row in self.manifest["publicDeclarations"]:
             if row.get("capabilityId") == RECERTIFY and row.get("declarationState") == "verified":

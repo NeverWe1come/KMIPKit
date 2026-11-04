@@ -369,6 +369,7 @@
     "KMIPKIT-REQ-SPEC-6.1.45-001",
     "KMIPKIT-REQ-SPEC-6.1.45-002-001",
     "KMIPKIT-REQ-SPEC-6.1.45-002-002",
+    "KMIPKIT-REQ-SPEC-6.1.45-002-003",
     "KMIPKIT-REQ-SPEC-6.1.45-004",
     "KMIPKIT-REQ-SPEC-6.1.45-006-001",
     "KMIPKIT-REQ-SPEC-6.1.45-006-002",
@@ -18630,10 +18631,9 @@
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
         "KMIPKIT-REQ-SPEC-6.1.45-008"
       ],
       "rust": {
@@ -19354,14 +19354,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "rust": {
         "module": "kmipkit_client::ClientBatchOutcome",
@@ -19561,14 +19554,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "rust": {
         "module": "kmipkit_ffi::extension_registry::client_abi",
@@ -129800,10 +129786,9 @@
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
         "KMIPKIT-REQ-SPEC-6.1.45-008"
       ],
       "declarationState": "verified",
@@ -129871,10 +129856,9 @@
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
         "KMIPKIT-REQ-SPEC-6.1.45-008"
       ],
       "declarationState": "verified",
@@ -134235,14 +134219,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -134306,14 +134283,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -136597,14 +136567,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -138823,14 +138786,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -142882,10 +142838,9 @@
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
         "KMIPKIT-REQ-SPEC-6.1.45-008"
       ],
       "declarationState": "verified",
@@ -142953,10 +142908,9 @@
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
         "KMIPKIT-REQ-SPEC-6.1.45-008"
       ],
       "declarationState": "verified",
@@ -145536,10 +145490,9 @@
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
         "KMIPKIT-REQ-SPEC-6.1.45-008"
       ],
       "declarationState": "verified",
@@ -154377,10 +154330,9 @@
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
         "KMIPKIT-REQ-SPEC-6.1.45-008"
       ],
       "declarationState": "verified",
@@ -154448,10 +154400,9 @@
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
         "KMIPKIT-REQ-SPEC-6.1.45-008"
       ],
       "declarationState": "verified",
@@ -158693,14 +158644,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -158764,14 +158708,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -160995,14 +160932,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -163221,14 +163151,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -167158,10 +167081,9 @@
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
         "KMIPKIT-REQ-SPEC-6.1.45-008"
       ],
       "declarationState": "verified",
@@ -167229,10 +167151,9 @@
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
         "KMIPKIT-REQ-SPEC-6.1.45-008"
       ],
       "declarationState": "verified",
@@ -169750,10 +169671,9 @@
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
         "KMIPKIT-REQ-SPEC-6.1.45-008"
       ],
       "declarationState": "verified",
@@ -171618,14 +171538,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -192708,14 +192621,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -192786,14 +192692,50 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::RecertifyRequest::new",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-REQ-SPEC-6.1.45-001"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RecertifyRequest::new"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_recertify"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.recertify"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_recertify"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RecertifyMappingTest.java",
+        "bindings/python/tests/test_recertify_operation.py",
+        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
+        "tools/api_manifest/tests/test_recertify_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_recertify_rekey_key_pair_builder_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-e1413e6ad346eed590c5",
@@ -192842,14 +192784,50 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::RecertifyRequest::with_certificate_request_unique_identifier",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-008"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RecertifyRequest::with_certificate_request_unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_recertify"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.recertify"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_recertify"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RecertifyMappingTest.java",
+        "bindings/python/tests/test_recertify_operation.py",
+        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
+        "tools/api_manifest/tests/test_recertify_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_recertify_rekey_key_pair_builder_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-be7b44dc6c8bae24ad53",
@@ -192870,14 +192848,52 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::RecertifyRequest::with_offset",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-REQ-SPEC-6.1.45-006-001"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RecertifyRequest::with_offset"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_recertify"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.recertify"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_recertify"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RecertifyMappingTest.java",
+        "bindings/python/tests/test_recertify_operation.py",
+        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
+        "tools/api_manifest/tests/test_recertify_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_recertify_rekey_key_pair_builder_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-6e9fb656f103c43fa2de",
@@ -192898,14 +192914,54 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::RecertifyRequest::with_unique_identifier",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RecertifyRequest::with_unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_recertify"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.recertify"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_recertify"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RecertifyMappingTest.java",
+        "bindings/python/tests/test_recertify_operation.py",
+        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
+        "tools/api_manifest/tests/test_recertify_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_recertify_rekey_key_pair_builder_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-c12b6edc157fdc7037b1",
@@ -192933,14 +192989,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -193004,14 +193053,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -193089,14 +193131,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -193160,14 +193195,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -194083,14 +194111,51 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::RekeyKeyPairRequest::new",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-REQ-SPEC-6.1.47-001"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RekeyKeyPairRequest::new"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_rekey_key_pair"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.rekeyKeyPair"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_rekey_key_pair"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_key_pair_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_recertify_rekey_key_pair_builder_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-0f930bd1ba867141cf20",
@@ -194139,14 +194204,53 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::RekeyKeyPairRequest::with_offset",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-REQ-SPEC-6.1.47-004-001"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RekeyKeyPairRequest::with_offset"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_rekey_key_pair"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.rekeyKeyPair"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_rekey_key_pair"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_key_pair_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_recertify_rekey_key_pair_builder_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-f67674816d29b1f2879f",
@@ -248432,10 +248536,9 @@
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
         "KMIPKIT-REQ-SPEC-6.1.45-008"
       ],
       "declarationState": "verified",
@@ -248500,14 +248603,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -248571,14 +248667,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -248645,10 +248734,9 @@
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
         "KMIPKIT-REQ-SPEC-6.1.45-008"
       ],
       "declarationState": "verified",
@@ -248713,14 +248801,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -248784,14 +248865,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -248855,14 +248929,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -248926,14 +248993,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -248997,14 +249057,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -249072,10 +249125,9 @@
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.45-001",
         "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
         "KMIPKIT-REQ-SPEC-6.1.45-004",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
         "KMIPKIT-REQ-SPEC-6.1.45-008"
       ],
       "declarationState": "verified",
@@ -249140,14 +249192,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -249211,14 +249256,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -249282,14 +249320,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -249353,14 +249384,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -249424,14 +249448,7 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022",
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
-        "KMIPKIT-REQ-SPEC-6.1.45-008"
+        "KMIPKIT-0043-FR-022"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -454999,7 +455016,11 @@
           "rust-observed-362f5fb1bf041c2d4e03",
           "rust-observed-65ae22056bd47722dca2",
           "rust-observed-d771ff20731cba0fe337",
-          "rust-observed-1f59cf7cfe8fbb9bfe63"
+          "rust-observed-1f59cf7cfe8fbb9bfe63",
+          "rust-observed-e98ebdedfd3bd6dc5178",
+          "rust-observed-3b7ec1d8b422ce2f856a",
+          "rust-observed-a305050686931a657f67",
+          "rust-observed-18147c6b3bc743f37b88"
         ],
         "c": [
           "T058:recertify:constructor:c",
@@ -455157,7 +455178,9 @@
           "rust-observed-f598b03dfd81641a2dfb",
           "rust-observed-3d631236bfeee23c861a",
           "rust-observed-b92daec87f8a60fd2ba9",
-          "rust-observed-b67075ad68cf5a5efea5"
+          "rust-observed-b67075ad68cf5a5efea5",
+          "rust-observed-87194cce123787c123e6",
+          "rust-observed-c48c50a3aba9f3320543"
         ],
         "c": [
           "T060:rekey-key-pair:constructor:c",

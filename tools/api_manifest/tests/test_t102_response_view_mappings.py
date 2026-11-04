@@ -26,6 +26,18 @@ from tools.api_manifest.tests.test_t102_locate_request_builder_mapping import (
     LOCATE_DECLARATIONS_WITH_MISATTRIBUTED_SERVER_REQUIREMENT,
     LOCATE_FUNCTION_IDS,
 )
+from tools.api_manifest.tests.test_t102_recertify_rekey_key_pair_builder_mapping import (
+    RECERTIFY,
+    REKEY_KEY_PAIR,
+    TARGETS as RECERTIFY_REKEY_KEY_PAIR_TARGETS,
+)
+from tools.api_manifest.tests.test_recertify_parity_manifest import (
+    RETIRED_REQUIREMENT_DECLARATIONS,
+    RETIRED_REQUIREMENTS,
+    REQUEST_REQUIREMENT_DECLARATIONS,
+    OWNER_REQUIREMENTS,
+    ACTIVE_REQUEST_REQUIREMENTS,
+)
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
@@ -147,10 +159,10 @@ EXPECTED = (
 )
 
 # Baseline fingerprints exclude the response-view rows and the exact five Locate builders.
-UNCHANGED_DECLARATIONS_SHA256 = "f1446943404050918582a8d3e74f8b5cbc1a8dc06ee8fa60efa95934a23a420b"
+UNCHANGED_DECLARATIONS_SHA256 = "2acce4bd039fb5d594376f03e1f25f7ecf11f167e14b8a9d9488b22743381593"
 UNCHANGED_OPERATIONS_SHA256 = "eb69336ea313c72f6461f5e67655d985c820969697237b4b2b8efc3d79712735"
 OTHER_MANIFEST_SHA256 = "89ce2f39dccd3e4548dc0145da0e8b4463f4f4ae769ed472d80cf44b26679ba6"
-EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = 683
+EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = 677
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",
     "rust-observed-8fff50bdd49a09ae00bf",
@@ -358,6 +370,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
         target_ids = {item.declaration_id for item in EXPECTED}
         target_ids.update(item.declaration_id for item in REMAINING_RESPONSE_VIEWS)
         target_ids.update(LOCATE_REQUEST_BUILDER_IDS)
+        target_ids.update(RECERTIFY_REKEY_KEY_PAIR_TARGETS)
         affected_operation_ids = target_ids | SCALAR_REQUEST_BUILDER_IDS
         unchanged_declarations = copy.deepcopy([
             row
@@ -365,6 +378,11 @@ class T102ResponseViewMappingTests(unittest.TestCase):
             if row["declarationId"] not in target_ids
         ])
         for declaration in unchanged_declarations:
+            if declaration["declarationId"] in RETIRED_REQUIREMENT_DECLARATIONS:
+                requirements = set(declaration["requirementIds"])
+                requirements.difference_update(ACTIVE_REQUEST_REQUIREMENTS)
+                requirements.update((OWNER_REQUIREMENTS - {"KMIPKIT-REQ-SPEC-6.1.45-002-003"}) | RETIRED_REQUIREMENTS)
+                declaration["requirementIds"] = sorted(requirements)
             if declaration["declarationId"] in SCALAR_REQUEST_BUILDER_IDS:
                 declaration["capabilityId"] = "public_binding_surface"
                 declaration["requirementIds"] = ["KMIPKIT-0043-FR-021"]
@@ -395,6 +413,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
         }
         target_operations.update(item.operation_id for item in REMAINING_RESPONSE_VIEWS)
         target_operations.add(LOCATE_OPERATION_ID)
+        target_operations.update({RECERTIFY, REKEY_KEY_PAIR})
         target_operations.update(SCALAR_REQUEST_BUILDER_OPERATIONS)
         normalized_operations = copy.deepcopy(self.manifest["operations"])
         for operation in normalized_operations:
@@ -416,9 +435,18 @@ class T102ResponseViewMappingTests(unittest.TestCase):
         other_manifest["requirementIds"] = [
             requirement_id
             for requirement_id in other_manifest["requirementIds"]
-            if requirement_id != LOCATE_REQUEST_REQUIREMENT
+            if requirement_id not in {LOCATE_REQUEST_REQUIREMENT, "KMIPKIT-REQ-SPEC-6.1.45-002-003"}
         ]
         for function in other_manifest["functions"]:
+            if function["id"] in {
+                "client_batch_item_recertify",
+                "client_batch_item_response_recertify",
+                "client_batch_item_response_recertify_ttlv",
+            }:
+                requirements = set(function["requirementIds"])
+                requirements.difference_update(ACTIVE_REQUEST_REQUIREMENTS)
+                requirements.update((OWNER_REQUIREMENTS - {"KMIPKIT-REQ-SPEC-6.1.45-002-003"}) | RETIRED_REQUIREMENTS)
+                function["requirementIds"] = sorted(requirements)
             if function["id"] in REKEY_FUNCTION_IDS:
                 function["requirementIds"] = sorted(
                     set(function["requirementIds"]) | {RETIRED_REKEY_REQUIREMENT}
