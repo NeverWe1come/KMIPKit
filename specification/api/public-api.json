@@ -66794,11 +66794,12 @@
         }
       }
     },
+
     {
-      "declarationId": "java-observed-6f5350e5f9515c371ad7",
+      "declarationId": "java-observed-af3ebee89c44b6509a5c",
       "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.extensions.DuplicateExtensionKeyException.<init>",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.ExtensionCompatibilityException",
       "capabilityId": "vendor_extension_registry",
       "requirementIds": [
         "KMIPKIT-0012-FR-010",
@@ -66822,49 +66823,6 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::ProtocolErrorKind::DuplicateKey"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "KMIPKIT_ERROR_DUPLICATE_KEY"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.DuplicateExtensionKeyException"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.errors.DuplicateKeyError"
-        }
-      }
-    },
-    {
-      "declarationId": "java-observed-af3ebee89c44b6509a5c",
-      "packageId": "java-kmipkit",
-      "kind": "type",
-      "exportName": "org.kmipkit.extensions.ExtensionCompatibilityException",
-      "capabilityId": "vendor_extension_registry",
-      "requirementIds": [
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-011",
-        "KMIPKIT-0043-FR-004",
-        "KMIPKIT-0043-FR-005",
-        "KMIPKIT-0043-FR-010",
-        "KMIPKIT-0043-FR-013",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ProtocolErrorKind::CompatibilityMismatch"
         },
         "c": {
@@ -66881,49 +66839,7 @@
         }
       }
     },
-    {
-      "declarationId": "java-observed-e4bda48b63cfb6f47e50",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.extensions.ExtensionCompatibilityException.<init>",
-      "capabilityId": "vendor_extension_registry",
-      "requirementIds": [
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-011",
-        "KMIPKIT-0043-FR-004",
-        "KMIPKIT-0043-FR-005",
-        "KMIPKIT-0043-FR-010",
-        "KMIPKIT-0043-FR-013",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::ProtocolErrorKind::CompatibilityMismatch"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "KMIPKIT_ERROR_COMPATIBILITY_MISMATCH"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ExtensionCompatibilityException"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.errors.CompatibilityMismatchError"
-        }
-      }
-    },
+
     {
       "declarationId": "java-observed-ff345b808a6bde18d992",
       "packageId": "java-kmipkit",
@@ -67435,49 +67351,7 @@
         }
       }
     },
-    {
-      "declarationId": "java-observed-d4cdffec71bfed34240d",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.extensions.InvalidExtensionIdentityException.<init>",
-      "capabilityId": "vendor_extension_registry",
-      "requirementIds": [
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-011",
-        "KMIPKIT-0043-FR-004",
-        "KMIPKIT-0043-FR-005",
-        "KMIPKIT-0043-FR-010",
-        "KMIPKIT-0043-FR-013",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::ProtocolErrorKind::InvalidIdentity"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "KMIPKIT_ERROR_INVALID_IDENTITY"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.InvalidExtensionIdentityException"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.errors.InvalidIdentityError"
-        }
-      }
-    },
+
     {
       "declarationId": "java-observed-c68c4b51e0df8de65534",
       "packageId": "java-kmipkit",
@@ -67521,49 +67395,7 @@
         }
       }
     },
-    {
-      "declarationId": "java-observed-7247823ab98f61f05154",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.extensions.InvalidExtensionSchemaException.<init>",
-      "capabilityId": "vendor_extension_registry",
-      "requirementIds": [
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-011",
-        "KMIPKIT-0043-FR-004",
-        "KMIPKIT-0043-FR-005",
-        "KMIPKIT-0043-FR-010",
-        "KMIPKIT-0043-FR-013",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::ProtocolErrorKind::InvalidSchema"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "KMIPKIT_ERROR_INVALID_SCHEMA"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.InvalidExtensionSchemaException"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.errors.InvalidExtensionSchemaError"
-        }
-      }
-    },
+
     {
       "declarationId": "java-observed-2d155ab9cb61a0c14a95",
       "packageId": "java-kmipkit",
@@ -68260,7 +68092,8 @@
         "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0012-FR-003"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
@@ -127610,7 +127443,8 @@
         "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0012-FR-003"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
@@ -128032,7 +127866,8 @@
         "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0012-FR-003"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
@@ -347389,7 +347224,8 @@
         "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0012-FR-003"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
@@ -347432,7 +347268,8 @@
         "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0012-FR-003"
       ],
       "declarationState": "declared",
       "parityScope": "four-language",
@@ -453213,7 +453050,55 @@
     "evidence": "**Status**: Approved for implementation — 2026-10-11"
   },
   "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.49, Tables 317-318. No OASIS normative clause directly applies to Rust standard-trait paths. The focused response Debug test includes `KMIP_RNG_RETRIEVE_RESPONSE_SECRET_SENTINEL` and `KMIP_RNG_RETRIEVE_UNKNOWN_TTLV_SENTINEL` and verifies neither value is formatted; secret-owned bytes remain zeroizing and the retained TTLV Debug reports metadata only. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
-}
+},
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ExtensionCompatibilityException.<init>",
+      "reason": "This exact Java exception constructor accepts a caller-supplied String message, while Rust uses a fieldless error variant, C returns a stable numeric status, and Python exposes a fixed category message. There is no equivalent constructor that accepts caller text in the other adapters; the exception type itself remains mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "evidence": "The observed Java signature is a public constructor accepting String. Mapping it to the error category class falsely claims constructor parity and can display arbitrary caller text. KMIPKIT-0012-FR-010/011 require equivalent safe error capabilities, not identical Java construction signatures; actual JNI failures use fixed redacted messages."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.DuplicateExtensionKeyException.<init>",
+      "reason": "This exact Java exception constructor accepts a caller-supplied String message, while Rust uses a fieldless error variant, C returns a stable numeric status, and Python exposes a fixed category message. There is no equivalent constructor that accepts caller text in the other adapters; the exception type itself remains mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "evidence": "The observed Java signature is a public constructor accepting String. Mapping it to the error category class falsely claims constructor parity and can display arbitrary caller text. KMIPKIT-0012-FR-010/011 require equivalent safe error capabilities, not identical Java construction signatures; actual JNI failures use fixed redacted messages."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.InvalidExtensionIdentityException.<init>",
+      "reason": "This exact Java exception constructor accepts a caller-supplied String message, while Rust uses a fieldless error variant, C returns a stable numeric status, and Python exposes a fixed category message. There is no equivalent constructor that accepts caller text in the other adapters; the exception type itself remains mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "evidence": "The observed Java signature is a public constructor accepting String. Mapping it to the error category class falsely claims constructor parity and can display arbitrary caller text. KMIPKIT-0012-FR-010/011 require equivalent safe error capabilities, not identical Java construction signatures; actual JNI failures use fixed redacted messages."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.InvalidExtensionSchemaException.<init>",
+      "reason": "This exact Java exception constructor accepts a caller-supplied String message, while Rust uses a fieldless error variant, C returns a stable numeric status, and Python exposes a fixed category message. There is no equivalent constructor that accepts caller text in the other adapters; the exception type itself remains mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "evidence": "The observed Java signature is a public constructor accepting String. Mapping it to the error category class falsely claims constructor parity and can display arbitrary caller text. KMIPKIT-0012-FR-010/011 require equivalent safe error capabilities, not identical Java construction signatures; actual JNI failures use fixed redacted messages."
+    }
   ],
   "apiLevels": [
     {
