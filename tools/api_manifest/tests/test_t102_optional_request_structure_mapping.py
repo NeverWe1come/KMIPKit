@@ -286,6 +286,13 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
             "assign an owner before advertising it."
         )
         for row in other_declarations:
+            if row["declarationId"] in {
+                "rust-observed-e0a06a71290bee987cc7",
+                "rust-observed-5722377217051635233d",
+            }:
+                row["parityEvidenceIds"].remove(
+                    "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
+                )
             if row["declarationId"] in CERTIFY_TARGET_IDS:
                 row["capabilityId"] = "public_binding_surface"
                 row["requirementIds"] = ["KMIPKIT-0043-FR-021"]
