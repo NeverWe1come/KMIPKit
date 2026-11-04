@@ -107774,21 +107774,6 @@
       }
     },
     {
-      "declarationId": "rust-observed-5c3085bfc5d5023a37fa",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "kmipkit_client::ClientBatchItem::request",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-010",
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The Rust accessor exposes typed request-payload readback, while C, Java, and Python currently expose batch-item metadata only. Keep this export blocked until equivalent four-language behavior or an accepted boundary is recorded under KMIPKIT-0043-FR-010/021."
-    },
-    {
       "declarationId": "rust-observed-70496571c728a5f026a6",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
@@ -118921,21 +118906,6 @@
           "name": "kmipkit.extensions.client_batch_item_extension_criticality_indicator_at"
         }
       }
-    },
-    {
-      "declarationId": "rust-observed-ba435cff9cb4abd90525",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "kmipkit::ClientBatchItem::request",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-010",
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The Rust accessor exposes typed request-payload readback, while C, Java, and Python currently expose batch-item metadata only. Keep this export blocked until equivalent four-language behavior or an accepted boundary is recorded under KMIPKIT-0043-FR-010/021."
     },
     {
       "declarationId": "rust-observed-c451fe54d899aa14bb1f",
@@ -210228,34 +210198,6 @@
       ]
     },
     {
-      "declarationId": "rust-observed-92db6c972143c59934bc",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "kmipkit_protocol::RegisterRequest::attributes",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-7be9f190a261dc18fcc6",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "kmipkit_protocol::RegisterRequest::into_ttlv_payload",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
       "declarationId": "rust-observed-ab7fec008d9c62cd5adb",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
@@ -210293,34 +210235,6 @@
           "name": "kmipkit.extensions.RegisterRequest.create"
         }
       }
-    },
-    {
-      "declarationId": "rust-observed-aa4bae39527938a24e12",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "kmipkit_protocol::RegisterRequest::object",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-f92cf0fe6010d7112b8c",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "kmipkit_protocol::RegisterRequest::object_type",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
       "declarationId": "rust-observed-cd5e9a9afb29cd4dc1f4",
@@ -219024,34 +218938,6 @@
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs"
       ]
-    },
-    {
-      "declarationId": "rust-observed-7d893b054d3545a78661",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "kmipkit_protocol::SplitKeyReference::split_key_threshold",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-debf26c2f328bc05efb6",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "kmipkit_protocol::SplitKeyReference::unique_identifier",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
       "declarationId": "rust-observed-19988f12ad3d7d42d5cd",
@@ -477870,7 +477756,7 @@
       },
       "evidence": "Reviewed against KMIPKIT-0010-FR-001, KMIPKIT-0010-FR-002, KMIPKIT-0010-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The 44 child declarations under this module remain individually inventoried and mapped in all four languages under client_profile_readiness. The generated Rust module name is a namespace boundary only; the foreign bindings expose the profile catalog and readiness APIs without a corresponding module container. This exclusion removes only the Rust namespace container."
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "kmipkit_protocol::CryptographicOperationResponseContext",
       "reason": "This Rust response-framing context type or variant is an internal adapter value. The five cryptographic operation results and shared correlation/framing behavior are represented by equivalent typed results and batch metadata in Rust, C, Java, and Python.",
@@ -477883,7 +477769,7 @@
       "evidence": "T102 reviewed exact declaration rust-observed-105154cf933c88d0097a (kmipkit_protocol::CryptographicOperationResponseContext). OASIS KMIP 2.1 Section 6.1.24, Tables 235-237; Section 6.1.32, Tables 259-261; Section 6.1.33, Tables 262-264; Section 6.1.55, Tables 334-336; and Section 6.1.56, Tables 337-339. The client derives this local framing context from each typed request; foreign callers receive the corresponding typed operation results and shared batch metadata. This exclusion does not resolve KMIPKIT-DISC-048; final multipart Validity Indicator handling remains open. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022. Evidence test: tools/api_manifest/tests/test_t102_response_context_exclusions.py.",
       "candidateSpecId": "KMIPKIT-0043"
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "kmipkit_protocol::CryptographicOperationResponseContext::SinglePart",
       "reason": "This Rust response-framing context type or variant is an internal adapter value. The five cryptographic operation results and shared correlation/framing behavior are represented by equivalent typed results and batch metadata in Rust, C, Java, and Python.",
@@ -477896,7 +477782,7 @@
       "evidence": "T102 reviewed exact declaration rust-observed-d61e7db174296bffc941 (kmipkit_protocol::CryptographicOperationResponseContext::SinglePart). OASIS KMIP 2.1 Section 6.1.24, Tables 235-237; Section 6.1.32, Tables 259-261; Section 6.1.33, Tables 262-264; Section 6.1.55, Tables 334-336; and Section 6.1.56, Tables 337-339. The client derives this local framing context from each typed request; foreign callers receive the corresponding typed operation results and shared batch metadata. This exclusion does not resolve KMIPKIT-DISC-048; final multipart Validity Indicator handling remains open. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022. Evidence test: tools/api_manifest/tests/test_t102_response_context_exclusions.py.",
       "candidateSpecId": "KMIPKIT-0043"
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "kmipkit_protocol::CryptographicOperationResponseContext::MultipartNonFinal",
       "reason": "This Rust response-framing context type or variant is an internal adapter value. The five cryptographic operation results and shared correlation/framing behavior are represented by equivalent typed results and batch metadata in Rust, C, Java, and Python.",
@@ -477909,7 +477795,7 @@
       "evidence": "T102 reviewed exact declaration rust-observed-c7f9909f0622669a2532 (kmipkit_protocol::CryptographicOperationResponseContext::MultipartNonFinal). OASIS KMIP 2.1 Section 6.1.24, Tables 235-237; Section 6.1.32, Tables 259-261; Section 6.1.33, Tables 262-264; Section 6.1.55, Tables 334-336; and Section 6.1.56, Tables 337-339. The client derives this local framing context from each typed request; foreign callers receive the corresponding typed operation results and shared batch metadata. This exclusion does not resolve KMIPKIT-DISC-048; final multipart Validity Indicator handling remains open. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022. Evidence test: tools/api_manifest/tests/test_t102_response_context_exclusions.py.",
       "candidateSpecId": "KMIPKIT-0043"
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "kmipkit_protocol::CryptographicOperationResponseContext::MultipartFinal",
       "reason": "This Rust response-framing context type or variant is an internal adapter value. The five cryptographic operation results and shared correlation/framing behavior are represented by equivalent typed results and batch metadata in Rust, C, Java, and Python.",
@@ -477922,7 +477808,7 @@
       "evidence": "T102 reviewed exact declaration rust-observed-4733cafd49358dd11b06 (kmipkit_protocol::CryptographicOperationResponseContext::MultipartFinal). OASIS KMIP 2.1 Section 6.1.24, Tables 235-237; Section 6.1.32, Tables 259-261; Section 6.1.33, Tables 262-264; Section 6.1.55, Tables 334-336; and Section 6.1.56, Tables 337-339. The client derives this local framing context from each typed request; foreign callers receive the corresponding typed operation results and shared batch metadata. This exclusion does not resolve KMIPKIT-DISC-048; final multipart Validity Indicator handling remains open. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022. Evidence test: tools/api_manifest/tests/test_t102_response_context_exclusions.py.",
       "candidateSpecId": "KMIPKIT-0043"
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "kmipkit_protocol::VerificationResponseContext",
       "reason": "This Rust response-framing context type or variant is an internal adapter value. The five cryptographic operation results and shared correlation/framing behavior are represented by equivalent typed results and batch metadata in Rust, C, Java, and Python.",
@@ -477935,7 +477821,7 @@
       "evidence": "T102 reviewed exact declaration rust-observed-cea44457a95c424fbf76 (kmipkit_protocol::VerificationResponseContext). OASIS KMIP 2.1 Section 6.1.24, Tables 235-237; Section 6.1.32, Tables 259-261; Section 6.1.33, Tables 262-264; Section 6.1.55, Tables 334-336; and Section 6.1.56, Tables 337-339. The client derives this local framing context from each typed request; foreign callers receive the corresponding typed operation results and shared batch metadata. This exclusion does not resolve KMIPKIT-DISC-048; final multipart Validity Indicator handling remains open. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022. Evidence test: tools/api_manifest/tests/test_t102_response_context_exclusions.py.",
       "candidateSpecId": "KMIPKIT-0043"
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "kmipkit_protocol::VerificationResponseContext::MultipartFinal",
       "reason": "This Rust response-framing context type or variant is an internal adapter value. The five cryptographic operation results and shared correlation/framing behavior are represented by equivalent typed results and batch metadata in Rust, C, Java, and Python.",
@@ -477948,7 +477834,7 @@
       "evidence": "T102 reviewed exact declaration rust-observed-4978456989659fff3b83 (kmipkit_protocol::VerificationResponseContext::MultipartFinal). OASIS KMIP 2.1 Section 6.1.24, Tables 235-237; Section 6.1.32, Tables 259-261; Section 6.1.33, Tables 262-264; Section 6.1.55, Tables 334-336; and Section 6.1.56, Tables 337-339. The client derives this local framing context from each typed request; foreign callers receive the corresponding typed operation results and shared batch metadata. This exclusion does not resolve KMIPKIT-DISC-048; final multipart Validity Indicator handling remains open. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022. Evidence test: tools/api_manifest/tests/test_t102_response_context_exclusions.py.",
       "candidateSpecId": "KMIPKIT-0043"
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "kmipkit_protocol::VerificationResponseContext::MultipartNonFinal",
       "reason": "This Rust response-framing context type or variant is an internal adapter value. The five cryptographic operation results and shared correlation/framing behavior are represented by equivalent typed results and batch metadata in Rust, C, Java, and Python.",
@@ -477961,7 +477847,7 @@
       "evidence": "T102 reviewed exact declaration rust-observed-523db7d4167b1d768b5b (kmipkit_protocol::VerificationResponseContext::MultipartNonFinal). OASIS KMIP 2.1 Section 6.1.24, Tables 235-237; Section 6.1.32, Tables 259-261; Section 6.1.33, Tables 262-264; Section 6.1.55, Tables 334-336; and Section 6.1.56, Tables 337-339. The client derives this local framing context from each typed request; foreign callers receive the corresponding typed operation results and shared batch metadata. This exclusion does not resolve KMIPKIT-DISC-048; final multipart Validity Indicator handling remains open. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022. Evidence test: tools/api_manifest/tests/test_t102_response_context_exclusions.py.",
       "candidateSpecId": "KMIPKIT-0043"
     },
-        {
+    {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "kmipkit_protocol::VerificationResponseContext::SinglePart",
       "reason": "This Rust response-framing context type or variant is an internal adapter value. The five cryptographic operation results and shared correlation/framing behavior are represented by equivalent typed results and batch metadata in Rust, C, Java, and Python.",
@@ -477972,6 +477858,110 @@
         "evidence": "**Status**: Approved (PR #70 merged into `release/1.0.0` on 2026-10-09; merge commit `be5c73c2198daab4b6877dc319f728f927399feb`)"
       },
       "evidence": "T102 reviewed exact declaration rust-observed-fea788ac7ff4e43be1be (kmipkit_protocol::VerificationResponseContext::SinglePart). OASIS KMIP 2.1 Section 6.1.24, Tables 235-237; Section 6.1.32, Tables 259-261; Section 6.1.33, Tables 262-264; Section 6.1.55, Tables 334-336; and Section 6.1.56, Tables 337-339. The client derives this local framing context from each typed request; foreign callers receive the corresponding typed operation results and shared batch metadata. This exclusion does not resolve KMIPKIT-DISC-048; final multipart Validity Indicator handling remains open. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022. Evidence test: tools/api_manifest/tests/test_t102_response_context_exclusions.py.",
+      "candidateSpecId": "KMIPKIT-0043"
+    },
+        {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientBatchItem::request",
+      "reason": "This exact Rust-only helper falls within the accepted opaque-handle boundary. The accessor reads the typed request already held by the batch item; foreign clients create and submit that request through typed constructors. ADR-0006 defines opaque handles as the C facade boundary, so request internals do not become a separate facade capability. OASIS KMIP 2.1 Sections 8.1-8.3, Tables 394-396, specify message and batch-item structure; this accessor adds no wire behavior.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0006-public-api-and-bindings.md",
+        "status": "Accepted",
+        "evidence": "Status: Accepted"
+      },
+      "evidence": "T102 reviewed exact declaration rust-observed-5c3085bfc5d5023a37fa (kmipkit_client::ClientBatchItem::request) against specs/006-message-batch-model/spec.md and ADR-0006. The accessor reads the typed request already held by the batch item; foreign clients create and submit that request through typed constructors. ADR-0006 defines opaque handles as the C facade boundary, so request internals do not become a separate facade capability. OASIS KMIP 2.1 Sections 8.1-8.3, Tables 394-396, specify message and batch-item structure; this accessor adds no wire behavior. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Evidence test: tools/api_manifest/tests/test_t102_opaque_request_helper_exclusions.py.",
+      "candidateSpecId": "KMIPKIT-0043"
+    },
+        {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientBatchItem::request",
+      "reason": "This exact Rust-only helper falls within the accepted opaque-handle boundary. The root-crate accessor aliases the same typed request readback helper. Foreign clients create and submit requests through typed constructors; ADR-0006 defines opaque handles as the C facade boundary. OASIS KMIP 2.1 Sections 8.1-8.3, Tables 394-396, specify message and batch-item structure; this accessor adds no wire behavior.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0006-public-api-and-bindings.md",
+        "status": "Accepted",
+        "evidence": "Status: Accepted"
+      },
+      "evidence": "T102 reviewed exact declaration rust-observed-ba435cff9cb4abd90525 (kmipkit::ClientBatchItem::request) against specs/006-message-batch-model/spec.md and ADR-0006. The root-crate accessor aliases the same typed request readback helper. Foreign clients create and submit requests through typed constructors; ADR-0006 defines opaque handles as the C facade boundary. OASIS KMIP 2.1 Sections 8.1-8.3, Tables 394-396, specify message and batch-item structure; this accessor adds no wire behavior. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Evidence test: tools/api_manifest/tests/test_t102_opaque_request_helper_exclusions.py.",
+      "candidateSpecId": "KMIPKIT-0043"
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::RegisterRequest::attributes",
+      "reason": "This exact Rust-only helper falls within the accepted opaque-handle boundary. This getter reads the ordered Attributes supplied to RegisterRequest::new. Foreign wrappers consume caller-owned TTLV inputs through RegisterRequest.create, and the opaque handle remains the accepted boundary. OASIS KMIP 2.1 Section 6.1.43, Tables 291-293, defines Register request fields; no getter changes the request capability.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0006-public-api-and-bindings.md",
+        "status": "Accepted",
+        "evidence": "Status: Accepted"
+      },
+      "evidence": "T102 reviewed exact declaration rust-observed-92db6c972143c59934bc (kmipkit_protocol::RegisterRequest::attributes) against specs/022-object-lifecycle/spec.md and ADR-0006. This getter reads the ordered Attributes supplied to RegisterRequest::new. Foreign wrappers consume caller-owned TTLV inputs through RegisterRequest.create, and the opaque handle remains the accepted boundary. OASIS KMIP 2.1 Section 6.1.43, Tables 291-293, defines Register request fields; no getter changes the request capability. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Evidence test: tools/api_manifest/tests/test_t102_opaque_request_helper_exclusions.py.",
+      "candidateSpecId": "KMIPKIT-0043"
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::RegisterRequest::into_ttlv_payload",
+      "reason": "This exact Rust-only helper falls within the accepted opaque-handle boundary. This helper serializes a typed Register payload for direct inspection. Foreign wrappers submit the same typed request through client_batch_item_register and retain generic TTLV construction; the opaque handle does not expose an independent payload serializer. OASIS KMIP 2.1 Section 6.1.43, Table 291, defines the wire payload represented by the existing operation.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0006-public-api-and-bindings.md",
+        "status": "Accepted",
+        "evidence": "Status: Accepted"
+      },
+      "evidence": "T102 reviewed exact declaration rust-observed-7be9f190a261dc18fcc6 (kmipkit_protocol::RegisterRequest::into_ttlv_payload) against specs/022-object-lifecycle/spec.md and ADR-0006. This helper serializes a typed Register payload for direct inspection. Foreign wrappers submit the same typed request through client_batch_item_register and retain generic TTLV construction; the opaque handle does not expose an independent payload serializer. OASIS KMIP 2.1 Section 6.1.43, Table 291, defines the wire payload represented by the existing operation. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Evidence test: tools/api_manifest/tests/test_t102_opaque_request_helper_exclusions.py.",
+      "candidateSpecId": "KMIPKIT-0043"
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::RegisterRequest::object",
+      "reason": "This exact Rust-only helper falls within the accepted opaque-handle boundary. This getter reads the Any Object item supplied to RegisterRequest::new. Foreign wrappers consume caller-owned TTLV inputs through RegisterRequest.create, and the opaque handle remains the accepted boundary. OASIS KMIP 2.1 Section 6.1.43, Tables 291-293, defines Register request fields; no getter changes the request capability.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0006-public-api-and-bindings.md",
+        "status": "Accepted",
+        "evidence": "Status: Accepted"
+      },
+      "evidence": "T102 reviewed exact declaration rust-observed-aa4bae39527938a24e12 (kmipkit_protocol::RegisterRequest::object) against specs/022-object-lifecycle/spec.md and ADR-0006. This getter reads the Any Object item supplied to RegisterRequest::new. Foreign wrappers consume caller-owned TTLV inputs through RegisterRequest.create, and the opaque handle remains the accepted boundary. OASIS KMIP 2.1 Section 6.1.43, Tables 291-293, defines Register request fields; no getter changes the request capability. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Evidence test: tools/api_manifest/tests/test_t102_opaque_request_helper_exclusions.py.",
+      "candidateSpecId": "KMIPKIT-0043"
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::RegisterRequest::object_type",
+      "reason": "This exact Rust-only helper falls within the accepted opaque-handle boundary. This getter reads the Object Type supplied to RegisterRequest::new. Foreign wrappers consume caller-supplied values through RegisterRequest.create, and the opaque handle remains the accepted boundary. OASIS KMIP 2.1 Section 6.1.43, Tables 291-293, defines Register request fields; no getter changes the request capability.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0006-public-api-and-bindings.md",
+        "status": "Accepted",
+        "evidence": "Status: Accepted"
+      },
+      "evidence": "T102 reviewed exact declaration rust-observed-f92cf0fe6010d7112b8c (kmipkit_protocol::RegisterRequest::object_type) against specs/022-object-lifecycle/spec.md and ADR-0006. This getter reads the Object Type supplied to RegisterRequest::new. Foreign wrappers consume caller-supplied values through RegisterRequest.create, and the opaque handle remains the accepted boundary. OASIS KMIP 2.1 Section 6.1.43, Tables 291-293, defines Register request fields; no getter changes the request capability. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Evidence test: tools/api_manifest/tests/test_t102_opaque_request_helper_exclusions.py.",
+      "candidateSpecId": "KMIPKIT-0043"
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SplitKeyReference::split_key_threshold",
+      "reason": "This exact Rust-only helper falls within the accepted opaque-handle boundary. This getter reads caller-supplied local validation context already passed to SplitKeyReference::new. The threshold is not serialized; foreign Join Split Key constructors accept the same identifier and threshold inputs. The C facade keeps the reference as an opaque handle under ADR-0006. OASIS KMIP 2.1 Section 6.1.27, Table 244, defines the request identifier; the threshold is local context.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0006-public-api-and-bindings.md",
+        "status": "Accepted",
+        "evidence": "Status: Accepted"
+      },
+      "evidence": "T102 reviewed exact declaration rust-observed-7d893b054d3545a78661 (kmipkit_protocol::SplitKeyReference::split_key_threshold) against specs/023-key-material-transfer/spec.md and ADR-0006. This getter reads caller-supplied local validation context already passed to SplitKeyReference::new. The threshold is not serialized; foreign Join Split Key constructors accept the same identifier and threshold inputs. The C facade keeps the reference as an opaque handle under ADR-0006. OASIS KMIP 2.1 Section 6.1.27, Table 244, defines the request identifier; the threshold is local context. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Evidence test: tools/api_manifest/tests/test_t102_opaque_request_helper_exclusions.py.",
+      "candidateSpecId": "KMIPKIT-0043"
+    },
+        {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SplitKeyReference::unique_identifier",
+      "reason": "This exact Rust-only helper falls within the accepted opaque-handle boundary. This getter reads caller-supplied local reference context already passed to SplitKeyReference::new. Foreign Join Split Key constructors accept the same identifier and threshold inputs; the C facade keeps the reference as an opaque handle under ADR-0006. OASIS KMIP 2.1 Section 6.1.27, Table 244, defines the request identifier.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0006-public-api-and-bindings.md",
+        "status": "Accepted",
+        "evidence": "Status: Accepted"
+      },
+      "evidence": "T102 reviewed exact declaration rust-observed-debf26c2f328bc05efb6 (kmipkit_protocol::SplitKeyReference::unique_identifier) against specs/023-key-material-transfer/spec.md and ADR-0006. This getter reads caller-supplied local reference context already passed to SplitKeyReference::new. Foreign Join Split Key constructors accept the same identifier and threshold inputs; the C facade keeps the reference as an opaque handle under ADR-0006. OASIS KMIP 2.1 Section 6.1.27, Table 244, defines the request identifier. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Evidence test: tools/api_manifest/tests/test_t102_opaque_request_helper_exclusions.py.",
       "candidateSpecId": "KMIPKIT-0043"
     }
   ],
