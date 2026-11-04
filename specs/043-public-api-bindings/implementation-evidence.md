@@ -11107,3 +11107,19 @@ Reproduction commands (run from the repository root):
 - Focused mapping: `py -3 -B -m unittest tools.api_manifest.tests.test_t102_interop_request_members_mapping`.
 - Generated API outputs: `py -3 -B tools/api_manifest/generate.py --check`.
 - Formatting and whitespace: `cargo fmt --all --check` and `git diff --check`.
+
+
+### T102 Macro-Lot 2 Log request member mapping (2026-11-04)
+
+Red `34e1d230e` adds exact mapping requirements for the existing `kmipkit_protocol::LogRequest::with_extension` and `LogRequest::with_log_message` declarations. Both focused cases initially fail because those declarations are blocked and absent from the verified Log operation inventory. The approved owner is `specs/028-diagnostics-interop/spec.md` (KMIPKIT-0042); OASIS KMIP Specification v2.1 §6.1.29 Tables 250–252 defines the operation, and Table 250 requires the Log Message.
+
+Green `4e940bf64` maps both declarations to the approved four-language Log capability and existing operation builder, inheriting the verified constructor's owner and requirements. It adds the declarations and mapping evidence to the operation inventory, updates Log parity and stale T102 state contracts, and regenerates the public API projections. Refactor `3bb5e03e3` extracts common source-reading assertions from the focused test. Existing protocol tests prove the secret message's payload is preserved while its Debug output is redacted, and verify extension order/preservation and rejection of field overrides. The C/Java/Python mappings identify operation capability, not direct foreign convenience wrappers for these Rust members. No runtime or wire behavior changed.
+
+Verification: combined Log and Interop mapping, parity, serializer, state, and macro-lot identity tests pass 20/20. `py -3 -B tools/api_manifest/generate.py --check` verifies all 12 generated outputs; `cargo fmt --all --check` and `git diff --check` pass. T102 decreases 63→61 blocked candidates; public declaration/exclusion totals remain 6,380/8,713. Macro-Lot 2 remains open; full T102 and the 151-test manifest-v2 suites remain reserved for lot closure. No protocol-conformance, interoperability, profile-support, or certification claim is made.
+
+Reproduction commands (run from the repository root):
+
+- Red, expected blocked-state failures: `py -3 -B -m unittest tools.api_manifest.tests.test_t102_log_request_members_mapping`.
+- Focused mapping, parity, state, serializer, and partition suite: `py -3 -B -m unittest tools.api_manifest.tests.test_t102_log_request_members_mapping tools.api_manifest.tests.test_log_parity_manifest tools.api_manifest.tests.test_t102_interop_log_error_trait_exclusions tools.api_manifest.tests.test_t102_log_request_trait_exclusions tools.api_manifest.tests.test_t102_interop_request_members_mapping tools.api_manifest.tests.test_t102_interop_function_member_mapping tools.api_manifest.tests.test_t102_diagnostics_request_serializer_mapping tools.api_manifest.tests.test_t102_macro_lot_partition.T102MacroLotPartitionTests.test_macro_lots_are_disjoint_exhaustive_and_identity_stable`.
+- Generated API outputs: `py -3 -B tools/api_manifest/generate.py --check`.
+- Formatting and whitespace: `cargo fmt --all --check` and `git diff --check`.
