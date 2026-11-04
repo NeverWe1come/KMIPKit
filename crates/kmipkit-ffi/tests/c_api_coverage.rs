@@ -2664,7 +2664,7 @@ const JOIN_SPLIT_KEY_SECRET_DATA_TYPE: &[RequestBuilderWireField] = &[
     },
     RequestBuilderWireField {
         tag: 0x0042_0086,
-        value: V::Enumeration(1),
+        value: V::Enumeration(0x8123_4568),
     },
 ];
 const JOIN_SPLIT_KEY_SECRET_DATA_TYPE_OMITTED: &[RequestBuilderWireField] = &[

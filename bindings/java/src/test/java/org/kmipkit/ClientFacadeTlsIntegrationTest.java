@@ -182,7 +182,7 @@ final class ClientFacadeTlsIntegrationTest {
                             UniqueIdentifier.textString("private-key-to-rekey"),
                             86_400L, null, null, null, null, null, null)
                     .withUniqueBatchItemId(uniqueBatchItemId(15)));
-            batch.add(ClientBatchItem.joinSplitKey(7L, List.of(splitReference), 1L, null, null)
+            batch.add(ClientBatchItem.joinSplitKey(7L, List.of(splitReference), 0x81234568L, null, null)
                     .withUniqueBatchItemId(uniqueBatchItemId(16)));
             batch.add(ClientBatchItem.joinSplitKey(7L, List.of(splitReference))
                     .withUniqueBatchItemId(uniqueBatchItemId(17)));
@@ -316,7 +316,7 @@ final class ClientFacadeTlsIntegrationTest {
                         enumeration(0x420057, 7),
                         item(0x420094, TtlvItemType.TextString.code(),
                                 "join-split-id".getBytes(StandardCharsets.UTF_8)),
-                        enumeration(0x420086, 1))));
+                        enumeration(0x420086, 0x81234568))));
         expectedBatchItems.write(structure(0x42000f,
                 enumeration(0x42005c, 0x29),
                 item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(17)),

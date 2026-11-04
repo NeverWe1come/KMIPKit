@@ -3871,7 +3871,7 @@ static int execute_request_builders_wire_from_c(
 
     if (kmipkit_split_key_reference_create(&identifiers[9], 1, &split_key_reference) != 0 ||
         kmipkit_client_batch_item_join_split_key(
-            7, &split_key_reference, 1, 1, 1, 0, 0, &item) != 0 ||
+            7, &split_key_reference, 1, 1, UINT32_C(0x81234568), 0, 0, &item) != 0 ||
         !append_request_builder_item(
             batch, &item, batch_item_ids[16], strlen((const char *)batch_item_ids[16]))) {
         goto cleanup;

@@ -4889,6 +4889,19 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "name": "kmipkit.client.BatchItemMetadataV2.operation",
             },
         }
+        operation_builder_evidence = {
+            "JoinSplitKey": {
+                "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+                "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+                "tools/api_manifest/tests/test_t102_join_split_key_secret_data_type_mapping.py",
+            },
+            "RekeyKeyPair": {
+                "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+                "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+                "tools/api_manifest/tests/test_t102_join_split_key_secret_data_type_mapping.py",
+                "tools/api_manifest/tests/test_t102_rekey_key_pair_structure_mapping.py",
+            },
+        }
         operation_ids = {row["operationId"]: row for row in operations}
         declarations_by_capability: dict[str, list[dict[str, object]]] = {}
         for row in declarations.values():
@@ -4956,8 +4969,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     if requirement_id not in request_requirements
                 ]
             expected_approval = canonical.get("approvalSource")
+            # Operation evidence can include request-builder tests that do not
+            # exercise the raw ClientOperation discriminator itself.
             parity_evidence_ids = sorted(
-                set(operation.get("parityEvidenceIds", []))
+                (
+                    set(operation.get("parityEvidenceIds", []))
+                    - operation_builder_evidence.get(variant, set())
+                )
                 | {"tools/api_manifest/tests/test_manifest_v2.py"}
             )
 
