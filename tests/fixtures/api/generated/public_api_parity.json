@@ -152352,7 +152352,9 @@
           "rust-observed-c9778e6ad2ba699673bc",
           "rust-observed-bbf36b0243e4b1d9d72c",
           "rust-observed-ae9728ab46ca4fe0b190",
-          "rust-observed-7c003b4ec061b8499a9e"
+          "rust-observed-7c003b4ec061b8499a9e",
+          "rust-observed-f894598b6998d1b416b1",
+          "rust-observed-236134f1fc8e195442a0"
         ]
       },
       "featureSpecId": "KMIPKIT-0037",
@@ -153744,7 +153746,9 @@
           "rust-observed-e98ebdedfd3bd6dc5178",
           "rust-observed-3b7ec1d8b422ce2f856a",
           "rust-observed-a305050686931a657f67",
-          "rust-observed-18147c6b3bc743f37b88"
+          "rust-observed-18147c6b3bc743f37b88",
+          "rust-observed-0cad07b4f1010a7d9a55",
+          "rust-observed-6e9fb656f103c43fa2de"
         ]
       },
       "featureSpecId": "KMIPKIT-0036",
@@ -153823,7 +153827,9 @@
           "rust-observed-a0f8fb989a5a0c680204",
           "rust-observed-4781288042e981f6d3bd",
           "rust-observed-43be97b668d6f5efb547",
-          "rust-observed-e04ecae89493ca7e5fbf"
+          "rust-observed-e04ecae89493ca7e5fbf",
+          "rust-observed-55695fec9108789be098",
+          "rust-observed-3c3be169b5ff8899e1c7"
         ]
       },
       "featureSpecId": "KMIPKIT-0036",
@@ -282810,6 +282816,102 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
+      "declarationId": "rust-observed-f894598b6998d1b416b1",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::JoinSplitKeyRequest::with_attributes",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_join_split_key",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.joinSplitKey",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_join_split_key",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::JoinSplitKeyRequest::with_attributes",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_join_split_key_operation.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_optional_request_structure_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-008"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
+      "declarationId": "rust-observed-236134f1fc8e195442a0",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::JoinSplitKeyRequest::with_protection_storage_masks",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_join_split_key",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.joinSplitKey",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_join_split_key",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::JoinSplitKeyRequest::with_protection_storage_masks",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_join_split_key_operation.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_optional_request_structure_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-008"
+      ]
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Approved for implementation — 2026-10-11",
         "kind": "feature-specification",
         "path": "specs/023-key-material-transfer/spec.md",
@@ -287203,6 +287305,54 @@
         "status": "Approved"
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
+      "declarationId": "rust-observed-0cad07b4f1010a7d9a55",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::RecertifyRequest::with_attributes",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_recertify",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.recertify",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_recertify",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RecertifyRequest::with_attributes",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_recertify_operation.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_optional_request_structure_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
       "declarationId": "rust-observed-a305050686931a657f67",
       "declarationState": "verified",
       "exportName": "kmipkit_protocol::RecertifyRequest::with_certificate_request_unique_identifier",
@@ -287295,6 +287445,54 @@
         "KMIPKIT-0036-FR-006",
         "KMIPKIT-0036-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.45-006-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
+      "declarationId": "rust-observed-6e9fb656f103c43fa2de",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::RecertifyRequest::with_protection_storage_masks",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_recertify",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.recertify",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_recertify",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RecertifyRequest::with_protection_storage_masks",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_recertify_operation.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_optional_request_structure_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008"
       ]
     },
     {
@@ -289069,6 +289267,53 @@
         "status": "Approved"
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "declarationId": "rust-observed-55695fec9108789be098",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::RekeyRequest::with_attributes",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_rekey",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.rekey",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_rekey",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RekeyRequest::with_attributes",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_optional_request_structure_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-008"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
       "declarationId": "rust-observed-e04ecae89493ca7e5fbf",
       "declarationState": "verified",
       "exportName": "kmipkit_protocol::RekeyRequest::with_offset",
@@ -289129,6 +289374,53 @@
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
         "KMIPKIT-REQ-SPEC-6.1.46-004-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "declarationId": "rust-observed-3c3be169b5ff8899e1c7",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::RekeyRequest::with_protection_storage_masks",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_rekey",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.rekey",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_rekey",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RekeyRequest::with_protection_storage_masks",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_optional_request_structure_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-008"
       ]
     },
     {

@@ -9633,6 +9633,16 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::JoinSplitKeyRequest::new",
     ),
     (
+        "rust-observed-f894598b6998d1b416b1",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::JoinSplitKeyRequest::with_attributes",
+    ),
+    (
+        "rust-observed-236134f1fc8e195442a0",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::JoinSplitKeyRequest::with_protection_storage_masks",
+    ),
+    (
         "rust-observed-7c003b4ec061b8499a9e",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::JoinSplitKeyRequest::with_secret_data_type",
@@ -9958,6 +9968,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::RecertifyRequest::new",
     ),
     (
+        "rust-observed-0cad07b4f1010a7d9a55",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RecertifyRequest::with_attributes",
+    ),
+    (
         "rust-observed-a305050686931a657f67",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::RecertifyRequest::with_certificate_request_unique_identifier",
@@ -9966,6 +9981,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-18147c6b3bc743f37b88",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::RecertifyRequest::with_offset",
+    ),
+    (
+        "rust-observed-6e9fb656f103c43fa2de",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RecertifyRequest::with_protection_storage_masks",
     ),
     (
         "rust-observed-3b7ec1d8b422ce2f856a",
@@ -10108,9 +10128,19 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::RekeyRequest::new",
     ),
     (
+        "rust-observed-55695fec9108789be098",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RekeyRequest::with_attributes",
+    ),
+    (
         "rust-observed-e04ecae89493ca7e5fbf",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::RekeyRequest::with_offset",
+    ),
+    (
+        "rust-observed-3c3be169b5ff8899e1c7",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RekeyRequest::with_protection_storage_masks",
     ),
     (
         "rust-observed-43be97b668d6f5efb547",

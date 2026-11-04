@@ -138,8 +138,6 @@ class T102JoinSplitKeySecretDataTypeMappingTests(unittest.TestCase):
             "kmipkit_protocol::JoinSplitKeyRequest::protection_storage_masks",
             "kmipkit_protocol::JoinSplitKeyRequest::references",
             "kmipkit_protocol::JoinSplitKeyRequest::secret_data_type",
-            "kmipkit_protocol::JoinSplitKeyRequest::with_attributes",
-            "kmipkit_protocol::JoinSplitKeyRequest::with_protection_storage_masks",
             "kmipkit_protocol::RekeyKeyPairRequest::into_ttlv_payload",
             "kmipkit_protocol::RekeyKeyPairRequest::private_key_unique_identifier",
         }

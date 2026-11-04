@@ -44,6 +44,14 @@ TARGETS = (
         "c": "kmipkit_client_batch_item_rekey",
         "java": "org.kmipkit.extensions.ClientBatchItem.rekey",
         "python": "kmipkit.extensions.client_batch_item_rekey",
+        "evidence": {
+            "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "bindings/c/tests/client_abi_consumer.c",
+            "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+            "bindings/python/tests/test_rekey_native_integration.py",
+            "tools/api_manifest/tests/test_t102_optional_request_structure_mapping.py",
+        },
     },
     {
         "id": "rust-observed-f894598b6998d1b416b1",
@@ -74,6 +82,14 @@ TARGETS = (
         "c": "kmipkit_client_batch_item_join_split_key",
         "java": "org.kmipkit.extensions.ClientBatchItem.joinSplitKey",
         "python": "kmipkit.extensions.client_batch_item_join_split_key",
+        "evidence": {
+            "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs",
+            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "bindings/c/tests/client_abi_consumer.c",
+            "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+            "bindings/python/tests/test_join_split_key_operation.py",
+            "tools/api_manifest/tests/test_t102_optional_request_structure_mapping.py",
+        },
     },
     {
         "id": "rust-observed-0cad07b4f1010a7d9a55",
@@ -104,6 +120,14 @@ TARGETS = (
         "c": "kmipkit_client_batch_item_recertify",
         "java": "org.kmipkit.extensions.ClientBatchItem.recertify",
         "python": "kmipkit.extensions.client_batch_item_recertify",
+        "evidence": {
+            "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
+            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "bindings/c/tests/client_abi_consumer.c",
+            "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+            "bindings/python/tests/test_recertify_operation.py",
+            "tools/api_manifest/tests/test_t102_optional_request_structure_mapping.py",
+        },
     },
 )
 BLOCKED_CANDIDATES_BEFORE_BATCH = 669
