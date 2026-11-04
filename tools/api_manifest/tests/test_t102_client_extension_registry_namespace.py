@@ -94,6 +94,14 @@ class ClientExtensionRegistryNamespaceTests(unittest.TestCase):
         self.assertEqual(T102_PUBLIC_DECLARATIONS, len(self.manifest["publicDeclarations"]))
         self.assertEqual(T102_APPROVED_EXCLUSIONS, len(self.manifest["approvedExclusions"]))
 
+        traceability = (ROOT / "specs/043-public-api-bindings/traceability.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("T102 Rust extension-registry namespace container", traceability)
+        for source in ("§8.3 Table 396", "§9.13 Table 418", "§7.13 Table 365"):
+            with self.subTest(normative_source=source):
+                self.assertIn(source, traceability)
+
 
 if __name__ == "__main__":
     unittest.main()
