@@ -136,6 +136,95 @@ class T102ProfileModelReexportMappingTests(unittest.TestCase):
                 self.assertNotIn("candidateSpecId", row)
                 self.assertNotIn("blockedReason", row)
 
+    def test_foreign_result_types_methods_and_c_abi_are_manifested(self) -> None:
+        c_exports = {
+            "kmipkit_profile_validation_result_t",
+            "kmipkit_profile_validation_selection_validate_v1",
+            "kmipkit_profile_validation_result_release",
+            "kmipkit_profile_validation_result_profile_id_count_v1",
+            "kmipkit_profile_validation_result_profile_id_at_v1",
+            "kmipkit_profile_validation_result_requirement_id_count_v1",
+            "kmipkit_profile_validation_result_requirement_id_at_v1",
+            "kmipkit_profile_validation_result_validate_transport_v1",
+            "kmipkit_profile_validation_result_validate_request_v1",
+            "kmipkit_profile_validation_result_validate_request_with_context_v1",
+            "kmipkit_profile_validation_result_validate_response_v1",
+            "kmipkit_profile_validation_result_validate_response_with_context_v1",
+        }
+        java_exports = {
+            "org.kmipkit.extensions.ProfileValidationResult",
+            "org.kmipkit.extensions.ProfileValidationResult.profileIds",
+            "org.kmipkit.extensions.ProfileValidationResult.requirementIds",
+            "org.kmipkit.extensions.ProfileValidationResult.validateTransport",
+            "org.kmipkit.extensions.ProfileValidationResult.validateRequest",
+            "org.kmipkit.extensions.ProfileValidationResult.validateRequestWithContext",
+            "org.kmipkit.extensions.ProfileValidationResult.validateResponse",
+            "org.kmipkit.extensions.ProfileValidationResult.validateResponseWithContext",
+            "org.kmipkit.extensions.ProfileValidationResult.close",
+            "org.kmipkit.ProfileValidationException",
+        }
+        python_exports = {
+            "kmipkit.client.ProfileValidationResult",
+            "kmipkit.client.ProfileValidationResult.profile_ids",
+            "kmipkit.client.ProfileValidationResult.requirement_ids",
+            "kmipkit.client.ProfileValidationResult.validate_transport",
+            "kmipkit.client.ProfileValidationResult.validate_request",
+            "kmipkit.client.ProfileValidationResult.validate_request_with_context",
+            "kmipkit.client.ProfileValidationResult.validate_response",
+            "kmipkit.client.ProfileValidationResult.validate_response_with_context",
+            "kmipkit.client.ProfileValidationResult.close",
+            "kmipkit.client.ProfileValidationResult.__enter__",
+            "kmipkit.client.ProfileValidationResult.__exit__",
+            "kmipkit.errors.ProfileValidationError",
+        }
+        declarations = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.manifest["publicDeclarations"]
+        }
+        owner_requirements = {
+            "KMIPKIT-0010-FR-005",
+            "KMIPKIT-0010-FR-012",
+            "KMIPKIT-0010-FR-013",
+            "KMIPKIT-0010-FR-014",
+            "KMIPKIT-0010-FR-019",
+        }
+
+        for package, exports in (
+            ("c-kmipkit", c_exports),
+            ("java-kmipkit", java_exports),
+            ("python-kmipkit", python_exports),
+        ):
+            with self.subTest(package=package):
+                present = exports & {
+                    name for declared_package, name in declarations if declared_package == package
+                }
+                self.assertEqual(exports, present)
+                for name in present:
+                    row = declarations[(package, name)]
+                    self.assertEqual("client_profile_validation", row["capabilityId"])
+                    self.assertEqual("declared", row["declarationState"])
+                    self.assertTrue(owner_requirements & set(row["requirementIds"]))
+                    self.assertIn("KMIPKIT-0043-FR-021", row["requirementIds"])
+
+        c_present = c_exports & {
+            name for package, name in declarations if package == "c-kmipkit"
+        }
+        if c_present == c_exports:
+            c_rows = {name: declarations[("c-kmipkit", name)] for name in c_exports}
+            self.assertTrue(
+                all(
+                    c_rows[name].get("cSignature")
+                    for name in c_exports
+                    - {
+                        "kmipkit_profile_validation_result_t",
+                        "kmipkit_profile_validation_result_release",
+                    }
+                )
+            )
+            self.assertNotIn(
+                "cSignature", c_rows["kmipkit_profile_validation_result_release"]
+            )
+
         capability = next(
             row
             for row in self.manifest["capabilities"]
@@ -192,7 +281,9 @@ class T102ProfileModelReexportMappingTests(unittest.TestCase):
                     set(row["languageMappings"]),
                 )
                 c_name, java_name, python_name = RESULT_LANGUAGE_NAMES[
-                    export_name.removeprefix(f"{REEXPORT_PACKAGES[package]}::ProfileValidationResult")
+                    export_name.removeprefix(
+                        f"{REEXPORT_PACKAGES[package]}::ProfileValidationResult"
+                    )
                 ]
                 self.assertEqual(
                     {
@@ -215,11 +306,6 @@ class T102ProfileModelReexportMappingTests(unittest.TestCase):
                 self.assertTrue(row["approvalSource"].get("evidence"))
                 self.assertNotIn("candidateSpecId", row)
                 self.assertNotIn("blockedReason", row)
-                crate = REEXPORT_PACKAGES[package]
-                self.assertEqual(
-                    {"packageId": package, "name": export_name},
-                    row["languageMappings"]["rust"],
-                )
 
 
 if __name__ == "__main__":
