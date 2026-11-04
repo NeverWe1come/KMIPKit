@@ -11123,3 +11123,19 @@ Reproduction commands (run from the repository root):
 - Focused mapping, parity, state, serializer, and partition suite: `py -3 -B -m unittest tools.api_manifest.tests.test_t102_log_request_members_mapping tools.api_manifest.tests.test_log_parity_manifest tools.api_manifest.tests.test_t102_interop_log_error_trait_exclusions tools.api_manifest.tests.test_t102_log_request_trait_exclusions tools.api_manifest.tests.test_t102_interop_request_members_mapping tools.api_manifest.tests.test_t102_interop_function_member_mapping tools.api_manifest.tests.test_t102_diagnostics_request_serializer_mapping tools.api_manifest.tests.test_t102_macro_lot_partition.T102MacroLotPartitionTests.test_macro_lots_are_disjoint_exhaustive_and_identity_stable`.
 - Generated API outputs: `py -3 -B tools/api_manifest/generate.py --check`.
 - Formatting and whitespace: `cargo fmt --all --check` and `git diff --check`.
+
+
+### T102 Macro-Lot 2 Ticket model and Ticket Type mapping (2026-11-04)
+
+Red `d2ce2322a` requires the 12 root/protocol Rust declarations for Ticket construction/TTLV conversion and TicketType Login/raw/name access to map to the existing credential API. The focused cases fail because all 12 are still blocked and absent from the verified Delegated Login inventory. The approved owner is `specs/024-credential-sessions/spec.md` (KMIPKIT-0038); normative sources are OASIS KMIP Specification v2.1 §7.39 Table 391, §11.57 Table 488, and Delegated Login §6.1.12 Tables 199–201.
+
+Green `458f9d963` maps the declarations to `KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN`, inheriting approved requirements and language mappings from their same-package verified Ticket/TicketType entries. It updates the Delegated Login inventory and stale T102 candidate-state contract, then regenerates all public API projections. Refactor `ffed07450` groups the exact member/source assertions. `95b168cb3` corrects stale expected states for three credential response parser declarations that were already verified in the current manifest. Existing Ticket model tests verify that secret Ticket Value bytes never appear in Debug or Display, raw unknown Ticket Type values survive, and unknown children retain their order. Foreign mappings identify response accessors and generic TTLV capability only; no standalone foreign Ticket constructor or typed TicketType wrapper is claimed. No runtime or wire behavior changed.
+
+Verification: focused Ticket mapping, Delegated Login and Login parity, Ticket/credential response state, credential request serializer, and macro-lot identity tests pass 17/17. `py -3 -B tools/api_manifest/generate.py --check` verifies all 12 outputs; `cargo fmt --all --check` and `git diff --check` pass. T102 decreases 61→49 blocked candidates; public declaration/exclusion totals remain 6,380/8,713. Macro-Lot 2 remains open; full T102 and the 151-test manifest-v2 suites remain reserved for lot closure. No protocol-conformance, interoperability, profile-support, or certification claim is made.
+
+Reproduction commands (run from the repository root):
+
+- Red, expected blocked-state failures: `py -3 -B -m unittest tools.api_manifest.tests.test_t102_ticket_model_members_mapping`.
+- Focused Ticket, credential, state, and partition checks: `py -3 -B -m unittest tools.api_manifest.tests.test_t102_ticket_model_members_mapping tools.api_manifest.tests.test_delegated_login_parity_manifest tools.api_manifest.tests.test_t102_ticket_login_request_trait_exclusions tools.api_manifest.tests.test_login_parity_manifest tools.api_manifest.tests.test_t102_credential_response_trait_exclusions tools.api_manifest.tests.test_t102_credential_request_serializer_mapping tools.api_manifest.tests.test_t102_macro_lot_partition.T102MacroLotPartitionTests.test_macro_lots_are_disjoint_exhaustive_and_identity_stable`.
+- Generated API outputs: `py -3 -B tools/api_manifest/generate.py --check`.
+- Formatting and whitespace: `cargo fmt --all --check` and `git diff --check`.
