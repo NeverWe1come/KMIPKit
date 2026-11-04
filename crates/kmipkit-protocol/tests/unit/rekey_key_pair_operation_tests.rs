@@ -1,6 +1,6 @@
 //! Re-key Key Pair contracts from OASIS KMIP Specification v2.1 §6.1.47,
 //! Tables 308–312. Traceability: `KMIPKIT-REQ-SPEC-6.1.47-001`,
-//! `-004-001`, and `-004-002`.
+//! `-004-001`.
 
 use crate::async_operation_fixtures::{response_message, structure};
 use crate::{

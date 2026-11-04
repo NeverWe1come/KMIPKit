@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import unittest
@@ -104,18 +105,47 @@ class T102RekeyKeyPairStructureMappingTests(unittest.TestCase):
                 self.assertTrue(EVIDENCE <= set(declaration["parityEvidenceIds"]))
                 self.assertIn(declaration_id, rust_declarations)
 
-    def test_table_310_optional_structure_tags_and_four_language_wire_evidence_are_pinned(self) -> None:
-        html = OASIS_HTML.read_text(encoding="cp1252")
+    def test_oasis_table_numbering_and_four_language_wire_evidence_are_pinned(self) -> None:
+        raw_html = OASIS_HTML.read_bytes()
+        self.assertEqual(
+            "8BF9D914C097E98A6509AA1FFCBF03406F738066E940597AEE93D0A5E07ADDCF",
+            hashlib.sha256(raw_html).hexdigest().upper(),
+        )
+        html = raw_html.decode("cp1252")
         text = " ".join(re.sub(r"<[^>]+>", " ", html).split())
+        table_titles = (
+            "Table 309: Re-key Key Pair Attribute Requirements",
+            "Table 310: Re-key Key Pair Request Payload",
+            "Table 311: Re-key Key Pair Response Payload",
+            "Table 312: Re-key Key Pair Errors",
+        )
+        positions = [text.index(title) for title in table_titles]
+        self.assertEqual(sorted(positions), positions)
+        toc_positions = [text.rindex(title) for title in table_titles]
+        self.assertEqual(sorted(toc_positions), toc_positions)
         self.assertIn("Table 308: Computing New Dates from Offset during Re-key Key Pair", text)
-        self.assertIn("Table 309: Re-key Key Pair Attribute Requirements", text)
-        self.assertIn("Table 310: Re-key Key Pair Request Payload", text)
+
+        # The pinned source body header is displaced from its ToC/caption title.
+        table_310_body = text.index(table_titles[1])
+        self.assertIn(
+            "Table 310: Re-key Key Pair Request Payload &nbsp; Response Payload",
+            text[table_310_body:table_310_body + 120],
+        )
         for label in (
             "Common Attributes", "Private Key Attributes", "Public Key Attributes",
             "Common Protection Storage Masks", "Private Protection Storage Masks",
             "Public Protection Storage Masks",
         ):
             self.assertIn(label, text)
+        tag_catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        catalog_ids = {row.get("element_id") for row in tag_catalog.get("elements", [])}
+        self.assertTrue({
+            "KMIPKIT-ELEM-TAG-420126", "KMIPKIT-ELEM-TAG-420127",
+            "KMIPKIT-ELEM-TAG-420128", "KMIPKIT-ELEM-TAG-420163",
+            "KMIPKIT-ELEM-TAG-420164", "KMIPKIT-ELEM-TAG-420165",
+        } <= catalog_ids)
 
         source_expectations = {
             "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs": (

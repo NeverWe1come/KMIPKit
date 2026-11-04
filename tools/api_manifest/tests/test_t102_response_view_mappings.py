@@ -198,6 +198,12 @@ REKEY_FUNCTION_IDS = {
     "client_batch_item_response_rekey",
     "client_batch_item_response_rekey_ttlv",
 }
+REKEY_KEY_PAIR_FUNCTION_IDS = {
+    "client_batch_item_rekey_key_pair",
+    "client_batch_item_response_rekey_key_pair",
+    "client_batch_item_response_rekey_key_pair_ttlv",
+}
+RETIRED_REKEY_KEY_PAIR_REQUIREMENT = "KMIPKIT-REQ-SPEC-6.1.47-004-002"
 SCALAR_REQUEST_BUILDER_IDS = {
     "rust-observed-3beea67907cb67493c50",
     "rust-observed-7ef0a3fa4f7211edc2d4",
@@ -440,6 +446,11 @@ class T102ResponseViewMappingTests(unittest.TestCase):
                 declaration["requirementIds"] = sorted(
                     set(declaration["requirementIds"]) | {RETIRED_REKEY_REQUIREMENT}
                 )
+            if declaration.get("capabilityId") == REKEY_KEY_PAIR_OPERATION_ID:
+                declaration["requirementIds"] = sorted(
+                    set(declaration["requirementIds"])
+                    | {RETIRED_REKEY_KEY_PAIR_REQUIREMENT}
+                )
         self.assertEqual(
             UNCHANGED_DECLARATIONS_SHA256,
             canonical_sha256(unchanged_declarations),
@@ -497,6 +508,11 @@ class T102ResponseViewMappingTests(unittest.TestCase):
             if function["id"] in REKEY_FUNCTION_IDS:
                 function["requirementIds"] = sorted(
                     set(function["requirementIds"]) | {RETIRED_REKEY_REQUIREMENT}
+                )
+            if function["id"] in REKEY_KEY_PAIR_FUNCTION_IDS:
+                function["requirementIds"] = sorted(
+                    set(function["requirementIds"])
+                    | {RETIRED_REKEY_KEY_PAIR_REQUIREMENT}
                 )
             if function["id"] in LOCATE_FUNCTION_IDS:
                 requirements = set(function["requirementIds"])

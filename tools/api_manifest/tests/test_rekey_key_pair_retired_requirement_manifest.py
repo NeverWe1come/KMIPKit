@@ -81,21 +81,30 @@ class RekeyKeyPairRetiredRequirementTests(unittest.TestCase):
         self.assertIn(REQUIREMENT_ID, self.manifest["requirementIds"])
 
     def test_retired_requirement_is_absent_from_exact_rekey_key_pair_declarations(self) -> None:
+        declarations = {
+            row["declarationId"]: row for row in self.manifest["publicDeclarations"]
+        }
+        operation_declarations = {
+            declaration_id
+            for declaration_id, row in declarations.items()
+            if row.get("capabilityId") == OPERATION_ID
+        }
+        self.assertTrue(EXPECTED_DECLARATION_IDS <= operation_declarations)
         linked = {
-            row["declarationId"]
-            for row in self.manifest["publicDeclarations"]
+            declaration_id
+            for declaration_id, row in declarations.items()
             if row.get("capabilityId") == OPERATION_ID
             and REQUIREMENT_ID in row.get("requirementIds", [])
         }
-        self.assertEqual(EXPECTED_DECLARATION_IDS, linked)
         self.assertFalse(linked, f"retired requirement remains on declarations: {sorted(linked)}")
 
     def test_retired_requirement_is_absent_from_exact_rekey_key_pair_function_records(self) -> None:
+        function_ids = {row["id"] for row in self.manifest["functions"]}
+        self.assertTrue(EXPECTED_FUNCTION_IDS <= function_ids)
         linked = {
             row["id"] for row in self.manifest["functions"]
             if REQUIREMENT_ID in row.get("requirementIds", [])
         }
-        self.assertEqual(EXPECTED_FUNCTION_IDS, linked)
         self.assertFalse(linked, f"retired requirement remains on functions: {sorted(linked)}")
 
     def test_t060_traceability_does_not_claim_the_retired_requirement(self) -> None:
