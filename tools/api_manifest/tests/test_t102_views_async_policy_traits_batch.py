@@ -281,16 +281,7 @@ HOLDOUT_OWNERS = (
     ("rust-kmipkit", "<kmipkit::RngSeedResponse as ", "specs/027-rng-operations/spec.md"),
     ("rust-kmipkit", "<kmipkit::GetUsageAllocationRequest as ", "specs/025-policy-controls/spec.md"),
 )
-REDACTION_REVIEW_PENDING = {
-    (
-        "rust-kmipkit-client",
-        "<kmipkit_client::ClientResponseView<'a> as core::fmt::Debug>::fmt",
-    ),
-    (
-        "rust-kmipkit",
-        "<kmipkit::RngRetrieveResponse as core::fmt::Debug>::fmt",
-    ),
-}
+REDACTION_REVIEW_PENDING: set[tuple[str, str]] = set()
 
 
 class T102ViewsAsyncPolicyTraitsBatchTests(unittest.TestCase):
@@ -362,13 +353,13 @@ class T102ViewsAsyncPolicyTraitsBatchTests(unittest.TestCase):
         self.assertEqual(len(selected.intersection(conditional_paths)), 80)
         self.assertEqual(len(selected) - 80, 86)
 
-    def test_resolved_traits_are_excluded_and_unreviewed_debug_paths_stay_blocked(self) -> None:
+    def test_all_remaining_traits_have_specific_owner_backed_exclusions(self) -> None:
         declarations = {
             (row["packageId"], row["exportName"]): row
             for row in self.manifest["publicDeclarations"]
         }
         exclusions = {
-            (row["packageId"], row["exportName"])
+            (row["packageId"], row["exportName"]): row
             for row in self.manifest.get("approvedExclusions", [])
         }
         holdouts: set[tuple[str, str]] = set()
@@ -384,17 +375,11 @@ class T102ViewsAsyncPolicyTraitsBatchTests(unittest.TestCase):
             holdouts.update(paths)
 
         self.assertEqual(len(holdouts), 58)
-        self.assertEqual(2, len(REDACTION_REVIEW_PENDING))
         self.assertTrue(REDACTION_REVIEW_PENDING.issubset(holdouts))
         resolved = holdouts - REDACTION_REVIEW_PENDING
-        self.assertEqual(56, len(resolved))
+        self.assertEqual(58, len(resolved))
         self.assertTrue(resolved.isdisjoint(declarations))
         self.assertEqual(resolved, resolved.intersection(exclusions))
-        self.assertTrue(REDACTION_REVIEW_PENDING.issubset(declarations))
-        self.assertTrue(REDACTION_REVIEW_PENDING.isdisjoint(exclusions))
-        self.assertTrue(
-            all(declarations[path]["declarationState"] == "blocked" for path in REDACTION_REVIEW_PENDING)
-        )
 
         for path in resolved:
             package, export_name = path
@@ -410,6 +395,10 @@ class T102ViewsAsyncPolicyTraitsBatchTests(unittest.TestCase):
             self.assertIn("not a separate KMIPKit product capability", exclusion["reason"])
             for requirement in T102_REQUIREMENTS:
                 self.assertIn(requirement, exclusion["evidence"])
+            if "ClientResponseView" in export_name and "core::fmt::Debug" in export_name:
+                self.assertIn("Debug output for this view now emits only the operation label", exclusion["evidence"])
+            if "RngRetrieveResponse" in export_name and "core::fmt::Debug" in export_name:
+                self.assertIn("KMIP_RNG_RETRIEVE_RESPONSE_SECRET_SENTINEL", exclusion["evidence"])
 
     def test_public_parent_states_and_candidate_totals_are_preserved(self) -> None:
         expected_parents = {
