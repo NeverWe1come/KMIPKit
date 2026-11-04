@@ -25,7 +25,7 @@ FORBIDDEN_REQUEST_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-6.1.47-004-001",
     "KMIPKIT-REQ-SPEC-6.1.47-004-002",
 }
-T102_BLOCKED_CANDIDATES_AFTER_BATCH = 663
+T102_BLOCKED_CANDIDATES_AFTER_BATCH = 659
 EVIDENCE = {
     "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs",
     "crates/kmipkit-ffi/tests/c_api_coverage.rs",

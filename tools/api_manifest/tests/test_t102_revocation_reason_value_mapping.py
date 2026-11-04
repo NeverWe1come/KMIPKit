@@ -172,7 +172,7 @@ class T102RevocationReasonValueMappingTests(unittest.TestCase):
             and row.get("candidateSpecId") == "KMIPKIT-0043"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(663, blocked)
+        self.assertEqual(659, blocked)
 
     def test_open_reason_constructors_keep_unknown_raw_values(self) -> None:
         checks = {

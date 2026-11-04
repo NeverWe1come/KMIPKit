@@ -39,6 +39,12 @@ from tools.api_manifest.tests.test_recertify_parity_manifest import (
     ACTIVE_REQUEST_REQUIREMENTS,
 )
 
+from tools.api_manifest.tests.test_t102_certify_request_builder_mapping import (
+    OPERATION as CERTIFY_OPERATION_ID,
+    OPERATION_ADDED_EVIDENCE as CERTIFY_OPERATION_ADDED_EVIDENCE,
+    TARGETS as CERTIFY_TARGETS,
+)
+
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 
@@ -162,7 +168,7 @@ EXPECTED = (
 UNCHANGED_DECLARATIONS_SHA256 = "de724b98916761845378dc8e4052676b0c6a6a3aba035bc3c9fe1ff72e62e071"
 UNCHANGED_OPERATIONS_SHA256 = "eb69336ea313c72f6461f5e67655d985c820969697237b4b2b8efc3d79712735"
 OTHER_MANIFEST_SHA256 = "89ce2f39dccd3e4548dc0145da0e8b4463f4f4ae769ed472d80cf44b26679ba6"
-EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = 663
+EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = 659
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",
     "rust-observed-8fff50bdd49a09ae00bf",
@@ -417,6 +423,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
             *REKEY_STRUCTURE_IDS,
             *JOIN_SPLIT_STRUCTURE_IDS,
             *RECERTIFY_STRUCTURE_IDS,
+            *(target["id"] for target in CERTIFY_TARGETS),
         }
         unchanged_declarations = copy.deepcopy([
             row
@@ -424,6 +431,19 @@ class T102ResponseViewMappingTests(unittest.TestCase):
             if row["declarationId"] not in target_ids
         ])
         for declaration in unchanged_declarations:
+            if declaration["declarationId"] in {
+                target["id"] for target in CERTIFY_TARGETS
+            }:
+                declaration["capabilityId"] = "public_binding_surface"
+                declaration["requirementIds"] = ["KMIPKIT-0043-FR-021"]
+                declaration["declarationState"] = "blocked"
+                declaration["candidateSpecId"] = "KMIPKIT-0043"
+                declaration[
+                    "blockedReason"
+                ] = "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+                declaration.pop("approvalSource", None)
+                declaration.pop("languageMappings", None)
+                declaration.pop("parityEvidenceIds", None)
             if declaration["declarationId"] in {
                 JOIN_SPLIT_SECRET_DATA_TYPE_ID,
                 REKEY_KEY_PAIR_UID_ID,
@@ -506,6 +526,12 @@ class T102ResponseViewMappingTests(unittest.TestCase):
                         value
                         for value in operation["parityEvidenceIds"]
                         if value not in REQUEST_BUILDER_BATCH_EVIDENCE
+                    ]
+                if operation["operationId"] == CERTIFY_OPERATION_ID:
+                    operation["parityEvidenceIds"] = [
+                        value
+                        for value in operation["parityEvidenceIds"]
+                        if value not in CERTIFY_OPERATION_ADDED_EVIDENCE
                     ]
         self.assertEqual(
             UNCHANGED_OPERATIONS_SHA256,

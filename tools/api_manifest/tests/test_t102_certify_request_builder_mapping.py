@@ -26,6 +26,11 @@ EVIDENCE = {
     "bindings/python/tests/test_certify_operation.py",
     "tools/api_manifest/tests/test_t102_certify_request_builder_mapping.py",
 }
+OPERATION_ADDED_EVIDENCE = {
+    "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+    "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+    "tools/api_manifest/tests/test_t102_certify_request_builder_mapping.py",
+}
 TARGETS = (
     {
         "id": "rust-observed-ff892d7f1e1585911b9c",
@@ -130,7 +135,7 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
         )
         self.assertEqual(BLOCKED_BEFORE - len(target_ids), BLOCKED_AFTER)
-        self.assertEqual(BLOCKED_BEFORE, blocked)
+        self.assertEqual(BLOCKED_AFTER, blocked)
         self.assertEqual(6_470, len(self.manifest["publicDeclarations"]))
         self.assertEqual(8_554, len(self.manifest["approvedExclusions"]))
 
@@ -162,6 +167,10 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                 operation["declarations"]["rust"] = [
                     declaration_id for declaration_id in operation["declarations"]["rust"]
                     if declaration_id not in target_ids
+                ]
+                operation["parityEvidenceIds"] = [
+                    evidence_id for evidence_id in operation["parityEvidenceIds"]
+                    if evidence_id not in OPERATION_ADDED_EVIDENCE
                 ]
         self.assertEqual(OPERATIONS_SHA256, canonical_sha256(other_operations))
 

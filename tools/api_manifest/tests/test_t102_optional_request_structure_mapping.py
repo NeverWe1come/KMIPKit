@@ -9,8 +9,15 @@ import re
 import unittest
 from pathlib import Path
 
+from tools.api_manifest.tests.test_t102_certify_request_builder_mapping import (
+    OPERATION as CERTIFY_OPERATION_ID,
+    OPERATION_ADDED_EVIDENCE as CERTIFY_OPERATION_ADDED_EVIDENCE,
+    TARGETS as CERTIFY_TARGETS,
+)
+
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+CERTIFY_TARGET_IDS = {target["id"] for target in CERTIFY_TARGETS}
 CATALOG = ROOT / "specification" / "catalog" / "kmip-2.1.json"
 OASIS_HTML = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
 MASK_WIRE_FIXTURE_SOURCES = (
@@ -146,7 +153,7 @@ TARGETS = (
     },
 )
 BLOCKED_CANDIDATES_BEFORE_BATCH = 669
-BLOCKED_CANDIDATES_AFTER_BATCH = 663
+BLOCKED_CANDIDATES_AFTER_BATCH = 659
 OTHER_DECLARATIONS_SHA256 = "160f02f1f8feedc737fbb24570c134ff3d6855ec0812a6e7e3ffacb4de5e152b"
 OTHER_OPERATIONS_SHA256 = "17ecaeb860c429b0f92509ccf4fd6a8a9b83f0cefd2ed9a358f099fe0463c8d5"
 def canonical_sha256(value: object) -> str:
@@ -261,7 +268,7 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
         )
         self.assertEqual(
-            BLOCKED_CANDIDATES_BEFORE_BATCH - len(target_ids),
+            BLOCKED_CANDIDATES_BEFORE_BATCH - len(target_ids) - len(CERTIFY_TARGET_IDS),
             BLOCKED_CANDIDATES_AFTER_BATCH,
         )
         self.assertEqual(BLOCKED_CANDIDATES_AFTER_BATCH, blocked)
@@ -270,10 +277,24 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
 
     def test_all_non_target_declarations_and_operations_match_the_pinned_snapshot(self) -> None:
         target_ids = {target["id"] for target in TARGETS}
-        other_declarations = [
+        other_declarations = copy.deepcopy([
             row for row in self.manifest["publicDeclarations"]
             if row["declarationId"] not in target_ids
-        ]
+        ])
+        blocked_reason = (
+            "The public Rust declaration has no resolved owner in the approved dependency inventory; "
+            "assign an owner before advertising it."
+        )
+        for row in other_declarations:
+            if row["declarationId"] in CERTIFY_TARGET_IDS:
+                row["capabilityId"] = "public_binding_surface"
+                row["requirementIds"] = ["KMIPKIT-0043-FR-021"]
+                row["declarationState"] = "blocked"
+                row["candidateSpecId"] = "KMIPKIT-0043"
+                row["blockedReason"] = blocked_reason
+                row.pop("approvalSource", None)
+                row.pop("languageMappings", None)
+                row.pop("parityEvidenceIds", None)
         self.assertEqual(OTHER_DECLARATIONS_SHA256, canonical_sha256(other_declarations))
 
         other_operations = copy.deepcopy(self.manifest["operations"])
@@ -283,10 +304,17 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                 for target in TARGETS
                 if target["operation"] == operation["operationId"]
             }
+            if operation["operationId"] == CERTIFY_OPERATION_ID:
+                operation_target_ids.update(CERTIFY_TARGET_IDS)
             if operation_target_ids:
                 operation["declarations"]["rust"] = [
                     value for value in operation["declarations"]["rust"]
                     if value not in operation_target_ids
+                ]
+            if operation["operationId"] == CERTIFY_OPERATION_ID:
+                operation["parityEvidenceIds"] = [
+                    evidence_id for evidence_id in operation["parityEvidenceIds"]
+                    if evidence_id not in CERTIFY_OPERATION_ADDED_EVIDENCE
                 ]
         self.assertEqual(OTHER_OPERATIONS_SHA256, canonical_sha256(other_operations))
 

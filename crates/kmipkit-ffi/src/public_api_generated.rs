@@ -9173,6 +9173,26 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::CancellationResult::Unknown::0",
     ),
     (
+        "rust-observed-75b1748bcbc69c385a66",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CertifyRequest::with_attributes",
+    ),
+    (
+        "rust-observed-25fb2f73d24e03d2ab13",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CertifyRequest::with_certificate_request_type",
+    ),
+    (
+        "rust-observed-ddcac6317bf0ae830eab",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CertifyRequest::with_protection_storage_masks",
+    ),
+    (
+        "rust-observed-ff892d7f1e1585911b9c",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CertifyRequest::with_unique_identifier",
+    ),
+    (
         "rust-observed-78a9021054f86abbe4fb",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::CertifyResponse",
