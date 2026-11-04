@@ -11,7 +11,8 @@ FOCUSED_COMMAND = (
     "& $python -B -m unittest "
     "tools.api_manifest.tests.test_t102_certify_request_builder_mapping "
     "tools.api_manifest.tests.test_t102_client_extension_registry_namespace "
-    "tools.api_manifest.tests.test_t102_recertify_rekey_key_pair_builder_mapping -v"
+    "tools.api_manifest.tests.test_t102_recertify_rekey_key_pair_builder_mapping "
+    "tools.api_manifest.tests.test_log_parity_manifest -v"
 )
 
 

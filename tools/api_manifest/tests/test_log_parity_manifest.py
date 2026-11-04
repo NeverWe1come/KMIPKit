@@ -42,6 +42,7 @@ EXPECTED_MAPPINGS = {
         "kmipkit_protocol::LogRequest::new",
         "kmipkit_protocol::LogResponse",
         "kmipkit_protocol::LogResponse::result",
+        "kmipkit_protocol::LogResponse::try_from_response_item",
         "kmipkit_protocol::LogResponse::with_ttlv",
     },
     "c": {
@@ -65,15 +66,43 @@ EXPECTED_MAPPINGS = {
 }
 ALLOWED_LOG_DECLARATION_MAPPINGS = {
     **EXPECTED_MAPPINGS,
+    "rust": EXPECTED_MAPPINGS["rust"]
+    | {
+        "kmipkit::Client::log",
+        "kmipkit::ClientBatchOutcome::Log",
+        "kmipkit::ClientBatchOutcome::Log::0",
+        "kmipkit::ClientOperation::Log",
+        "kmipkit::ClientRequest::Log",
+        "kmipkit::ClientRequest::Log::0",
+        "kmipkit::ClientRequest::log",
+        "kmipkit_client::Client::log",
+        "kmipkit_client::ClientBatchOutcome::Log",
+        "kmipkit_client::ClientBatchOutcome::Log::0",
+        "kmipkit_client::ClientOperation::Log",
+        "kmipkit_client::ClientRequest::Log",
+        "kmipkit_client::ClientRequest::Log::0",
+        "kmipkit_client::ClientRequest::log",
+        "kmipkit_client::ClientResponseView<'a>::log",
+    },
     "c": EXPECTED_MAPPINGS["c"]
     | {
+        "kmipkit_client_execute",
+        "kmipkit_client_batch_item_metadata_v2_t.operation",
         "kmipkit_client_batch_item_metadata_v2_t.result_status",
         "kmipkit_ttlv_structure_release",
     },
     "java": EXPECTED_MAPPINGS["java"]
-    | {"org.kmipkit.extensions.ClientBatchItemResult.resultStatus"},
+    | {
+        "org.kmipkit.extensions.Client.execute",
+        "org.kmipkit.extensions.ClientBatchItemMetadataV2.operation",
+        "org.kmipkit.extensions.ClientBatchItemResult.resultStatus",
+    },
     "python": EXPECTED_MAPPINGS["python"]
-    | {"kmipkit.client.BatchItemResult.result_status"},
+    | {
+        "kmipkit.client.BatchItemMetadataV2.operation",
+        "kmipkit.client.BatchItemResult.result_status",
+        "kmipkit.client.Client.execute",
+    },
 }
 
 
@@ -177,6 +206,12 @@ class LogParityManifestTests(unittest.TestCase):
                 "c": "kmipkit_client_batch_item_response_log_ttlv",
                 "java": "org.kmipkit.extensions.ClientBatchItemResult.LogResponse",
                 "python": "kmipkit.client.LogResponse",
+            },
+            "kmipkit_protocol::LogResponse::try_from_response_item": {
+                "rust": "kmipkit_protocol::LogResponse::try_from_response_item",
+                "c": "kmipkit_client_batch_item_response_log_ttlv",
+                "java": "org.kmipkit.extensions.ClientBatchItemResult.logResponse",
+                "python": "kmipkit.client.BatchItemResult.log_response",
             },
             "kmipkit_protocol::LogResponse::result": {
                 "rust": "kmipkit_protocol::LogResponse::result",
