@@ -24,10 +24,13 @@ REQUIREMENTS = {
 }
 PARITY_EVIDENCE = {
     "crates/kmipkit-client/tests/unit/join_split_key_execution_tests.rs",
+    "crates/kmipkit-ffi/tests/c_api_coverage.rs",
     "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
     "bindings/c/tests/client_abi_consumer.c",
+    "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
     "bindings/java/src/test/java/org/kmipkit/extensions/JoinSplitKeyMappingTest.java",
     "bindings/python/tests/test_join_split_key_operation.py",
+    "tools/api_manifest/tests/test_t102_join_split_key_secret_data_type_mapping.py",
 }
 EXPECTED_MAPPINGS = {
     "rust": {
@@ -37,6 +40,7 @@ EXPECTED_MAPPINGS = {
         "kmipkit_client::ClientBatchOutcome::join_split_key_response",
         "kmipkit_protocol::JoinSplitKeyRequest",
         "kmipkit_protocol::JoinSplitKeyRequest::new",
+        "kmipkit_protocol::JoinSplitKeyRequest::with_secret_data_type",
         "kmipkit_protocol::SplitKeyReference",
         "kmipkit_protocol::SplitKeyReference::new",
         "kmipkit_protocol::SplitKeyReference::with_split_key_threshold",

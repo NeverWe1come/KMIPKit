@@ -9633,6 +9633,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::JoinSplitKeyRequest::new",
     ),
     (
+        "rust-observed-7c003b4ec061b8499a9e",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::JoinSplitKeyRequest::with_secret_data_type",
+    ),
+    (
         "rust-observed-28dca7225171a1c858f4",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::JoinSplitKeyResponse",
@@ -10031,6 +10036,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-c48c50a3aba9f3320543",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::RekeyKeyPairRequest::with_offset",
+    ),
+    (
+        "rust-observed-3fc6c1f77db9dabbee97",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RekeyKeyPairRequest::with_private_key_unique_identifier",
     ),
     (
         "rust-observed-62176a97906083757b55",

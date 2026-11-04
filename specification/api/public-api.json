@@ -187017,14 +187017,48 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::JoinSplitKeyRequest::with_secret_data_type",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-REQ-SPEC-6.1.27-002-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::JoinSplitKeyRequest::with_secret_data_type"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_join_split_key"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.joinSplitKey"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_join_split_key"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_join_split_key_operation.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_join_split_key_secret_data_type_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-28dca7225171a1c858f4",
@@ -194271,14 +194305,46 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::RekeyKeyPairRequest::with_private_key_unique_identifier",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-008"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RekeyKeyPairRequest::with_private_key_unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_rekey_key_pair"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.rekeyKeyPair"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_rekey_key_pair"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_rekey_key_pair_native_integration.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_join_split_key_secret_data_type_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-d51793dbfa80b42a8e94",
@@ -453624,7 +453690,8 @@
           "rust-observed-27bf6e5acfe6365c927b",
           "rust-observed-c9778e6ad2ba699673bc",
           "rust-observed-bbf36b0243e4b1d9d72c",
-          "rust-observed-ae9728ab46ca4fe0b190"
+          "rust-observed-ae9728ab46ca4fe0b190",
+          "rust-observed-7c003b4ec061b8499a9e"
         ],
         "c": [
           "T052:reference:create:c",
@@ -453661,7 +453728,10 @@
         "bindings/python/tests/test_join_split_key_operation.py",
         "crates/kmipkit-client/tests/unit/join_split_key_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
-        "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "tools/api_manifest/tests/test_t102_join_split_key_secret_data_type_mapping.py"
       ]
     },
     {
@@ -455180,7 +455250,8 @@
           "rust-observed-b92daec87f8a60fd2ba9",
           "rust-observed-b67075ad68cf5a5efea5",
           "rust-observed-87194cce123787c123e6",
-          "rust-observed-c48c50a3aba9f3320543"
+          "rust-observed-c48c50a3aba9f3320543",
+          "rust-observed-3fc6c1f77db9dabbee97"
         ],
         "c": [
           "T060:rekey-key-pair:constructor:c",
@@ -455214,7 +455285,10 @@
         "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs",
-        "tools/api_manifest/tests/test_rekey_key_pair_parity_manifest.py"
+        "tools/api_manifest/tests/test_rekey_key_pair_parity_manifest.py",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "tools/api_manifest/tests/test_t102_join_split_key_secret_data_type_mapping.py"
       ]
     },
     {
