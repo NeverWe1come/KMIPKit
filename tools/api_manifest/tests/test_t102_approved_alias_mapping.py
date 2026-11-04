@@ -46,6 +46,7 @@ EXPECTED_ALIAS_PAIRS = (
     ('rust-kmipkit', 'kmipkit::ProfileValidationSelection::validate', 'rust-kmipkit-client', 'kmipkit_client::ProfileValidationSelection::validate'),
     ('rust-kmipkit', 'kmipkit::RngRetrieveRequest', 'rust-kmipkit-protocol', 'kmipkit_protocol::RngRetrieveRequest'),
     ('rust-kmipkit', 'kmipkit::RngRetrieveRequest::new', 'rust-kmipkit-protocol', 'kmipkit_protocol::RngRetrieveRequest::new'),
+    ('rust-kmipkit', 'kmipkit::RngRetrieveRequest::data_length', 'rust-kmipkit-protocol', 'kmipkit_protocol::RngRetrieveRequest::data_length'),
     ('rust-kmipkit', 'kmipkit::RngRetrieveResponse', 'rust-kmipkit-protocol', 'kmipkit_protocol::RngRetrieveResponse'),
     ('rust-kmipkit', 'kmipkit::RngRetrieveResponse::data', 'rust-kmipkit-protocol', 'kmipkit_protocol::RngRetrieveResponse::data'),
     ('rust-kmipkit', 'kmipkit::RngRetrieveResponse::with_ttlv', 'rust-kmipkit-protocol', 'kmipkit_protocol::RngRetrieveResponse::with_ttlv'),
@@ -98,7 +99,7 @@ class T102ApprovedAliasMappingTests(unittest.TestCase):
         }
 
     def test_exact_aliases_reuse_only_their_approved_four_language_owner_mapping(self) -> None:
-        self.assertEqual(74, len(EXPECTED_ALIAS_PAIRS))
+        self.assertEqual(75, len(EXPECTED_ALIAS_PAIRS))
         for target_package, target_name, source_package, source_name in EXPECTED_ALIAS_PAIRS:
             with self.subTest(target=target_name):
                 target = self.declarations[(target_package, target_name)]
