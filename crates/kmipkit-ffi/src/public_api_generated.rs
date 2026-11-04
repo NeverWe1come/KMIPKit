@@ -10053,6 +10053,21 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientError::Protocol",
     ),
     (
+        "rust-observed-e1c0811fd3085d61d37e",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::DeriveKeyRequest",
+    ),
+    (
+        "rust-observed-616ed68521fb27aad6bb",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::DeriveKeyRequest::into_ttlv_payload",
+    ),
+    (
+        "rust-observed-b0a921a3e52d117b586e",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::DeriveKeyRequest::new",
+    ),
+    (
         "T046:result:type:rust",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::DeriveKeyResponse",
