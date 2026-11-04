@@ -32,6 +32,7 @@ PARITY_EVIDENCE = {
     "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
     "crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs",
     "tools/api_manifest/tests/test_logout_parity_manifest.py",
+    "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py",
 }
 EXPECTED_MAPPINGS = {
     "rust": {
@@ -46,8 +47,11 @@ EXPECTED_MAPPINGS = {
         "kmipkit::ClientBatchOutcome::logout_response",
         "kmipkit::LogoutRequest",
         "kmipkit::LogoutRequest::new",
+        "kmipkit::LogoutRequest::into_ttlv_payload",
         "kmipkit::LogoutResponse",
         "kmipkit::LogoutResponse::result",
+        "kmipkit::LogoutResponse::try_from_response_item",
+        "kmipkit_client::ClientResponseView<'a>::logout",
         "kmipkit_client::ClientRequest::Logout",
         "kmipkit_client::ClientRequest::Logout::0",
         "kmipkit_client::ClientOperation::Logout",
@@ -55,8 +59,10 @@ EXPECTED_MAPPINGS = {
         "kmipkit_client::ClientBatchOutcome::Logout::0",
         "kmipkit_protocol::LogoutRequest",
         "kmipkit_protocol::LogoutRequest::new",
+        "kmipkit_protocol::LogoutRequest::into_ttlv_payload",
         "kmipkit_protocol::LogoutResponse",
         "kmipkit_protocol::LogoutResponse::result",
+        "kmipkit_protocol::LogoutResponse::try_from_response_item",
     },
     "c": {
         "kmipkit_client_batch_item_logout",

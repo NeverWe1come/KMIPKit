@@ -7258,6 +7258,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::DelegatedLoginRequest",
     ),
     (
+        "rust-observed-6058f94568d4e15fa53e",
+        "rust-kmipkit",
+        "kmipkit::DelegatedLoginRequest::into_ttlv_payload",
+    ),
+    (
         "rust-observed-d3fbadef39a0f156cbb6",
         "rust-kmipkit",
         "kmipkit::DelegatedLoginRequest::new",
@@ -7523,6 +7528,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::LoginRequest",
     ),
     (
+        "rust-observed-96756151b5761cf5ed38",
+        "rust-kmipkit",
+        "kmipkit::LoginRequest::into_ttlv_payload",
+    ),
+    (
         "rust-observed-4804de5865447308e658",
         "rust-kmipkit",
         "kmipkit::LoginRequest::new",
@@ -7606,6 +7616,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-e576729bad3431af59b8",
         "rust-kmipkit",
         "kmipkit::LogoutRequest",
+    ),
+    (
+        "rust-observed-c16d06347ca5d62a3686",
+        "rust-kmipkit",
+        "kmipkit::LogoutRequest::into_ttlv_payload",
     ),
     (
         "rust-observed-a1593cf6be20701d5348",
@@ -9923,6 +9938,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::DelegatedLoginRequest",
     ),
     (
+        "rust-observed-923757de0192b8de546c",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::DelegatedLoginRequest::into_ttlv_payload",
+    ),
+    (
         "rust-observed-ca27d9b0d5e438f52bd0",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::DelegatedLoginRequest::new",
@@ -10903,6 +10923,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::LoginRequest",
     ),
     (
+        "rust-observed-ab8fa6fdfc3d8c9d625b",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::LoginRequest::into_ttlv_payload",
+    ),
+    (
         "rust-observed-64c5f614a1c0e059f7f1",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::LoginRequest::new",
@@ -10986,6 +11011,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-7b2f6aed417de40ab7cd",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::LogoutRequest",
+    ),
+    (
+        "rust-observed-e3c50df8a6beb061cb4c",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::LogoutRequest::into_ttlv_payload",
     ),
     (
         "rust-observed-26cb841c368e144dc357",

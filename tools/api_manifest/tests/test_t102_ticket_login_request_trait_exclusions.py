@@ -106,7 +106,7 @@ PROTOCOL_STATES = {
         "::with_ticket_value": "verified", "::with_ttlv": "verified",
     },
     "LoginRequest": {
-        "": "verified", "::into_ttlv_payload": "blocked", "::new": "verified",
+        "": "verified", "::into_ttlv_payload": "verified", "::new": "verified",
         "::with_lease_time_date_time": "verified", "::with_lease_time_interval": "verified",
         "::with_request_count": "verified", "::with_usage_limits": "verified",
     },
@@ -122,7 +122,7 @@ ROOT_STATES = {
         "::with_ticket_value": "verified", "::with_ttlv": "verified",
     },
     "LoginRequest": {
-        "": "verified", "::into_ttlv_payload": "blocked", "::new": "verified",
+        "": "verified", "::into_ttlv_payload": "verified", "::new": "verified",
         "::with_lease_time_date_time": "verified", "::with_lease_time_interval": "verified",
         "::with_request_count": "verified", "::with_usage_limits": "verified",
     },
