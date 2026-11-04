@@ -958,3 +958,18 @@ T102 Macro-Lot 2 ProfileTransport checkpoint (2026-11-04): the existing `kmipkit
 T102 Macro-Lot 2 policy request serializer checkpoint (2026-11-04): `rust-observed-9f1aa2332742556e5b24` and `rust-observed-0acd1d324fb7e26bfe6e` map Get Constraints root/protocol `to_ttlv_payload`; `rust-observed-480a7b8eada6ab8078aa` and `rust-observed-c7d39ab287f72cc407c3` map Set Constraints; `rust-observed-406f1ab5b147b43150b0` and `rust-observed-d3c9f0f386e25d092f21` map Set Defaults. Each maps to its existing four-language operation builder under approved `specs/025-policy-controls/spec.md`, KMIPKIT-0039, with exact owner and requirement IDs inherited from its verified Rust constructor and each operation's `parityEvidenceIds`. Normative citations are OASIS KMIP v2.1 §6.1.22 Tables 229–231, §6.1.52 Tables 325–327, and §6.1.53 Tables 328–330. The executable mapping and source-citation contract is `tools/api_manifest/tests/test_t102_policy_request_serializer_mapping.py`; it records capability-level correspondence, not foreign method-name parity.
 
 T102 Macro-Lot 2 credential request serializer checkpoint (2026-11-04): `rust-observed-6058f94568d4e15fa53e` and `rust-observed-923757de0192b8de546c` map root/protocol Delegated Login `into_ttlv_payload`; `rust-observed-96756151b5761cf5ed38` and `rust-observed-ab8fa6fdfc3d8c9d625b` map Login; `rust-observed-c16d06347ca5d62a3686` and `rust-observed-e3c50df8a6beb061cb4c` map Logout. Each uses its verified same-package request constructor requirement set and maps to existing four-language operation builders under approved `specs/024-credential-sessions/spec.md`, KMIPKIT-0038. OASIS KMIP v2.1 references are §6.1.12 Tables 199–201, §6.1.30 Tables 253–255, and §6.1.31 Tables 256–258. The executable parity contract is `tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py`; it asserts capability mapping rather than foreign method-name parity.
+
+## T102 — KMIPKIT-0036 request serializer mappings
+
+The eight existing protocol serializer declarations inherit the exact `requirementIds` and approved owner from their verified same-package request-constructor anchors listed below. Each serializer maps to the existing C, Java, and Python operation builder for the same client capability. The executable mapping checks and source citations are pinned by `tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py`.
+
+| KMIP operation | Serializer declaration | Constructor anchor | OASIS KMIP v2.1 source |
+|---|---|---|---|
+| Certify | `rust-observed-455bf70fd49c2d1c0584` `CertifyRequest::into_ttlv_payload` | `rust-observed-9a4cd073497d09724f7e` | §6.1.6, Tables 179–181 |
+| Check | `rust-observed-1aa8855f67251843003b` `CheckRequest::into_ttlv_payload` | `rust-observed-3beea67907cb67493c50` | §6.1.7, Tables 183–185 |
+| Obtain Lease | `rust-observed-3f7281ffc6f28316cdb2` `ObtainLeaseRequest::into_ttlv_payload` | `rust-observed-b7d375d733bafb2963b7` | §6.1.35, Tables 268–270 |
+| Re-certify | `rust-observed-d7bf84b1a5fd4c705597` `RecertifyRequest::into_ttlv_payload` | `rust-observed-e98ebdedfd3bd6dc5178` | §6.1.45, Tables 300–302 |
+| Re-key | `rust-observed-1477c49c457fdc10fa5b` `RekeyRequest::into_ttlv_payload` | `rust-observed-4781288042e981f6d3bd` | §6.1.46, Tables 305–307 |
+| Re-key Key Pair | `rust-observed-92442b7d3422ffe465c3` `RekeyKeyPairRequest::into_ttlv_payload` | `rust-observed-87194cce123787c123e6` | §6.1.47, Tables 310–312 |
+| Re-Provision | `rust-observed-d1446684e4f2641b3c96` `ReProvisionRequest::into_ttlv_payload` | `rust-observed-6a7230e68170a1e256ae` | §6.1.48, Tables 313–315 |
+| Revoke | `rust-observed-3110caf46cc1e36cbcc9` `RevokeRequest::into_ttlv_payload` | `rust-observed-e132783701cd4df7cbc2` | §6.1.44, Tables 295–297 |

@@ -10914,3 +10914,13 @@ Reproduction commands (run from the repository root):
 - Focused Green mapping, state, and parity group: `python -m unittest tools.api_manifest.tests.test_t102_credential_request_serializer_mapping tools.api_manifest.tests.test_t102_ticket_login_request_trait_exclusions tools.api_manifest.tests.test_t102_request_builder_mapping_batch tools.api_manifest.tests.test_delegated_login_parity_manifest tools.api_manifest.tests.test_login_parity_manifest tools.api_manifest.tests.test_logout_parity_manifest -v`.
 - Generated API outputs: `python tools/api_manifest/generate.py --check`.
 - Whitespace: `git diff --check`.
+
+### T102 Macro-Lot 2 lifecycle request serializer parity (2026-11-04)
+
+Red `cded43af3` adds an executable contract for eight existing protocol request serializers and fails on their blocked manifest states. The approved owner is `specs/022-object-lifecycle/spec.md` (KMIPKIT-0036). OASIS KMIP v2.1 references are §6.1.6 Tables 179–181 (Certify), §6.1.7 Tables 183–185 (Check), §6.1.35 Tables 268–270 (Obtain Lease), §6.1.45 Tables 300–302 (Re-certify), §6.1.46 Tables 305–307 (Re-key), §6.1.47 Tables 310–312 (Re-key Key Pair), §6.1.48 Tables 313–315 (Re-Provision), and §6.1.44 Tables 295–297 (Revoke). The exact declaration and same-package constructor anchors are recorded in `traceability.md`.
+
+Green `1b87880e4` maps the eight serializers to the existing four-language operation capabilities, inherits each approved owner and requirement set from its verified request constructor, adds the declarations to the matching operation inventories, and regenerates the pinned public API outputs. Refactor `94b724abb` extracts the shared serializer mapping assertions. This records capability-level correspondence; it changes no runtime code, public symbol, or wire behavior.
+
+Verification: the focused mapping, lifecycle-trait, Certify-builder/snapshot, Join Split Key, Revoke-trait, request-builder, and Re-certify/Re-key Key Pair modules pass 32/32. `python tools/api_manifest/generate.py --check` verifies 12/12 outputs; `cargo fmt --all --check` and `git diff --check` pass. T102 decreases 124→116 blocked candidates; public declaration/exclusion totals remain 6,380/8,713.
+
+Separate Certify, Re-certify, and Re-key parity-manifest tests were also probed against the original `c6fec6506` manifest. Their existing per-declaration evidence/requirement assertions and declaration-count snapshots fail there as well; those baseline failures predate this serializer batch and remain to be reconciled before Macro-Lot 2 closure. The full T102 and 151-test `manifest-v2` suites remain reserved for lot closure. No formal conformance, interoperability, or certification claim is made.
