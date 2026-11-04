@@ -3997,10 +3997,15 @@ static int execute_request_builders_wire_from_c(
             result = 23;
             goto cleanup;
         }
+        kmipkit_client_batch_item_response_release(response_item);
+        response_item = 0;
     }
     result = 0;
 
 cleanup:
+    if (response_item != 0) {
+        kmipkit_client_batch_item_response_release(response_item);
+    }
     kmipkit_client_batch_response_release(response);
     kmipkit_client_batch_release(batch);
     kmipkit_client_batch_item_release(item);
