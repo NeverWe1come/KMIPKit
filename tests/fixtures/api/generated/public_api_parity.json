@@ -105613,6 +105613,42 @@
       "exportName": "kmipkit.errors.KmipKitError.category",
       "packageId": "python-kmipkit",
       "reason": "This Python-only string marker labels the generic FFI fallback and has no equivalent public Rust error category. Keep the internal category blocked rather than mapping it to the distinct client cause Other."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "evidence": "KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 require equivalent product facades and exact, reviewed public-surface accounting. The source declaration in `crates/kmipkit-protocol/src/profile.rs` is `#[cfg(feature = \"test-support\")]`, `#[doc(hidden)]`, and explicitly intended for cross-crate client tests. The parent ProfileValidationError and its safe mapped accessors remain product declarations. This exact test constructor has no C, Java, or Python counterpart; the product profile-validation diagnostics remain available through the shared client error details.",
+      "exportName": "kmipkit::ProfileValidationError::for_test",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust helper is hidden and compiled only with the `test-support` feature. It constructs local profile-validation errors for cross-crate tests; it is not a product API surface."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "evidence": "KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 require equivalent product facades and exact, reviewed public-surface accounting. The source declaration in `crates/kmipkit-protocol/src/profile.rs` is `#[cfg(feature = \"test-support\")]`, `#[doc(hidden)]`, and explicitly intended for cross-crate client tests. The parent ProfileValidationError and its safe mapped accessors remain product declarations. This exact test constructor has no C, Java, or Python counterpart; the product profile-validation diagnostics remain available through the shared client error details.",
+      "exportName": "kmipkit_client::ProfileValidationError::for_test",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust helper is hidden and compiled only with the `test-support` feature. It constructs local profile-validation errors for cross-crate tests; it is not a product API surface."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "evidence": "KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 require equivalent product facades and exact, reviewed public-surface accounting. The source declaration in `crates/kmipkit-protocol/src/profile.rs` is `#[cfg(feature = \"test-support\")]`, `#[doc(hidden)]`, and explicitly intended for cross-crate client tests. The parent ProfileValidationError and its safe mapped accessors remain product declarations. This exact test constructor has no C, Java, or Python counterpart; the product profile-validation diagnostics remain available through the shared client error details.",
+      "exportName": "kmipkit_protocol::ProfileValidationError::for_test",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust helper is hidden and compiled only with the `test-support` feature. It constructs local profile-validation errors for cross-crate tests; it is not a product API surface."
     }
   ],
   "capabilities": [
