@@ -218,6 +218,16 @@ def _apply_input_array_contract(manifest: dict[str, object]) -> None:
 
 
 class ManifestGeneratorCliTests(unittest.TestCase):
+    def test_generation_fixture_starts_without_generated_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = _create_repo(Path(directory))
+
+            preexisting_outputs = [
+                path for path in V2_GENERATED_OUTPUTS if (root / path).exists()
+            ]
+
+            self.assertEqual(preexisting_outputs, [])
+
     def test_manifest_input_limit_reserves_bounded_room_for_the_full_inventory(self) -> None:
         self.assertEqual(generate.MAX_MANIFEST_BYTES, 23 * 1024 * 1024)
 
