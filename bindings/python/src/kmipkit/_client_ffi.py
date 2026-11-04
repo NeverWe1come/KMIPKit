@@ -71,6 +71,7 @@ ffi.cdef(
     typedef struct kmipkit_message_extension_view_t kmipkit_message_extension_view_t;
     typedef struct kmipkit_message_validation_error_t kmipkit_message_validation_error_t;
     typedef struct kmipkit_profile_validation_error_t kmipkit_profile_validation_error_t;
+    typedef struct kmipkit_profile_validation_result_t kmipkit_profile_validation_result_t;
     typedef struct kmipkit_profile_readiness_t kmipkit_profile_readiness_t;
 
     typedef struct {
@@ -146,6 +147,40 @@ ffi.cdef(
         const kmipkit_profile_object_state_v1_t *object_states;
         uint64_t object_state_count;
     } kmipkit_profile_validation_context_v1_t;
+
+    int32_t kmipkit_profile_validation_selection_validate_v1(
+        const kmipkit_profile_validation_selection_v1_t *selection,
+        kmipkit_profile_validation_result_t **out_result);
+    void kmipkit_profile_validation_result_release(
+        kmipkit_profile_validation_result_t *result);
+    int32_t kmipkit_profile_validation_result_profile_id_count_v1(
+        kmipkit_profile_validation_result_t *result, uint64_t *out_count);
+    int32_t kmipkit_profile_validation_result_profile_id_at_v1(
+        kmipkit_profile_validation_result_t *result, uint64_t index,
+        kmipkit_byte_span_v1_t *out_span);
+    int32_t kmipkit_profile_validation_result_requirement_id_count_v1(
+        kmipkit_profile_validation_result_t *result, uint64_t *out_count);
+    int32_t kmipkit_profile_validation_result_requirement_id_at_v1(
+        kmipkit_profile_validation_result_t *result, uint64_t index,
+        kmipkit_byte_span_v1_t *out_span);
+    int32_t kmipkit_profile_validation_result_validate_transport_v1(
+        kmipkit_profile_validation_result_t *result, uint32_t transport);
+    int32_t kmipkit_profile_validation_result_validate_request_v1(
+        kmipkit_profile_validation_result_t *result,
+        kmipkit_ttlv_structure_t *request);
+    int32_t kmipkit_profile_validation_result_validate_request_with_context_v1(
+        kmipkit_profile_validation_result_t *result,
+        kmipkit_ttlv_structure_t *request,
+        const kmipkit_profile_validation_context_v1_t *context);
+    int32_t kmipkit_profile_validation_result_validate_response_v1(
+        kmipkit_profile_validation_result_t *result,
+        kmipkit_ttlv_structure_t *request,
+        kmipkit_ttlv_structure_t *response);
+    int32_t kmipkit_profile_validation_result_validate_response_with_context_v1(
+        kmipkit_profile_validation_result_t *result,
+        kmipkit_ttlv_structure_t *request,
+        kmipkit_ttlv_structure_t *response,
+        const kmipkit_profile_validation_context_v1_t *context);
 
     typedef struct {
         uint32_t struct_size;

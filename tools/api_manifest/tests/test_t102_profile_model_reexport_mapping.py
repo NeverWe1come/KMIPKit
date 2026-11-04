@@ -408,10 +408,17 @@ class T102ProfileModelReexportMappingTests(unittest.TestCase):
         workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(
             encoding="utf-8"
         )
-        self.assertIn(
-            "$python -B -m unittest "
-            "tools.api_manifest.tests.test_t102_profile_model_reexport_mapping",
-            workflow,
+        unittest_commands = [
+            line
+            for line in workflow.splitlines()
+            if "$python -B -m unittest " in line
+        ]
+        self.assertTrue(
+            any(
+                "tools.api_manifest.tests.test_t102_profile_model_reexport_mapping"
+                in line
+                for line in unittest_commands
+            )
         )
 
 

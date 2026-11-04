@@ -175,6 +175,7 @@ typedef struct kmipkit_profile_evidence_record_v1_t kmipkit_profile_evidence_rec
 typedef struct kmipkit_profile_readiness_view_v1_t kmipkit_profile_readiness_view_v1_t;
 typedef struct kmipkit_profile_readiness_blocker_view_v1_t kmipkit_profile_readiness_blocker_view_v1_t;
 typedef struct kmipkit_profile_catalog_row_view_v1_t kmipkit_profile_catalog_row_view_v1_t;
+typedef struct kmipkit_profile_validation_result_t kmipkit_profile_validation_result_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -546,6 +547,7 @@ void kmipkit_get_attributes_request_release(kmipkit_get_attributes_request_t *ha
 void kmipkit_get_attribute_list_request_release(kmipkit_get_attribute_list_request_t *handle);
 void kmipkit_attribute_set_release(kmipkit_attribute_set_t *handle);
 void kmipkit_profile_readiness_release(kmipkit_profile_readiness_t *handle);
+void kmipkit_profile_validation_result_release(kmipkit_profile_validation_result_t *handle);
 #define KMIPKIT_ERROR_COMPATIBILITY_MISMATCH ((int32_t)1)
 #define KMIPKIT_ERROR_DUPLICATE_KEY ((int32_t)2)
 #define KMIPKIT_ERROR_INVALID_IDENTITY ((int32_t)3)
@@ -2155,6 +2157,46 @@ int32_t kmipkit_profile_catalog_relation_count_v1(uint32_t table, uint64_t row_i
  */
 /* KMIPKIT-0010-FR-010, KMIPKIT-0010-FR-017, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_profile_catalog_relation_at_v1(uint32_t table, uint64_t row_index, uint32_t relation, uint64_t relation_index, kmipkit_profile_catalog_row_view_v1_t * out_row);
+/* Resolves selected profiles and creates an owned result handle.
+ */
+/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_validation_selection_validate_v1(const kmipkit_profile_validation_selection_v1_t * selection, kmipkit_profile_validation_result_t ** out_result);
+/* Returns the number of selected identifiers.
+ */
+/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_validation_result_profile_id_count_v1(kmipkit_profile_validation_result_t * result, uint64_t * out_count);
+/* Returns one identifier span borrowed until the result handle is released.
+ */
+/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_validation_result_profile_id_at_v1(kmipkit_profile_validation_result_t * result, uint64_t index, kmipkit_byte_span_v1_t * out_span);
+/* Returns the number of selected identifiers.
+ */
+/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_validation_result_requirement_id_count_v1(kmipkit_profile_validation_result_t * result, uint64_t * out_count);
+/* Returns one identifier span borrowed until the result handle is released.
+ */
+/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_validation_result_requirement_id_at_v1(kmipkit_profile_validation_result_t * result, uint64_t index, kmipkit_byte_span_v1_t * out_span);
+/* Validates the selected profile rules using typed KMIP messages.
+ */
+/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_validation_result_validate_transport_v1(kmipkit_profile_validation_result_t * result, uint32_t transport);
+/* Validates the selected profile rules using typed KMIP messages.
+ */
+/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_validation_result_validate_request_v1(kmipkit_profile_validation_result_t * result, kmipkit_ttlv_structure_t * request);
+/* Validates the selected profile rules using typed KMIP messages.
+ */
+/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_validation_result_validate_request_with_context_v1(kmipkit_profile_validation_result_t * result, kmipkit_ttlv_structure_t * request, const kmipkit_profile_validation_context_v1_t * context);
+/* Validates the selected profile rules using typed KMIP messages.
+ */
+/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_validation_result_validate_response_v1(kmipkit_profile_validation_result_t * result, kmipkit_ttlv_structure_t * request, kmipkit_ttlv_structure_t * response);
+/* Validates the selected profile rules using typed KMIP messages.
+ */
+/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_validation_result_validate_response_with_context_v1(kmipkit_profile_validation_result_t * result, kmipkit_ttlv_structure_t * request, kmipkit_ttlv_structure_t * response, const kmipkit_profile_validation_context_v1_t * context);
 /* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
 /* Executes one KMIP batch and returns an owned generic ResponseMessage TTLV only for an approved missing, repeated, or malformed Unique Identifier in a successful MAC, MAC Verify, Sign, or Signature Verify response.

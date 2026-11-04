@@ -9250,6 +9250,7 @@ int kmipkit_client_abi_c_consumer_profile_validation_result_contract(void) {
     kmipkit_profile_validation_error_t *error = 0;
     kmipkit_profile_validation_error_view_v1_t error_view = {0};
     uint64_t profile_count = 1;
+    uint64_t requirement_count = UINT64_MAX;
 
     selection.struct_size = (uint32_t)sizeof(selection);
     selection.abi_version = 1;
@@ -9276,8 +9277,24 @@ int kmipkit_client_abi_c_consumer_profile_validation_result_contract(void) {
         return 0;
     }
     kmipkit_profile_validation_error_release(error);
-    return kmipkit_profile_validation_result_profile_id_count_v1(0, &profile_count) ==
-            T076_ERROR_INVALID_INPUT && profile_count == 0;
+    if (kmipkit_profile_validation_result_profile_id_count_v1(0, &profile_count) !=
+            T076_ERROR_INVALID_INPUT || profile_count != 0 ||
+        kmipkit_profile_validation_result_requirement_id_count_v1(0, &requirement_count) !=
+            T076_ERROR_INVALID_INPUT || requirement_count != 0 ||
+        kmipkit_profile_validation_result_validate_transport_v1(0, 99) !=
+            T076_ERROR_INVALID_INPUT ||
+        kmipkit_profile_validation_result_validate_request_v1(0, 0) !=
+            T076_ERROR_INVALID_INPUT ||
+        kmipkit_profile_validation_result_validate_request_with_context_v1(0, 0, 0) !=
+            T076_ERROR_INVALID_INPUT ||
+        kmipkit_profile_validation_result_validate_response_v1(0, 0, 0) !=
+            T076_ERROR_INVALID_INPUT ||
+        kmipkit_profile_validation_result_validate_response_with_context_v1(0, 0, 0, 0) !=
+            T076_ERROR_INVALID_INPUT) {
+        return 0;
+    }
+    kmipkit_profile_validation_result_release(result);
+    return 1;
 }
 
 int kmipkit_client_abi_c_consumer_profile_readiness_contract(void) {
@@ -9361,33 +9378,6 @@ cleanup:
         kmipkit_profile_readiness_release(unknown);
     }
     return result;
-}
-
-int kmipkit_client_abi_c_consumer_profile_validation_result_contract(void) {
-    uint64_t profile_count = UINT64_MAX;
-    uint64_t requirement_count = UINT64_MAX;
-    kmipkit_profile_validation_result_t *result = 0;
-
-    if (kmipkit_profile_validation_result_profile_id_count_v1(
-            result, &profile_count) != T076_ERROR_INVALID_INPUT ||
-        profile_count != 0 ||
-        kmipkit_profile_validation_result_requirement_id_count_v1(
-            result, &requirement_count) != T076_ERROR_INVALID_INPUT ||
-        requirement_count != 0 ||
-        kmipkit_profile_validation_result_validate_transport_v1(result, 99) !=
-            T076_ERROR_INVALID_INPUT ||
-        kmipkit_profile_validation_result_validate_request_v1(result, 0) !=
-            T076_ERROR_INVALID_INPUT ||
-        kmipkit_profile_validation_result_validate_request_with_context_v1(result, 0, 0) !=
-            T076_ERROR_INVALID_INPUT ||
-        kmipkit_profile_validation_result_validate_response_v1(result, 0, 0) !=
-            T076_ERROR_INVALID_INPUT ||
-        kmipkit_profile_validation_result_validate_response_with_context_v1(result, 0, 0, 0) !=
-            T076_ERROR_INVALID_INPUT) {
-        return 0;
-    }
-    kmipkit_profile_validation_result_release(result);
-    return 1;
 }
 
 static int profile_span_contains(kmipkit_byte_span_v1_t span, const char *needle) {
