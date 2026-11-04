@@ -9,14 +9,12 @@ import struct
 import threading
 from pathlib import Path
 
-import pytest
-
 from _test_support import (
     mtls_transport_config,
     read_ttlv_frame,
     require_tls13_mtls_peer,
 )
-from kmipkit import client, errors, extensions, ttlv
+from kmipkit import client, extensions, ttlv
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
 _BATCH_IDS = (b"item-0", b"item-1")
@@ -298,8 +296,7 @@ def test_rng_failure_and_pending_cross_native_cffi_with_pending_typed_responses(
         assert retrieve_pending.pending_correlation_value == _CORRELATION
         retrieve_pending_response = retrieve_pending.rng_retrieve_response()
         assert retrieve_pending_response is not None
-        with pytest.raises(errors.InvalidInputError):
-            _ = retrieve_pending_response.data
+        assert retrieve_pending_response.data is None
         assert not retrieve_pending_response.response_ttlv.closed
         assert seed_failure.operation == 0x26 and seed_failure.result_status == 1
         assert seed_failure.result_reason == 5

@@ -27,6 +27,10 @@ fn require_success_response_ttlv<T>(response_ttlv: Option<FfiResult<T>>) -> FfiR
     }
 }
 
+fn outcome_has_success_or_pending_response(outcome: &kmipkit_client::ClientBatchOutcome) -> bool {
+    outcome.result().status().raw() == 0 || outcome.asynchronous_correlation_value().is_some()
+}
+
 fn copy_transport_span(data: *const u8, length: u64, maximum: u64) -> FfiResult<Vec<u8>> {
     let bytes = input_span(data, length, maximum)?;
     let mut owned = Vec::new();
@@ -7172,7 +7176,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_sign(
     })
 }
 
-/// Reads successful RNG Retrieve output bytes borrowed from `item`.
+/// Reads RNG Retrieve output bytes for Success or the typed response for Pending.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_response_rng_retrieve(
     item: *mut kmipkit_client_batch_item_response_t,
@@ -7197,7 +7201,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_rng_retrieve(
         try_ffi!(set_borrowed_span(data_present, data, None));
         let response_handle = read_handle!(item, ClientBatchItemResponse);
         let item = try_ffi!(batch_response_item_from_handle(&response_handle));
-        if item.outcome().result().status().raw() != 0 {
+        if !outcome_has_success_or_pending_response(item.outcome()) {
             return SUCCESS;
         }
         let response_view = item.outcome().response();
@@ -7216,7 +7220,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_rng_retrieve(
     })
 }
 
-/// Copies the complete generic TTLV for a successful RNG Retrieve response.
+/// Copies the complete generic TTLV for a successful or Pending RNG Retrieve response.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_response_rng_retrieve_ttlv(
     item: *mut kmipkit_client_batch_item_response_t,
@@ -7235,7 +7239,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_rng_retrieve_ttlv(
         *present = 0;
         let response_handle = read_handle!(item, ClientBatchItemResponse);
         let item = try_ffi!(batch_response_item_from_handle(&response_handle));
-        if item.outcome().result().status().raw() != 0 {
+        if !outcome_has_success_or_pending_response(item.outcome()) {
             return SUCCESS;
         }
         let response_view = item.outcome().response();
@@ -7252,7 +7256,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_rng_retrieve_ttlv(
     })
 }
 
-/// Reads successful RNG Seed's server-reported Data Length, preserving zero.
+/// Reads RNG Seed's server-reported Data Length for Success or its typed Pending response.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_response_rng_seed(
     item: *mut kmipkit_client_batch_item_response_t,
@@ -7278,24 +7282,23 @@ pub extern "C" fn kmipkit_client_batch_item_response_rng_seed(
         *data_length = 0;
         let response_handle = read_handle!(item, ClientBatchItemResponse);
         let item = try_ffi!(batch_response_item_from_handle(&response_handle));
-        if item.outcome().result().status().raw() != 0 {
+        if !outcome_has_success_or_pending_response(item.outcome()) {
             return SUCCESS;
         }
         let response_view = item.outcome().response();
         let Some(rng_seed) = response_view.rng_seed() else {
             return SUCCESS;
         };
-        let Some(value) = rng_seed.data_length() else {
-            return record_ffi_error(ERROR_INTERNAL); // COVERAGE-EXCLUDE: a successful parsed result has required Data Length.
-        };
-        *data_length = value;
-        *data_length_present = 1;
         *present = 1;
+        if let Some(value) = rng_seed.data_length() {
+            *data_length = value;
+            *data_length_present = 1;
+        }
         SUCCESS
     })
 }
 
-/// Copies the complete generic TTLV for a successful RNG Seed response.
+/// Copies the complete generic TTLV for a successful or Pending RNG Seed response.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_response_rng_seed_ttlv(
     item: *mut kmipkit_client_batch_item_response_t,
@@ -7314,7 +7317,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_rng_seed_ttlv(
         *present = 0;
         let response_handle = read_handle!(item, ClientBatchItemResponse);
         let item = try_ffi!(batch_response_item_from_handle(&response_handle));
-        if item.outcome().result().status().raw() != 0 {
+        if !outcome_has_success_or_pending_response(item.outcome()) {
             return SUCCESS;
         }
         let response_view = item.outcome().response();

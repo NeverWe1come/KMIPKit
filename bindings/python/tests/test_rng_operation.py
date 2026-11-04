@@ -190,14 +190,15 @@ def test_rng_seed_response_preserves_zero_length_and_ttlv(monkeypatch) -> None:
     assert owned_ttlv.closed
 
 
-def test_rng_retrieve_response_rejects_missing_owned_data_while_open() -> None:
+def test_rng_retrieve_pending_response_preserves_absent_data_and_ttlv() -> None:
     _, owned_ttlv = _owned_structure(54)
-    response = client.RngRetrieveResponse(None, owned_ttlv)  # type: ignore[arg-type]
+    response = client.RngRetrieveResponse(None, owned_ttlv)
 
-    with pytest.raises(errors.InvalidInputError):
-        _ = response.data
+    assert response.data is None
+    assert not response.response_ttlv.closed
 
     response.close()
+    assert owned_ttlv.closed
 
 
 def test_rng_retrieve_absence_requires_an_empty_typed_output(monkeypatch) -> None:
@@ -267,7 +268,7 @@ def test_successful_response_ttlv_releases_inconsistent_native_handle(monkeypatc
     )
 
     with pytest.raises(errors.InvalidInputError):
-        client._successful_response_ttlv(
+        client._typed_response_ttlv(
             _response_item(),
             inconsistent,
         )
@@ -356,7 +357,6 @@ def test_rng_seed_rejects_an_absent_native_span_before_builder_call(monkeypatch)
         (2, 0, ffi.NULL, 0),
         (0, 0, ffi.new("uint8_t[]", b"x"), 1),
         (1, 1, ffi.NULL, 1),
-        (1, 0, ffi.NULL, 0),
     ],
 )
 def test_rng_retrieve_rejects_malformed_native_output(

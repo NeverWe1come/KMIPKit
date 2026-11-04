@@ -60,6 +60,25 @@ final class RngOperationMappingTest {
     }
 
     @Test
+    void pendingResponseMappingKeepsTtlvAndLeavesSuccessFieldsAbsent() {
+        NativeExtensionRegistry.ensureLoaded();
+        long retrieveTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+        long seedTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+
+        try (var retrieve = ClientBatchItemResult.parseRngRetrieveResponse(new Object[] {
+                    new long[] {1, 0}, null, new long[] {retrieveTtlv}
+                }).orElseThrow();
+                var seed = ClientBatchItemResult.parseRngSeedResponse(new Object[] {
+                    new long[] {1, 0, 0}, new long[] {seedTtlv}
+                }).orElseThrow()) {
+            assertTrue(retrieve.data().isEmpty());
+            assertTrue(seed.dataLength().isEmpty());
+            assertTrue(retrieve.responseTtlv().isPresent());
+            assertTrue(seed.responseTtlv().isPresent());
+        }
+    }
+
+    @Test
     void malformedNativeResponseTuplesAreRejectedAndOwnedOutputsAreReleased() {
         NativeExtensionRegistry.ensureLoaded();
         assertTrue(ClientBatchItemResult.parseRngRetrieveResponse(
@@ -100,7 +119,7 @@ final class RngOperationMappingTest {
         long retrieveTtlv = NativeExtensionRegistry.ttlvStructureCreate();
         assertThrows(InvalidInputException.class, () -> ClientBatchItemResult
                 .parseRngRetrieveResponse(new Object[] {
-                    new long[] {1, 0}, null, new long[] {retrieveTtlv}}
+                    new long[] {1, 1}, null, new long[] {retrieveTtlv}}
                 ));
         ResponseTtlvTestSupport.assertReleased(retrieveTtlv);
 

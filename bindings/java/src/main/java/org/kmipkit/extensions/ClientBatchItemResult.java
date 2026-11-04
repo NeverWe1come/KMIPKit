@@ -192,17 +192,17 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseRevokeResponse(values);
     }
 
-    /** Returns successful RNG Retrieve bytes in an owned, redacted response object. */
+    /** Returns the typed RNG Retrieve response for Success or Pending. */
     public Optional<RngRetrieveResponse> rngRetrieveResponse() {
-        if (resultStatus() != 0) return Optional.empty();
+        if (resultStatus() != 0 && !outcomeKind().isPending()) return Optional.empty();
         NativeExtensionRegistry.ensureLoaded();
         Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseRngRetrieve);
         return parseRngRetrieveResponse(values);
     }
 
-    /** Returns successful RNG Seed Data Length, preserving a zero result. */
+    /** Returns the typed RNG Seed response for Success or Pending, preserving zero Data Length. */
     public Optional<RngSeedResponse> rngSeedResponse() {
-        if (resultStatus() != 0) return Optional.empty();
+        if (resultStatus() != 0 && !outcomeKind().isPending()) return Optional.empty();
         NativeExtensionRegistry.ensureLoaded();
         Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseRngSeed);
         return parseRngSeedResponse(values);
@@ -873,20 +873,21 @@ public final class ClientBatchItemResult implements AutoCloseable {
         }
     }
 
-    /** Successful RNG Retrieve bytes held in a wipeable Java-owned array and full response TTLV. */
+    /** Optional RNG Retrieve bytes held in a wipeable Java-owned array and full response TTLV. */
     public static final class RngRetrieveResponse implements AutoCloseable {
         private @Nullable byte[] data;
         private @Nullable TtlvStructure responseTtlv;
+        private boolean closed;
 
-        private RngRetrieveResponse(byte[] data, TtlvStructure responseTtlv) {
-            this.data = data.clone();
+        private RngRetrieveResponse(@Nullable byte[] data, TtlvStructure responseTtlv) {
+            this.data = data == null ? null : data.clone();
             this.responseTtlv = responseTtlv;
         }
 
         /** Returns a caller-owned copy; Java cannot guarantee zeroization of external copies. */
         public synchronized Optional<byte[]> data() {
             ensureOpen();
-            return Optional.of(data.clone());
+            return data == null ? Optional.empty() : Optional.of(data.clone());
         }
 
         /** Returns the complete ordered response structure owned by this result. */
@@ -900,10 +901,11 @@ public final class ClientBatchItemResult implements AutoCloseable {
             data = null;
             if (responseTtlv != null) responseTtlv.close();
             responseTtlv = null;
+            closed = true;
         }
 
         private void ensureOpen() {
-            if (data == null || responseTtlv == null) {
+            if (closed || responseTtlv == null) {
                 throw new IllegalStateException("RNG Retrieve response is closed");
             }
         }
@@ -913,13 +915,13 @@ public final class ClientBatchItemResult implements AutoCloseable {
         }
     }
 
-    /** Successful RNG Seed response with the server's signed Data Length and complete TTLV. */
+    /** Optional RNG Seed Data Length and complete response TTLV. */
     public static final class RngSeedResponse implements AutoCloseable {
         private final OptionalInt dataLength;
         private @Nullable TtlvStructure responseTtlv;
 
-        private RngSeedResponse(int dataLength, TtlvStructure responseTtlv) {
-            this.dataLength = OptionalInt.of(dataLength);
+        private RngSeedResponse(@Nullable Integer dataLength, TtlvStructure responseTtlv) {
+            this.dataLength = dataLength == null ? OptionalInt.empty() : OptionalInt.of(dataLength);
             this.responseTtlv = responseTtlv;
         }
 
@@ -2233,10 +2235,12 @@ public final class ClientBatchItemResult implements AutoCloseable {
                 }
                 return Optional.empty();
             }
-            if (!dataPresent || tuple[1] == null || responseTtlvHandle[0] <= 0) {
+            if ((dataPresent && tuple[1] == null)
+                    || (!dataPresent && tuple[1] != null)
+                    || responseTtlvHandle[0] <= 0) {
                 throw new InvalidInputException("native RNG Retrieve response is invalid");
             }
-            byte[] data = requireBytes(tuple[1]);
+            byte[] data = dataPresent ? requireBytes(tuple[1]) : null;
             TtlvStructure responseTtlv = TtlvStructure.fromNative(responseTtlvHandle[0], null);
             responseTtlvHandle[0] = 0;
             try {
@@ -2264,14 +2268,17 @@ public final class ClientBatchItemResult implements AutoCloseable {
                 }
                 return Optional.empty();
             }
-            if (!dataLengthPresent || fields[2] < Integer.MIN_VALUE
-                    || fields[2] > Integer.MAX_VALUE || responseTtlvHandle[0] <= 0) {
+            if ((dataLengthPresent && (fields[2] < Integer.MIN_VALUE
+                    || fields[2] > Integer.MAX_VALUE))
+                    || (!dataLengthPresent && fields[2] != 0)
+                    || responseTtlvHandle[0] <= 0) {
                 throw new InvalidInputException("native RNG Seed response is invalid");
             }
             TtlvStructure responseTtlv = TtlvStructure.fromNative(responseTtlvHandle[0], null);
             responseTtlvHandle[0] = 0;
             try {
-                return Optional.of(new RngSeedResponse((int) fields[2], responseTtlv));
+                Integer dataLength = dataLengthPresent ? (int) fields[2] : null;
+                return Optional.of(new RngSeedResponse(dataLength, responseTtlv));
             } catch (RuntimeException exception) { // COVERAGE-EXCLUDE: construction only stores validated non-null fields; allocation failure is an Error.
                 responseTtlv.close(); // COVERAGE-EXCLUDE: only reachable if construction starts throwing RuntimeException after validation.
                 throw exception; // COVERAGE-EXCLUDE: this defensive cleanup path has no deterministic failure injection point.

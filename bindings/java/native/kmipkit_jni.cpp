@@ -7619,7 +7619,6 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
         }
         if (present > 1 || data_present > 1
                 || (present == 0 && data_present != 0)
-                || (present == 1 && data_present != 1)
                 || (data_present == 0 && (data.data != nullptr || data.length != 0))) { // COVERAGE-EXCLUDE: the C ABI initializes these paired flags and span atomically from one parsed result.
             throw_invalid_input(env); // COVERAGE-EXCLUDE: malformed paired outputs require violating the C ABI contract.
             return static_cast<jobjectArray>(nullptr); // COVERAGE-EXCLUDE: malformed paired outputs require violating the C ABI contract.
@@ -7683,7 +7682,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
         const int32_t ttlv_status = kmipkit_client_batch_item_response_rng_seed_ttlv(
                 item, &ttlv_present, &response_ttlv);
         if (ttlv_status != 0 || ttlv_present != present
-                || (present == 1 && (data_length_present != 1 || response_ttlv == nullptr))
+                || (present == 1 && response_ttlv == nullptr)
                 || (present == 0 && response_ttlv != nullptr)) { // COVERAGE-EXCLUDE: both C getters read the same immutable parsed item; no deterministic allocator failure hook exists.
             kmipkit_ttlv_structure_release(response_ttlv); // COVERAGE-EXCLUDE: inconsistent getter outputs require an ABI invariant violation.
             throw_status(env, ttlv_status != 0 ? ttlv_status : KMIPKIT_ERROR_INVALID_INPUT); // COVERAGE-EXCLUDE: inconsistent getter outputs require an ABI invariant violation.

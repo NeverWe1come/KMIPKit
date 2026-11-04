@@ -1755,11 +1755,11 @@ class BatchItemResult(_BatchItemResultNativeState):
         return self._locate_response
 
     def rng_retrieve_response(self) -> RngRetrieveResponse | None:
-        """Return successful RNG Retrieve output and its owned generic response TTLV."""
+        """Return the typed RNG Retrieve result for Success or Pending, when available."""
         return self._rng_retrieve_response
 
     def rng_seed_response(self) -> RngSeedResponse | None:
-        """Return successful RNG Seed Data Length and its owned generic response TTLV."""
+        """Return the typed RNG Seed result for Success or Pending, when available."""
         return self._rng_seed_response
 
 
@@ -2531,23 +2531,23 @@ class SignatureVerifyResponse:
 
 @dataclass(slots=True, init=False, repr=False)
 class RngRetrieveResponse:
-    """Successful §6.1.49 output in wipeable storage plus complete generic response TTLV."""
+    """Optional §6.1.49 output in wipeable storage plus complete response TTLV."""
 
     _data: _SecretBytes | None = field(repr=False)
     response_ttlv: ttlv.Structure = field(repr=False)
     _closed: bool = field(default=False, init=False, repr=False)
 
-    def __init__(self, data: _SecretBytes, response_ttlv: ttlv.Structure) -> None:
+    def __init__(self, data: _SecretBytes | None, response_ttlv: ttlv.Structure) -> None:
         self._data = data
         self.response_ttlv = response_ttlv
         self._closed = False
 
     @property
-    def data(self) -> bytes:
-        """Return a caller-owned random-data copy; Python cannot guarantee its zeroization."""
+    def data(self) -> bytes | None:
+        """Return a caller-owned output copy when present; Python cannot guarantee zeroization."""
         self._ensure_open()
         if self._data is None:
-            errors.raise_for_status(4)
+            return None
         return self._data.to_bytes()
 
     def close(self) -> None:
@@ -2570,9 +2570,9 @@ class RngRetrieveResponse:
 
 @dataclass(frozen=True, slots=True, repr=False)
 class RngSeedResponse:
-    """Successful §6.1.50 server-reported Data Length and complete generic response TTLV."""
+    """Optional §6.1.50 Data Length and complete response TTLV."""
 
-    data_length: int
+    data_length: int | None
     response_ttlv: ttlv.Structure = field(repr=False)
 
     def close(self) -> None:
@@ -2580,7 +2580,7 @@ class RngSeedResponse:
         self.response_ttlv.close()
 
     def __repr__(self) -> str:
-        return f"RngSeedResponse(data_length={self.data_length}, response_ttlv=preserved)"
+        return f"RngSeedResponse(data_length={self.data_length!r}, response_ttlv=preserved)"
 
 
 class BatchResult(_ClientHandle):
@@ -3506,15 +3506,25 @@ def _batch_result(
                     recover_response = _lifecycle_response(item, "recover", RecoverResponse)
                 rng_retrieve_response = None
                 if (
-                    outcome == BatchOutcome.COMPLETED
-                    and int(metadata.result_status) == 0
+                    (
+                        outcome == BatchOutcome.PENDING
+                        or (
+                            outcome == BatchOutcome.COMPLETED
+                            and int(metadata.result_status) == 0
+                        )
+                    )
                     and int(metadata.operation) == 0x25
                 ):
                     rng_retrieve_response = _rng_retrieve_response(item)
                 rng_seed_response = None
                 if (
-                    outcome == BatchOutcome.COMPLETED
-                    and int(metadata.result_status) == 0
+                    (
+                        outcome == BatchOutcome.PENDING
+                        or (
+                            outcome == BatchOutcome.COMPLETED
+                            and int(metadata.result_status) == 0
+                        )
+                    )
                     and int(metadata.operation) == 0x26
                 ):
                     rng_seed_response = _rng_seed_response(item)
@@ -3985,7 +3995,7 @@ def _hash_response(item: _ClientBatchItemResponse) -> HashResponse | None:
         errors.raise_for_status(4)
     data_value = _optional_output_span(data_present, data)
     correlation_value = _optional_output_span(correlation_present, correlation)
-    response_ttlv = _successful_response_ttlv(
+    response_ttlv = _typed_response_ttlv(
         item, lib.kmipkit_client_batch_item_response_hash_ttlv
     )
     return HashResponse(data_value, correlation_value, response_ttlv)
@@ -5659,7 +5669,7 @@ def _mac_response(item: _ClientBatchItemResponse) -> MacResponse | None:
     unique_identifier = _optional_output_identifier(identifier)
     mac_value = _optional_output_span(mac_present, mac_data)
     correlation_value = _optional_output_span(correlation_present, correlation)
-    response_ttlv = _successful_response_ttlv(
+    response_ttlv = _typed_response_ttlv(
         item, lib.kmipkit_client_batch_item_response_mac_ttlv
     )
     return MacResponse(
@@ -5689,7 +5699,7 @@ def _mac_verify_response(item: _ClientBatchItemResponse) -> MacVerifyResponse | 
         errors.raise_for_status(4)
     unique_identifier = _optional_output_identifier(identifier)
     correlation_value = _optional_output_span(correlation_present, correlation)
-    response_ttlv = _successful_response_ttlv(
+    response_ttlv = _typed_response_ttlv(
         item, lib.kmipkit_client_batch_item_response_mac_verify_ttlv
     )
     return MacVerifyResponse(
@@ -5724,7 +5734,7 @@ def _sign_response(item: _ClientBatchItemResponse) -> SignResponse | None:
     unique_identifier = _optional_output_identifier(identifier)
     signature_value = _optional_output_span(signature_present, signature_data)
     correlation_value = _optional_output_span(correlation_present, correlation)
-    response_ttlv = _successful_response_ttlv(
+    response_ttlv = _typed_response_ttlv(
         item, lib.kmipkit_client_batch_item_response_sign_ttlv
     )
     return SignResponse(
@@ -5732,7 +5742,7 @@ def _sign_response(item: _ClientBatchItemResponse) -> SignResponse | None:
     )
 
 
-def _successful_response_ttlv(
+def _typed_response_ttlv(
     item: _ClientBatchItemResponse, function: Any
 ) -> ttlv.Structure:
     present = ffi.new("uint8_t *")
@@ -5768,17 +5778,18 @@ def _rng_retrieve_response(
             errors.raise_for_status(4)
         _optional_output_secret_span(data_present, data)
         return None
-    if present[0] != 1 or data_present[0] != 1:
+    if present[0] != 1 or data_present[0] not in (0, 1):
         errors.raise_for_status(4)
     secret_data = _optional_output_secret_span(data_present, data)
-    if secret_data is None:
+    if data_present[0] == 1 and secret_data is None:
         errors.raise_for_status(4)
     try:
-        response_ttlv = _successful_response_ttlv(
+        response_ttlv = _typed_response_ttlv(
             item, lib.kmipkit_client_batch_item_response_rng_retrieve_ttlv
         )
     except Exception:
-        secret_data.wipe()
+        if secret_data is not None:
+            secret_data.wipe()
         raise
     return RngRetrieveResponse(secret_data, response_ttlv)
 
@@ -5796,12 +5807,17 @@ def _rng_seed_response(item: _ClientBatchItemResponse) -> RngSeedResponse | None
         if data_length_present[0] != 0 or data_length[0] != 0:
             errors.raise_for_status(4)
         return None
-    if present[0] != 1 or data_length_present[0] != 1:
+    if present[0] != 1 or data_length_present[0] not in (0, 1):
         errors.raise_for_status(4)
-    response_ttlv = _successful_response_ttlv(
+    if data_length_present[0] == 0 and data_length[0] != 0:
+        errors.raise_for_status(4)
+    response_ttlv = _typed_response_ttlv(
         item, lib.kmipkit_client_batch_item_response_rng_seed_ttlv
     )
-    return RngSeedResponse(int(data_length[0]), response_ttlv)
+    return RngSeedResponse(
+        int(data_length[0]) if data_length_present[0] == 1 else None,
+        response_ttlv,
+    )
 
 
 def _signature_verify_response(
@@ -5838,7 +5854,7 @@ def _signature_verify_response(
     unique_identifier = _optional_output_identifier(identifier)
     recovered_value = _optional_output_span(recovered_present, recovered_data)
     correlation_value = _optional_output_span(correlation_present, correlation)
-    response_ttlv = _successful_response_ttlv(
+    response_ttlv = _typed_response_ttlv(
         item, lib.kmipkit_client_batch_item_response_signature_verify_ttlv
     )
     return SignatureVerifyResponse(
