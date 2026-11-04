@@ -78,6 +78,40 @@ class T102ImportLocateRequestMemberMappingTests(unittest.TestCase):
             row["operationId"]: row for row in cls.manifest["operations"]
         }
 
+    def _assert_target_mapping(
+        self,
+        operation_spec: dict[str, object],
+        builder: dict[str, object],
+        constructor: dict[str, object],
+        operation: dict[str, object],
+        declaration_id: str,
+        export_name: str,
+    ) -> None:
+        declaration = self.declarations[declaration_id]
+        mappings = dict(builder["languageMappings"])
+        mappings["rust"] = {
+            "packageId": "rust-kmipkit-protocol",
+            "name": export_name,
+        }
+
+        self.assertEqual(export_name, declaration["exportName"])
+        self.assertEqual("rust-kmipkit-protocol", declaration["packageId"])
+        self.assertEqual("associated-item", declaration["kind"])
+        self.assertEqual("verified", declaration["declarationState"])
+        self.assertNotIn("candidateSpecId", declaration)
+        self.assertNotIn("blockedReason", declaration)
+        self.assertEqual(operation_spec["capability"], declaration["capabilityId"])
+        self.assertEqual(constructor["approvalSource"], declaration["approvalSource"])
+        self.assertEqual(constructor["requirementIds"], declaration["requirementIds"])
+        self.assertEqual(mappings, declaration["languageMappings"])
+        self.assertEqual("four-language", declaration["parityScope"])
+        self.assertTrue(
+            set(builder["parityEvidenceIds"])
+            <= set(declaration["parityEvidenceIds"])
+        )
+        self.assertIn(PARITY_TEST_EVIDENCE_ID, declaration["parityEvidenceIds"])
+        self.assertIn(declaration_id, operation["declarations"]["rust"])
+
     def test_remaining_import_and_locate_request_members_map_to_existing_builders(self) -> None:
         for operation_key, operation_spec in OPERATIONS.items():
             with self.subTest(operation=operation_spec["name"]):
@@ -91,29 +125,22 @@ class T102ImportLocateRequestMemberMappingTests(unittest.TestCase):
                 self.assertEqual(operation_spec["owner"], builder["approvalSource"]["path"])
                 self.assertEqual("Approved", builder["approvalSource"]["status"])
 
-                expected_mappings = dict(builder["languageMappings"])
                 for language, (package_id, name) in FOREIGN_MAPPINGS[operation_key].items():
-                    self.assertEqual({"packageId": package_id, "name": name}, expected_mappings[language])
+                    self.assertEqual(
+                        {"packageId": package_id, "name": name},
+                        builder["languageMappings"][language],
+                    )
 
                 for declaration_id, export_name in operation_spec["targets"]:
                     with self.subTest(declaration=export_name):
-                        declaration = self.declarations[declaration_id]
-                        self.assertEqual(export_name, declaration["exportName"])
-                        self.assertEqual("rust-kmipkit-protocol", declaration["packageId"])
-                        self.assertEqual("associated-item", declaration["kind"])
-                        self.assertEqual("verified", declaration["declarationState"])
-                        self.assertNotIn("candidateSpecId", declaration)
-                        self.assertNotIn("blockedReason", declaration)
-                        self.assertEqual(operation_spec["capability"], declaration["capabilityId"])
-                        self.assertEqual(constructor["approvalSource"], declaration["approvalSource"])
-                        self.assertEqual(constructor["requirementIds"], declaration["requirementIds"])
-                        mappings = dict(expected_mappings)
-                        mappings["rust"] = {"packageId": "rust-kmipkit-protocol", "name": export_name}
-                        self.assertEqual(mappings, declaration["languageMappings"])
-                        self.assertEqual("four-language", declaration["parityScope"])
-                        self.assertTrue(set(builder["parityEvidenceIds"]) <= set(declaration["parityEvidenceIds"]))
-                        self.assertIn(PARITY_TEST_EVIDENCE_ID, declaration["parityEvidenceIds"])
-                        self.assertIn(declaration_id, operation["declarations"]["rust"])
+                        self._assert_target_mapping(
+                            operation_spec,
+                            builder,
+                            constructor,
+                            operation,
+                            declaration_id,
+                            export_name,
+                        )
 
                 self.assertIn(PARITY_TEST_EVIDENCE_ID, operation["parityEvidenceIds"])
 
