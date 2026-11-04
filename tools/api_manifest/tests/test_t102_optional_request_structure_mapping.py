@@ -187,7 +187,7 @@ PKCS11_REQUEST_SETTER_IDS = {
     "rust-observed-cc71aab290dc65b5928f",
     "rust-observed-573ae1d0de80ffa2884b",
 }
-OTHER_DECLARATIONS_SHA256 = "c4840bd9d6df8567ed4a89702788791a9ee99a70fcae386fde4a4332d73781b2"
+OTHER_DECLARATIONS_SHA256 = "ed646e9f124dd14ec2a80b4c9e42acf5553f5d032f60e399cbd69bb3c4b1f4b6"
 OTHER_OPERATIONS_SHA256 = "17ecaeb860c429b0f92509ccf4fd6a8a9b83f0cefd2ed9a358f099fe0463c8d5"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(

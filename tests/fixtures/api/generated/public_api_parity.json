@@ -106390,6 +106390,266 @@
       "exportName": "org.kmipkit.NativeExtensionRegistry.registerRequestWithOpaqueObjectContext",
       "packageId": "java-kmipkit",
       "reason": "This exact Java method is internal vendor-extension JNI plumbing; the user-facing capability remains in its separately inventoried typed facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "Exact generated export org.kmipkit.generated.ExtensionRegistryApi appears in the pinned Java binding export inventory. Its metadata is regenerated from the approved public API manifest; user-facing facade declarations are inventoried independently. KMIPKIT-0043-FR-015; KMIPKIT-0043-FR-021.",
+      "exportName": "org.kmipkit.generated.ExtensionRegistryApi",
+      "packageId": "java-kmipkit",
+      "reason": "This exact Java export is generated public API metadata derived from the reviewed manifest and adds no independent user-facing capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "Exact generated export org.kmipkit.generated.ExtensionRegistryApi.FORMAT_VERSION appears in the pinned Java binding export inventory. Its metadata is regenerated from the approved public API manifest; user-facing facade declarations are inventoried independently. KMIPKIT-0043-FR-015; KMIPKIT-0043-FR-021.",
+      "exportName": "org.kmipkit.generated.ExtensionRegistryApi.FORMAT_VERSION",
+      "packageId": "java-kmipkit",
+      "reason": "This exact Java export is generated public API metadata derived from the reviewed manifest and adds no independent user-facing capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "Exact generated export org.kmipkit.generated.ExtensionRegistryApi.FUNCTION_METADATA_JSON appears in the pinned Java binding export inventory. Its metadata is regenerated from the approved public API manifest; user-facing facade declarations are inventoried independently. KMIPKIT-0043-FR-015; KMIPKIT-0043-FR-021.",
+      "exportName": "org.kmipkit.generated.ExtensionRegistryApi.FUNCTION_METADATA_JSON",
+      "packageId": "java-kmipkit",
+      "reason": "This exact Java export is generated public API metadata derived from the reviewed manifest and adds no independent user-facing capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "Exact generated export org.kmipkit.generated.PublicApi appears in the pinned Java binding export inventory. Its metadata is regenerated from the approved public API manifest; user-facing facade declarations are inventoried independently. KMIPKIT-0043-FR-015; KMIPKIT-0043-FR-021.",
+      "exportName": "org.kmipkit.generated.PublicApi",
+      "packageId": "java-kmipkit",
+      "reason": "This exact Java export is generated public API metadata derived from the reviewed manifest and adds no independent user-facing capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "Exact generated export org.kmipkit.generated.PublicApi.DECLARATIONS_JSON appears in the pinned Java binding export inventory. Its metadata is regenerated from the approved public API manifest; user-facing facade declarations are inventoried independently. KMIPKIT-0043-FR-015; KMIPKIT-0043-FR-021.",
+      "exportName": "org.kmipkit.generated.PublicApi.DECLARATIONS_JSON",
+      "packageId": "java-kmipkit",
+      "reason": "This exact Java export is generated public API metadata derived from the reviewed manifest and adds no independent user-facing capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "Exact generated export org.kmipkit.generated.PublicApi.FORMAT_VERSION appears in the pinned Java binding export inventory. Its metadata is regenerated from the approved public API manifest; user-facing facade declarations are inventoried independently. KMIPKIT-0043-FR-015; KMIPKIT-0043-FR-021.",
+      "exportName": "org.kmipkit.generated.PublicApi.FORMAT_VERSION",
+      "packageId": "java-kmipkit",
+      "reason": "This exact Java export is generated public API metadata derived from the reviewed manifest and adds no independent user-facing capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "Exact export org.kmipkit.internal.NativeHandle appears in the pinned Java binding export inventory. The internal handle owner retains or releases native resources behind typed Java objects; the corresponding KMIP capability remains inventoried through its typed facade. KMIPKIT-0043-FR-008; KMIPKIT-0043-FR-021.",
+      "exportName": "org.kmipkit.internal.NativeHandle",
+      "packageId": "java-kmipkit",
+      "reason": "This exact Java export is internal native-handle lifecycle plumbing used by typed wrappers, not an independently supported cross-language capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "Exact export org.kmipkit.internal.NativeHandle.close appears in the pinned Java binding export inventory. The internal handle owner retains or releases native resources behind typed Java objects; the corresponding KMIP capability remains inventoried through its typed facade. KMIPKIT-0043-FR-008; KMIPKIT-0043-FR-021.",
+      "exportName": "org.kmipkit.internal.NativeHandle.close",
+      "packageId": "java-kmipkit",
+      "reason": "This exact Java export is internal native-handle lifecycle plumbing used by typed wrappers, not an independently supported cross-language capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "Exact export org.kmipkit.internal.NativeHandle.get appears in the pinned Java binding export inventory. The internal handle owner retains or releases native resources behind typed Java objects; the corresponding KMIP capability remains inventoried through its typed facade. KMIPKIT-0043-FR-008; KMIPKIT-0043-FR-021.",
+      "exportName": "org.kmipkit.internal.NativeHandle.get",
+      "packageId": "java-kmipkit",
+      "reason": "This exact Java export is internal native-handle lifecycle plumbing used by typed wrappers, not an independently supported cross-language capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "Exact export org.kmipkit.internal.NativeHandle.owned appears in the pinned Java binding export inventory. The internal handle owner retains or releases native resources behind typed Java objects; the corresponding KMIP capability remains inventoried through its typed facade. KMIPKIT-0043-FR-008; KMIPKIT-0043-FR-021.",
+      "exportName": "org.kmipkit.internal.NativeHandle.owned",
+      "packageId": "java-kmipkit",
+      "reason": "This exact Java export is internal native-handle lifecycle plumbing used by typed wrappers, not an independently supported cross-language capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "Exact export org.kmipkit.internal.NativeHandle.transfer appears in the pinned Java binding export inventory. The internal handle owner retains or releases native resources behind typed Java objects; the corresponding KMIP capability remains inventoried through its typed facade. KMIPKIT-0043-FR-008; KMIPKIT-0043-FR-021.",
+      "exportName": "org.kmipkit.internal.NativeHandle.transfer",
+      "packageId": "java-kmipkit",
+      "reason": "This exact Java export is internal native-handle lifecycle plumbing used by typed wrappers, not an independently supported cross-language capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "Exact export org.kmipkit.internal.NativeHandle.transferAll appears in the pinned Java binding export inventory. The internal handle owner retains or releases native resources behind typed Java objects; the corresponding KMIP capability remains inventoried through its typed facade. KMIPKIT-0043-FR-008; KMIPKIT-0043-FR-021.",
+      "exportName": "org.kmipkit.internal.NativeHandle.transferAll",
+      "packageId": "java-kmipkit",
+      "reason": "This exact Java export is internal native-handle lifecycle plumbing used by typed wrappers, not an independently supported cross-language capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "Exact export org.kmipkit.internal.NativeHandle.withNativeHandles appears in the pinned Java binding export inventory. The internal handle owner retains or releases native resources behind typed Java objects; the corresponding KMIP capability remains inventoried through its typed facade. KMIPKIT-0043-FR-008; KMIPKIT-0043-FR-021.",
+      "exportName": "org.kmipkit.internal.NativeHandle.withNativeHandles",
+      "packageId": "java-kmipkit",
+      "reason": "This exact Java export is internal native-handle lifecycle plumbing used by typed wrappers, not an independently supported cross-language capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "Exact export org.kmipkit.internal.NativeHandle.withValue appears in the pinned Java binding export inventory. The internal handle owner retains or releases native resources behind typed Java objects; the corresponding KMIP capability remains inventoried through its typed facade. KMIPKIT-0043-FR-008; KMIPKIT-0043-FR-021.",
+      "exportName": "org.kmipkit.internal.NativeHandle.withValue",
+      "packageId": "java-kmipkit",
+      "reason": "This exact Java export is internal native-handle lifecycle plumbing used by typed wrappers, not an independently supported cross-language capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "Exact export org.kmipkit.internal.NativeHandle.withValues appears in the pinned Java binding export inventory. The internal handle owner retains or releases native resources behind typed Java objects; the corresponding KMIP capability remains inventoried through its typed facade. KMIPKIT-0043-FR-008; KMIPKIT-0043-FR-021.",
+      "exportName": "org.kmipkit.internal.NativeHandle.withValues",
+      "packageId": "java-kmipkit",
+      "reason": "This exact Java export is internal native-handle lifecycle plumbing used by typed wrappers, not an independently supported cross-language capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "Exact export org.kmipkit.ttlv.TtlvItem.nativeHandleOwner appears in the pinned Java binding export inventory. The internal handle owner retains or releases native resources behind typed Java objects; the corresponding KMIP capability remains inventoried through its typed facade. KMIPKIT-0043-FR-008; KMIPKIT-0043-FR-021.",
+      "exportName": "org.kmipkit.ttlv.TtlvItem.nativeHandleOwner",
+      "packageId": "java-kmipkit",
+      "reason": "This exact Java export is internal native-handle lifecycle plumbing used by typed wrappers, not an independently supported cross-language capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "Exact export org.kmipkit.ttlv.TtlvStructure.nativeHandleOwner appears in the pinned Java binding export inventory. The internal handle owner retains or releases native resources behind typed Java objects; the corresponding KMIP capability remains inventoried through its typed facade. KMIPKIT-0043-FR-008; KMIPKIT-0043-FR-021.",
+      "exportName": "org.kmipkit.ttlv.TtlvStructure.nativeHandleOwner",
+      "packageId": "java-kmipkit",
+      "reason": "This exact Java export is internal native-handle lifecycle plumbing used by typed wrappers, not an independently supported cross-language capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "Exact Java enum declaration org.kmipkit.extensions.OpaqueObjectContext.valueOf is generated by the language for OpaqueObjectContext; the enum values and mapped semantics are inventoried separately. KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021.",
+      "exportName": "org.kmipkit.extensions.OpaqueObjectContext.valueOf",
+      "packageId": "java-kmipkit",
+      "reason": "This exact Java export is a compiler-generated enum convenience method, not a separate cross-language API capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "Exact Java enum declaration org.kmipkit.extensions.OpaqueObjectContext.values is generated by the language for OpaqueObjectContext; the enum values and mapped semantics are inventoried separately. KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-021.",
+      "exportName": "org.kmipkit.extensions.OpaqueObjectContext.values",
+      "packageId": "java-kmipkit",
+      "reason": "This exact Java export is a compiler-generated enum convenience method, not a separate cross-language API capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "Exact export kmipkit appears in the pinned Python binding export inventory. Child modules and user-facing declarations are inventoried independently. KMIPKIT-0043-FR-020; KMIPKIT-0043-FR-021.",
+      "exportName": "kmipkit",
+      "packageId": "python-kmipkit",
+      "reason": "This Python package namespace groups inventoried modules and adds no independent callable or data capability."
     }
   ],
   "capabilities": [

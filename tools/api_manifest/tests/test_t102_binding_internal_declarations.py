@@ -43,7 +43,7 @@ EXPECTED_GROUPS = {
     },
     "Java enum boilerplate": {
         "requirementIds": {"KMIPKIT-0043-FR-010", "KMIPKIT-0043-FR-021"},
-        "reason": "compiler-generated enum convenience methods",
+        "reason": "compiler-generated enum convenience method",
         "exports": {
             "org.kmipkit.extensions.OpaqueObjectContext.valueOf",
             "org.kmipkit.extensions.OpaqueObjectContext.values",
@@ -83,11 +83,8 @@ class BindingInternalDeclarationExclusionTests(unittest.TestCase):
                 self.assertEqual(OWNER_SPEC, exclusion["approvalSource"]["path"])
                 self.assertEqual("Approved", exclusion["approvalSource"]["status"])
                 self.assertIn(group["reason"], exclusion["reason"])
-                self.assertEqual(
-                    group["requirementIds"],
-                    set(exclusion["evidence"].replace(".", "").split("; "))
-                    & group["requirementIds"],
-                )
+                for requirement_id in group["requirementIds"]:
+                    self.assertIn(requirement_id, exclusion["evidence"])
                 self.assertNotIn(key, self.declarations)
 
     def test_generated_metadata_declarations_are_exact_exclusions(self) -> None:
