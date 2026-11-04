@@ -86,8 +86,83 @@ final class ProfileValidationMappingTest {
         assertEquals(selectedBaseline, details.profileId().orElseThrow());
         assertEquals("KMIPKIT-REQ-SPEC-14.1-001", details.requirementId().orElseThrow());
         assertEquals("KMIPKIT-CLAUSE-SPEC-14.1-001", details.sourceClauseId().orElseThrow());
+        assertFalse(details.sourceGapId().isPresent());
+        assertFalse(details.sourceGapLocator().isPresent());
+        assertFalse(details.batchItemIndex().isPresent());
         assertFalse(failure.getMessage().contains(selectedBaseline));
         assertFalse(failure.toString().contains(selectedBaseline));
+    }
+
+    @Test
+    void resultSnapshotsOrderedIdsAndRedactsItsStringRepresentation() {
+        var bridge = new StubProfileValidationBridge();
+        ProfileValidationResult result = new ProfileValidationResult(41, bridge);
+
+        assertEquals(List.of("profile-secret-sentinel", "profile-second"), result.profileIds());
+        assertEquals(List.of("requirement-secret-sentinel", "requirement-second"),
+                result.requirementIds());
+        assertThrows(UnsupportedOperationException.class,
+                () -> result.profileIds().add("profile-third"));
+        assertThrows(UnsupportedOperationException.class,
+                () -> result.requirementIds().add("requirement-third"));
+        assertFalse(result.toString().contains("secret-sentinel"));
+
+        result.close();
+        assertEquals(1, bridge.releaseCount);
+    }
+
+    @Test
+    void resultForwardsEveryValidationAndRejectsUnknownTransportBeforeNativeCall() throws Exception {
+        var bridge = new StubProfileValidationBridge();
+        try (ProfileValidationResult result = new ProfileValidationResult(42, bridge);
+                TtlvStructure request = TtlvStructure.create();
+                TtlvStructure response = TtlvStructure.create()) {
+            var context = new ProfileValidationContext().withObjectState(
+                    3, new ProfileObjectState("context-id"));
+            var invalidTransportConstructor = ProfileTransport.class.getDeclaredConstructor(int.class);
+            invalidTransportConstructor.setAccessible(true);
+            ProfileTransport unknownTransport = invalidTransportConstructor.newInstance(99);
+            assertThrows(InvalidInputException.class,
+                    () -> result.validateTransport(unknownTransport));
+            assertEquals(0, bridge.transportCalls);
+
+            result.validateTransport(ProfileTransport.RAW_TTLV_TLS);
+            result.validateRequest(request);
+            result.validateRequestWithContext(request, context);
+            result.validateResponse(request, response);
+            result.validateResponseWithContext(request, response, context);
+
+            assertEquals(List.of("transport:1", "request", "request-context", "response",
+                    "response-context"), bridge.validationCalls);
+        }
+        assertEquals(1, bridge.releaseCount);
+    }
+
+    @Test
+    void resultUseAfterCloseFailsWithoutCallingNativeBridgeAgain() {
+        var bridge = new StubProfileValidationBridge();
+        var result = new ProfileValidationResult(43, bridge);
+        result.close();
+
+        assertThrows(InvalidInputException.class,
+                () -> result.validateTransport(ProfileTransport.HTTPS));
+        result.close();
+        assertEquals(1, bridge.releaseCount);
+        assertEquals(0, bridge.transportCalls);
+    }
+
+    @Test
+    void resultClosesHandleWhenIdentifierSnapshotFails() {
+        var bridge = new StubProfileValidationBridge() {
+            @Override
+            public long requirementIdCount(long handle) {
+                return 100_001;
+            }
+        };
+
+        assertThrows(org.kmipkit.ResourceLimitException.class,
+                () -> new ProfileValidationResult(44, bridge));
+        assertEquals(1, bridge.releaseCount);
     }
 
     @Test
@@ -168,5 +243,39 @@ final class ProfileValidationMappingTest {
             directory = directory.getParent();
         }
         throw new IllegalStateException("the shared deterministic mTLS fixture is missing");
+    }
+
+    private static class StubProfileValidationBridge implements ProfileValidationResult.Bridge {
+        int releaseCount;
+        int transportCalls;
+        final List<String> validationCalls = new java.util.ArrayList<>();
+
+        @Override public long profileIdCount(long handle) { return 2; }
+        @Override public String profileIdAt(long handle, long index) {
+            return index == 0 ? "profile-secret-sentinel" : "profile-second";
+        }
+        @Override public long requirementIdCount(long handle) { return 2; }
+        @Override public String requirementIdAt(long handle, long index) {
+            return index == 0 ? "requirement-secret-sentinel" : "requirement-second";
+        }
+        @Override public void validateTransport(long handle, int transport) {
+            transportCalls++;
+            validationCalls.add("transport:" + transport);
+        }
+        @Override public void validateRequest(long handle, long request) {
+            validationCalls.add("request");
+        }
+        @Override public void validateRequestWithContext(
+                long handle, long request, ProfileValidationContext context) {
+            validationCalls.add("request-context");
+        }
+        @Override public void validateResponse(long handle, long request, long response) {
+            validationCalls.add("response");
+        }
+        @Override public void validateResponseWithContext(
+                long handle, long request, long response, ProfileValidationContext context) {
+            validationCalls.add("response-context");
+        }
+        @Override public void release(long handle) { releaseCount++; }
     }
 }

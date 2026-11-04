@@ -2,6 +2,7 @@ package org.kmipkit.extensions;
 
 import java.util.List;
 import org.kmipkit.InvalidInputException;
+import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.ResourceLimitException;
 
 /** Explicit profile IDs selected for one client exchange. */
@@ -26,6 +27,14 @@ public record ProfileValidationSelection(List<String> profileIds) {
             totalBytes += length;
         }
         profileIds = List.copyOf(profileIds);
+    }
+
+    /** Resolves this caller-ordered selection with the canonical native profile validator. */
+    public ProfileValidationResult validate() {
+        NativeExtensionRegistry.ensureLoaded();
+        long nativeHandle = NativeExtensionRegistry.profileValidationSelectionValidate(
+                profileIds.toArray(String[]::new));
+        return new ProfileValidationResult(nativeHandle);
     }
 
     @Override

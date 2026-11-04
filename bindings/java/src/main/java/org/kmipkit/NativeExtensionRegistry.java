@@ -641,4 +641,23 @@ public final class NativeExtensionRegistry {
     public static native long profileCatalogRelationCount(int table, long rowIndex, int relation);
     public static native String[] profileCatalogRelationRow(
             int table, long rowIndex, int relation, long relationIndex);
+
+    public static native long profileValidationSelectionValidate(String[] profileIds);
+    public static native long profileValidationResultProfileIdCount(long result);
+    public static native String profileValidationResultProfileIdAt(long result, long index);
+    public static native long profileValidationResultRequirementIdCount(long result);
+    public static native String profileValidationResultRequirementIdAt(long result, long index);
+    public static native void profileValidationResultValidateTransport(long result, int transport);
+    public static native void profileValidationResultValidateRequest(long result, long request);
+    public static native void profileValidationResultValidateRequestWithContext(
+            long result, long request, long[] itemIndexes, String[] uniqueIdentifiers,
+            int[] knownFields, int[] booleanValues, long[] usageLimitsTotals,
+            long[] usageLimitsCounts);
+    public static native void profileValidationResultValidateResponse(
+            long result, long request, long response);
+    public static native void profileValidationResultValidateResponseWithContext(
+            long result, long request, long response, long[] itemIndexes,
+            String[] uniqueIdentifiers, int[] knownFields, int[] booleanValues,
+            long[] usageLimitsTotals, long[] usageLimitsCounts);
+    public static native void profileValidationResultRelease(long result);
 }
