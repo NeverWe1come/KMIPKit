@@ -29236,8 +29236,8 @@
           "internal"
         ],
         "documentation": [
-          "Reads Data from a successful RNG Retrieve result; the response bytes are secret and borrowed while the batch response item is alive.",
-          "Failed and Pending results expose no typed success fields.",
+          "Reads RNG Retrieve Data on Success; the response bytes are secret and borrowed while the batch response item is alive. The typed response is also present for Pending, where out_data_present is 0.",
+          "Failure results expose no typed response fields. Pending preserves the response TTLV while success-only Data remains absent.",
           "All output regions must be writable and must not overlap; overlapping output pointers are rejected with InvalidInput before any output is written."
         ]
       },
@@ -29330,8 +29330,8 @@
           "internal"
         ],
         "documentation": [
-          "Returns a caller-owned copy of the complete ordered RNG Retrieve response TTLV only for Success. Unknown fields and their order are preserved.",
-          "For failed and Pending results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.",
+          "Returns a caller-owned copy of the complete ordered RNG Retrieve response TTLV for Success or Pending. Unknown fields and their order are preserved.",
+          "For Failure, sets present to 0 and the output handle to NULL. Pending returns present 1 with success-only Data absent. Release a non-NULL handle with kmipkit_ttlv_structure_release.",
           "All output regions must be writable and must not overlap; overlapping output pointers are rejected with InvalidInput before any output is written."
         ]
       },
@@ -29538,8 +29538,8 @@
           "internal"
         ],
         "documentation": [
-          "Reads the server-reported Data Length from successful RNG Seed results, preserving zero and signed Integer values.",
-          "Failed and Pending results expose no typed success fields.",
+          "Reads the server-reported Data Length from successful RNG Seed results, preserving zero and signed Integer values. The typed response is also present for Pending, where out_data_length_present is 0.",
+          "Failure results expose no typed response fields. Pending preserves the response TTLV while success-only Data Length remains absent.",
           "All output regions must be writable and must not overlap; overlapping output pointers are rejected with InvalidInput before any output is written."
         ]
       },
@@ -29633,8 +29633,8 @@
           "internal"
         ],
         "documentation": [
-          "Returns a caller-owned copy of the complete ordered RNG Seed response TTLV only for Success. Unknown fields and their order are preserved.",
-          "For failed and Pending results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.",
+          "Returns a caller-owned copy of the complete ordered RNG Seed response TTLV for Success or Pending. Unknown fields and their order are preserved.",
+          "For Failure, sets present to 0 and the output handle to NULL. Pending returns present 1 with success-only Data Length absent. Release a non-NULL handle with kmipkit_ttlv_structure_release.",
           "All output regions must be writable and must not overlap; overlapping output pointers are rejected with InvalidInput before any output is written."
         ]
       },
@@ -130837,12 +130837,15 @@
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
         "bindings/python/tests/test_rng_operation.py",
+        "bindings/python/tests/test_rng_native_integration.py",
         "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
-        "tools/api_manifest/tests/test_rng_parity_manifest.py"
+        "tools/api_manifest/tests/test_rng_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_rng_pending_response_mapping.py"
       ],
       "languageMappings": {
         "rust": {
@@ -130903,12 +130906,15 @@
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
         "bindings/python/tests/test_rng_operation.py",
+        "bindings/python/tests/test_rng_native_integration.py",
         "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
-        "tools/api_manifest/tests/test_rng_parity_manifest.py"
+        "tools/api_manifest/tests/test_rng_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_rng_pending_response_mapping.py"
       ],
       "languageMappings": {
         "rust": {
@@ -151762,14 +151768,57 @@
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "kmipkit::RngRetrieveResponse::try_from_pending_response_item",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0041-FR-001",
+        "KMIPKIT-0041-FR-003",
+        "KMIPKIT-0041-FR-004",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::RngRetrieveResponse::try_from_pending_response_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_rng_retrieve"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.rngRetrieveResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.rng_retrieve_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
+        "bindings/python/tests/test_rng_native_integration.py",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
+        "tools/api_manifest/tests/test_rng_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_rng_pending_response_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-d6f4dbf40589616963fd",
@@ -152313,14 +152362,57 @@
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "kmipkit::RngSeedResponse::try_from_pending_response_item",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RNG-SEED",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0041-FR-001",
+        "KMIPKIT-0041-FR-003",
+        "KMIPKIT-0041-FR-004",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::RngSeedResponse::try_from_pending_response_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_rng_seed"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.rngSeedResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.rng_seed_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
+        "bindings/python/tests/test_rng_native_integration.py",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
+        "tools/api_manifest/tests/test_rng_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_rng_pending_response_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-613af65a5997ed2edf79",
@@ -210049,14 +210141,57 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::RngRetrieveResponse::try_from_pending_response_item",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0041-FR-001",
+        "KMIPKIT-0041-FR-003",
+        "KMIPKIT-0041-FR-004",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RngRetrieveResponse::try_from_pending_response_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_rng_retrieve"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.rngRetrieveResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.rng_retrieve_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
+        "bindings/python/tests/test_rng_native_integration.py",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
+        "tools/api_manifest/tests/test_rng_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_rng_pending_response_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-064d9aba97c6ee2db83e",
@@ -210600,14 +210735,57 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::RngSeedResponse::try_from_pending_response_item",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RNG-SEED",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0041-FR-001",
+        "KMIPKIT-0041-FR-003",
+        "KMIPKIT-0041-FR-004",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RngSeedResponse::try_from_pending_response_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_rng_seed"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.rngSeedResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.rng_seed_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
+        "bindings/python/tests/test_rng_native_integration.py",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
+        "tools/api_manifest/tests/test_rng_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_rng_pending_response_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-16999bd0ed66996be312",
@@ -474738,12 +474916,15 @@
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
         "bindings/python/tests/test_rng_operation.py",
+        "bindings/python/tests/test_rng_native_integration.py",
         "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
-        "tools/api_manifest/tests/test_rng_parity_manifest.py"
+        "tools/api_manifest/tests/test_rng_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_rng_pending_response_mapping.py"
       ],
       "declarations": {
         "rust": [
@@ -474777,7 +474958,9 @@
           "rust-observed-03821a69a0dc8c40d729",
           "rust-observed-5dfeb990a29d05b8b221",
           "rust-observed-d6f4dbf40589616963fd",
-          "rust-observed-064d9aba97c6ee2db83e"
+          "rust-observed-064d9aba97c6ee2db83e",
+          "rust-observed-9e5df37fddd025977081",
+          "rust-observed-c2e609de3b8ad1b8f591"
         ],
         "c": [
           "T064:rng-retrieve:constructor:c",
@@ -474821,12 +475004,15 @@
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
         "bindings/python/tests/test_rng_operation.py",
+        "bindings/python/tests/test_rng_native_integration.py",
         "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
-        "tools/api_manifest/tests/test_rng_parity_manifest.py"
+        "tools/api_manifest/tests/test_rng_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_rng_pending_response_mapping.py"
       ],
       "declarations": {
         "rust": [
@@ -474860,7 +475046,9 @@
           "rust-observed-85485afb14fc66be894a",
           "rust-observed-9a3303b7cbab80e0ed92",
           "rust-observed-613af65a5997ed2edf79",
-          "rust-observed-16999bd0ed66996be312"
+          "rust-observed-16999bd0ed66996be312",
+          "rust-observed-020bfa308cfe91cbf48d",
+          "rust-observed-87e91aa888e08b93bf35"
         ],
         "c": [
           "T065:rng-seed:constructor:c",

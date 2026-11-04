@@ -179,6 +179,16 @@ class RngParityManifestTests(unittest.TestCase):
                 if expected["name"] == "RNG Seed":
                     self.assertIn("KMIPKIT-REQ-SPEC-6.1.50-001", response_ttlv["requirementIds"])
                 self.assertIn("caller-owned copy", response_ttlv["c"]["documentation"][0])
+                self.assertIn("Success or Pending", response_ttlv["c"]["documentation"][0])
+                self.assertIn("Failure", response_ttlv["c"]["documentation"][1])
+
+                response = self.functions[
+                    "kmipkit_client_batch_item_response_rng_retrieve"
+                    if expected["name"] == "RNG Retrieve"
+                    else "kmipkit_client_batch_item_response_rng_seed"
+                ]
+                self.assertIn("Pending", response["c"]["documentation"][0])
+                self.assertIn("success-only", response["c"]["documentation"][1])
 
     def test_python_rng_public_symbols_exist_in_handwritten_binding_sources(self) -> None:
         extensions_path = ROOT / "bindings/python/src/kmipkit/extensions.py"
