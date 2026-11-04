@@ -304342,20 +304342,6 @@
         }
       },
     {
-      "declarationId": "rust-observed-048f3160831863109c3f",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "module",
-      "exportName": "kmipkit_protocol::profiles_generated",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
       "declarationId": "rust-observed-85b16324c1339640630e",
       "packageId": "rust-kmipkit-protocol",
       "kind": "constant",
@@ -477994,6 +477980,19 @@
         "evidence": "**Status**: Approved for implementation"
       },
         "evidence": "Reviewed against KMIPKIT-0010-FR-013, KMIPKIT-0043-FR-013, and KMIPKIT-0043-FR-021. The profile-validation error type and source-backed identifiers are mapped across Rust, C, Java, and Python."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "candidateSpecId": "KMIPKIT-0043",
+      "exportName": "kmipkit_protocol::profiles_generated",
+      "reason": "This exact Rust module is a namespace container rather than an independent callable or data capability. Its 44 generated profile declarations remain inventoried individually under the client_profile_readiness capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0010-FR-001, KMIPKIT-0010-FR-002, KMIPKIT-0010-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The 44 child declarations under this module remain individually inventoried and mapped in all four languages under client_profile_readiness. The generated Rust module name is a namespace boundary only; the foreign bindings expose the profile catalog and readiness APIs without a corresponding module container. This exclusion removes only the Rust namespace container."
     }
   ],
   "apiLevels": [
