@@ -22,7 +22,10 @@ OPERATIONS = {
         "mappings": {
             "rust": {
                 "kmipkit_client::Client::rng_retrieve",
+                "kmipkit::RngRetrieveRequest::to_ttlv_payload",
                 "kmipkit_protocol::RngRetrieveRequest::new",
+                "kmipkit_protocol::RngRetrieveRequest::data_length",
+                "kmipkit_protocol::RngRetrieveRequest::to_ttlv_payload",
                 "kmipkit_protocol::RngRetrieveResponse::try_from_pending_response_item",
                 "kmipkit_protocol::RngRetrieveResponse::data",
                 "kmipkit_protocol::RngRetrieveResponse::with_ttlv",
@@ -58,7 +61,9 @@ OPERATIONS = {
         "mappings": {
             "rust": {
                 "kmipkit_client::Client::rng_seed",
+                "kmipkit::RngSeedRequest::to_ttlv_payload",
                 "kmipkit_protocol::RngSeedRequest::new",
+                "kmipkit_protocol::RngSeedRequest::to_ttlv_payload",
                 "kmipkit_protocol::RngSeedResponse::try_from_pending_response_item",
                 "kmipkit_protocol::RngSeedResponse::data_length",
                 "kmipkit_protocol::RngSeedResponse::with_ttlv",
