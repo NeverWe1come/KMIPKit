@@ -368,6 +368,18 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                 declaration.pop("approvalSource", None)
                 declaration.pop("languageMappings", None)
                 declaration.pop("parityEvidenceIds", None)
+            if declaration["declarationId"] == "rust-observed-be7b44dc6c8bae24ad53":
+                declaration["capabilityId"] = "public_binding_surface"
+                declaration["requirementIds"] = ["KMIPKIT-0043-FR-021"]
+                declaration["declarationState"] = "blocked"
+                declaration["candidateSpecId"] = "KMIPKIT-0043"
+                declaration["blockedReason"] = (
+                    "The public Rust declaration has no resolved owner in the approved dependency inventory; "
+                    "assign an owner before advertising it."
+                )
+                declaration.pop("approvalSource", None)
+                declaration.pop("languageMappings", None)
+                declaration.pop("parityEvidenceIds", None)
             if declaration["declarationId"] in WRAPPING_REQUEST_BUILDER_IDS:
                 declaration["capabilityId"] = "public_binding_surface"
                 declaration["requirementIds"] = ["KMIPKIT-0043-FR-021"]
@@ -407,7 +419,7 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
             if operation["operationId"] == "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY":
                 operation["declarations"]["rust"] = [
                     declaration_id for declaration_id in operation["declarations"]["rust"]
-                    if declaration_id != RECERTIFY_TYPE_ID
+                    if declaration_id not in {RECERTIFY_TYPE_ID, "rust-observed-be7b44dc6c8bae24ad53"}
                 ]
                 operation["parityEvidenceIds"] = [
                     evidence_id for evidence_id in operation["parityEvidenceIds"]
