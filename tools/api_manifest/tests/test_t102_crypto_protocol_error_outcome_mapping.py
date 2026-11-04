@@ -92,6 +92,7 @@ PARITY_EVIDENCE = {
     "bindings/c/include/kmipkit.h",
     "bindings/c/tests/client_abi_consumer.c",
     "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
+    "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
     "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
     "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
     "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
