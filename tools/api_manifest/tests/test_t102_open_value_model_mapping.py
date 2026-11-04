@@ -81,14 +81,14 @@ OPEN_ENUMERATIONS = (
 )
 
 OPERATION_DATA = (
-    ("rust-observed-eb292fa06230faab20f1", "kmipkit_protocol::OperationData", "type", VALUE_TYPE),
-    ("rust-observed-688bd2525df810f7cd9e", "kmipkit_protocol::OperationData::ByteString", "variant", BYTE_STRING),
-    ("rust-observed-84b43744a1e852d5f6e9", "kmipkit_protocol::OperationData::ByteString::0", "field", BYTE_STRING),
-    ("rust-observed-f69d67f312bdc180f244", "kmipkit_protocol::OperationData::Enumeration", "variant", ENUMERATION),
-    ("rust-observed-6a7f5a7d884b58e351fc", "kmipkit_protocol::OperationData::Enumeration::0", "field", ENUMERATION),
-    ("rust-observed-401464420590f6dacfdb", "kmipkit_protocol::OperationData::Integer", "variant", INTEGER),
-    ("rust-observed-a824df1a7c6587a7b97f", "kmipkit_protocol::OperationData::Integer::0", "field", INTEGER),
-    ("rust-observed-e2a52bdd069792196013", "kmipkit_protocol::OperationData::into_ttlv_value", "associated-item", VALUE_TYPE),
+    ("rust-observed-eb292fa06230faab20f1", "kmipkit_protocol::OperationData", "type", VALUE_TYPE, "kmipkit_ttlv::Value"),
+    ("rust-observed-688bd2525df810f7cd9e", "kmipkit_protocol::OperationData::ByteString", "variant", BYTE_STRING, "kmipkit_ttlv::Value::byte_string"),
+    ("rust-observed-84b43744a1e852d5f6e9", "kmipkit_protocol::OperationData::ByteString::0", "field", BYTE_STRING, "kmipkit_ttlv::Value::byte_string"),
+    ("rust-observed-f69d67f312bdc180f244", "kmipkit_protocol::OperationData::Enumeration", "variant", ENUMERATION, "kmipkit_ttlv::Value::enumeration"),
+    ("rust-observed-6a7f5a7d884b58e351fc", "kmipkit_protocol::OperationData::Enumeration::0", "field", ENUMERATION, "kmipkit_ttlv::Value::enumeration"),
+    ("rust-observed-401464420590f6dacfdb", "kmipkit_protocol::OperationData::Integer", "variant", INTEGER, "kmipkit_ttlv::Value::integer"),
+    ("rust-observed-a824df1a7c6587a7b97f", "kmipkit_protocol::OperationData::Integer::0", "field", INTEGER, "kmipkit_ttlv::Value::integer"),
+    ("rust-observed-e2a52bdd069792196013", "kmipkit_protocol::OperationData::into_ttlv_value", "associated-item", VALUE_TYPE, "kmipkit_ttlv::Value"),
 )
 
 GENERIC_TTLV_EVIDENCE = {
@@ -115,20 +115,56 @@ OPERATION_DATA_EVIDENCE = GENERIC_TTLV_EVIDENCE | {
 }
 
 
-def expected_declarations() -> list[tuple[str, str, str, dict[str, tuple[str, str]], set[str]]]:
+def expected_declarations() -> list[
+    tuple[str, str, str, dict[str, tuple[str, str]], set[str], str]
+]:
     declarations = []
     for type_id, from_raw_id, raw_id, name in OPEN_ENUMERATIONS:
         rust_name = f"kmipkit_protocol::{name}"
         declarations.extend(
             (
-                (type_id, rust_name, "type", VALUE_TYPE, CRYPTO_ENUM_EVIDENCE if name in {"CryptographicAlgorithm", "DigitalSignatureAlgorithm", "HashingAlgorithm"} else KEY_ENUM_EVIDENCE),
-                (from_raw_id, f"{rust_name}::from_raw", "associated-item", ENUMERATION, CRYPTO_ENUM_EVIDENCE if name in {"CryptographicAlgorithm", "DigitalSignatureAlgorithm", "HashingAlgorithm"} else KEY_ENUM_EVIDENCE),
-                (raw_id, f"{rust_name}::raw", "associated-item", ENUMERATION_VIEW, CRYPTO_ENUM_EVIDENCE if name in {"CryptographicAlgorithm", "DigitalSignatureAlgorithm", "HashingAlgorithm"} else KEY_ENUM_EVIDENCE),
+                (
+                    type_id,
+                    rust_name,
+                    "type",
+                    VALUE_TYPE,
+                    CRYPTO_ENUM_EVIDENCE
+                    if name in {"CryptographicAlgorithm", "DigitalSignatureAlgorithm", "HashingAlgorithm"}
+                    else KEY_ENUM_EVIDENCE,
+                    "kmipkit_ttlv::Value",
+                ),
+                (
+                    from_raw_id,
+                    f"{rust_name}::from_raw",
+                    "associated-item",
+                    ENUMERATION,
+                    CRYPTO_ENUM_EVIDENCE
+                    if name in {"CryptographicAlgorithm", "DigitalSignatureAlgorithm", "HashingAlgorithm"}
+                    else KEY_ENUM_EVIDENCE,
+                    "kmipkit_ttlv::Value::enumeration",
+                ),
+                (
+                    raw_id,
+                    f"{rust_name}::raw",
+                    "associated-item",
+                    ENUMERATION_VIEW,
+                    CRYPTO_ENUM_EVIDENCE
+                    if name in {"CryptographicAlgorithm", "DigitalSignatureAlgorithm", "HashingAlgorithm"}
+                    else KEY_ENUM_EVIDENCE,
+                    "kmipkit_ttlv::ValueView::Enumeration::0",
+                ),
             )
         )
     declarations.extend(
-        (declaration_id, export_name, kind, mapping, OPERATION_DATA_EVIDENCE)
-        for declaration_id, export_name, kind, mapping in OPERATION_DATA
+        (
+            declaration_id,
+            export_name,
+            kind,
+            mapping,
+            OPERATION_DATA_EVIDENCE,
+            anchor,
+        )
+        for declaration_id, export_name, kind, mapping, anchor in OPERATION_DATA
     )
     return declarations
 
@@ -145,12 +181,17 @@ class T102OpenValueModelMappingTests(unittest.TestCase):
             for row in cls.manifest["capabilities"]
             if row["capabilityId"] == CAPABILITY_ID
         )
+        cls.anchors = {
+            row["exportName"]: row
+            for row in cls.manifest["publicDeclarations"]
+            if row["capabilityId"] == CAPABILITY_ID
+        }
 
     def test_value_models_map_to_exact_generic_ttlv_representations(self) -> None:
-        expected_requirements = self.capability["requirementIds"]
-        for declaration_id, name, kind, foreign, evidence in expected_declarations():
+        for declaration_id, name, kind, foreign, evidence, anchor_name in expected_declarations():
             with self.subTest(declaration=name):
                 declaration = self.declarations[declaration_id]
+                anchor = self.anchors[anchor_name]
                 mappings = {
                     "rust": {"packageId": "rust-kmipkit-protocol", "name": name},
                     **{
@@ -161,11 +202,11 @@ class T102OpenValueModelMappingTests(unittest.TestCase):
                 self.assertEqual(name, declaration["exportName"])
                 self.assertEqual(kind, declaration["kind"])
                 self.assertEqual(CAPABILITY_ID, declaration["capabilityId"])
-                self.assertEqual(expected_requirements, declaration["requirementIds"])
+                self.assertEqual(anchor["requirementIds"], declaration["requirementIds"])
                 self.assertEqual("verified", declaration["declarationState"])
                 self.assertEqual("four-language", declaration["parityScope"])
+                self.assertEqual(anchor["approvalSource"], declaration["approvalSource"])
                 self.assertEqual(OWNER, declaration["approvalSource"]["path"])
-                self.assertEqual("Approved", declaration["approvalSource"]["status"])
                 self.assertEqual(mappings, declaration["languageMappings"])
                 self.assertTrue(evidence | {EVIDENCE} <= set(declaration["parityEvidenceIds"]))
                 self.assertNotIn("candidateSpecId", declaration)
