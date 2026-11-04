@@ -62,7 +62,7 @@ class T102ResponseParserMappingTests(unittest.TestCase):
         }
 
     def test_owned_response_parsers_have_four_language_mappings(self) -> None:
-        self.assertEqual(25, sum(outcome_id is not None for outcome_id in PARSER_TO_OUTCOME.values()))
+        self.assertEqual(24, sum(outcome_id is not None for outcome_id in PARSER_TO_OUTCOME.values()))
 
         for parser_id, outcome_id in PARSER_TO_OUTCOME.items():
             if outcome_id is None:
@@ -107,6 +107,20 @@ class T102ResponseParserMappingTests(unittest.TestCase):
                     self.assertTrue((ROOT / evidence_path).is_file(), evidence_path)
 
     def test_unowned_parser_candidates_remain_blocked(self) -> None:
+        blocked_parser_ids = {
+            row["declarationId"]
+            for row in self.manifest["publicDeclarations"]
+            if row.get("candidateSpecId") == "KMIPKIT-0043"
+            and row.get("declarationState") == "blocked"
+            and row.get("exportName", "").endswith("::try_from_response_item")
+        }
+        mapped_parser_ids = {
+            parser_id
+            for parser_id, outcome_id in PARSER_TO_OUTCOME.items()
+            if outcome_id is not None
+        }
+        self.assertEqual(set(PARSER_TO_OUTCOME), blocked_parser_ids | mapped_parser_ids)
+
         for parser_id, outcome_id in PARSER_TO_OUTCOME.items():
             if outcome_id is not None:
                 continue
