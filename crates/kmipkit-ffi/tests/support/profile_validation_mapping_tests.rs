@@ -253,9 +253,7 @@ fn c_profile_result_release_invalidates_result_access_and_borrowed_id_spans() {
         length: 0,
     };
     assert_eq!(
-        unsafe {
-            kmipkit_profile_validation_result_profile_id_at_v1(handle, 0, &raw mut span)
-        },
+        unsafe { kmipkit_profile_validation_result_profile_id_at_v1(handle, 0, &raw mut span) },
         SUCCESS
     );
     assert!(!span.data.is_null());
@@ -263,9 +261,7 @@ fn c_profile_result_release_invalidates_result_access_and_borrowed_id_spans() {
 
     let mut count = u64::MAX;
     assert_eq!(
-        unsafe {
-            kmipkit_profile_validation_result_profile_id_count_v1(handle, &raw mut count)
-        },
+        unsafe { kmipkit_profile_validation_result_profile_id_count_v1(handle, &raw mut count) },
         ERROR_INVALID_INPUT
     );
     assert_eq!(count, 0);
@@ -277,15 +273,11 @@ fn c_profile_result_validators_reject_null_stale_and_invalid_transport_inputs() 
     let mut result = 0_usize as *mut kmipkit_profile_validation_result_t;
     let mut count = u64::MAX;
     assert_eq!(
-        unsafe {
-            kmipkit_profile_validation_result_validate_transport_v1(result, 1)
-        },
+        unsafe { kmipkit_profile_validation_result_validate_transport_v1(result, 1) },
         ERROR_INVALID_INPUT
     );
     assert_eq!(
-        unsafe {
-            kmipkit_profile_validation_result_validate_request_v1(result, ptr::null_mut())
-        },
+        unsafe { kmipkit_profile_validation_result_validate_request_v1(result, ptr::null_mut()) },
         ERROR_INVALID_INPUT
     );
     assert_eq!(
@@ -347,9 +339,7 @@ fn c_profile_result_validators_reject_null_stale_and_invalid_transport_inputs() 
         "a released result handle is stale"
     );
     assert_eq!(
-        unsafe {
-            kmipkit_profile_validation_result_profile_id_count_v1(result, &raw mut count)
-        },
+        unsafe { kmipkit_profile_validation_result_profile_id_count_v1(result, &raw mut count) },
         ERROR_INVALID_INPUT
     );
     assert_eq!(count, 0);
@@ -368,18 +358,12 @@ fn c_profile_result_validators_match_the_canonical_rust_result_methods() {
     let request_tree = request
         .with_ttlv(|tree| clone_structure_view(&tree))
         .expect("the request tree can be cloned for a borrowed ABI input");
-    let request_handle = make_handle(
-        Kind::Structure,
-        HandleValue::Structure(request_tree),
-    );
+    let request_handle = make_handle(Kind::Structure, HandleValue::Structure(request_tree));
     let response = profile_response(0x0000_001e);
     let response_tree = response
         .with_ttlv(|tree| clone_structure_view(&tree))
         .expect("the response tree can be cloned for a borrowed ABI input");
-    let response_handle = make_handle(
-        Kind::Structure,
-        HandleValue::Structure(response_tree),
-    );
+    let response_handle = make_handle(Kind::Structure, HandleValue::Structure(response_tree));
 
     let expected = resolved.validate_transport(kmipkit_protocol::ProfileTransport::Https);
     assert_profile_validation_outcome(
@@ -389,9 +373,7 @@ fn c_profile_result_validators_match_the_canonical_rust_result_methods() {
 
     let expected = resolved.validate_request(&request);
     assert_profile_validation_outcome(
-        unsafe {
-            kmipkit_profile_validation_result_validate_request_v1(result, request_handle)
-        },
+        unsafe { kmipkit_profile_validation_result_validate_request_v1(result, request_handle) },
         expected,
     );
 
@@ -451,10 +433,7 @@ fn c_profile_validators_reject_bad_context_size_and_version_without_profile_deta
     let request_tree = request
         .with_ttlv(|tree| clone_structure_view(&tree))
         .expect("the request tree can be cloned for a borrowed ABI input");
-    let request_handle = make_handle(
-        Kind::Structure,
-        HandleValue::Structure(request_tree),
-    );
+    let request_handle = make_handle(Kind::Structure, HandleValue::Structure(request_tree));
     let invalid_context = kmipkit_profile_validation_context_v1_t {
         struct_size: 0,
         abi_version: 99,
@@ -486,19 +465,11 @@ fn c_profile_result_message_validators_reject_malformed_ttlv_without_rule_detail
         Kind::ProfileValidationResult,
         HandleValue::ProfileValidationResult(resolved),
     );
-    let malformed_request = make_handle(
-        Kind::Structure,
-        HandleValue::Structure(Structure::new()),
-    );
-    let malformed_response = make_handle(
-        Kind::Structure,
-        HandleValue::Structure(Structure::new()),
-    );
+    let malformed_request = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+    let malformed_response = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
 
     assert_eq!(
-        unsafe {
-            kmipkit_profile_validation_result_validate_request_v1(result, malformed_request)
-        },
+        unsafe { kmipkit_profile_validation_result_validate_request_v1(result, malformed_request) },
         ERROR_PROTOCOL
     );
     assert!(last_profile_validation_error_is_absent());
@@ -522,6 +493,7 @@ fn c_profile_result_message_validators_reject_malformed_ttlv_without_rule_detail
 fn c_profile_context_validation_redacts_request_identifiers_and_context_values() {
     const REQUEST_IDENTIFIER: &str = "request-id-should-never-be-diagnostic";
     const CONTEXT_IDENTIFIER: &str = "context-id-should-never-be-diagnostic";
+    const RESPONSE_MARKER: &str = "raw-response-must-never-be-diagnostic";
     let request = profile_request([
         (0x0000_001e, Structure::new()),
         (
@@ -596,8 +568,39 @@ fn c_profile_context_validation_redacts_request_identifiers_and_context_values()
     assert!(!diagnostics.contains(REQUEST_IDENTIFIER));
     assert!(!diagnostics.contains(CONTEXT_IDENTIFIER));
     kmipkit_profile_validation_error_release(error);
+
+    let response = profile_response_with_marker(0x0000_0031, RESPONSE_MARKER);
+    let response_tree = response
+        .with_ttlv(|tree| clone_structure_view(&tree))
+        .expect("the response tree can be cloned for a borrowed ABI input");
+    let response_handle = make_handle(Kind::Structure, HandleValue::Structure(response_tree));
+    assert_eq!(
+        unsafe {
+            kmipkit_profile_validation_result_validate_response_with_context_v1(
+                result,
+                request_handle,
+                response_handle,
+                &raw const context,
+            )
+        },
+        ERROR_INVALID_INPUT
+    );
+    let (error, view) = last_profile_validation_view();
+    let diagnostics = [
+        span_text(view.error_code_data, view.error_code_length),
+        span_text(view.profile_id_data, view.profile_id_length),
+        span_text(view.requirement_id_data, view.requirement_id_length),
+        span_text(view.source_id_data, view.source_id_length),
+        span_text(view.source_locator_data, view.source_locator_length),
+    ]
+    .join(" ");
+    assert!(!diagnostics.contains(REQUEST_IDENTIFIER));
+    assert!(!diagnostics.contains(CONTEXT_IDENTIFIER));
+    assert!(!diagnostics.contains(RESPONSE_MARKER));
+    kmipkit_profile_validation_error_release(error);
     kmipkit_profile_validation_result_release(result);
     kmipkit_ttlv_structure_release(request_handle);
+    kmipkit_ttlv_structure_release(response_handle);
 }
 
 #[cfg(feature = "coverage-c-consumer")]
@@ -924,6 +927,40 @@ fn profile_response(operation: u32) -> ResponseMessage {
         ),
     ]))
     .expect("profile test Response Message has a valid generic TTLV shape")
+}
+
+fn profile_response_with_marker(operation: u32, marker: &str) -> ResponseMessage {
+    ResponseMessage::try_from_ttlv(profile_structure([
+        profile_item(
+            0x0042_007a,
+            Value::structure(profile_structure([
+                profile_item(
+                    0x0042_0069,
+                    Value::structure(profile_structure([
+                        profile_item(0x0042_006a, Value::integer(2)),
+                        profile_item(0x0042_006b, Value::integer(1)),
+                    ])),
+                ),
+                profile_item(0x0042_0092, Value::date_time(1_700_000_000)),
+                profile_item(0x0042_000d, Value::integer(1)),
+            ])),
+        ),
+        profile_item(
+            0x0042_000f,
+            Value::structure(profile_structure([
+                profile_item(0x0042_005c, Value::enumeration(operation)),
+                profile_item(0x0042_007f, Value::enumeration(0)),
+                profile_item(
+                    0x0042_007c,
+                    Value::structure(profile_structure([profile_item(
+                        0x0042_0094,
+                        Value::text_string(marker.to_owned()),
+                    )])),
+                ),
+            ])),
+        ),
+    ]))
+    .expect("profile test Response Message with a marker has valid generic TTLV shape")
 }
 
 fn assert_profile_validation_outcome(
