@@ -21,6 +21,7 @@ from . import (
 )
 from .extensions import with_extension
 from .credentials import CredentialType, CredentialValue
+from .errors import ProfileValidationDetails, ProfileValidationError
 
 __all__ = [
     "client",
@@ -29,6 +30,8 @@ __all__ = [
     "credentials",
     "CredentialType",
     "CredentialValue",
+    "ProfileValidationDetails",
+    "ProfileValidationError",
     "errors",
     "extensions",
     "messages",

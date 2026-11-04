@@ -137,6 +137,18 @@ class ProfileValidationDetails:
     batch_item_index: int | None
 
 
+class ProfileValidationError(KmipKitError):
+    """A redacted profile validation failure with optional safe source details."""
+
+    category = "profile_validation"
+
+    def __init__(self, details: ProfileValidationDetails | None = None) -> None:
+        self.profile_validation = details
+        self.details = details
+        super().__init__()
+        self.args = ("KMIPKit profile validation failed (profile_validation)",)
+
+
 def _known_or_raw(enum_type: type[_IntEnum], value: int) -> _IntEnum | int:
     try:
         return enum_type(value)

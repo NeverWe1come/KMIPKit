@@ -631,6 +631,44 @@ class ProfileValidationSelection:
             total_bytes += encoded_length
         object.__setattr__(self, "profile_ids", tuple(self.profile_ids))
 
+    def validate(self) -> ProfileValidationResult:
+        """Resolve this explicit selection through the canonical Rust validator."""
+        selection_record, _, _, owners, _ = _profile_validation_records(
+            self, None, None
+        )
+        output = ffi.new("kmipkit_profile_validation_result_t **")
+        with _NATIVE_CALL_LOCK:
+            try:
+                status = int(
+                    lib.kmipkit_profile_validation_selection_validate_v1(
+                        selection_record, output
+                    )
+                )
+            except (OverflowError, TypeError, ValueError):
+                errors.raise_for_status(4)
+            _raise_profile_validation_status(status)
+        # The encoded selection arrays remain owned through the native call.
+        del owners
+        if output[0] == ffi.NULL:
+            errors.raise_for_status(4)
+        try:
+            profile_ids = _profile_validation_result_ids(
+                output[0],
+                count_name="kmipkit_profile_validation_result_profile_id_count_v1",
+                item_name="kmipkit_profile_validation_result_profile_id_at_v1",
+            )
+            requirement_ids = _profile_validation_result_ids(
+                output[0],
+                count_name="kmipkit_profile_validation_result_requirement_id_count_v1",
+                item_name="kmipkit_profile_validation_result_requirement_id_at_v1",
+            )
+        except BaseException:
+            lib.kmipkit_profile_validation_result_release(output[0])
+            raise
+        return ProfileValidationResult._from_native(
+            output[0], profile_ids, requirement_ids
+        )
+
 
 @dataclass(frozen=True, slots=True, repr=False)
 class ProfileObjectState:
@@ -864,6 +902,181 @@ def _profile_validation_records(
             errors.raise_for_status(4)
         options_record = _request_options_record(options)
     return selection_record, context_record, options_record, owners, wipe_buffers
+
+
+def _raise_profile_validation_status(status: int) -> None:
+    if status == 0:
+        return
+    details = _read_profile_validation_details()
+    if details is not None:
+        raise errors.ProfileValidationError(details)
+    errors.raise_for_status(status)
+
+
+def _profile_validation_result_ids(
+    handle: Any, *, count_name: str, item_name: str
+) -> tuple[str, ...]:
+    count_output = ffi.new("uint64_t *")
+    status = int(getattr(lib, count_name)(handle, count_output))
+    _raise_profile_validation_status(status)
+    count = int(count_output[0])
+    if count > _MAX_BATCH_ITEMS:
+        errors.raise_for_status(6)
+    values: list[str] = []
+    for index in range(count):
+        span = ffi.new("kmipkit_byte_span_v1_t *")
+        _raise_profile_validation_status(
+            int(getattr(lib, item_name)(handle, index, span))
+        )
+        length = int(span.length)
+        if length == 0 or length > _MAX_TEXT_BYTES or span.data == ffi.NULL:
+            errors.raise_for_status(4)
+        try:
+            value = ffi.buffer(span.data, length)[:].decode("utf-8", errors="strict")
+        except (UnicodeDecodeError, OverflowError, ValueError):
+            errors.raise_for_status(4)
+        if not value or "\x00" in value:
+            errors.raise_for_status(4)
+        values.append(value)
+    return tuple(values)
+
+
+class ProfileValidationResult(NativeHandle):
+    """Owned resolved profiles and requirement IDs with Rust-backed validators."""
+
+    __slots__ = ("_profile_ids", "_requirement_ids")
+    _release_name = "kmipkit_profile_validation_result_release"
+
+    def __init__(
+        self,
+        handle: Any,
+        profile_ids: tuple[str, ...],
+        requirement_ids: tuple[str, ...],
+        *,
+        _token: object,
+    ) -> None:
+        super().__init__(handle, _token=_token)
+        self._profile_ids = tuple(profile_ids)
+        self._requirement_ids = tuple(requirement_ids)
+
+    @classmethod
+    def _from_native(
+        cls, handle: Any, profile_ids: tuple[str, ...], requirement_ids: tuple[str, ...]
+    ) -> ProfileValidationResult:
+        return _wrap_owned_handle(cls, handle, profile_ids, requirement_ids)
+
+    @property
+    def profile_ids(self) -> tuple[str, ...]:
+        """Resolved profile IDs in canonical order, copied while the handle was live."""
+        return self._profile_ids
+
+    @property
+    def requirement_ids(self) -> tuple[str, ...]:
+        """Applicable requirement IDs copied in order while the handle was live."""
+        return self._requirement_ids
+
+    def validate_transport(self, transport: ProfileTransport | int) -> None:
+        """Validate one transport selector without passing unknown values to Rust."""
+        if isinstance(transport, bool):
+            errors.raise_for_status(4)
+        try:
+            selected = ProfileTransport(transport)
+        except (TypeError, ValueError):
+            errors.raise_for_status(4)
+        self._validate_native(
+            "kmipkit_profile_validation_result_validate_transport_v1", int(selected)
+        )
+
+    def validate_request(self, request: ttlv.Structure) -> None:
+        """Validate rules observable in one outbound Request Message."""
+        from . import messages as _messages
+
+        if not isinstance(request, ttlv.Structure):
+            errors.raise_for_status(4)
+        self._validate_native(
+            "kmipkit_profile_validation_result_validate_request_v1",
+            _messages._as_client_structure(request),
+        )
+
+    def validate_request_with_context(
+        self, request: ttlv.Structure, context: ProfileValidationContext
+    ) -> None:
+        """Validate one outbound Request Message using caller-attested state."""
+        from . import messages as _messages
+
+        if not isinstance(request, ttlv.Structure):
+            errors.raise_for_status(4)
+        self._validate_native(
+            "kmipkit_profile_validation_result_validate_request_with_context_v1",
+            _messages._as_client_structure(request),
+            context=context,
+        )
+
+    def validate_response(
+        self, request: ttlv.Structure, response: ttlv.Structure
+    ) -> None:
+        """Validate a received Response Message against its original request."""
+        from . import messages as _messages
+
+        if not isinstance(request, ttlv.Structure) or not isinstance(
+            response, ttlv.Structure
+        ):
+            errors.raise_for_status(4)
+        self._validate_native(
+            "kmipkit_profile_validation_result_validate_response_v1",
+            _messages._as_client_structure(request),
+            _messages._as_client_structure(response),
+        )
+
+    def validate_response_with_context(
+        self,
+        request: ttlv.Structure,
+        response: ttlv.Structure,
+        context: ProfileValidationContext,
+    ) -> None:
+        """Validate a response exchange using the same caller-attested state."""
+        from . import messages as _messages
+
+        if not isinstance(request, ttlv.Structure) or not isinstance(
+            response, ttlv.Structure
+        ):
+            errors.raise_for_status(4)
+        self._validate_native(
+            "kmipkit_profile_validation_result_validate_response_with_context_v1",
+            _messages._as_client_structure(request),
+            _messages._as_client_structure(response),
+            context=context,
+        )
+
+    def _validate_native(
+        self,
+        function_name: str,
+        *arguments: object,
+        context: ProfileValidationContext | None = None,
+    ) -> None:
+        owners: list[Any] = []
+        wipe_buffers: list[tuple[Any, int]] = []
+        context_record: Any = ffi.NULL
+        if context is not None:
+            _, context_record, _, owners, wipe_buffers = _profile_validation_records(
+                ProfileValidationSelection(self._profile_ids), context, None
+            )
+        with _NATIVE_CALL_LOCK:
+            try:
+                handle = self._pointer()
+                native_arguments = (handle, *arguments)
+                if context is not None:
+                    native_arguments += (context_record,)
+                try:
+                    status = int(getattr(lib, function_name)(*native_arguments))
+                except (OverflowError, TypeError, ValueError):
+                    errors.raise_for_status(4)
+                _raise_profile_validation_status(status)
+            finally:
+                for buffer, length in wipe_buffers:
+                    ffi.buffer(buffer, length)[:] = b"\x00" * length
+        # Keep temporary context arrays and encoded values live through the native call.
+        del owners
 
 
 @dataclass(frozen=True, slots=True)
@@ -5996,6 +6209,11 @@ __all__ = [
     "CredentialEncoding",
     "Endpoint",
     "EndpointKind",
+    "ProfileObjectState",
+    "ProfileTransport",
+    "ProfileValidationContext",
+    "ProfileValidationResult",
+    "ProfileValidationSelection",
     "HashResponse",
     "GetUsageAllocationResponse",
     "ObtainLeaseResponse",

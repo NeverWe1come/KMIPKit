@@ -7,8 +7,14 @@ from pathlib import Path
 import pytest
 
 from _test_support import mtls_transport_config
-from kmipkit import _handles, client, errors, extensions, messages, ttlv
-from kmipkit._handles import _wrap_owned_handle
+from kmipkit import (
+    ProfileValidationError,
+    _handles,
+    client,
+    errors,
+    extensions,
+    ttlv,
+)
 
 _TLS_FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
 
@@ -195,6 +201,7 @@ class _ProfileValidationLib:
         self.released: list[object] = []
         self.span_owners: list[object] = []
         self.context_bytes_during_call: bytes | None = None
+        self.context_values_during_calls: list[bytes] = []
         self.context_buffer: object | None = None
         self.context_length = 0
 
@@ -208,7 +215,9 @@ class _ProfileValidationLib:
         out_count[0] = len(self.profile_ids)
         return 0
 
-    def kmipkit_profile_validation_result_profile_id_at_v1(self, result, index, out_span):
+    def kmipkit_profile_validation_result_profile_id_at_v1(
+        self, result, index, out_span
+    ):
         return self._write_span(self.profile_ids, index, out_span)
 
     def kmipkit_profile_validation_result_requirement_id_count_v1(
@@ -224,6 +233,10 @@ class _ProfileValidationLib:
 
     def kmipkit_profile_validation_result_release(self, result):
         self.released.append(result)
+
+    @staticmethod
+    def kmipkit_ttlv_structure_release(handle):
+        ttlv.lib.kmipkit_ttlv_structure_release(handle)
 
     def kmipkit_profile_validation_result_validate_transport_v1(
         self, result, transport
@@ -252,12 +265,6 @@ class _ProfileValidationLib:
             "response_with_context", result, request, response, context
         )
 
-    def kmipkit_request_message_release(self, handle):
-        self.released.append(handle)
-
-    def kmipkit_response_message_release(self, handle):
-        self.released.append(handle)
-
     @staticmethod
     def _pointer_for_slot(slot, address: int):
         return client.ffi.cast(client.ffi.typeof(slot[0]), address)
@@ -282,6 +289,7 @@ class _ProfileValidationLib:
             self.context_bytes_during_call = client.ffi.buffer(
                 self.context_buffer, self.context_length
             )[:]
+            self.context_values_during_calls.append(self.context_bytes_during_call)
 
 
 def _profile_result_from_mock(monkeypatch, native: _ProfileValidationLib):
@@ -294,7 +302,6 @@ def _profile_result_from_mock(monkeypatch, native: _ProfileValidationLib):
         )
     monkeypatch.setattr(client, "lib", native)
     monkeypatch.setattr(_handles, "lib", native)
-    monkeypatch.setattr(messages, "_native_lib", native)
     return client.ProfileValidationSelection(("profile-a", "profile-b")).validate()
 
 
@@ -314,17 +321,11 @@ def test_profile_selection_resolves_ordered_ids_into_an_immutable_snapshot(monke
     assert result.profile_ids == ("profile-a", "profile-b")
 
 
-def test_profile_result_calls_all_five_validators_and_wipes_context_buffers(monkeypatch):
+def test_profile_result_calls_all_validators_with_live_context_buffers(monkeypatch):
     native = _ProfileValidationLib()
     result = _profile_result_from_mock(monkeypatch, native)
-    request = _wrap_owned_handle(
-        messages.RequestMessage,
-        client.ffi.cast("kmipkit_request_message_t *", 102),
-    )
-    response = _wrap_owned_handle(
-        messages.ResponseMessage,
-        client.ffi.cast("kmipkit_response_message_t *", 103),
-    )
+    request = ttlv.ttlv_structure_create()
+    response = ttlv.ttlv_structure_create()
     context = client.ProfileValidationContext().with_object_state(
         0, client.ProfileObjectState("caller-context-secret")
     )
@@ -332,8 +333,6 @@ def test_profile_result_calls_all_five_validators_and_wipes_context_buffers(monk
     result.validate_transport(client.ProfileTransport.HTTPS)
     result.validate_request(request)
     result.validate_request_with_context(request, context)
-    request_context = native.context_buffer
-    request_context_length = native.context_length
     result.validate_response(request, response)
     result.validate_response_with_context(request, response, context)
 
@@ -346,14 +345,10 @@ def test_profile_result_calls_all_five_validators_and_wipes_context_buffers(monk
     ]
     assert native.calls[1][1][1] == client.ProfileTransport.HTTPS.value
     assert native.context_bytes_during_call == b"caller-context-secret"
-    assert (
-        client.ffi.buffer(request_context, request_context_length)[:]
-        == b"\x00" * request_context_length
-    )
-    assert (
-        client.ffi.buffer(native.context_buffer, native.context_length)[:]
-        == b"\x00" * native.context_length
-    )
+    assert native.context_values_during_calls == [
+        b"caller-context-secret",
+        b"caller-context-secret",
+    ]
 
     request.close()
     response.close()
@@ -367,6 +362,18 @@ def test_profile_transport_rejects_unknown_values_before_native_call(monkeypatch
 
     with pytest.raises(errors.InvalidInputError):
         result.validate_transport(999)
+
+    assert len(native.calls) == before
+    result.close()
+
+
+def test_profile_result_rejects_non_ttlv_inputs_before_native_call(monkeypatch):
+    native = _ProfileValidationLib()
+    result = _profile_result_from_mock(monkeypatch, native)
+    before = len(native.calls)
+
+    with pytest.raises(errors.InvalidInputError):
+        result.validate_request(object())
 
     assert len(native.calls) == before
     result.close()
@@ -386,7 +393,7 @@ def test_profile_result_context_manager_and_repeated_close_release_once(monkeypa
     assert native.released.count(handle) == 1
 
 
-def test_profile_validation_error_keeps_safe_details_and_redacts_caller_values(monkeypatch):
+def test_profile_validation_error_keeps_details_and_redacts_caller_values(monkeypatch):
     native = _ProfileValidationLib(validator_status=4)
     details = errors.ProfileValidationDetails(
         error_code="profile_unavailable",
@@ -402,10 +409,8 @@ def test_profile_validation_error_keeps_safe_details_and_redacts_caller_values(m
     caller_context_value = "caller-context-secret"
     raw_body = b"raw-kmip-body-secret"
     result = _profile_result_from_mock(monkeypatch, native)
-    request = _wrap_owned_handle(
-        messages.RequestMessage,
-        client.ffi.cast("kmipkit_request_message_t *", 104),
-    )
+    request = ttlv.ttlv_structure_create()
+    request._owner = raw_body
     context = client.ProfileValidationContext().with_object_state(
         0, client.ProfileObjectState(caller_context_value)
     )
@@ -415,6 +420,7 @@ def test_profile_validation_error_keeps_safe_details_and_redacts_caller_values(m
 
     assert failure.value.profile_validation is details
     assert failure.value.details is details
+    assert isinstance(failure.value, ProfileValidationError)
     rendered = f"{failure.value!r} {failure.value} {details!r}"
     assert caller_context_value not in rendered
     assert raw_body.decode() not in rendered
