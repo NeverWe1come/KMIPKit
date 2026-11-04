@@ -35,6 +35,16 @@ MODEL_SUFFIXES = {
     "ProfileValidationContext": ("", "::new", "::with_object_state"),
     "ProfileValidationSelection": ("", "::new", "::profile_ids", "::validate"),
 }
+RESULT_SUFFIXES = (
+    "",
+    "::profile_ids",
+    "::requirement_ids",
+    "::validate_request",
+    "::validate_request_with_context",
+    "::validate_response",
+    "::validate_response_with_context",
+    "::validate_transport",
+)
 
 
 class T102ProfileModelReexportMappingTests(unittest.TestCase):
@@ -104,6 +114,51 @@ class T102ProfileModelReexportMappingTests(unittest.TestCase):
                 and any(f"::{model}" in name for model in MODEL_SUFFIXES)
             },
         )
+
+    def test_profile_validation_result_has_exact_four_language_parity(self) -> None:
+        expected = {
+            (package, f"{crate}::ProfileValidationResult{suffix}")
+            for package, crate in REEXPORT_PACKAGES.items()
+            for suffix in RESULT_SUFFIXES
+        }
+        self.assertEqual(16, len(expected))
+        declarations = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.manifest["publicDeclarations"]
+        }
+        self.assertTrue(expected <= declarations.keys())
+
+        for package, export_name in sorted(expected):
+            row = declarations[(package, export_name)]
+            with self.subTest(package=package, export_name=export_name):
+                self.assertEqual("client_profile_validation", row["capabilityId"])
+                self.assertEqual("declared", row["declarationState"])
+                self.assertEqual("four-language", row["parityScope"])
+                self.assertTrue(
+                    {
+                        "KMIPKIT-0010-FR-005",
+                        "KMIPKIT-0010-FR-012",
+                        "KMIPKIT-0010-FR-013",
+                        "KMIPKIT-0010-FR-014",
+                        "KMIPKIT-0010-FR-019",
+                    } <= set(row["requirementIds"])
+                )
+                self.assertEqual(
+                    {"rust", "c", "java", "python"},
+                    set(row["languageMappings"]),
+                )
+                self.assertEqual(
+                    {
+                        "kind": "feature-specification",
+                        "path": "specs/010-profile-conformance/spec.md",
+                        "status": "Accepted",
+                    },
+                    {key: row["approvalSource"].get(key)
+                     for key in ("kind", "path", "status")},
+                )
+                self.assertTrue(row["approvalSource"].get("evidence"))
+                self.assertNotIn("candidateSpecId", row)
+                self.assertNotIn("blockedReason", row)
 
 
 if __name__ == "__main__":

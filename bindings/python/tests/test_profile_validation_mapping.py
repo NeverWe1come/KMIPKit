@@ -38,6 +38,21 @@ def test_profile_validation_types_expose_caller_owned_state() -> None:
     assert "object-7" not in repr(state)
 
 
+def test_profile_validation_result_exposes_all_rust_backed_validators() -> None:
+    assert callable(client.ProfileValidationSelection.validate)
+    result_type = client.ProfileValidationResult
+    assert callable(result_type.close)
+    assert callable(result_type.validate_transport)
+    assert callable(result_type.validate_request)
+    assert callable(result_type.validate_request_with_context)
+    assert callable(result_type.validate_response)
+    assert callable(result_type.validate_response_with_context)
+    assert callable(result_type.__enter__)
+    assert callable(result_type.__exit__)
+    assert hasattr(result_type, "profile_ids")
+    assert hasattr(result_type, "requirement_ids")
+
+
 def test_profile_validation_records_copy_tri_state_context_into_one_call() -> None:
     selection = client.ProfileValidationSelection(("baseline_client",))
     state = client.ProfileObjectState("caller-object-id").with_usage_limits_present(True)

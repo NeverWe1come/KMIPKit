@@ -88,6 +88,66 @@ fn c_selection_rejects_offsets_outside_the_flat_buffer() {
 }
 
 #[test]
+fn c_profile_selection_resolution_fails_closed_with_redacted_profile_details() {
+    const BASELINE: &[u8] = b"KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let offsets = [0_u64];
+    let lengths = [BASELINE.len() as u64];
+    let selection = kmipkit_profile_validation_selection_v1_t {
+        struct_size: u32::try_from(size_of::<kmipkit_profile_validation_selection_v1_t>())
+            .expect("C ABI selection size fits u32"),
+        abi_version: 1,
+        profile_id_data: BASELINE.as_ptr(),
+        profile_id_data_length: BASELINE.len() as u64,
+        profile_id_offsets: offsets.as_ptr(),
+        profile_id_lengths: lengths.as_ptr(),
+        profile_id_count: 1,
+    };
+    let mut result = 1_usize as *mut kmipkit_profile_validation_result_t;
+
+    assert_eq!(
+        kmipkit_profile_validation_selection_validate_v1(&raw const selection, &raw mut result),
+        ERROR_INVALID_INPUT
+    );
+    assert!(result.is_null(), "a failed resolution must clear its output");
+
+    let (error, view) = last_profile_validation_view();
+    assert_eq!(span_text(view.error_code_data, view.error_code_length), "profile_unavailable");
+    assert_eq!(
+        span_text(view.profile_id_data, view.profile_id_length),
+        "KMIPKIT-PROFILE-BASELINE-CLIENT"
+    );
+    assert_eq!(view.source_kind, PROFILE_ERROR_SOURCE_CLAUSE);
+    assert_eq!(
+        span_text(view.requirement_id_data, view.requirement_id_length),
+        "KMIPKIT-REQ-SPEC-14.1-001"
+    );
+    kmipkit_profile_validation_error_release(error);
+}
+
+#[test]
+fn c_profile_result_accessors_reject_null_handles_and_clear_scalar_outputs() {
+    let mut profile_count = u64::MAX;
+    assert_eq!(
+        kmipkit_profile_validation_result_profile_id_count_v1(
+            ptr::null_mut(),
+            &raw mut profile_count,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(profile_count, 0);
+
+    let mut requirement_count = u64::MAX;
+    assert_eq!(
+        kmipkit_profile_validation_result_requirement_id_count_v1(
+            ptr::null_mut(),
+            &raw mut requirement_count,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(requirement_count, 0);
+}
+
+#[test]
 fn profile_validation_details_remain_owned_after_last_error_changes() {
     let validation_error = ProfileValidationSelection::new(["KMIPKIT-PROFILE-BASELINE-CLIENT"])
         .validate()

@@ -282,6 +282,7 @@ unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_async_output_errors_clear() -> i32;
     fn kmipkit_client_abi_c_consumer_async_request_models() -> i32;
     fn kmipkit_client_abi_c_consumer_profile_readiness_contract() -> i32;
+    fn kmipkit_client_abi_c_consumer_profile_validation_result_contract() -> i32;
     fn shared_ttlv_fixture_preserves_open_values_and_order(
         raw_tags: *const u32,
         enumeration_value: u32,
@@ -341,6 +342,13 @@ fn compiled_c_consumer_exposes_profile_readiness_and_catalog_contract() {
     // SAFETY: The C helper allocates and releases its own readiness handles and only reads spans
     // borrowed from a live handle. Catalog spans point to static generated rows.
     let result = unsafe { kmipkit_client_abi_c_consumer_profile_readiness_contract() };
+    assert_eq!(result, 1);
+}
+
+#[test]
+fn compiled_c_consumer_exposes_profile_validation_result_resolution_and_errors() {
+    // SAFETY: The C helper owns its selection buffers and all returned error handles.
+    let result = unsafe { kmipkit_client_abi_c_consumer_profile_validation_result_contract() };
     assert_eq!(result, 1);
 }
 

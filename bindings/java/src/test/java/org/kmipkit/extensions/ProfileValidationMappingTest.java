@@ -11,6 +11,7 @@ import java.net.SocketTimeoutException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import org.kmipkit.ttlv.TtlvStructure;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,28 @@ final class ProfileValidationMappingTest {
 
         assertEquals(List.of("baseline_client"), selection.profileIds());
         assertEquals(List.of(new ProfileValidationContext.Entry(0, state)), context.objectStates());
+    }
+
+    @Test
+    void profileValidationResultExposesTheCompleteTypedValidationSurface() throws Exception {
+        var resolver = ProfileValidationSelection.class.getMethod("validate");
+        assertEquals(ProfileValidationResult.class, resolver.getReturnType());
+        assertEquals(List.class, ProfileValidationResult.class.getMethod("profileIds").getReturnType());
+        assertEquals(List.class, ProfileValidationResult.class.getMethod("requirementIds").getReturnType());
+        assertEquals(void.class, ProfileValidationResult.class
+                .getMethod("validateTransport", ProfileTransport.class).getReturnType());
+        assertEquals(void.class, ProfileValidationResult.class
+                .getMethod("validateRequest", TtlvStructure.class).getReturnType());
+        assertEquals(void.class, ProfileValidationResult.class
+                .getMethod("validateRequestWithContext", TtlvStructure.class,
+                        ProfileValidationContext.class).getReturnType());
+        assertEquals(void.class, ProfileValidationResult.class
+                .getMethod("validateResponse", TtlvStructure.class, TtlvStructure.class)
+                .getReturnType());
+        assertEquals(void.class, ProfileValidationResult.class
+                .getMethod("validateResponseWithContext", TtlvStructure.class,
+                        TtlvStructure.class, ProfileValidationContext.class).getReturnType());
+        assertEquals(void.class, ProfileValidationResult.class.getMethod("close").getReturnType());
     }
 
     @Test

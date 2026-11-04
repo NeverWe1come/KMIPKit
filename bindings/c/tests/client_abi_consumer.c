@@ -9240,6 +9240,46 @@ static int profile_span_equals(kmipkit_byte_span_v1_t span, const char *expected
         memcmp(span.data, expected, length) == 0;
 }
 
+int kmipkit_client_abi_c_consumer_profile_validation_result_contract(void) {
+    static const uint8_t baseline[] = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    static const uint64_t profile_id_offsets[] = {0};
+    static const uint64_t profile_id_lengths[] = {sizeof(baseline) - 1};
+    kmipkit_profile_validation_selection_v1_t selection = {0};
+    kmipkit_profile_validation_result_t *result =
+        (kmipkit_profile_validation_result_t *)(uintptr_t)1;
+    kmipkit_profile_validation_error_t *error = 0;
+    kmipkit_profile_validation_error_view_v1_t error_view = {0};
+    uint64_t profile_count = 1;
+
+    selection.struct_size = (uint32_t)sizeof(selection);
+    selection.abi_version = 1;
+    selection.profile_id_data = baseline;
+    selection.profile_id_data_length = sizeof(baseline) - 1;
+    selection.profile_id_offsets = profile_id_offsets;
+    selection.profile_id_lengths = profile_id_lengths;
+    selection.profile_id_count = 1;
+    error_view.struct_size = (uint32_t)sizeof(error_view);
+    error_view.abi_version = 1;
+
+    if (kmipkit_profile_validation_selection_validate_v1(&selection, &result) !=
+            T076_ERROR_INVALID_INPUT || result != 0 ||
+        kmipkit_last_error_profile_validation_error_get_v1(&error) != 0 || error == 0 ||
+        kmipkit_profile_validation_error_view_get_v1(error, &error_view) != 0 ||
+        error_view.source_kind != 1 ||
+        !profile_span_equals(
+            (kmipkit_byte_span_v1_t){error_view.error_code_data, error_view.error_code_length},
+            "profile_unavailable") ||
+        !profile_span_equals(
+            (kmipkit_byte_span_v1_t){error_view.profile_id_data, error_view.profile_id_length},
+            "KMIPKIT-PROFILE-BASELINE-CLIENT")) {
+        kmipkit_profile_validation_error_release(error);
+        return 0;
+    }
+    kmipkit_profile_validation_error_release(error);
+    return kmipkit_profile_validation_result_profile_id_count_v1(0, &profile_count) ==
+            T076_ERROR_INVALID_INPUT && profile_count == 0;
+}
+
 int kmipkit_client_abi_c_consumer_profile_readiness_contract(void) {
     kmipkit_profile_readiness_t *readiness = 0;
     kmipkit_profile_readiness_t *long_id_readiness = 0;
