@@ -32,8 +32,7 @@ class T102ExportRequestIdentifierMemberMappingTests(unittest.TestCase):
             if row["operationId"] == OPERATION_ID
         )
 
-    def test_identifier_member_maps_to_the_existing_four_language_builder(self) -> None:
-        declaration = self.declarations[DECLARATION_ID]
+    def _assert_capability_mapping(self, declaration: dict[str, object]) -> None:
         constructor = self.by_name[
             ("rust-kmipkit-protocol", "kmipkit_protocol::ExportRequest::new")
         ]
@@ -44,9 +43,6 @@ class T102ExportRequestIdentifierMemberMappingTests(unittest.TestCase):
             "name": EXPORT_NAME,
         }
 
-        self.assertEqual(EXPORT_NAME, declaration["exportName"])
-        self.assertEqual("verified", declaration["declarationState"])
-        self.assertEqual(OPERATION_ID, declaration["capabilityId"])
         self.assertEqual(OWNER, declaration["approvalSource"]["path"])
         self.assertEqual("Approved", declaration["approvalSource"]["status"])
         self.assertEqual(constructor["requirementIds"], declaration["requirementIds"])
@@ -54,6 +50,14 @@ class T102ExportRequestIdentifierMemberMappingTests(unittest.TestCase):
         self.assertIn(MAPPING_EVIDENCE, declaration["parityEvidenceIds"])
         self.assertIn(DECLARATION_ID, self.operation["declarations"]["rust"])
         self.assertIn(MAPPING_EVIDENCE, self.operation["parityEvidenceIds"])
+
+    def test_identifier_member_maps_to_the_existing_four_language_builder(self) -> None:
+        declaration = self.declarations[DECLARATION_ID]
+
+        self.assertEqual(EXPORT_NAME, declaration["exportName"])
+        self.assertEqual("verified", declaration["declarationState"])
+        self.assertEqual(OPERATION_ID, declaration["capabilityId"])
+        self._assert_capability_mapping(declaration)
 
     def test_mapping_is_grounded_in_the_approved_table_and_wire_field(self) -> None:
         owner = (ROOT / OWNER).read_text(encoding="utf-8")
@@ -69,7 +73,11 @@ class T102ExportRequestIdentifierMemberMappingTests(unittest.TestCase):
             ROOT / "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs"
         ).read_text(encoding="utf-8")
         self.assertIn("OASIS KMIP v2.1 §6.1.18", operation_test)
-        self.assertIn("UNIQUE_IDENTIFIER", operation_test)
+        self.assertIn(
+            "request_preserves_all_explicit_optional_choices_and_omits_absent_fields",
+            operation_test,
+        )
+        self.assertIn("0x0042_0094", operation_test)
 
 
 if __name__ == "__main__":
