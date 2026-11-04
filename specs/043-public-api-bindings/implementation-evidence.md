@@ -11091,3 +11091,19 @@ Reproduction commands (run from the repository root):
 - Focused Green and Refactor suite: `py -3 -B -m unittest tools.api_manifest.tests.test_t102_derive_key_parameter_mapping tools.api_manifest.tests.test_t102_derive_key_request_mapping tools.api_manifest.tests.test_t102_transfer_request_serializer_mapping tools.api_manifest.tests.test_t102_macro_lot_partition.T102MacroLotPartitionTests.test_macro_lots_are_disjoint_exhaustive_and_identity_stable`.
 - Generated API outputs: `py -3 -B tools/api_manifest/generate.py --check`.
 - Formatting and whitespace: `cargo fmt --all --check` and `git diff --check`.
+
+
+### T102 Macro-Lot 2 Interop request member mapping (2026-11-04)
+
+Red `63932b5ca` adds exact mapping requirements for the existing `kmipkit_protocol::InteropRequest::with_extension` and `InteropRequest::with_interop_identifier` declarations. The focused test fails on both because each is still blocked and absent from the verified operation inventory. The approved owner is `specs/028-diagnostics-interop/spec.md` (KMIPKIT-0042); OASIS KMIP Specification v2.1 §6.1.26 Tables 241–243 defines the operation, and Table 241 requires the Interop Function and Interop Identifier fields.
+
+Green `bc76d5c6b` maps both declarations to the existing four-language Interop capability and builder, inheriting the verified constructor's approved requirements. It updates the operation inventory and regenerates the public API projections. Refactor `1593d5d91` extracts reusable source assertions and formats the declaration set. The C, Java, and Python mappings identify the existing operation builders at the capability level; they do not claim direct foreign wrappers for these two Rust members. Existing protocol tests cover identifier lending and extension preservation/redaction/rejection. No runtime or wire behavior changed.
+
+Verification: the focused Interop request-member mapping tests pass 2/2. The final combined Interop mapping/parity/serializer and macro-lot verification results are recorded with the next batch closeout. T102 decreases 65→63 blocked candidates; public declaration/exclusion totals remain 6,380/8,713. Macro-Lot 2 remains open, with full T102 and the 151-test manifest-v2 suites reserved for lot closure. No protocol-conformance, interoperability, profile-support, or certification claim is made.
+
+Reproduction commands (run from the repository root):
+
+- Red, expected blocked-state failures: `py -3 -B -m unittest tools.api_manifest.tests.test_t102_interop_request_members_mapping`.
+- Focused mapping: `py -3 -B -m unittest tools.api_manifest.tests.test_t102_interop_request_members_mapping`.
+- Generated API outputs: `py -3 -B tools/api_manifest/generate.py --check`.
+- Formatting and whitespace: `cargo fmt --all --check` and `git diff --check`.
