@@ -1,11 +1,60 @@
 from __future__ import annotations
 
+import struct
+import ssl
 from types import SimpleNamespace
+from pathlib import Path
 
 import pytest
-from _test_support import batch_result_test_symbols
-from kmipkit import client, errors, extensions
+from _test_support import (
+    batch_result_test_symbols,
+    mtls_transport_config,
+    read_ttlv_frame,
+    start_tls13_mtls_peer,
+    ttlv_enumeration,
+    ttlv_item,
+    ttlv_structure,
+)
+from kmipkit import client, errors, extensions, ttlv
 from kmipkit._client_ffi import ffi
+
+_TLS_FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
+
+
+def _certify_wire_response_message() -> bytes:
+    version = ttlv_structure(
+        0x420069,
+        ttlv_item(0x42006A, 2, struct.pack(">i", 2)),
+        ttlv_item(0x42006B, 2, struct.pack(">i", 1)),
+    )
+    header = ttlv_structure(
+        0x42007A,
+        version,
+        ttlv_item(0x420092, 9, struct.pack(">q", 1)),
+        ttlv_item(0x42000D, 2, struct.pack(">i", 3)),
+    )
+    items = tuple(
+        ttlv_structure(
+            0x42000F,
+            ttlv_enumeration(0x42005C, 6),
+            ttlv_item(0x420093, 8, item_id),
+            ttlv_enumeration(0x42007F, 1),
+            ttlv_enumeration(0x42007E, 5),
+        )
+        for item_id in (b"item-18", b"item-19", b"item-20")
+    )
+    return ttlv_structure(0x42007B, header, *items)
+
+
+def _single_child_structure(
+    child_tag: int, value: ttlv.Value, limits: ttlv.CodecLimits
+) -> ttlv.Structure:
+    with ttlv.raw_tag_from_raw(child_tag) as raw_tag:
+        with ttlv.raw_tag_try_checked(raw_tag) as tag:
+            with value:
+                with ttlv.ttlv_item_create(tag, value, limits) as item:
+                    with ttlv.ttlv_structure_create() as empty:
+                        return ttlv.ttlv_structure_with_item(empty, item, limits)
 
 
 def test_certify_builder_preserves_open_request_type_and_sensitive_bytes(monkeypatch) -> None:
@@ -116,6 +165,139 @@ def test_certify_builder_allows_identifier_only_request(monkeypatch) -> None:
     assert calls[0][0] == "kmipkit_client_batch_item_certify"
     assert calls[0][1][1:3] == (0, 0)
     assert calls[0][1][3] == ffi.NULL
+
+
+def test_certify_builders_encode_table_179_fields_and_omissions_over_mtls() -> None:
+    received: list[bytes] = []
+
+    def handle(stream: ssl.SSLSocket) -> None:
+        received.append(read_ttlv_frame(stream))
+        stream.sendall(_certify_wire_response_message())
+
+    port, failures, peer = start_tls13_mtls_peer(_TLS_FIXTURES, handle)
+    registry = extensions.create_client_extension_registry(
+        (), extensions.default_extension_registry_limits()
+    )
+    configuration = extensions.create_client_configuration(registry)
+    result = None
+    batch = None
+    try:
+        with configuration, client.Client.create(
+            configuration, mtls_transport_config(port, _TLS_FIXTURES)
+        ) as kmip_client:
+            with ttlv.codec_limits_defaults() as limits:
+                with (
+                    _single_child_structure(
+                        0x42001D, ttlv.ttlv_value_enumeration(1), limits
+                    ) as attributes,
+                    _single_child_structure(
+                        0x42015E, ttlv.ttlv_value_integer(3), limits
+                    ) as masks,
+                ):
+                    batch = client.Batch.create().set_ordered(True)
+                    for item_id, identifier, request_type, item_attributes, item_masks in (
+                        (
+                            b"item-18",
+                            "certify-public-key",
+                            1,
+                            attributes,
+                            masks,
+                        ),
+                        (
+                            b"item-19",
+                            "certify-no-type",
+                            None,
+                            attributes,
+                            None,
+                        ),
+                        (
+                            b"item-20",
+                            "certify-no-structures",
+                            1,
+                            None,
+                            None,
+                        ),
+                    ):
+                        item = extensions.client_batch_item_certify(
+                            extensions.UniqueIdentifier.text_string(identifier),
+                            certificate_request_type=request_type,
+                            certificate_request_value=(
+                                b"certify-request-sentinel"
+                                if item_id in (b"item-18", b"item-20")
+                                else None
+                            ),
+                            attributes=item_attributes,
+                            protection_storage_masks=item_masks,
+                        )
+                        batch.add_item(extensions.with_unique_batch_item_id(item, item_id))
+                    result = kmip_client.execute(batch, limits)
+
+        assert failures.empty(), "the fake TLS 1.3 peer completes Certify request capture"
+        assert len(received) == 1
+        request = received[0]
+        expected_items = (
+            ttlv_structure(
+                0x42000F,
+                ttlv_enumeration(0x42005C, 6),
+                ttlv_item(0x420093, 8, b"item-18"),
+                ttlv_structure(
+                    0x420079,
+                    ttlv_item(0x420094, 7, b"certify-public-key"),
+                    ttlv_enumeration(0x420019, 1),
+                    ttlv_item(0x420140, 8, b"certify-request-sentinel"),
+                    ttlv_structure(0x420125, ttlv_enumeration(0x42001D, 1)),
+                    ttlv_structure(
+                        0x42015F,
+                        ttlv_item(0x42015E, 2, struct.pack(">i", 3)),
+                    ),
+                ),
+            ),
+            ttlv_structure(
+                0x42000F,
+                ttlv_enumeration(0x42005C, 6),
+                ttlv_item(0x420093, 8, b"item-19"),
+                ttlv_structure(
+                    0x420079,
+                    ttlv_item(0x420094, 7, b"certify-no-type"),
+                    ttlv_structure(0x420125, ttlv_enumeration(0x42001D, 1)),
+                ),
+            ),
+            ttlv_structure(
+                0x42000F,
+                ttlv_enumeration(0x42005C, 6),
+                ttlv_item(0x420093, 8, b"item-20"),
+                ttlv_structure(
+                    0x420079,
+                    ttlv_item(0x420094, 7, b"certify-no-structures"),
+                    ttlv_enumeration(0x420019, 1),
+                    ttlv_item(0x420140, 8, b"certify-request-sentinel"),
+                ),
+            ),
+        )
+        order_option = ttlv_item(
+            0x420010, 6, b"\x00\x00\x00\x00\x00\x00\x00\x01"
+        )
+        if order_option not in request:
+            raise AssertionError("Batch Order Option is encoded as true")
+        assert all(
+            request.count(expected) == 1 for expected in expected_items
+        ), "all Certify items have the expected encoded fields"
+        assert (
+            request.index(expected_items[0])
+            < request.index(expected_items[1])
+            < request.index(expected_items[2])
+        ), "Certify items retain batch order"
+        assert result is not None and len(result.items) == 3
+    finally:
+        if batch is not None:
+            batch.close()
+        if result is not None:
+            result.close()
+        peer.join(timeout=4)
+        if peer.is_alive():
+            raise AssertionError("the Certify fake TLS 1.3 peer did not finish")
+        if not failures.empty():
+            raise failures.get()
 
 
 def test_certify_response_maps_generated_identifier_and_keeps_it_redacted(monkeypatch) -> None:

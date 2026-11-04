@@ -347,7 +347,8 @@ fn compiled_c_consumer_exposes_profile_readiness_and_catalog_contract() {
 #[test]
 // OASIS KMIP v2.1 §6.1.7 Tables 183–185; §6.1.19 Tables 220–222;
 // §6.1.18 Tables 217–219; §6.1.46 Tables 305–307; §6.1.23 Tables 232–234;
-// §4.1.2; §6.1.9 Table 190; §6.1.45 Table 300; §6.1.47 Tables 310–311.
+// §4.1.2; §6.1.6 Tables 179–181 and §4.44 Table 117; §6.1.9 Table 190;
+// §6.1.45 Table 300; §6.1.47 Tables 310–311.
 fn compiled_c_consumer_encodes_check_get_export_rekey_and_allocation_builders_over_mtls() {
     let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
     let client_chain = pki.client_identity().certificate_chain_der();
@@ -440,7 +441,7 @@ fn compiled_c_consumer_encodes_check_get_export_rekey_and_allocation_builders_ov
     unsafe { kmipkit_codec_limits_release(limits) };
     assert_eq!(
         result, 0,
-        "the C consumer builds and decodes eighteen ordered items"
+        "the C consumer builds and decodes twenty-one ordered items"
     );
     peer.join()
         .expect("the compiled C request-builder mTLS peer completes");
@@ -2519,11 +2520,13 @@ fn decode_test_request(encoded: &[u8]) -> Option<Item> {
 #[derive(Clone, Copy)]
 enum RequestBuilderWireValue {
     Text(&'static str),
+    ByteString(&'static [u8]),
     Integer(i32),
     LongInteger(i64),
     Enumeration(u32),
     Interval(u32),
     StructureText { child_tag: u32, text: &'static str },
+    StructureEnumeration { child_tag: u32, enumeration: u32 },
     StructureInteger { child_tag: u32, integer: i32 },
 }
 
@@ -2669,6 +2672,61 @@ const RECERTIFY_OPTIONALS_OMITTED: &[RequestBuilderWireField] = &[RequestBuilder
     tag: 0x0042_0094,
     value: V::Text("recertify-omit-text"),
 }];
+const CERTIFY_VALUES_FULL: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
+        tag: 0x0042_0094,
+        value: V::Text("certify-public-key"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0019,
+        value: V::Enumeration(1),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0140,
+        value: V::ByteString(b"certify-request-sentinel"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0125,
+        value: V::StructureEnumeration {
+            child_tag: 0x0042_001d,
+            enumeration: 1,
+        },
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_015f,
+        value: V::StructureInteger {
+            child_tag: 0x0042_015e,
+            integer: 3,
+        },
+    },
+];
+const CERTIFY_TYPE_OMITTED: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
+        tag: 0x0042_0094,
+        value: V::Text("certify-no-type"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0125,
+        value: V::StructureEnumeration {
+            child_tag: 0x0042_001d,
+            enumeration: 1,
+        },
+    },
+];
+const CERTIFY_STRUCTURES_OMITTED: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
+        tag: 0x0042_0094,
+        value: V::Text("certify-no-structures"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0019,
+        value: V::Enumeration(1),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0140,
+        value: V::ByteString(b"certify-request-sentinel"),
+    },
+];
 const REKEY_KEY_PAIR_UID_AND_OFFSET: &[RequestBuilderWireField] = &[
     RequestBuilderWireField {
         tag: 0x0042_0066,
@@ -2790,6 +2848,18 @@ const REQUEST_BUILDER_WIRE_EXPECTED: &[RequestBuilderWireItem] = &[
     RequestBuilderWireItem {
         operation: 0x29,
         fields: JOIN_SPLIT_KEY_SECRET_DATA_TYPE_OMITTED,
+    },
+    RequestBuilderWireItem {
+        operation: 6,
+        fields: CERTIFY_VALUES_FULL,
+    },
+    RequestBuilderWireItem {
+        operation: 6,
+        fields: CERTIFY_TYPE_OMITTED,
+    },
+    RequestBuilderWireItem {
+        operation: 6,
+        fields: CERTIFY_STRUCTURES_OMITTED,
     },
 ];
 
@@ -2919,6 +2989,7 @@ fn assert_request_builder_item(actual: &Item, expected: &RequestBuilderWireItem,
 fn request_builder_wire_field_matches(actual: &Item, expected: RequestBuilderWireValue) -> bool {
     actual.with_value(|value| match (value, expected) {
         (ValueView::TextString(actual), V::Text(expected)) => actual == expected,
+        (ValueView::ByteString(actual), V::ByteString(expected)) => actual == expected,
         (ValueView::Integer(actual), V::Integer(expected)) => *actual == expected,
         (ValueView::LongInteger(actual), V::LongInteger(expected)) => *actual == expected,
         (ValueView::Enumeration(actual), V::Enumeration(expected))
@@ -2930,6 +3001,17 @@ fn request_builder_wire_field_matches(actual: &Item, expected: RequestBuilderWir
                     |value| matches!(value, ValueView::TextString(actual) if actual == text),
                 )
         }
+        (
+            ValueView::Structure(actual),
+            V::StructureEnumeration {
+                child_tag,
+                enumeration,
+            },
+        ) => actual.children().len() == 1
+            && actual.children()[0].tag().raw() == child_tag
+            && actual.children()[0].with_value(
+                |value| matches!(value, ValueView::Enumeration(actual) if *actual == enumeration),
+            ),
         (ValueView::Structure(actual), V::StructureInteger { child_tag, integer }) => {
             actual.children().len() == 1
                 && actual.children()[0].tag().raw() == child_tag
@@ -4181,8 +4263,8 @@ fn rekey_key_pair_success_response() -> Vec<u8> {
 }
 
 fn request_builder_wire_response() -> Vec<u8> {
-    const OPERATIONS: [u32; 18] = [
-        1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x1d, 0x29, 0x29,
+    const OPERATIONS: [u32; 21] = [
+        1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x1d, 0x29, 0x29, 6, 6, 6,
     ];
     let version = structure(
         0x0042_0069,

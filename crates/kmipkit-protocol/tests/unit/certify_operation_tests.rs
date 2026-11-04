@@ -96,6 +96,83 @@ fn request_emits_table_179_fields_once_and_in_order() {
 }
 
 #[test]
+fn request_builder_optional_fields_emit_exact_values_and_order() {
+    let attributes = certificate_type_attributes();
+    let protection_storage_masks = structure([item(0x0042_015E, Value::integer(3))]);
+    let request = CertifyRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString(
+            "certify-public-key".to_owned(),
+        ))
+        .with_certificate_request_type(1)
+        .with_attributes(attributes)
+        .with_protection_storage_masks(protection_storage_masks);
+    let payload = request
+        .into_ttlv_payload()
+        .expect("the optional Table 179 fields form a valid request payload");
+
+    assert_eq!(
+        field_tags(&payload),
+        [
+            UNIQUE_IDENTIFIER,
+            CERTIFICATE_REQUEST_TYPE,
+            ATTRIBUTES,
+            PROTECTION_STORAGE_MASKS
+        ],
+        "Table 179 fields retain their wire order and omit the unmapped Certificate Request Value"
+    );
+    let payload_view = payload.view();
+    let fields = payload_view.children();
+    assert!(fields[0].with_value(
+        |value| matches!(value, ValueView::TextString(text) if text == "certify-public-key"),
+    ));
+    assert!(
+        fields[1].with_value(|value| matches!(value, ValueView::Enumeration(raw) if *raw == 1))
+    );
+    assert!(fields[2].with_value(|value| {
+        let ValueView::Structure(attributes) = value else {
+            return false;
+        };
+        attributes.children().len() == 1
+            && attributes.children()[0].tag().raw() == CERTIFICATE_TYPE
+            && attributes.children()[0]
+                .with_value(|child| matches!(child, ValueView::Enumeration(raw) if *raw == 1))
+    }));
+    assert!(fields[3].with_value(|value| {
+        let ValueView::Structure(masks) = value else {
+            return false;
+        };
+        masks.children().len() == 1
+            && masks.children()[0].tag().raw() == 0x0042_015E
+            && masks.children()[0]
+                .with_value(|child| matches!(child, ValueView::Integer(raw) if *raw == 3))
+    }));
+
+    let no_type = CertifyRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString("certify-no-type".to_owned()))
+        .with_attributes(certificate_type_attributes());
+    let no_type_payload = no_type
+        .into_ttlv_payload()
+        .expect("Certificate Type in Attributes supports omission of Certificate Request Type");
+    assert_eq!(
+        field_tags(&no_type_payload),
+        [UNIQUE_IDENTIFIER, ATTRIBUTES]
+    );
+
+    let no_structures = CertifyRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString(
+            "certify-no-structures".to_owned(),
+        ))
+        .with_certificate_request_type(1);
+    let no_structures_payload = no_structures
+        .into_ttlv_payload()
+        .expect("Attributes and Protection Storage Masks are optional");
+    assert_eq!(
+        field_tags(&no_structures_payload),
+        [UNIQUE_IDENTIFIER, CERTIFICATE_REQUEST_TYPE]
+    );
+}
+
+#[test]
 fn request_may_omit_unique_identifier_when_certificate_request_value_is_present() {
     let request = CertifyRequest::new()
         .with_certificate_request_type(1)

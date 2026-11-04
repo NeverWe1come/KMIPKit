@@ -101,7 +101,8 @@ final class ClientFacadeTlsIntegrationTest {
     // OASIS KMIP v2.1 §6.1.7 Tables 183–185; §6.1.19 Tables 220–222;
     // §6.1.18 Tables 217–219; §6.1.46 Tables 305–307; §6.1.23 Tables 232–234;
     // OASIS KMIP v2.1 §4.1.2; §6.1.9 Tables 189–190; §6.1.45 Table 300;
-    // §6.1.47 Tables 310–311; §6.1.27 Table 244; §11.52 Table 483.
+    // §6.1.47 Tables 310–311; §6.1.27 Table 244; §11.52 Table 483;
+    // OASIS KMIP v2.1 §6.1.6 Tables 179–181 and §4.44 Table 117.
     @Test
     void requestBuildersEncodeValuesAndOmissionsOverMtls()
             throws Exception {
@@ -150,7 +151,11 @@ final class ClientFacadeTlsIntegrationTest {
                         TtlvValue.TextString(
                                 "join-split-attributes".getBytes(StandardCharsets.UTF_8), requestLimits),
                         requestLimits);
+                TtlvStructure certifyAttributes = rekeyRequestStructure(
+                        0x42001d, TtlvValue.Enumeration(1), requestLimits);
                 TtlvStructure rekeyMasks = rekeyRequestStructure(
+                        0x42015e, TtlvValue.Integer(3), requestLimits);
+                TtlvStructure certifyMasks = rekeyRequestStructure(
                         0x42015e, TtlvValue.Integer(3), requestLimits);
                 SplitKeyReference splitReference = new SplitKeyReference(
                         UniqueIdentifier.textString("join-split-id"), 1)) {
@@ -206,13 +211,27 @@ final class ClientFacadeTlsIntegrationTest {
                     .withUniqueBatchItemId(uniqueBatchItemId(16)));
             batch.add(ClientBatchItem.joinSplitKey(7L, List.of(splitReference))
                     .withUniqueBatchItemId(uniqueBatchItemId(17)));
+            batch.add(ClientBatchItem.certify(
+                            UniqueIdentifier.textString("certify-public-key"),
+                            1L, "certify-request-sentinel".getBytes(StandardCharsets.US_ASCII),
+                            certifyAttributes, certifyMasks)
+                    .withUniqueBatchItemId(uniqueBatchItemId(18)));
+            batch.add(ClientBatchItem.certify(
+                            UniqueIdentifier.textString("certify-no-type"),
+                            null, null, certifyAttributes, null)
+                    .withUniqueBatchItemId(uniqueBatchItemId(19)));
+            batch.add(ClientBatchItem.certify(
+                            UniqueIdentifier.textString("certify-no-structures"),
+                            1L, "certify-request-sentinel".getBytes(StandardCharsets.US_ASCII),
+                            null, null)
+                    .withUniqueBatchItemId(uniqueBatchItemId(20)));
             try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
                     ClientBatchItemResult createPairResult = response.itemAt(13);
                     ClientBatchItemResult rekeyPairResult = response.itemAt(14);
                     ClientBatchItemResult.RekeyKeyPairResponse rekeyPairResponse =
                             rekeyPairResult.rekeyKeyPairResponse().orElseThrow();
                     ClientBatchItemResult explicitRekeyPairResult = response.itemAt(15)) {
-                assertEquals(18, response.itemCount());
+                assertEquals(21, response.itemCount());
                 assertEquals(0, createPairResult.resultStatus());
                 ClientBatchItemResult.CreateKeyPairResponse createPairResponse =
                         createPairResult.createKeyPairResponse().orElseThrow();
@@ -359,6 +378,34 @@ final class ClientFacadeTlsIntegrationTest {
                         enumeration(0x420057, 7),
                         item(0x420094, TtlvItemType.TextString.code(),
                                 "join-split-id".getBytes(StandardCharsets.UTF_8)))));
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 6),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(18)),
+                structure(0x420079,
+                        item(0x420094, TtlvItemType.TextString.code(),
+                                "certify-public-key".getBytes(StandardCharsets.UTF_8)),
+                        enumeration(0x420019, 1),
+                        item(0x420140, TtlvItemType.ByteString.code(),
+                                "certify-request-sentinel".getBytes(StandardCharsets.US_ASCII)),
+                        structure(0x420125, enumeration(0x42001d, 1)),
+                        structure(0x42015f,
+                                item(0x42015e, TtlvItemType.Integer.code(), integer(3))))));
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 6),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(19)),
+                structure(0x420079,
+                        item(0x420094, TtlvItemType.TextString.code(),
+                                "certify-no-type".getBytes(StandardCharsets.UTF_8)),
+                        structure(0x420125, enumeration(0x42001d, 1)))));
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 6),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(20)),
+                structure(0x420079,
+                        item(0x420094, TtlvItemType.TextString.code(),
+                                "certify-no-structures".getBytes(StandardCharsets.UTF_8)),
+                        enumeration(0x420019, 1),
+                        item(0x420140, TtlvItemType.ByteString.code(),
+                                "certify-request-sentinel".getBytes(StandardCharsets.US_ASCII)))));
 
         assertContains(request, expectedBatchItems.toByteArray());
         assertContains(request, item(0x420010, TtlvItemType.Boolean.code(),
@@ -371,6 +418,7 @@ final class ClientFacadeTlsIntegrationTest {
         assertEquals(2, countOccurrences(request, enumeration(0x42005c, 7)));
         assertEquals(2, countOccurrences(request, enumeration(0x42005c, 0x1d)));
         assertEquals(2, countOccurrences(request, enumeration(0x42005c, 0x29)));
+        assertEquals(3, countOccurrences(request, enumeration(0x42005c, 6)));
         assertEquals(1, countOccurrences(request, enumeration(0x42005c, 2)));
         assertTrue(peer.isDone());
     }
@@ -6038,7 +6086,7 @@ final class ClientFacadeTlsIntegrationTest {
     }
 
     private static byte[] requestBuilderWireResponseMessage() throws Exception {
-        int[] operations = {1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x1d, 0x29, 0x29};
+        int[] operations = {1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x1d, 0x29, 0x29, 6, 6, 6};
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
@@ -6053,6 +6101,11 @@ final class ClientFacadeTlsIntegrationTest {
                 byte[] payload = structure(0x42007c,
                         item(0x420066, 7, privateIdentifier.getBytes(StandardCharsets.UTF_8)),
                         item(0x42006f, 7, publicIdentifier.getBytes(StandardCharsets.UTF_8)));
+                responseItems.add(structure(0x42000f, operation, batchItemId,
+                        enumeration(0x42007f, 0), payload));
+            } else if (operations[index] == 6) {
+                byte[] identifier = ("certified-item-" + index).getBytes(StandardCharsets.UTF_8);
+                byte[] payload = structure(0x42007c, item(0x420094, 7, identifier));
                 responseItems.add(structure(0x42000f, operation, batchItemId,
                         enumeration(0x42007f, 0), payload));
             } else {

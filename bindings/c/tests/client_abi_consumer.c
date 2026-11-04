@@ -3767,14 +3767,19 @@ static int execute_request_builders_wire_from_c(
     static const uint8_t rekey_text[] = "rekey-text";
     static const uint8_t allocation_text[] = "allocation-text";
     static const uint8_t recertify_attribute_text[] = "recertify-attributes";
+    static const uint8_t certify_public_key_text[] = "certify-public-key";
+    static const uint8_t certify_no_type_text[] = "certify-no-type";
+    static const uint8_t certify_no_structures_text[] = "certify-no-structures";
+    static const uint8_t certify_request_sentinel[] = "certify-request-sentinel";
     static const uint8_t join_split_attribute_text[] = "join-split-attributes";
     static const uint8_t split_key_text[] = "join-split-id";
     static const uint8_t private_key_text[] = "private-key-to-rekey";
-    static const uint8_t batch_item_ids[18][8] = {
+    static const uint8_t batch_item_ids[21][8] = {
         "item-0", "item-1", "item-2", "item-3", "item-4", "item-5",
         "item-6", "item-7", "item-8", "item-9", "item-10", "item-11",
-        "item-12", "item-13", "item-14", "item-15", "item-16", "item-17"};
-    kmipkit_unique_identifier_v1_t identifiers[11] = {{0}};
+        "item-12", "item-13", "item-14", "item-15", "item-16", "item-17",
+        "item-18", "item-19", "item-20"};
+    kmipkit_unique_identifier_v1_t identifiers[14] = {{0}};
     kmipkit_client_batch_t *batch = 0;
     kmipkit_client_batch_response_t *response = 0;
     kmipkit_client_batch_item_t *item = 0;
@@ -3784,10 +3789,14 @@ static int execute_request_builders_wire_from_c(
     kmipkit_ttlv_structure_t *rekey_masks = 0;
     kmipkit_ttlv_structure_t *recertify_attributes = 0;
     kmipkit_ttlv_structure_t *join_split_attributes = 0;
+    kmipkit_ttlv_structure_t *certify_attributes = 0;
+    kmipkit_ttlv_structure_t *certify_masks = 0;
     kmipkit_ttlv_value_t *rekey_attribute_value = 0;
     kmipkit_ttlv_value_t *rekey_mask_value = 0;
     kmipkit_ttlv_value_t *recertify_attribute_value = 0;
     kmipkit_ttlv_value_t *join_split_attribute_value = 0;
+    kmipkit_ttlv_value_t *certify_attribute_value = 0;
+    kmipkit_ttlv_value_t *certify_mask_value = 0;
     int result = 21;
 
     set_text_identifier(&identifiers[0], check_text, sizeof(check_text) - 1);
@@ -3803,6 +3812,11 @@ static int execute_request_builders_wire_from_c(
             sizeof("recertify-omit-text") - 1);
     set_text_identifier(&identifiers[9], split_key_text, sizeof(split_key_text) - 1);
     set_text_identifier(&identifiers[10], private_key_text, sizeof(private_key_text) - 1);
+    set_text_identifier(&identifiers[11], certify_public_key_text, sizeof(certify_public_key_text) - 1);
+    set_text_identifier(&identifiers[12], certify_no_type_text, sizeof(certify_no_type_text) - 1);
+    set_text_identifier(&identifiers[13], certify_no_structures_text, sizeof(certify_no_structures_text) - 1);
+    const kmipkit_byte_span_v1_t certify_request_value = {
+        certify_request_sentinel, sizeof(certify_request_sentinel) - 1};
 
     if (kmipkit_client_batch_create(&batch) != 0 || batch == 0 ||
         kmipkit_client_batch_set_order_option(batch, 1) != 0 ||
@@ -3841,6 +3855,17 @@ static int execute_request_builders_wire_from_c(
         !append_derive_key_parameter(
             limits, &join_split_attributes, UINT32_C(0x4200fd),
             &join_split_attribute_value)) {
+        goto cleanup;
+    }
+    if (kmipkit_ttlv_structure_create(&certify_attributes) != 0 ||
+        kmipkit_ttlv_structure_create(&certify_masks) != 0 ||
+        kmipkit_ttlv_value_enumeration(1, &certify_attribute_value) != 0 ||
+        !append_derive_key_parameter(
+            limits, &certify_attributes, UINT32_C(0x42001d),
+            &certify_attribute_value) ||
+        kmipkit_ttlv_value_integer(3, &certify_mask_value) != 0 ||
+        !append_derive_key_parameter(
+            limits, &certify_masks, UINT32_C(0x42015e), &certify_mask_value)) {
         goto cleanup;
     }
 
@@ -3930,6 +3955,22 @@ static int execute_request_builders_wire_from_c(
     kmipkit_split_key_reference_release(split_key_reference);
     split_key_reference = 0;
 
+    if (kmipkit_client_batch_item_certify(
+            &identifiers[11], 1, 1, &certify_request_value,
+            certify_attributes, certify_masks, &item) != 0 ||
+        !append_request_builder_item(
+            batch, &item, batch_item_ids[18], strlen((const char *)batch_item_ids[18])) ||
+        kmipkit_client_batch_item_certify(
+            &identifiers[12], 0, 0, 0, certify_attributes, 0, &item) != 0 ||
+        !append_request_builder_item(
+            batch, &item, batch_item_ids[19], strlen((const char *)batch_item_ids[19])) ||
+        kmipkit_client_batch_item_certify(
+            &identifiers[13], 1, 1, &certify_request_value, 0, 0, &item) != 0 ||
+        !append_request_builder_item(
+            batch, &item, batch_item_ids[20], strlen((const char *)batch_item_ids[20]))) {
+        goto cleanup;
+    }
+
     /* The fake peer supplies ID Placeholder context and success/failure batch results. */
     result = kmipkit_client_execute(client, &batch, limits, &response) == 0 ? 0 : 22;
 
@@ -3943,10 +3984,14 @@ cleanup:
     kmipkit_ttlv_structure_release(rekey_masks);
     kmipkit_ttlv_structure_release(recertify_attributes);
     kmipkit_ttlv_structure_release(join_split_attributes);
+    kmipkit_ttlv_structure_release(certify_attributes);
+    kmipkit_ttlv_structure_release(certify_masks);
     kmipkit_ttlv_value_release(rekey_attribute_value);
     kmipkit_ttlv_value_release(rekey_mask_value);
     kmipkit_ttlv_value_release(recertify_attribute_value);
     kmipkit_ttlv_value_release(join_split_attribute_value);
+    kmipkit_ttlv_value_release(certify_attribute_value);
+    kmipkit_ttlv_value_release(certify_mask_value);
     return result;
 }
 
