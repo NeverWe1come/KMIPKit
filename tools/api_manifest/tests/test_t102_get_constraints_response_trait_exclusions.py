@@ -1529,14 +1529,14 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             "kmipkit_protocol::LocateRequest::with_offset_items",
             "kmipkit_protocol::LocateRequest::with_storage_status_mask",
             "kmipkit_protocol::LocateRequest::with_object_group_member",
-        }
-        blocked = {
             "kmipkit_protocol::LocateRequest::attributes",
             "kmipkit_protocol::LocateRequest::maximum_items",
             "kmipkit_protocol::LocateRequest::object_group_member",
             "kmipkit_protocol::LocateRequest::offset_items",
             "kmipkit_protocol::LocateRequest::storage_status_mask",
             "kmipkit_protocol::LocateRequest::to_ttlv_payload",
+        }
+        blocked = {
         }
         rows = {
             row["exportName"]: row

@@ -10548,14 +10548,44 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::ImportRequest",
     ),
     (
+        "rust-observed-fca2c150feb784fdd203",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ImportRequest::attributes",
+    ),
+    (
         "rust-observed-eef9d3b1dc43a901bd90",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::ImportRequest::into_ttlv_payload",
     ),
     (
+        "rust-observed-f05defb53b753257aad1",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ImportRequest::key_wrap_type",
+    ),
+    (
         "rust-observed-3fb008956f4e09aff689",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::ImportRequest::new",
+    ),
+    (
+        "rust-observed-b012cd721c307c69208d",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ImportRequest::object",
+    ),
+    (
+        "rust-observed-61072f660e5d534e226c",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ImportRequest::object_type",
+    ),
+    (
+        "rust-observed-14d3acc960ccab00dbe3",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ImportRequest::replace_existing",
+    ),
+    (
+        "rust-observed-5e06cdb2edfa3494515d",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ImportRequest::unique_identifier",
     ),
     (
         "rust-observed-9cd4c6b6fd190aff211f",
@@ -10803,9 +10833,39 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::LocateRequest",
     ),
     (
+        "rust-observed-f439a46d07fb7b09a304",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::LocateRequest::attributes",
+    ),
+    (
+        "rust-observed-71e45ec7ed189cbf589f",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::LocateRequest::maximum_items",
+    ),
+    (
         "rust-observed-e07fce825be9d33278e1",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::LocateRequest::new",
+    ),
+    (
+        "rust-observed-c545de4134a8f62c3871",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::LocateRequest::object_group_member",
+    ),
+    (
+        "rust-observed-c0872e13783c072c07fb",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::LocateRequest::offset_items",
+    ),
+    (
+        "rust-observed-6eb74f84ebb61fd70253",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::LocateRequest::storage_status_mask",
+    ),
+    (
+        "rust-observed-843c51bfe3611b61603b",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::LocateRequest::to_ttlv_payload",
     ),
     (
         "rust-observed-8fff50bdd49a09ae00bf",

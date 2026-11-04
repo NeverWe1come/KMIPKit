@@ -17,7 +17,7 @@ OPERATIONS = {
         "capability": "KMIPKIT-ELEM-OP-C2S-LOCATE",
         "owner": "specs/017-managed-object-retrieval/spec.md",
         "builder": "kmipkit_client_batch_item_locate",
-        "table_row": "| Locate | KMIPKIT-ELEM-OP-C2S-LOCATE | OASIS KMIP Specification v2.1 §6.1.28 | Tables 247–249 |",
+        "table_row": "| Locate | KMIPKIT-ELEM-OP-C2S-LOCATE | OASIS KMIP Specification v2.1 §6.1.28 | Tables 247–249 | KMIPKIT-TEST-CN01-2-62; KMIPKIT-TEST-CN01-2-63; KMIPKIT-TEST-CN01-2-64; KMIPKIT-TEST-CN01-2-65 | TC-MDO-2-21; TC-MDO-3-21; TC-OFFSET-1-21; TC-OFFSET-2-21 |",
         "source_test": "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
         "section": "§6.1.28",
         "constructor": "kmipkit_protocol::LocateRequest::new",

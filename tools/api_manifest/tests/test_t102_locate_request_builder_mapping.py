@@ -32,7 +32,7 @@ API_REQUIREMENTS = {
 SERVER_ONLY_REQUIREMENT = "KMIPKIT-REQ-SPEC-6.1.28-011"
 LOCATE_ATTRIBUTE_REQUIREMENT = "KMIPKIT-REQ-SPEC-6.1.28-007"
 
-LOCATE_DECLARATIONS_WITH_MISATTRIBUTED_SERVER_REQUIREMENT = {
+LOCATE_EXISTING_OPERATION_DECLARATIONS = {
     "rust-observed-b11bbc68601ea288d5de",
     "rust-observed-c05d72bdbbb49325b3a9",
     "rust-observed-b4671df45a077a12336e",
@@ -57,6 +57,9 @@ LOCATE_DECLARATIONS_WITH_MISATTRIBUTED_SERVER_REQUIREMENT = {
     "rust-observed-a4937291b5b6e595e042",
     "rust-observed-f81808570c0e448ffebc",
     "rust-observed-b5918d4a07217a75f879",
+    "rust-observed-a27e6fe2eb857da91200",
+    "rust-observed-ddea2a06a9c5a084209d",
+    "rust-observed-40b23b68dd8b437e73db",
     "T038:locate:c:request:01",
     "T038:locate:c:response:02",
     "T038:locate:c:unique_identifiers:03",
@@ -88,6 +91,12 @@ LOCATE_ATTRIBUTE_REQUEST_DECLARATIONS = {
     "rust-observed-aa9a474fd92d1503b86d",
     "rust-observed-8d60104e0b52b30f3496",
     "rust-observed-feb2e57f6cbe856a8fa1",
+    "rust-observed-f439a46d07fb7b09a304",
+    "rust-observed-71e45ec7ed189cbf589f",
+    "rust-observed-c545de4134a8f62c3871",
+    "rust-observed-c0872e13783c072c07fb",
+    "rust-observed-6eb74f84ebb61fd70253",
+    "rust-observed-843c51bfe3611b61603b",
 }
 
 LOCATE_FUNCTION_IDS = {
@@ -116,6 +125,30 @@ EXPECTED = (
     (
         "rust-observed-feb2e57f6cbe856a8fa1",
         "kmipkit_protocol::LocateRequest::with_object_group_member",
+    ),
+    (
+        "rust-observed-f439a46d07fb7b09a304",
+        "kmipkit_protocol::LocateRequest::attributes",
+    ),
+    (
+        "rust-observed-71e45ec7ed189cbf589f",
+        "kmipkit_protocol::LocateRequest::maximum_items",
+    ),
+    (
+        "rust-observed-c545de4134a8f62c3871",
+        "kmipkit_protocol::LocateRequest::object_group_member",
+    ),
+    (
+        "rust-observed-c0872e13783c072c07fb",
+        "kmipkit_protocol::LocateRequest::offset_items",
+    ),
+    (
+        "rust-observed-6eb74f84ebb61fd70253",
+        "kmipkit_protocol::LocateRequest::storage_status_mask",
+    ),
+    (
+        "rust-observed-843c51bfe3611b61603b",
+        "kmipkit_protocol::LocateRequest::to_ttlv_payload",
     ),
 )
 
@@ -152,9 +185,9 @@ class T102LocateRequestBuilderMappingTests(unittest.TestCase):
             for declarations in operation["declarations"].values()
             for declaration_id in declarations
         }
-        self.assertEqual(42, len(locate_ids))
+        self.assertEqual(51, len(locate_ids))
         self.assertEqual(
-            LOCATE_DECLARATIONS_WITH_MISATTRIBUTED_SERVER_REQUIREMENT | {
+            LOCATE_EXISTING_OPERATION_DECLARATIONS | {
                 declaration_id for declaration_id, _ in EXPECTED
             },
             locate_ids,
@@ -207,8 +240,8 @@ class T102LocateRequestBuilderMappingTests(unittest.TestCase):
         operation = self.operations[OPERATION_ID]
         declarations = operation["declarations"]["rust"]
         expected_requirements = OWNER_REQUIREMENTS | API_REQUIREMENTS
-        self.assertEqual(5, len(EXPECTED))
-        self.assertEqual(5, len({declaration_id for declaration_id, _ in EXPECTED}))
+        self.assertEqual(11, len(EXPECTED))
+        self.assertEqual(11, len({declaration_id for declaration_id, _ in EXPECTED}))
 
         for declaration_id, export_name in EXPECTED:
             row = self.declarations[declaration_id]

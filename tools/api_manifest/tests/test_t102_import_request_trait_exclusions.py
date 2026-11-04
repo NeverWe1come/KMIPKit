@@ -151,16 +151,15 @@ class T102ImportRequestTraitExclusionTests(unittest.TestCase):
             "kmipkit_protocol::ImportRequest::new",
             "kmipkit_protocol::ImportRequest::with_key_wrap_type",
             "kmipkit_protocol::ImportRequest::with_replace_existing",
-        }
-        blocked = {
             "kmipkit_protocol::ImportRequest::attributes",
-            "kmipkit_protocol::ImportRequest::into_ttlv_payload",
             "kmipkit_protocol::ImportRequest::key_wrap_type",
             "kmipkit_protocol::ImportRequest::object",
             "kmipkit_protocol::ImportRequest::object_type",
             "kmipkit_protocol::ImportRequest::replace_existing",
             "kmipkit_protocol::ImportRequest::unique_identifier",
+            "kmipkit_protocol::ImportRequest::into_ttlv_payload",
         }
+        blocked = set()
         self.assertEqual(set(protocol_rows), verified | blocked)
         self.assertEqual(
             {

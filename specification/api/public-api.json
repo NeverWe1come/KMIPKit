@@ -193563,14 +193563,68 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::ImportRequest::attributes",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ImportRequest::attributes"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_import"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.importObject"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_import"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_import_locate_request_member_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-eef9d3b1dc43a901bd90",
@@ -193645,14 +193699,68 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::ImportRequest::key_wrap_type",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ImportRequest::key_wrap_type"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_import"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.importObject"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_import"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_import_locate_request_member_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-3fb008956f4e09aff689",
@@ -193726,56 +193834,272 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::ImportRequest::object",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ImportRequest::object"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_import"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.importObject"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_import"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_import_locate_request_member_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-61072f660e5d534e226c",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::ImportRequest::object_type",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ImportRequest::object_type"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_import"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.importObject"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_import"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_import_locate_request_member_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-14d3acc960ccab00dbe3",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::ImportRequest::replace_existing",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ImportRequest::replace_existing"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_import"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.importObject"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_import"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_import_locate_request_member_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-5e06cdb2edfa3494515d",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::ImportRequest::unique_identifier",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ImportRequest::unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_import"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.importObject"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_import"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_import_locate_request_member_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-9cd4c6b6fd190aff211f",
@@ -197019,28 +197343,144 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::LocateRequest::attributes",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-007",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::LocateRequest::attributes"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_locate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.locate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_locate"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_import_locate_request_member_mapping.py",
+        "tools/api_manifest/tests/test_t102_locate_request_builder_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-71e45ec7ed189cbf589f",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::LocateRequest::maximum_items",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-007",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::LocateRequest::maximum_items"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_locate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.locate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_locate"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_import_locate_request_member_mapping.py",
+        "tools/api_manifest/tests/test_t102_locate_request_builder_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-e07fce825be9d33278e1",
@@ -197118,56 +197558,288 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::LocateRequest::object_group_member",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-007",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::LocateRequest::object_group_member"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_locate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.locate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_locate"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_import_locate_request_member_mapping.py",
+        "tools/api_manifest/tests/test_t102_locate_request_builder_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-c0872e13783c072c07fb",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::LocateRequest::offset_items",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-007",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::LocateRequest::offset_items"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_locate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.locate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_locate"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_import_locate_request_member_mapping.py",
+        "tools/api_manifest/tests/test_t102_locate_request_builder_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-6eb74f84ebb61fd70253",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::LocateRequest::storage_status_mask",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-007",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::LocateRequest::storage_status_mask"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_locate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.locate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_locate"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_import_locate_request_member_mapping.py",
+        "tools/api_manifest/tests/test_t102_locate_request_builder_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-843c51bfe3611b61603b",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::LocateRequest::to_ttlv_payload",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-007",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::LocateRequest::to_ttlv_payload"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_locate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.locate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_locate"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_import_locate_request_member_mapping.py",
+        "tools/api_manifest/tests/test_t102_locate_request_builder_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-8fff50bdd49a09ae00bf",
@@ -475397,12 +476069,13 @@
         "evidence": "**Status**: Approved for implementation — 2026-10-11"
       },
       "parityEvidenceIds": [
-        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
-        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
         "bindings/python/tests/test_import_operation.py",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_import_locate_request_member_mapping.py",
         "tools/api_manifest/tests/test_t102_transfer_request_serializer_mapping.py"
       ],
       "declarations": {
@@ -475435,7 +476108,13 @@
           "rust-observed-9cd4c6b6fd190aff211f",
           "rust-observed-506281d0cf8e3c41a90e",
           "rust-observed-af22e4e946ea3577bea1",
-          "rust-observed-eef9d3b1dc43a901bd90"
+          "rust-observed-eef9d3b1dc43a901bd90",
+          "rust-observed-fca2c150feb784fdd203",
+          "rust-observed-f05defb53b753257aad1",
+          "rust-observed-b012cd721c307c69208d",
+          "rust-observed-61072f660e5d534e226c",
+          "rust-observed-14d3acc960ccab00dbe3",
+          "rust-observed-5e06cdb2edfa3494515d"
         ],
         "c": [
           "T050:request:c",
@@ -475676,7 +476355,13 @@
           "rust-observed-a5471ced86f7164975a8",
           "rust-observed-3af9b2ecd05ddeeb0b4e",
           "rust-observed-3057f3cd6f25b9d165e9",
-          "rust-observed-40b23b68dd8b437e73db"
+          "rust-observed-40b23b68dd8b437e73db",
+          "rust-observed-f439a46d07fb7b09a304",
+          "rust-observed-71e45ec7ed189cbf589f",
+          "rust-observed-c545de4134a8f62c3871",
+          "rust-observed-c0872e13783c072c07fb",
+          "rust-observed-6eb74f84ebb61fd70253",
+          "rust-observed-843c51bfe3611b61603b"
         ],
         "c": [
           "T038:locate:c:request:01",
@@ -475706,7 +476391,9 @@
         "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
-        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_import_locate_request_member_mapping.py",
+        "tools/api_manifest/tests/test_t102_locate_request_builder_mapping.py"
       ]
     },
     {
