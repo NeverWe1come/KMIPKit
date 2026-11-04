@@ -11011,3 +11011,20 @@ Reproduction commands (run from the repository root):
 - Focused Green mapping, parity, serializer, and state group: `py -3 -B -m unittest tools.api_manifest.tests.test_t102_interop_function_member_mapping tools.api_manifest.tests.test_interop_parity_manifest tools.api_manifest.tests.test_t102_diagnostics_request_serializer_mapping tools.api_manifest.tests.test_t102_interop_request_trait_exclusions tools.api_manifest.tests.test_t102_interop_log_error_trait_exclusions`.
 - Generated API outputs: `py -3 -B tools/api_manifest/generate.py --check`.
 - Formatting and whitespace: `cargo fmt --all --check` and `git diff --check`.
+
+### T102 Macro-Lot 2 Certify request identifier member parity (2026-11-04)
+
+Red `a0de6507d` adds a regression for the existing `kmipkit_protocol::CertifyRequest::unique_identifier` declaration. The focused test fails because the declaration is still blocked and absent from the Certify operation inventory. Its approved owner is `specs/022-object-lifecycle/spec.md` (KMIPKIT-0036); OASIS KMIP Specification v2.1 §6.1.6 Tables 179–181 define the request, response, and errors. The existing source-derived wire test verifies Unique Identifier field ordering and presence rules.
+
+Green `57e17990e` maps the declaration to the existing Certify capability and C, Java, and Python builders, inheriting requirements from the approved verified Rust constructor. It adds capability and test evidence to the operation inventory and regenerates the public API projections. The mapping is capability-level: it does not claim separate foreign getter methods or add runtime behavior/public symbols. Refactor `35cb56d` removes the obsolete blocked-neighbor assertion from the prior Certify builder batch and clarifies its candidate-count test.
+
+The Certify operation parity regression had stale per-declaration assumptions: each public member was required to cite every operation-wide test and every OASIS requirement, although field requirements and direct evidence are scoped. It now requires the complete approved evidence and requirement union at the operation level and nonempty direct evidence/requirements per mapped declaration. The exact operation snapshot was recalibrated to `a610d490437837e8bd2cebc27fb4daa8a7fd7dee0abc74e09ebb7f0217806d02`, first measured against the pre-Green manifest with the new target filtered out, so it does not mask this mapping.
+
+Verification: the focused Certify mapping, request-builder mapping, Certify parity, lifecycle serializer, and macro-lot identity modules pass 18/18. `py -3 -B tools/api_manifest/generate.py --check` verifies all 12 outputs; `cargo fmt --all --check` and `git diff --check` pass. T102 decreases 82→81 blocked candidates; public declaration/exclusion totals remain 6,380/8,713. The macro-lot zero-unresolved gate remains open and reports those 81 candidates; the full T102 and 151-test `manifest-v2` suites remain reserved for lot closure. No formal protocol-conformance, server-interoperability, profile-support, or certification claim is made.
+
+Reproduction commands (run from the repository root):
+
+- Red, expected blocked-state failure: `py -3 -B -m unittest tools.api_manifest.tests.test_t102_certify_request_identifier_member_mapping`.
+- Focused Green mapping, operation state, and identity checks: `py -3 -B -m unittest tools.api_manifest.tests.test_t102_certify_request_identifier_member_mapping tools.api_manifest.tests.test_t102_certify_request_builder_mapping tools.api_manifest.tests.test_certify_parity_manifest tools.api_manifest.tests.test_t102_lifecycle_request_serializer_mapping tools.api_manifest.tests.test_t102_macro_lot_partition.T102MacroLotPartitionTests.test_macro_lots_are_disjoint_exhaustive_and_identity_stable`.
+- Generated API outputs: `py -3 -B tools/api_manifest/generate.py --check`.
+- Formatting and whitespace: `cargo fmt --all --check` and `git diff --check`.
