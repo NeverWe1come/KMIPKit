@@ -217,4 +217,3 @@ class T102RequestBuilderMappingBatchTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

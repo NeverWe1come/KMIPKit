@@ -161,6 +161,13 @@ LOCATE_REQUEST_BUILDER_IDS = {
 LOCATE_OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-LOCATE"
 LOCATE_REQUEST_REQUIREMENT = "KMIPKIT-REQ-SPEC-6.1.28-007"
 LOCATE_SERVER_ONLY_REQUIREMENT = "KMIPKIT-REQ-SPEC-6.1.28-011"
+REKEY_OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-RE-KEY"
+RETIRED_REKEY_REQUIREMENT = "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+REKEY_FUNCTION_IDS = {
+    "client_batch_item_rekey",
+    "client_batch_item_response_rekey",
+    "client_batch_item_response_rekey_ttlv",
+}
 SCALAR_REQUEST_BUILDER_IDS = {
     "rust-observed-3beea67907cb67493c50",
     "rust-observed-7ef0a3fa4f7211edc2d4",
@@ -374,6 +381,10 @@ class T102ResponseViewMappingTests(unittest.TestCase):
                 requirements.discard(LOCATE_REQUEST_REQUIREMENT)
                 requirements.add(LOCATE_SERVER_ONLY_REQUIREMENT)
                 declaration["requirementIds"] = sorted(requirements)
+            if declaration.get("capabilityId") == REKEY_OPERATION_ID:
+                declaration["requirementIds"] = sorted(
+                    set(declaration["requirementIds"]) | {RETIRED_REKEY_REQUIREMENT}
+                )
         self.assertEqual(
             UNCHANGED_DECLARATIONS_SHA256,
             canonical_sha256(unchanged_declarations),
@@ -408,6 +419,10 @@ class T102ResponseViewMappingTests(unittest.TestCase):
             if requirement_id != LOCATE_REQUEST_REQUIREMENT
         ]
         for function in other_manifest["functions"]:
+            if function["id"] in REKEY_FUNCTION_IDS:
+                function["requirementIds"] = sorted(
+                    set(function["requirementIds"]) | {RETIRED_REKEY_REQUIREMENT}
+                )
             if function["id"] in LOCATE_FUNCTION_IDS:
                 requirements = set(function["requirementIds"])
                 requirements.discard(LOCATE_REQUEST_REQUIREMENT)

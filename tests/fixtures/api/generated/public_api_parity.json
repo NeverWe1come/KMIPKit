@@ -132447,8 +132447,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ],
       "rust": {
         "module": "kmipkit_client::ClientRequest",
@@ -132546,8 +132545,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ],
       "rust": {
         "module": "kmipkit_client::ClientBatchOutcome",
@@ -132642,8 +132640,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ],
       "rust": {
         "module": "kmipkit_ffi::extension_registry::client_abi",
@@ -235544,8 +235541,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -235751,8 +235747,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -239956,8 +239951,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -240025,8 +240019,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -242231,8 +242224,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -244385,8 +244377,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -248532,8 +248523,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -248601,8 +248591,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -251038,8 +251027,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -258267,8 +258255,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -258474,8 +258461,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -262560,8 +262546,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -262629,8 +262614,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -264775,8 +264759,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -266929,8 +266912,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -270954,8 +270936,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -271023,8 +271004,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -273398,8 +273378,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -275278,8 +275257,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -288376,8 +288354,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -288447,8 +288424,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -288518,8 +288494,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -288589,8 +288564,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -288658,8 +288632,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -288727,8 +288700,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -288796,8 +288768,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -288865,8 +288836,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -342241,8 +342211,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -342310,8 +342279,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -342379,8 +342347,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -342448,8 +342415,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -342517,8 +342483,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -342586,8 +342551,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -342655,8 +342619,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -342724,8 +342687,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -342794,8 +342756,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -342863,8 +342824,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -342932,8 +342892,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -343001,8 +342960,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -343070,8 +343028,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -343139,8 +343096,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
@@ -343209,8 +343165,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ]
     },
     {
