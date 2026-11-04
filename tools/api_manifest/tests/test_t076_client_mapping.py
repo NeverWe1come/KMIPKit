@@ -110,6 +110,22 @@ PROFILE_READINESS_EXPECTED_EXCLUSIONS = frozenset(
     "kmipkit.profile_readiness.ProfileEvidenceRecord.requirement_id",
     "kmipkit.profile_readiness.ProfileEvidenceRecord.passed_value",
 }
+PROFILE_VALIDATION_ROOT_ALIASES = {
+    "kmipkit.ProfileValidationError": "kmipkit.errors.ProfileValidationError",
+    "kmipkit.ProfileValidationDetails": "kmipkit.errors.ProfileValidationDetails",
+}
+PROFILE_VALIDATION_RESULT_INTERNAL_EXPORTS = frozenset(
+    {
+        "kmipkit.client.ProfileValidationResult.__slots__",
+        "kmipkit.client.ProfileValidationResult.closed",
+    }
+)
+PROFILE_VALIDATION_ERROR_RUNTIME_EXPORTS = frozenset(
+    {
+        "kmipkit.errors.ProfileValidationError.args",
+        "kmipkit.errors.ProfileValidationError.category",
+    }
+)
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 T076_SYMBOLS = {
     "kmipkit_client_batch_add_error_continuation_value",
@@ -1443,11 +1459,7 @@ class T076ClientMappingTests(unittest.TestCase):
         unclassified = observed - declarations.keys() - exclusions.keys()
         self.assertEqual(set(), unclassified, "unclassified Python package exports")
 
-        profile_validation_root_aliases = {
-            "kmipkit.ProfileValidationError": "kmipkit.errors.ProfileValidationError",
-            "kmipkit.ProfileValidationDetails": "kmipkit.errors.ProfileValidationDetails",
-        }
-        for alias, canonical in profile_validation_root_aliases.items():
+        for alias, canonical in PROFILE_VALIDATION_ROOT_ALIASES.items():
             with self.subTest(profile_validation_root_alias=alias):
                 self.assertIn(alias, observed)
                 alias_declaration = declarations[alias]
@@ -1713,14 +1725,6 @@ class T076ClientMappingTests(unittest.TestCase):
                 "__setattr__",
             )
         }
-        profile_validation_result_internal_exports = {
-            "kmipkit.client.ProfileValidationResult.__slots__",
-            "kmipkit.client.ProfileValidationResult.closed",
-        }
-        profile_validation_error_runtime_exports = {
-            "kmipkit.errors.ProfileValidationError.args",
-            "kmipkit.errors.ProfileValidationError.category",
-        }
         profile_validation_selection_repr_exclusion = {
             "kmipkit.client.ProfileValidationSelection.__repr__"
         }
@@ -1777,8 +1781,8 @@ class T076ClientMappingTests(unittest.TestCase):
             | async_outcome_lifecycle_exclusions
             | profile_model_dataclass_exclusions
             | profile_validation_details_dataclass_exclusions
-            | profile_validation_result_internal_exports
-            | profile_validation_error_runtime_exports
+            | PROFILE_VALIDATION_RESULT_INTERNAL_EXPORTS
+            | PROFILE_VALIDATION_ERROR_RUNTIME_EXPORTS
             | profile_validation_selection_repr_exclusion
             | {"kmipkit.metadata.Version.__init__"}
         )
@@ -1877,7 +1881,7 @@ class T076ClientMappingTests(unittest.TestCase):
                     self.assertIn("interpreter mechanics", exclusion["reason"])
                     self.assertIn("KMIPKIT-0010-FR-013", exclusion["evidence"])
                     self.assertIn("ProfileValidationDetails", exclusion["evidence"])
-                elif path in profile_validation_result_internal_exports:
+                elif path in PROFILE_VALIDATION_RESULT_INTERNAL_EXPORTS:
                     self.assertIn("KMIPKIT-0010-FR-013", exclusion["evidence"])
                     self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
                     if path.endswith(".__slots__"):
@@ -1886,7 +1890,7 @@ class T076ClientMappingTests(unittest.TestCase):
                     else:
                         self.assertIn("lifecycle", exclusion["reason"])
                         self.assertIn("close", exclusion["reason"])
-                elif path in profile_validation_error_runtime_exports:
+                elif path in PROFILE_VALIDATION_ERROR_RUNTIME_EXPORTS:
                     self.assertIn("KMIPKIT-0010-FR-013", exclusion["evidence"])
                     self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
                     if path.endswith(".args"):
