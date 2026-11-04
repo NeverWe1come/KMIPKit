@@ -80,7 +80,7 @@ RELATED_STATES = {
     "ExportResponse": {"": "verified", "::attributes": "verified", "::object": "verified", "::object_type": "verified", "::result": "verified", "::try_from_response_item": "blocked", "::unique_identifier": "verified", "::with_ttlv": "verified"},
     "ImportRequest": {"": "verified", "::attributes": "blocked", "::into_ttlv_payload": "blocked", "::key_wrap_type": "blocked", "::new": "verified", "::object": "blocked", "::object_type": "blocked", "::replace_existing": "blocked", "::unique_identifier": "blocked", "::with_key_wrap_type": "blocked", "::with_replace_existing": "blocked"},
     "ImportResponse": {"": "verified", "::result": "verified", "::try_from_response_item": "blocked", "::unique_identifier": "verified", "::with_ttlv": "verified"},
-    "JoinSplitKeyRequest": {"": "verified", "::attributes": "blocked", "::into_ttlv_payload": "blocked", "::new": "verified", "::object_type": "blocked", "::protection_storage_masks": "blocked", "::references": "blocked", "::secret_data_type": "blocked", "::with_attributes": "blocked", "::with_protection_storage_masks": "blocked", "::with_secret_data_type": "verified"},
+    "JoinSplitKeyRequest": {"": "verified", "::attributes": "blocked", "::into_ttlv_payload": "blocked", "::new": "verified", "::object_type": "blocked", "::protection_storage_masks": "blocked", "::references": "blocked", "::secret_data_type": "blocked", "::with_attributes": "verified", "::with_protection_storage_masks": "verified", "::with_secret_data_type": "verified"},
     "JoinSplitKeyResponse": {"": "verified", "::result": "verified", "::try_from_response_item": "blocked", "::unique_identifier": "verified", "::with_ttlv": "verified"},
 }
 

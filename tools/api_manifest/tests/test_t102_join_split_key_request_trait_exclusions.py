@@ -149,6 +149,8 @@ class T102JoinSplitKeyRequestTraitExclusionTests(unittest.TestCase):
         verified = {
             "kmipkit_protocol::JoinSplitKeyRequest",
             "kmipkit_protocol::JoinSplitKeyRequest::new",
+            "kmipkit_protocol::JoinSplitKeyRequest::with_attributes",
+            "kmipkit_protocol::JoinSplitKeyRequest::with_protection_storage_masks",
             "kmipkit_protocol::JoinSplitKeyRequest::with_secret_data_type",
         }
         blocked = {
@@ -158,8 +160,6 @@ class T102JoinSplitKeyRequestTraitExclusionTests(unittest.TestCase):
             "kmipkit_protocol::JoinSplitKeyRequest::protection_storage_masks",
             "kmipkit_protocol::JoinSplitKeyRequest::references",
             "kmipkit_protocol::JoinSplitKeyRequest::secret_data_type",
-            "kmipkit_protocol::JoinSplitKeyRequest::with_attributes",
-            "kmipkit_protocol::JoinSplitKeyRequest::with_protection_storage_masks",
         }
         self.assertEqual(set(protocol_rows), verified | blocked)
         self.assertEqual(

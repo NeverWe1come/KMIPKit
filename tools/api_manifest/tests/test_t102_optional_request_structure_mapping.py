@@ -1,4 +1,4 @@
-"""Pin the exact optional Re-key Table 305 Structure fields for T102."""
+"""Pin exact optional request Structures for Re-key, Join Split Key, and Re-certify."""
 
 from __future__ import annotations
 
@@ -159,7 +159,7 @@ def canonical_sha256(value: object) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
-class T102RekeyStructureMappingTests(unittest.TestCase):
+class T102OptionalRequestStructureMappingTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
