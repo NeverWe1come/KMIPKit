@@ -101,10 +101,12 @@ class T102ProfileModelReexportMappingTests(unittest.TestCase):
         )
         self.assertEqual("declared", capability["capabilityState"])
         for package, crate in REEXPORT_PACKAGES.items():
-            for name in (f"{crate}::ProfileValidationResult",):
+            for suffix in RESULT_SUFFIXES:
+                name = f"{crate}::ProfileValidationResult{suffix}"
                 declaration = declarations[(package, name)]
-                self.assertEqual("blocked", declaration["declarationState"])
-                self.assertNotIn(name, capability["mappings"]["rust"])
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual("client_profile_validation", declaration["capabilityId"])
+                self.assertIn(name, capability["mappings"]["rust"])
         self.assertEqual(
             {name for _, name in expected},
             {
@@ -159,6 +161,11 @@ class T102ProfileModelReexportMappingTests(unittest.TestCase):
                 self.assertTrue(row["approvalSource"].get("evidence"))
                 self.assertNotIn("candidateSpecId", row)
                 self.assertNotIn("blockedReason", row)
+                crate = REEXPORT_PACKAGES[package]
+                self.assertEqual(
+                    {"packageId": package, "name": export_name},
+                    row["languageMappings"]["rust"],
+                )
 
 
 if __name__ == "__main__":
