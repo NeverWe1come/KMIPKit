@@ -10901,3 +10901,16 @@ Reproduction commands (run from the repository root):
 - Focused Green mapping, policy state, request-builder, and operation checks: `python -m unittest tools.api_manifest.tests.test_t102_policy_request_serializer_mapping tools.api_manifest.tests.test_t102_set_constraints_request_trait_exclusions tools.api_manifest.tests.test_t102_request_builder_mapping_batch tools.api_manifest.tests.test_get_constraints_parity_manifest tools.api_manifest.tests.test_set_constraints_parity_manifest tools.api_manifest.tests.test_set_defaults_parity_manifest -v`.
 - Generated API outputs: `python tools/api_manifest/generate.py --check`.
 - Formatting and whitespace: `cargo fmt --all --check` and `git diff --check`.
+
+### T102 Macro-Lot 2 credential request serializer parity (2026-11-04)
+
+Red commit `1e9a92c2f` requires the six root/protocol serializers for Delegated Login, Login, and Logout to map to their approved four-language capabilities; the focused test fails on the six blocked states and three missing operation-inventory entries. Approved owner `specs/024-credential-sessions/spec.md` (KMIPKIT-0038) cites OASIS KMIP Specification v2.1 §6.1.12 Tables 199–201, §6.1.30 Tables 253–255, and §6.1.31 Tables 256–258. Green commit `5de88b88c` maps those exact declarations to their existing C, Java, and Python operation builders, updates the Logout capability expectation to include its already verified request serializers, response parsers, and `ClientResponseView` mapping, and regenerates the public API projections. Refactor commit `b676e3d1c` extracts the shared declaration-mapping assertions. No runtime behavior changes.
+
+Verification: the focused mapping, ticket/login trait, builder, and three operation parity modules pass 17/17; `python tools/api_manifest/generate.py --check` verifies 12/12 outputs; and `git diff --check` passes. T102 falls 130→124 blocked candidates; public declarations/exclusions remain 6,380/8,713. Macro-Lot 2 remains open; full T102 and the 151-test `manifest-v2` suite remain reserved for lot closure. No formal protocol-conformance claim is made.
+
+Reproduction commands (run from the repository root):
+
+- Red, expected to fail with six blocked-state and three operation-inventory assertions: `python -m unittest tools.api_manifest.tests.test_t102_credential_request_serializer_mapping -v`.
+- Focused Green mapping, state, and parity group: `python -m unittest tools.api_manifest.tests.test_t102_credential_request_serializer_mapping tools.api_manifest.tests.test_t102_ticket_login_request_trait_exclusions tools.api_manifest.tests.test_t102_request_builder_mapping_batch tools.api_manifest.tests.test_delegated_login_parity_manifest tools.api_manifest.tests.test_login_parity_manifest tools.api_manifest.tests.test_logout_parity_manifest -v`.
+- Generated API outputs: `python tools/api_manifest/generate.py --check`.
+- Whitespace: `git diff --check`.
