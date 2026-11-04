@@ -133,6 +133,7 @@ class T102RevokeRequestTraitExclusionTests(unittest.TestCase):
         verified = {
             "kmipkit_protocol::RevokeRequest",
             "kmipkit_protocol::RevokeRequest::new",
+            "kmipkit_protocol::RevokeRequest::into_ttlv_payload",
             "kmipkit_protocol::RevokeRequest::revocation_message",
             "kmipkit_protocol::RevokeRequest::with_compromise_occurrence_date",
             "kmipkit_protocol::RevokeRequest::with_revocation_message",
@@ -140,7 +141,6 @@ class T102RevokeRequestTraitExclusionTests(unittest.TestCase):
         }
         blocked = {
             "kmipkit_protocol::RevokeRequest::compromise_occurrence_date",
-            "kmipkit_protocol::RevokeRequest::into_ttlv_payload",
             "kmipkit_protocol::RevokeRequest::revocation_reason",
             "kmipkit_protocol::RevokeRequest::unique_identifier",
         }

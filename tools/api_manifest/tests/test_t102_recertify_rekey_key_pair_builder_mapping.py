@@ -216,7 +216,6 @@ class T102RecertifyRekeyKeyPairBuilderMappingTests(unittest.TestCase):
         )
         for blocked_id in (
             "rust-observed-1f4d5ae1f197c06d274f",
-            "rust-observed-d7bf84b1a5fd4c705597",
             "rust-observed-e1413e6ad346eed590c5",
         ):
             self.assertEqual("blocked", self.declarations[blocked_id]["declarationState"])

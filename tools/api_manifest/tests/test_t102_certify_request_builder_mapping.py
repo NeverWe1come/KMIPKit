@@ -24,6 +24,16 @@ OPERATION = "KMIPKIT-ELEM-OP-C2S-CERTIFY"
 C_BUILDER = "kmipkit_client_batch_item_certify"
 JAVA_BUILDER = "org.kmipkit.extensions.ClientBatchItem.certify"
 PYTHON_BUILDER = "kmipkit.extensions.client_batch_item_certify"
+LIFECYCLE_SERIALIZER_IDS = {
+    "KMIPKIT-ELEM-OP-C2S-CERTIFY": "rust-observed-455bf70fd49c2d1c0584",
+    "KMIPKIT-ELEM-OP-C2S-CHECK": "rust-observed-1aa8855f67251843003b",
+    "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE": "rust-observed-3f7281ffc6f28316cdb2",
+    "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY": "rust-observed-d7bf84b1a5fd4c705597",
+    "KMIPKIT-ELEM-OP-C2S-RE-KEY": "rust-observed-1477c49c457fdc10fa5b",
+    "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR": "rust-observed-92442b7d3422ffe465c3",
+    "KMIPKIT-ELEM-OP-C2S-RE-PROVISION": "rust-observed-d1446684e4f2641b3c96",
+    "KMIPKIT-ELEM-OP-C2S-REVOKE": "rust-observed-3110caf46cc1e36cbcc9",
+}
 EVIDENCE = {
     "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs",
     "crates/kmipkit-ffi/tests/c_api_coverage.rs",
@@ -36,6 +46,7 @@ OPERATION_ADDED_EVIDENCE = {
     "crates/kmipkit-ffi/tests/c_api_coverage.rs",
     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
     "tools/api_manifest/tests/test_t102_certify_request_builder_mapping.py",
+    "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py",
 }
 RAW_CERTIFY_DECLARATIONS = {
     "rust-observed-e0a06a71290bee987cc7",
@@ -134,12 +145,11 @@ REQUEST_CONSTRUCTION_REQUIREMENTS = {
 }
 BLOCKED_NEIGHBORS = {
     "rust-observed-d0317408cb64ea049eaf": "kmipkit_protocol::CertifyRequest::unique_identifier",
-    "rust-observed-455bf70fd49c2d1c0584": "kmipkit_protocol::CertifyRequest::into_ttlv_payload",
 }
 BLOCKED_BEFORE = 224
 BLOCKED_AFTER = 221
-DECLARATIONS_SHA256 = "7f95a31bd94f7d823d8064ceda5fcf654158e658b17c916f311cb6761ef3fa78"
-OPERATIONS_SHA256 = "8ee7f0c367d2125be38c05d42159b515900b868ec1a898206492bc3c2fad969a"
+DECLARATIONS_SHA256 = "f2f0042b8bbb2252fac96d8a4fb482dca22573bd63396cc307c7990dba177ad8"
+OPERATIONS_SHA256 = "b09e694d4e3fdf6d9fba384ce34fe1549823492fa9297258a6d91fb14972dbb4"
 
 
 def canonical_sha256(value: object) -> str:
@@ -352,6 +362,18 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
             row for row in self.manifest["publicDeclarations"] if row["declarationId"] not in target_ids
         ])
         for declaration in other_declarations:
+            if declaration["declarationId"] in LIFECYCLE_SERIALIZER_IDS.values():
+                declaration["capabilityId"] = "public_binding_surface"
+                declaration["requirementIds"] = ["KMIPKIT-0043-FR-021"]
+                declaration["declarationState"] = "blocked"
+                declaration["candidateSpecId"] = "KMIPKIT-0043"
+                declaration["blockedReason"] = (
+                    "The public Rust declaration has no resolved owner in the approved dependency inventory; "
+                    "assign an owner before advertising it."
+                )
+                declaration.pop("approvalSource", None)
+                declaration.pop("languageMappings", None)
+                declaration.pop("parityEvidenceIds", None)
             if declaration["declarationId"] in RAW_CERTIFY_DECLARATIONS | RAW_RECERTIFY_DECLARATIONS:
                 declaration["parityEvidenceIds"].remove(
                     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
@@ -407,10 +429,23 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
         self.assertEqual(DECLARATIONS_SHA256, canonical_sha256(other_declarations))
         other_operations = copy.deepcopy(self.manifest["operations"])
         for operation in other_operations:
+            if operation["operationId"] in LIFECYCLE_SERIALIZER_IDS:
+                serializer_id = LIFECYCLE_SERIALIZER_IDS[operation["operationId"]]
+                operation["declarations"]["rust"] = [
+                    declaration_id
+                    for declaration_id in operation["declarations"]["rust"]
+                    if declaration_id != serializer_id
+                ]
+                operation["parityEvidenceIds"] = [
+                    evidence_id
+                    for evidence_id in operation["parityEvidenceIds"]
+                    if evidence_id
+                    != "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py"
+                ]
             if operation["operationId"] == OPERATION:
                 operation["declarations"]["rust"] = [
                     declaration_id for declaration_id in operation["declarations"]["rust"]
-                    if declaration_id not in target_ids
+                    if declaration_id not in target_ids | {"rust-observed-455bf70fd49c2d1c0584"}
                 ]
                 operation["parityEvidenceIds"] = [
                     evidence_id for evidence_id in operation["parityEvidenceIds"]
