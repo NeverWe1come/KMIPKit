@@ -60,8 +60,9 @@ EXPECTED_MAPPING = {
     "python": {"packageId": "python-kmipkit", "name": "kmipkit.errors.ClientExecutionError"},
 }
 
+
 SHARED_PARITY_EVIDENCE = {
-    "crates/kmipkit-client/tests/error_contract.rs",
+    "crates/kmipkit-client/tests/unit/revoke_execution_tests.rs",
     "bindings/c/tests/client_abi_consumer.c",
     "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
     "bindings/python/tests/test_client.py",
@@ -78,6 +79,11 @@ class T102ResponseConversionErrorMappingTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
         cls.partition = json.loads(PARTITION_PATH.read_text(encoding="utf-8"))
+        cls.client_execution = next(
+            capability
+            for capability in cls.manifest["capabilities"]
+            if capability["capabilityId"] == "client_execution"
+        )
         cls.declarations = {
             (row["packageId"], row["exportName"]): row
             for row in cls.manifest["publicDeclarations"]
@@ -110,7 +116,7 @@ class T102ResponseConversionErrorMappingTests(unittest.TestCase):
 
         for family, row in rows:
             with self.subTest(export=row["exportName"]):
-                owner_path, owner_prefix, owner_requirements = FAMILY_OWNER[family]
+                _owner_path, _owner_prefix, owner_requirements = FAMILY_OWNER[family]
                 response_name = f"kmipkit_protocol::{family.removesuffix('Error')}Response"
                 response = self.declarations[("rust-kmipkit-protocol", response_name)]
                 requirements = set(row["requirementIds"])
@@ -121,9 +127,10 @@ class T102ResponseConversionErrorMappingTests(unittest.TestCase):
                 self.assertEqual("four-language", row["parityScope"])
                 self.assertEqual(MAPPING_SEMANTICS, row["mappingSemantics"])
                 self.assertEqual(EXPECTED_MAPPING, row["languageMappings"])
-                self.assertEqual(response["approvalSource"], row["approvalSource"])
-                self.assertIn(owner_path, row["approvalSource"]["path"])
+                self.assertEqual(self.client_execution["approvalEvidence"], row["approvalSource"])
+                self.assertEqual("specs/007-client-execution/spec.md", row["approvalSource"]["path"])
                 self.assertTrue(owner_requirements <= requirements)
+                self.assertNotIn("KMIPKIT-0007-FR-001", requirements)
                 self.assertTrue({"KMIPKIT-0007-FR-006", "KMIPKIT-0007-FR-008"} <= requirements)
                 self.assertTrue({"KMIPKIT-0043-FR-005", "KMIPKIT-0043-FR-010", "KMIPKIT-0043-FR-021", "KMIPKIT-0043-FR-022"} <= requirements)
                 self.assertTrue(
@@ -135,15 +142,42 @@ class T102ResponseConversionErrorMappingTests(unittest.TestCase):
                 )
 
     def test_direct_response_parser_methods_remain_outside_this_mapping(self) -> None:
-        parser = self.declarations[("rust-kmipkit-protocol", "kmipkit_protocol::GetResponse::try_from_response_item")]
-        self.assertEqual("blocked", parser["declarationState"])
-        self.assertEqual("KMIPKIT-0043", parser["candidateSpecId"])
+        for family in FAMILY_COUNTS:
+            with self.subTest(family=family):
+                response_name = f"kmipkit_protocol::{family.removesuffix('Error')}Response::try_from_response_item"
+                parser = self.declarations[("rust-kmipkit-protocol", response_name)]
+                self.assertEqual("blocked", parser["declarationState"])
+                self.assertEqual("KMIPKIT-0043", parser["candidateSpecId"])
 
-    def test_normalized_mapping_semantics_is_schema_valid_and_targeted(self) -> None:
+    def test_only_approved_error_families_may_use_normalized_mapping_semantics(self) -> None:
+        family_row = next(
+            item for item in self.manifest["publicDeclarations"]
+            if item.get("mappingSemantics") == MAPPING_SEMANTICS
+        )
+        generate._validate_normalized_client_protocol_error_source(family_row)
+
+        unrelated = copy.deepcopy(
+            self.declarations[("rust-kmipkit-protocol", "kmipkit_protocol::GetResponse")]
+        )
+        unrelated["declarationState"] = "declared"
+        unrelated["capabilityId"] = "client_execution"
+        unrelated["parityScope"] = "four-language"
+        unrelated["mappingSemantics"] = MAPPING_SEMANTICS
+        unrelated.pop("candidateSpecId", None)
+        unrelated.pop("blockedReason", None)
+        with self.assertRaisesRegex(generate.ManifestError, "approved response error family"):
+            generate._validate_normalized_client_protocol_error_source(unrelated)
+
+        work_in_progress = copy.deepcopy(family_row)
+        work_in_progress["declarationState"] = "authorized_wip"
+        with self.assertRaisesRegex(generate.ManifestError, "ready declaration"):
+            generate._validate_normalized_client_protocol_error_source(work_in_progress)
+
+    def test_normalized_mapping_semantics_pins_all_four_execution_targets(self) -> None:
         manifest = copy.deepcopy(self.manifest)
         row = next(
             item for item in manifest["publicDeclarations"]
-            if item["exportName"] == "kmipkit_client::ClientError::Protocol"
+            if item.get("mappingSemantics") == MAPPING_SEMANTICS
         )
         row["mappingSemantics"] = MAPPING_SEMANTICS
 
@@ -161,11 +195,21 @@ class T102ResponseConversionErrorMappingTests(unittest.TestCase):
             manifest["publicDeclarations"], package_languages, c_release_functions
         )
 
-        row["languageMappings"]["c"]["name"] = "KMIPKIT_ERROR_SERVER_RESULT"
-        with self.assertRaisesRegex(generate.ManifestError, "normalized client protocol error mapping"):
-            generate._validate_ready_mapping_targets(
-                manifest["publicDeclarations"], package_languages, c_release_functions
-            )
+        for language, mapping in EXPECTED_MAPPING.items():
+            with self.subTest(language=language):
+                mapped_manifest = copy.deepcopy(manifest["publicDeclarations"])
+                mapped_row = next(
+                    item for item in mapped_manifest
+                    if item["declarationId"] == row["declarationId"]
+                )
+                mapped_row["languageMappings"][language]["name"] = f"wrong.{language}.target"
+                with self.assertRaisesRegex(
+                    generate.ManifestError,
+                    "normalized client protocol error mapping",
+                ):
+                    generate._validate_ready_mapping_targets(
+                        mapped_manifest, package_languages, c_release_functions
+                    )
 
 
 if __name__ == "__main__":
