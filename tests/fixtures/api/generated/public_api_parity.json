@@ -154254,38 +154254,42 @@
         ],
         "rust": [
           "rust-observed-02caf25ee1528ea97c2f",
+          "rust-observed-0457cd734667f82f07fd",
           "rust-observed-07696fae05f99bd1ad16",
           "rust-observed-12029d442c5430d1f445",
           "rust-observed-13dd78ed4ea678db8508",
           "rust-observed-15202a6508bea1672eae",
+          "rust-observed-186f771e1bf55b9e87ef",
           "rust-observed-1b3d0b75acdff86532c8",
           "rust-observed-1ca2d0d260c79d46d7b6",
+          "rust-observed-1dcbc84657cd895290f7",
+          "rust-observed-2fc8b2a7575195beabba",
+          "rust-observed-36c4231c5045c6c56c4b",
+          "rust-observed-38b0894e11f5ded77ec4",
           "rust-observed-397ee0115e79bd8b9749",
           "rust-observed-4baa96ecea0508484e65",
+          "rust-observed-51a60237c466a9503394",
+          "rust-observed-543f908844c7bb7b67bb",
           "rust-observed-54d53901b332eb10df39",
+          "rust-observed-5d45d36c5f992800eceb",
+          "rust-observed-5dcc598a1fefe09cf9a8",
+          "rust-observed-5ea7fcb413184db46fcf",
           "rust-observed-621e66520438931dba51",
+          "rust-observed-7a3e56c626a8ab876ea7",
           "rust-observed-8a1974769b61c4c4eae5",
           "rust-observed-90303b586fa62a280539",
           "rust-observed-9365e579da298db8f315",
+          "rust-observed-95f9f5171659f51e66fd",
           "rust-observed-ac6bfe0a5b7ff3e02a9a",
+          "rust-observed-c4de28f8dbfa04631c8c",
           "rust-observed-d234aacaf6de7859bf6c",
+          "rust-observed-d26a642304a3935ec483",
+          "rust-observed-d9ddf7e087a1a8ab6fdf",
+          "rust-observed-e0453d9c1f7984068a6e",
           "rust-observed-e1f8406907aaf65d7c1e",
           "rust-observed-e67fa5f2ea457244e060",
-          "rust-observed-36c4231c5045c6c56c4b",
-          "rust-observed-186f771e1bf55b9e87ef",
-          "rust-observed-5ea7fcb413184db46fcf",
-          "rust-observed-38b0894e11f5ded77ec4",
-          "rust-observed-0457cd734667f82f07fd",
-          "rust-observed-5dcc598a1fefe09cf9a8",
-          "rust-observed-5d45d36c5f992800eceb",
-          "rust-observed-e0453d9c1f7984068a6e",
-          "rust-observed-7a3e56c626a8ab876ea7",
-          "rust-observed-c4de28f8dbfa04631c8c",
-          "rust-observed-95f9f5171659f51e66fd",
-          "rust-observed-51a60237c466a9503394",
-          "rust-observed-543f908844c7bb7b67bb",
-          "rust-observed-1dcbc84657cd895290f7",
-          "rust-observed-e794f58c65bd52f46387"
+          "rust-observed-e794f58c65bd52f46387",
+          "rust-observed-fd1593dd30df34f1e29e"
         ]
       },
       "featureSpecId": "KMIPKIT-0039",
@@ -154303,7 +154307,8 @@
         "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs",
-        "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs",
+        "tools/api_manifest/tests/test_t102_get_usage_allocation_request_mapping.py"
       ],
       "scope": "client_1_0",
       "section": "6.1.23"
@@ -257996,6 +258001,148 @@
         "status": "Approved"
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "declarationId": "rust-observed-d26a642304a3935ec483",
+      "declarationState": "verified",
+      "exportName": "kmipkit::GetUsageAllocationRequest::to_ttlv_payload",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_usage_allocation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getUsageAllocation",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_usage_allocation",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::GetUsageAllocationRequest::to_ttlv_payload",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs",
+        "tools/api_manifest/tests/test_get_usage_allocation_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_get_usage_allocation_request_mapping.py",
+        "tools/api_manifest/tests/test_t102_request_builder_mapping_batch.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "declarationId": "rust-observed-fd1593dd30df34f1e29e",
+      "declarationState": "verified",
+      "exportName": "kmipkit::GetUsageAllocationRequest::unique_identifier",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_usage_allocation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getUsageAllocation",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_usage_allocation",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::GetUsageAllocationRequest::unique_identifier",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs",
+        "tools/api_manifest/tests/test_get_usage_allocation_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_get_usage_allocation_request_mapping.py",
+        "tools/api_manifest/tests/test_t102_request_builder_mapping_batch.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
       "declarationId": "rust-observed-5d45d36c5f992800eceb",
       "declarationState": "verified",
       "exportName": "kmipkit::GetUsageAllocationRequest::usage_limits_count",
@@ -295315,6 +295462,148 @@
         "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "declarationId": "rust-observed-d9ddf7e087a1a8ab6fdf",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::GetUsageAllocationRequest::to_ttlv_payload",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_usage_allocation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getUsageAllocation",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_usage_allocation",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::GetUsageAllocationRequest::to_ttlv_payload",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs",
+        "tools/api_manifest/tests/test_get_usage_allocation_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_get_usage_allocation_request_mapping.py",
+        "tools/api_manifest/tests/test_t102_request_builder_mapping_batch.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "declarationId": "rust-observed-2fc8b2a7575195beabba",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::GetUsageAllocationRequest::unique_identifier",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_usage_allocation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getUsageAllocation",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_usage_allocation",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::GetUsageAllocationRequest::unique_identifier",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs",
+        "tools/api_manifest/tests/test_get_usage_allocation_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_get_usage_allocation_request_mapping.py",
+        "tools/api_manifest/tests/test_t102_request_builder_mapping_batch.py"
       ],
       "parityScope": "four-language",
       "requirementIds": [
