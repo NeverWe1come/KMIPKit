@@ -128196,14 +128196,43 @@
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.errors.InvalidInputError.category",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "production_transport",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0013-FR-001",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This public Python package export is observable, but it has no reviewed logical capability or cross-language declaration mapping in the current inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::TransportConfigError"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_INVALID_INPUT"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.InvalidInputException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.InvalidInputError"
+        }
+      }
     },
     {
       "declarationId": "t011-observed-python-kmipkiterror-category",
@@ -128224,14 +128253,38 @@
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.errors.ResourceLimitError.category",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "ffi_runtime_metadata",
       "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This public Python package export is observable, but it has no reviewed logical capability or cross-language declaration mapping in the current inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::RuntimeMetadataError::ResourceLimit"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_RESOURCE_LIMIT"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ResourceLimitException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.ResourceLimitError"
+        }
+      }
     },
     {
       "declarationId": "t011-observed-python-version-abi_version",
@@ -458489,59 +458542,59 @@
       }
     },
         {
-      "capabilityId": "ffi_runtime_metadata",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-013"
-      ],
-      "capabilityState": "declared",
-      "parityScope": "four-language",
-      "ownerSpecId": "KMIPKIT-0043",
-      "approvalEvidence": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "mappings": {
-        "rust": [
-          "kmipkit::ABI_VERSION",
-          "kmipkit::RuntimeMetadataError",
-          "kmipkit::RuntimeMetadataError::ResourceLimit",
-          "kmipkit::RuntimeVersion",
-          "kmipkit::RuntimeVersion::abi_version",
-          "kmipkit::RuntimeVersion::product_version",
-          "kmipkit::VERSION",
-          "kmipkit::capability_is_available",
-          "kmipkit::runtime_version"
-        ],
-        "c": [
-          "KMIPKIT_ERROR_RESOURCE_LIMIT",
-          "kmipkit_capability_is_available",
-          "kmipkit_version_get"
-        ],
-        "java": [
-          "org.kmipkit.ResourceLimitException",
-          "org.kmipkit.RuntimeMetadata.Version",
-          "org.kmipkit.RuntimeMetadata.Version.abiVersion",
-          "org.kmipkit.RuntimeMetadata.Version.major",
-          "org.kmipkit.RuntimeMetadata.Version.minor",
-          "org.kmipkit.RuntimeMetadata.Version.patch",
-          "org.kmipkit.RuntimeMetadata.capabilityIsAvailable",
-          "org.kmipkit.RuntimeMetadata.version"
-        ],
-        "python": [
-          "kmipkit.errors.ResourceLimitError",
-          "kmipkit.metadata.Version",
-          "kmipkit.metadata.Version.abi_version",
-          "kmipkit.metadata.Version.major",
-          "kmipkit.metadata.Version.minor",
-          "kmipkit.metadata.Version.patch",
-          "kmipkit.metadata.capability_is_available",
-          "kmipkit.metadata.get_version"
-        ]
-      }
-    },
+          "capabilityId": "ffi_runtime_metadata",
+          "requirementIds": [
+            "KMIPKIT-0043-FR-007",
+            "KMIPKIT-0043-FR-013"
+          ],
+          "capabilityState": "declared",
+          "parityScope": "four-language",
+          "ownerSpecId": "KMIPKIT-0043",
+          "approvalEvidence": {
+            "kind": "feature-specification",
+            "path": "specs/043-public-api-bindings/spec.md",
+            "status": "Approved",
+            "evidence": "**Status**: Approved for implementation"
+          },
+          "mappings": {
+            "rust": [
+              "kmipkit::ABI_VERSION",
+              "kmipkit::RuntimeMetadataError",
+              "kmipkit::RuntimeMetadataError::ResourceLimit",
+              "kmipkit::RuntimeVersion",
+              "kmipkit::RuntimeVersion::abi_version",
+              "kmipkit::RuntimeVersion::product_version",
+              "kmipkit::VERSION",
+              "kmipkit::capability_is_available",
+              "kmipkit::runtime_version"
+            ],
+            "c": [
+              "KMIPKIT_ERROR_RESOURCE_LIMIT",
+              "kmipkit_capability_is_available",
+              "kmipkit_version_get"
+            ],
+            "java": [
+              "org.kmipkit.ResourceLimitException",
+              "org.kmipkit.RuntimeMetadata.Version",
+              "org.kmipkit.RuntimeMetadata.Version.abiVersion",
+              "org.kmipkit.RuntimeMetadata.Version.major",
+              "org.kmipkit.RuntimeMetadata.Version.minor",
+              "org.kmipkit.RuntimeMetadata.Version.patch",
+              "org.kmipkit.RuntimeMetadata.capabilityIsAvailable",
+              "org.kmipkit.RuntimeMetadata.version"
+            ],
+            "python": [
+              "kmipkit.errors.ResourceLimitError",
+              "kmipkit.metadata.Version",
+              "kmipkit.metadata.Version.abi_version",
+              "kmipkit.metadata.Version.major",
+              "kmipkit.metadata.Version.minor",
+              "kmipkit.metadata.Version.patch",
+              "kmipkit.metadata.capability_is_available",
+              "kmipkit.metadata.get_version"
+            ]
+          }
+        },
     {
       "capabilityId": "generic_ttlv_model",
       "requirementIds": [
