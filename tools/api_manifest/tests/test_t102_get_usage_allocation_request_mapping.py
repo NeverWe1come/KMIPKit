@@ -102,14 +102,16 @@ class T102GetUsageAllocationRequestMappingTests(unittest.TestCase):
         )
         specification = (ROOT / OWNER).read_text(encoding="utf-8")
         self.assertIn("OASIS Key Management Interoperability Protocol Specification Version 2.1", specification)
-        self.assertIn("§6.1.23", specification)
-        self.assertIn("232", specification)
+        self.assertIn(
+            "| Get Usage Allocation | KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION | §6.1.23 | 232 | 233 | 234 |",
+            specification,
+        )
 
         source_tests = (
             ROOT / "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs"
         ).read_text(encoding="utf-8")
         self.assertIn("§6.1.23", source_tests)
-        self.assertIn("Table 232", source_tests)
+        self.assertIn("Tables 232–234", source_tests)
 
 
 if __name__ == "__main__":
