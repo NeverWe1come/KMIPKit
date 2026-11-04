@@ -49,16 +49,17 @@ use crate::{
     kmipkit_modify_attribute_request_t, kmipkit_nonce_t, kmipkit_poll_request_t,
     kmipkit_process_request_t, kmipkit_profile_object_state_v1_t, kmipkit_profile_readiness_t,
     kmipkit_profile_validation_context_v1_t, kmipkit_profile_validation_error_t,
-    kmipkit_profile_validation_error_view_v1_t, kmipkit_profile_validation_selection_v1_t,
-    kmipkit_query_async_requests_request_t, kmipkit_raw_tag_t, kmipkit_register_request_t,
-    kmipkit_registered_extension_value_t, kmipkit_request_batch_item_view_t,
-    kmipkit_request_header_view_t, kmipkit_request_message_t, kmipkit_request_options_v1_t,
-    kmipkit_response_batch_item_view_t, kmipkit_response_header_view_t, kmipkit_response_message_t,
-    kmipkit_revocation_reason_t, kmipkit_revoke_request_t, kmipkit_secret_bytes_t,
-    kmipkit_secret_text_t, kmipkit_set_attribute_request_t, kmipkit_split_key_reference_t,
-    kmipkit_tag_t, kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t,
-    kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t, kmipkit_ttlv_decode_error_v1_t,
-    kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
+    kmipkit_profile_validation_error_view_v1_t, kmipkit_profile_validation_result_t,
+    kmipkit_profile_validation_selection_v1_t, kmipkit_query_async_requests_request_t,
+    kmipkit_raw_tag_t, kmipkit_register_request_t, kmipkit_registered_extension_value_t,
+    kmipkit_request_batch_item_view_t, kmipkit_request_header_view_t, kmipkit_request_message_t,
+    kmipkit_request_options_v1_t, kmipkit_response_batch_item_view_t,
+    kmipkit_response_header_view_t, kmipkit_response_message_t, kmipkit_revocation_reason_t,
+    kmipkit_revoke_request_t, kmipkit_secret_bytes_t, kmipkit_secret_text_t,
+    kmipkit_set_attribute_request_t, kmipkit_split_key_reference_t, kmipkit_tag_t,
+    kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t, kmipkit_transport_config_v1_t,
+    kmipkit_transport_input_v1_t, kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t,
+    kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
     kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
     kmipkit_unique_identifier_v1_t, kmipkit_usage_allocation_context_t,
     kmipkit_username_and_password_credential_t, kmipkit_validated_extension_value_t,
@@ -96,8 +97,8 @@ use kmipkit_protocol::{
 };
 use kmipkit_protocol::{MessageValidationError, MessageValidationErrorKind, RequestMessage};
 use kmipkit_protocol::{
-    ProfileObjectState, ProfileReadiness, ProfileValidationContext, ProfileValidationError,
-    ProfileValidationSelection,
+    ProfileObjectState, ProfileReadiness, ProfileTransport, ProfileValidationContext,
+    ProfileValidationError, ProfileValidationResult, ProfileValidationSelection,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -483,6 +484,7 @@ enum Kind {
     ResponseBatchItemView,
     MessageValidationError,
     ProfileValidationError,
+    ProfileValidationResult,
     ProfileReadiness,
     TransportConfig,
     Client,
@@ -596,6 +598,7 @@ enum HandleValue {
     },
     MessageValidationError(MessageValidationError),
     ProfileValidationError(ProfileValidationError),
+    ProfileValidationResult(ProfileValidationResult),
     ProfileReadiness(ProfileReadiness),
     TransportConfig(TransportConfig),
     Client(Box<std::sync::Mutex<Client>>),
@@ -2131,6 +2134,19 @@ pub extern "C" fn kmipkit_profile_validation_error_release(
 ) {
     ffi_entrypoint(|| {
         release(handle, Kind::ProfileValidationError);
+    });
+}
+
+/// Releases a resolved profile result and invalidates every ID span borrowed from it.
+///
+/// The caller must serialize release against all result accessors and reads through borrowed ID
+/// spans. No thread may use the handle or those spans once release begins.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_profile_validation_result_release(
+    result: *mut kmipkit_profile_validation_result_t,
+) {
+    ffi_entrypoint(|| {
+        release(result, Kind::ProfileValidationResult);
     });
 }
 

@@ -75,6 +75,10 @@ pub struct kmipkit_profile_validation_error_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_profile_validation_result_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
 pub struct kmipkit_profile_readiness_t {
     _private: [u8; 0],
 }

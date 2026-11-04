@@ -3604,6 +3604,366 @@ fn profile_context_from_v1(
     Ok(result)
 }
 
+/// Resolves one versioned caller selection with the canonical Rust profile validator.
+///
+/// A profile-rule failure returns `ERROR_INVALID_INPUT`, clears `out_result`, and records only
+/// the stable profile validation detail view. The selection bytes are never copied into an error
+/// message. The returned result owns its ordered profile and requirement IDs.
+///
+/// # Safety
+///
+/// `selection` must reference an aligned readable v1 selection record and all nested spans and
+/// arrays must be readable for this call. `out_result` must reference an aligned writable result
+/// handle slot that does not overlap the selection record or its input storage.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_profile_validation_selection_validate_v1(
+    selection: *const kmipkit_profile_validation_selection_v1_t,
+    out_result: *mut *mut kmipkit_profile_validation_result_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_result);
+        let selection = match profile_selection_from_v1(selection) {
+            Ok(selection) => selection,
+            Err(status) => return record_ffi_error(status),
+        };
+        let result = match selection.validate() {
+            Ok(result) => result,
+            Err(error) => {
+                let status = record_ffi_error(ERROR_INVALID_INPUT);
+                LAST_PROFILE_VALIDATION_ERROR.with(|last_error| {
+                    *last_error.borrow_mut() = Some(error);
+                });
+                return status;
+            }
+        };
+        LAST_PROFILE_VALIDATION_ERROR.with(|last_error| *last_error.borrow_mut() = None);
+        *out = try_ffi!(try_make_handle(
+            Kind::ProfileValidationResult,
+            HandleValue::ProfileValidationResult(result),
+        ));
+        SUCCESS
+    })
+}
+
+/// Returns the number of profile IDs in a resolved selection.
+///
+/// # Safety
+///
+/// `result` must be a live result handle. `out_count` must reference an aligned writable `u64`.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_profile_validation_result_profile_id_count_v1(
+    result: *mut kmipkit_profile_validation_result_t,
+    out_count: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let count = scalar_out!(out_count);
+        *count = 0;
+        let handle = read_handle!(result, ProfileValidationResult);
+        let HandleValue::ProfileValidationResult(result) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *count =
+            try_ffi!(u64::try_from(result.profile_ids().len()).map_err(|_| ERROR_RESOURCE_LIMIT));
+        SUCCESS
+    })
+}
+
+/// Returns one profile ID span borrowed from a resolved result handle.
+///
+/// The returned UTF-8 span remains valid until `kmipkit_profile_validation_result_release`.
+///
+/// # Safety
+///
+/// `result` must be live without concurrent release. `out_span` must reference an aligned writable
+/// byte-span record and must not overlap the result handle's owned storage.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_profile_validation_result_profile_id_at_v1(
+    result: *mut kmipkit_profile_validation_result_t,
+    index: u64,
+    out_span: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_span.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: the caller promises a writable aligned span record for this ABI call.
+        let span = unsafe { &mut *out_span };
+        *span = crate::kmipkit_byte_span_v1_t {
+            data: ptr::null(),
+            length: 0,
+        };
+        let handle = read_handle!(result, ProfileValidationResult);
+        let HandleValue::ProfileValidationResult(result) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let index = try_ffi!(usize::try_from(index).map_err(|_| ERROR_INVALID_INPUT));
+        let Some(profile_id) = result.profile_ids().get(index) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        span.data = profile_id.as_ptr();
+        span.length = try_ffi!(u64::try_from(profile_id.len()).map_err(|_| ERROR_RESOURCE_LIMIT));
+        SUCCESS
+    })
+}
+
+/// Returns the number of requirement IDs in a resolved selection.
+///
+/// # Safety
+///
+/// `result` must be a live result handle. `out_count` must reference an aligned writable `u64`.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_profile_validation_result_requirement_id_count_v1(
+    result: *mut kmipkit_profile_validation_result_t,
+    out_count: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let count = scalar_out!(out_count);
+        *count = 0;
+        let handle = read_handle!(result, ProfileValidationResult);
+        let HandleValue::ProfileValidationResult(result) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *count = try_ffi!(
+            u64::try_from(result.requirement_ids().len()).map_err(|_| ERROR_RESOURCE_LIMIT)
+        );
+        SUCCESS
+    })
+}
+
+/// Returns one requirement ID span borrowed from a resolved result handle.
+///
+/// The returned UTF-8 span remains valid until `kmipkit_profile_validation_result_release`.
+///
+/// # Safety
+///
+/// `result` must be live without concurrent release. `out_span` must reference an aligned writable
+/// byte-span record and must not overlap the result handle's owned storage.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_profile_validation_result_requirement_id_at_v1(
+    result: *mut kmipkit_profile_validation_result_t,
+    index: u64,
+    out_span: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_span.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: the caller promises a writable aligned span record for this ABI call.
+        let span = unsafe { &mut *out_span };
+        *span = crate::kmipkit_byte_span_v1_t {
+            data: ptr::null(),
+            length: 0,
+        };
+        let handle = read_handle!(result, ProfileValidationResult);
+        let HandleValue::ProfileValidationResult(result) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let index = try_ffi!(usize::try_from(index).map_err(|_| ERROR_INVALID_INPUT));
+        let Some(requirement_id) = result.requirement_ids().get(index) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        span.data = requirement_id.as_ptr();
+        span.length =
+            try_ffi!(u64::try_from(requirement_id.len()).map_err(|_| ERROR_RESOURCE_LIMIT));
+        SUCCESS
+    })
+}
+
+fn request_message_from_borrowed_ttlv(
+    structure: *mut kmipkit_ttlv_structure_t,
+) -> FfiResult<RequestMessage> {
+    let handle = reference_handle(structure, Kind::Structure)?;
+    let HandleValue::Structure(structure) = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    let structure = clone_structure_view(&structure.view())?;
+    RequestMessage::try_from_ttlv(structure).map_err(|_| ERROR_PROTOCOL)
+}
+
+fn response_message_from_borrowed_ttlv(
+    structure: *mut kmipkit_ttlv_structure_t,
+) -> FfiResult<ResponseMessage> {
+    let handle = reference_handle(structure, Kind::Structure)?;
+    let HandleValue::Structure(structure) = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    let structure = clone_structure_view(&structure.view())?;
+    ResponseMessage::try_from_ttlv(structure).map_err(|_| ERROR_PROTOCOL)
+}
+
+fn record_profile_validation_outcome(result: Result<(), ProfileValidationError>) -> i32 {
+    match result {
+        Ok(()) => {
+            LAST_PROFILE_VALIDATION_ERROR.with(|last_error| *last_error.borrow_mut() = None);
+            SUCCESS
+        }
+        Err(error) => {
+            let status = record_ffi_error(ERROR_INVALID_INPUT);
+            LAST_PROFILE_VALIDATION_ERROR.with(|last_error| {
+                *last_error.borrow_mut() = Some(error);
+            });
+            status
+        }
+    }
+}
+
+/// Checks the selected rules' transport constraints using the canonical Rust validator.
+///
+/// `transport` is 1 for raw TTLV over TLS and 2 for TTLV over HTTPS/HTTP 1.1.
+/// A profile-rule failure is available through the thread-local profile-validation error view.
+///
+/// # Safety
+///
+/// `result` must be a live profile-validation-result handle.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_profile_validation_result_validate_transport_v1(
+    result: *mut kmipkit_profile_validation_result_t,
+    transport: u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let handle = read_handle!(result, ProfileValidationResult);
+        let HandleValue::ProfileValidationResult(result) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let transport = match transport {
+            1 => ProfileTransport::RawTtlvTls,
+            2 => ProfileTransport::Https,
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        record_profile_validation_outcome(result.validate_transport(transport))
+    })
+}
+
+/// Validates one borrowed generic Request Message TTLV tree against the selected profile rules.
+///
+/// The input structure remains owned by the caller. A profile-rule failure is available through
+/// the thread-local profile-validation error view; malformed message TTLV returns `ERROR_PROTOCOL`.
+///
+/// # Safety
+///
+/// `result` and `request` must be live handles of their declared types for this call.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_profile_validation_result_validate_request_v1(
+    result: *mut kmipkit_profile_validation_result_t,
+    request: *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let handle = read_handle!(result, ProfileValidationResult);
+        let HandleValue::ProfileValidationResult(result) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let request = match request_message_from_borrowed_ttlv(request) {
+            Ok(request) => request,
+            Err(status) => return record_ffi_error(status),
+        };
+        record_profile_validation_outcome(result.validate_request(&request))
+    })
+}
+
+/// Validates a borrowed generic request TTLV tree with optional caller-supplied object state.
+///
+/// A null `context` means an empty context. The request structure remains owned by the caller.
+/// Profile-rule failures are available through the thread-local profile-validation error view;
+/// malformed message TTLV returns `ERROR_PROTOCOL`.
+///
+/// # Safety
+///
+/// `result` and `request` must be live handles of their declared types. A non-null `context` must
+/// point to a readable v1 record with readable nested state arrays and spans for this call.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_profile_validation_result_validate_request_with_context_v1(
+    result: *mut kmipkit_profile_validation_result_t,
+    request: *mut kmipkit_ttlv_structure_t,
+    context: *const kmipkit_profile_validation_context_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let handle = read_handle!(result, ProfileValidationResult);
+        let HandleValue::ProfileValidationResult(result) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let request = match request_message_from_borrowed_ttlv(request) {
+            Ok(request) => request,
+            Err(status) => return record_ffi_error(status),
+        };
+        let context = match profile_context_from_v1(context) {
+            Ok(context) => context,
+            Err(status) => return record_ffi_error(status),
+        };
+        record_profile_validation_outcome(result.validate_request_with_context(&request, &context))
+    })
+}
+
+/// Validates a borrowed request and response TTLV tree pair against selected profile rules.
+///
+/// Both structures remain owned by the caller. A profile-rule failure is available through the
+/// thread-local profile-validation error view; malformed message TTLV returns `ERROR_PROTOCOL`.
+///
+/// # Safety
+///
+/// `result`, `request`, and `response` must be live handles of their declared types for this call.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_profile_validation_result_validate_response_v1(
+    result: *mut kmipkit_profile_validation_result_t,
+    request: *mut kmipkit_ttlv_structure_t,
+    response: *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let handle = read_handle!(result, ProfileValidationResult);
+        let HandleValue::ProfileValidationResult(result) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let request = match request_message_from_borrowed_ttlv(request) {
+            Ok(request) => request,
+            Err(status) => return record_ffi_error(status),
+        };
+        let response = match response_message_from_borrowed_ttlv(response) {
+            Ok(response) => response,
+            Err(status) => return record_ffi_error(status),
+        };
+        record_profile_validation_outcome(result.validate_response(&request, &response))
+    })
+}
+
+/// Validates a borrowed request and response TTLV tree pair with optional caller-supplied state.
+///
+/// A null `context` means an empty context. Both structures remain owned by the caller. Profile-
+/// rule failures are available through the thread-local profile-validation error view; malformed
+/// message TTLV returns `ERROR_PROTOCOL`.
+///
+/// # Safety
+///
+/// `result`, `request`, and `response` must be live handles of their declared types. A non-null
+/// `context` must point to a readable v1 record with readable nested state arrays and spans.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_profile_validation_result_validate_response_with_context_v1(
+    result: *mut kmipkit_profile_validation_result_t,
+    request: *mut kmipkit_ttlv_structure_t,
+    response: *mut kmipkit_ttlv_structure_t,
+    context: *const kmipkit_profile_validation_context_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let handle = read_handle!(result, ProfileValidationResult);
+        let HandleValue::ProfileValidationResult(result) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let request = match request_message_from_borrowed_ttlv(request) {
+            Ok(request) => request,
+            Err(status) => return record_ffi_error(status),
+        };
+        let response = match response_message_from_borrowed_ttlv(response) {
+            Ok(response) => response,
+            Err(status) => return record_ffi_error(status),
+        };
+        let context = match profile_context_from_v1(context) {
+            Ok(context) => context,
+            Err(status) => return record_ffi_error(status),
+        };
+        record_profile_validation_outcome(
+            result.validate_response_with_context(&request, &response, &context),
+        )
+    })
+}
+
 fn execute_profile_client_batch(
     client: *mut kmipkit_client_t,
     batch: *mut *mut kmipkit_client_batch_t,
