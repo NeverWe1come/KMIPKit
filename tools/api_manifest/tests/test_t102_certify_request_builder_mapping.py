@@ -145,8 +145,6 @@ REQUEST_CONSTRUCTION_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-6.1.6-003",
     "KMIPKIT-REQ-SPEC-6.1.6-007",
 }
-BLOCKED_NEIGHBORS = {
-}
 BLOCKED_BEFORE = 224
 BLOCKED_AFTER = 221
 DECLARATIONS_SHA256 = "74dbb7e489184885b8de8fdb93f4c1d95c070d0720d64718db3af03163113e4b"
@@ -196,15 +194,9 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                 self.assertEqual("client_1_0", self.elements[tag_id]["scope_state"])
                 self.assertIn(target["id"], self.operation["declarations"]["rust"])
 
-    def test_only_audited_setters_move_from_blocked_and_neighbors_stay_blocked(self) -> None:
+    def test_candidate_total_reflects_only_audited_certify_mappings(self) -> None:
         target_ids = {target["id"] for target in TARGETS}
         self.assertEqual(5, len(target_ids))
-        for declaration_id, name in BLOCKED_NEIGHBORS.items():
-            with self.subTest(blocked_neighbor=name):
-                row = self.declarations[declaration_id]
-                self.assertEqual(name, row["exportName"])
-                self.assertEqual("blocked", row["declarationState"])
-                self.assertEqual("KMIPKIT-0043", row["candidateSpecId"])
         blocked = sum(
             row.get("candidateSpecId") == "KMIPKIT-0043" and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
