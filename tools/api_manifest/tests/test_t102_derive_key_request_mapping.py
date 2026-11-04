@@ -47,29 +47,40 @@ class T102DeriveKeyRequestMappingTests(unittest.TestCase):
             if row["operationId"] == OPERATION_ID
         )
 
+    def _assert_request_declaration_mapping(
+        self,
+        declaration_id: str,
+        name: str,
+        kind: str,
+        anchor: dict[str, object],
+    ) -> None:
+        declaration = self.declarations[declaration_id]
+        expected_mappings = dict(anchor["languageMappings"])
+        expected_mappings["rust"] = {
+            "packageId": "rust-kmipkit-protocol",
+            "name": name,
+        }
+
+        self.assertEqual(name, declaration["exportName"])
+        self.assertEqual(kind, declaration["kind"])
+        self.assertEqual("verified", declaration["declarationState"])
+        self.assertEqual(OPERATION_ID, declaration["capabilityId"])
+        self.assertEqual(anchor["requirementIds"], declaration["requirementIds"])
+        self.assertEqual(anchor["approvalSource"], declaration["approvalSource"])
+        self.assertEqual("four-language", declaration["parityScope"])
+        self.assertEqual(expected_mappings, declaration["languageMappings"])
+        self.assertNotIn("blockedReason", declaration)
+        self.assertNotIn("candidateSpecId", declaration)
+        self.assertIn(declaration_id, self.operation["declarations"]["rust"])
+        self.assertIn(MAPPING_EVIDENCE, self.operation["parityEvidenceIds"])
+
     def test_request_type_constructor_and_serializer_map_to_existing_builders(self) -> None:
         anchor = self.by_name[("rust-kmipkit-client", "kmipkit_client::Client::derive_key")]
         for declaration_id, name, kind in DECLARATIONS:
             with self.subTest(declaration=name):
-                declaration = self.declarations[declaration_id]
-                expected_mappings = dict(anchor["languageMappings"])
-                expected_mappings["rust"] = {
-                    "packageId": "rust-kmipkit-protocol",
-                    "name": name,
-                }
-
-                self.assertEqual(name, declaration["exportName"])
-                self.assertEqual(kind, declaration["kind"])
-                self.assertEqual("verified", declaration["declarationState"])
-                self.assertEqual(OPERATION_ID, declaration["capabilityId"])
-                self.assertEqual(anchor["requirementIds"], declaration["requirementIds"])
-                self.assertEqual(anchor["approvalSource"], declaration["approvalSource"])
-                self.assertEqual("four-language", declaration["parityScope"])
-                self.assertEqual(expected_mappings, declaration["languageMappings"])
-                self.assertNotIn("blockedReason", declaration)
-                self.assertNotIn("candidateSpecId", declaration)
-                self.assertIn(declaration_id, self.operation["declarations"]["rust"])
-                self.assertIn(MAPPING_EVIDENCE, self.operation["parityEvidenceIds"])
+                self._assert_request_declaration_mapping(
+                    declaration_id, name, kind, anchor
+                )
 
     def test_mapping_is_grounded_in_the_approved_table_and_existing_wire_test(self) -> None:
         owner = (ROOT / OWNER).read_text(encoding="utf-8")
