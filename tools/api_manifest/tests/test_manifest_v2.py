@@ -4939,6 +4939,22 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     for requirement_id in expected_requirement_ids
                     if requirement_id != "KMIPKIT-REQ-SPEC-6.1.28-007"
                 ]
+            elif variant == "Recertify":
+                # This discriminator carries the operation code, not request fields.
+                # Re-certify clauses remain attached to request surfaces and builders.
+                request_requirements = {
+                    "KMIPKIT-REQ-SPEC-6.1.45-001",
+                    "KMIPKIT-REQ-SPEC-6.1.45-002-001",
+                    "KMIPKIT-REQ-SPEC-6.1.45-002-003",
+                    "KMIPKIT-REQ-SPEC-6.1.45-004",
+                    "KMIPKIT-REQ-SPEC-6.1.45-006-001",
+                    "KMIPKIT-REQ-SPEC-6.1.45-008",
+                }
+                expected_requirement_ids = [
+                    requirement_id
+                    for requirement_id in expected_requirement_ids
+                    if requirement_id not in request_requirements
+                ]
             expected_approval = canonical.get("approvalSource")
             parity_evidence_ids = sorted(
                 set(operation.get("parityEvidenceIds", []))

@@ -37,12 +37,12 @@ TYPES = {
     "RecertifyRequest": {
         "module": "recertify", "section": "OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.45, Tables 300-302", "request": "Table 300 as request",
         "normative": ("KMIPKIT-REQ-SPEC-6.1.45-001", "KMIPKIT-REQ-SPEC-6.1.45-002-001", "KMIPKIT-REQ-SPEC-6.1.45-002-003", "KMIPKIT-REQ-SPEC-6.1.45-004", "KMIPKIT-REQ-SPEC-6.1.45-006-001", "KMIPKIT-REQ-SPEC-6.1.45-008"),
-        "states": {"": "verified", "::certificate_request_unique_identifier": "blocked", "::into_ttlv_payload": "blocked", "::new": "blocked", "::unique_identifier": "blocked", "::with_attributes": "blocked", "::with_certificate_request_type": "blocked", "::with_certificate_request_unique_identifier": "blocked", "::with_certificate_request_value": "blocked", "::with_offset": "blocked", "::with_protection_storage_masks": "blocked", "::with_unique_identifier": "blocked"},
+        "states": {"": "verified", "::certificate_request_unique_identifier": "blocked", "::into_ttlv_payload": "blocked", "::new": "verified", "::unique_identifier": "blocked", "::with_attributes": "blocked", "::with_certificate_request_type": "blocked", "::with_certificate_request_unique_identifier": "verified", "::with_certificate_request_value": "blocked", "::with_offset": "verified", "::with_protection_storage_masks": "blocked", "::with_unique_identifier": "verified"},
     },
     "RekeyKeyPairRequest": {
         "module": "rekey_key_pair", "section": "OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.47, Tables 310-312", "request": "Table 310 as request",
         "normative": ("KMIPKIT-REQ-SPEC-6.1.47-001", "KMIPKIT-REQ-SPEC-6.1.47-004-001"),
-        "states": {"": "verified", "::into_ttlv_payload": "blocked", "::new": "blocked", "::private_key_unique_identifier": "blocked", "::with_common_attributes": "blocked", "::with_common_protection_storage_masks": "blocked", "::with_offset": "blocked", "::with_private_key_attributes": "blocked", "::with_private_key_unique_identifier": "blocked", "::with_private_protection_storage_masks": "blocked", "::with_public_key_attributes": "blocked", "::with_public_protection_storage_masks": "blocked"},
+        "states": {"": "verified", "::into_ttlv_payload": "blocked", "::new": "verified", "::private_key_unique_identifier": "blocked", "::with_common_attributes": "blocked", "::with_common_protection_storage_masks": "blocked", "::with_offset": "verified", "::with_private_key_attributes": "blocked", "::with_private_key_unique_identifier": "blocked", "::with_private_protection_storage_masks": "blocked", "::with_public_key_attributes": "blocked", "::with_public_protection_storage_masks": "blocked"},
     },
     "RekeyRequest": {
         "module": "rekey", "section": "OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.46, Tables 305-307", "request": "Table 305 as request",
