@@ -99,9 +99,11 @@ final class ClientFacadeTlsIntegrationTest {
     Path temporaryDirectory;
 
     // OASIS KMIP v2.1 §6.1.7 Tables 183–185; §6.1.19 Tables 220–222;
-    // §6.1.18 Tables 217–219; §6.1.46 Tables 305–307; §6.1.23 Tables 232–234.
+    // §6.1.18 Tables 217–219; §6.1.46 Tables 305–307; §6.1.23 Tables 232–234;
+    // OASIS KMIP v2.1 §4.1.2; §6.1.9 Tables 189–190; §6.1.45 Table 300;
+    // §6.1.47 Tables 310–311.
     @Test
-    void checkGetExportRekeyAndUsageAllocationBuildersEncodeValuesAndOmissionsOverMtls()
+    void requestBuildersEncodeValuesAndOmissionsOverMtls()
             throws Exception {
         byte[] serverCertificatePem = testFixture("server-cert.pem");
         byte[] serverPrivateKeyPem = testFixture("server-key.pem");
@@ -110,7 +112,8 @@ final class ClientFacadeTlsIntegrationTest {
         X509Certificate clientCertificate = testCertificate(clientCertificatePem);
         SSLServerSocket listener = deterministicMtlsListener(
                 serverCertificatePem, serverPrivateKeyPem, clientCertificate);
-        FutureTask<byte[]> peer = peerThatClosesAfterOneRequest(listener);
+        FutureTask<byte[]> peer = peerThatRespondsAfterOneRequest(
+                listener, requestBuilderWireResponseMessage());
         Thread peerThread = new Thread(peer, "kmipkit-java-request-builder-wire-fixture");
         peerThread.setDaemon(true);
         peerThread.start();
@@ -160,8 +163,35 @@ final class ClientFacadeTlsIntegrationTest {
                     .withUniqueBatchItemId(uniqueBatchItemId(9)));
             batch.add(ClientBatchItem.getUsageAllocation(null, 7L)
                     .withUniqueBatchItemId(uniqueBatchItemId(10)));
-            assertThrows(TransportException.class,
-                    () -> client.execute(batch, CodecLimits.defaults()));
+            batch.add(ClientBatchItem.recertify(
+                            UniqueIdentifier.textString("recertify-text"),
+                            UniqueIdentifier.textString("certificate-request-text"),
+                            null, null, 86_400L, null, null)
+                    .withUniqueBatchItemId(uniqueBatchItemId(11)));
+            batch.add(ClientBatchItem.recertify(
+                            UniqueIdentifier.textString("recertify-omit-text"),
+                            null, null, null, null, null, null)
+                    .withUniqueBatchItemId(uniqueBatchItemId(12)));
+            batch.add(ClientBatchItem.createKeyPair(null, null, null, null, null, null)
+                    .withUniqueBatchItemId(uniqueBatchItemId(13)));
+            batch.add(ClientBatchItem.rekeyKeyPair(
+                            null, 86_400L, null, null, null, null, null, null)
+                    .withUniqueBatchItemId(uniqueBatchItemId(14)));
+            try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
+                    ClientBatchItemResult createPairResult = response.itemAt(13);
+                    ClientBatchItemResult rekeyPairResult = response.itemAt(14);
+                    ClientBatchItemResult.RekeyKeyPairResponse rekeyPairResponse =
+                            rekeyPairResult.rekeyKeyPairResponse().orElseThrow()) {
+                assertEquals(15, response.itemCount());
+                assertEquals(0, createPairResult.resultStatus());
+                ClientBatchItemResult.CreateKeyPairResponse createPairResponse =
+                        createPairResult.createKeyPairResponse().orElseThrow();
+                assertEquals("placeholder-private", createPairResponse.privateKeyUniqueIdentifier().text());
+                assertEquals("placeholder-public", createPairResponse.publicKeyUniqueIdentifier().text());
+                assertEquals(0, rekeyPairResult.resultStatus());
+                assertEquals("replacement-private", rekeyPairResponse.privateKeyUniqueIdentifier().text());
+                assertEquals("replacement-public", rekeyPairResponse.publicKeyUniqueIdentifier().text());
+            }
             request = peer.get(12, TimeUnit.SECONDS);
         } finally {
             listener.close();
@@ -237,6 +267,30 @@ final class ClientFacadeTlsIntegrationTest {
                 item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(10)),
                 structure(0x420079,
                         item(0x420096, TtlvItemType.LongInteger.code(), longInteger(7)))));
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 7),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(11)),
+                structure(0x420079,
+                        item(0x420094, TtlvItemType.TextString.code(),
+                                "recertify-text".getBytes(StandardCharsets.UTF_8)),
+                        item(0x420139, TtlvItemType.TextString.code(),
+                                "certificate-request-text".getBytes(StandardCharsets.UTF_8)),
+                        item(0x420058, TtlvItemType.Interval.code(), integer(86_400)))));
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 7),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(12)),
+                structure(0x420079,
+                        item(0x420094, TtlvItemType.TextString.code(),
+                                "recertify-omit-text".getBytes(StandardCharsets.UTF_8)))));
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 2),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(13)),
+                structure(0x420079)));
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 0x1d),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(14)),
+                structure(0x420079,
+                        item(0x420058, TtlvItemType.Interval.code(), integer(86_400)))));
 
         assertContains(request, expectedBatchItems.toByteArray());
         assertContains(request, item(0x420010, TtlvItemType.Boolean.code(),
@@ -246,6 +300,9 @@ final class ClientFacadeTlsIntegrationTest {
         assertEquals(2, countOccurrences(request, enumeration(0x42005c, 43)));
         assertEquals(2, countOccurrences(request, enumeration(0x42005c, 4)));
         assertEquals(2, countOccurrences(request, enumeration(0x42005c, 17)));
+        assertEquals(2, countOccurrences(request, enumeration(0x42005c, 7)));
+        assertEquals(1, countOccurrences(request, enumeration(0x42005c, 0x1d)));
+        assertEquals(1, countOccurrences(request, enumeration(0x42005c, 2)));
         assertTrue(peer.isDone());
     }
 
@@ -5897,6 +5954,37 @@ final class ClientFacadeTlsIntegrationTest {
                 item(0x420093, 8, uniqueBatchItemId(3)), enumeration(0x42007f, 2),
                 item(0x420006, 8, CORRELATION), structure(0x42007c));
         return structure(0x42007b, header, create, success, failure, pending);
+    }
+
+    private static byte[] requestBuilderWireResponseMessage() throws Exception {
+        int[] operations = {1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d};
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(operations.length)));
+        List<byte[]> responseItems = new ArrayList<>();
+        for (int index = 0; index < operations.length; index++) {
+            byte[] operation = enumeration(0x42005c, operations[index]);
+            byte[] batchItemId = item(0x420093, 8, uniqueBatchItemId(index));
+            if (index == 13 || index == 14) {
+                String privateIdentifier = index == 13 ? "placeholder-private" : "replacement-private";
+                String publicIdentifier = index == 13 ? "placeholder-public" : "replacement-public";
+                byte[] payload = structure(0x42007c,
+                        item(0x420066, 7, privateIdentifier.getBytes(StandardCharsets.UTF_8)),
+                        item(0x42006f, 7, publicIdentifier.getBytes(StandardCharsets.UTF_8)));
+                responseItems.add(structure(0x42000f, operation, batchItemId,
+                        enumeration(0x42007f, 0), payload));
+            } else {
+                responseItems.add(structure(0x42000f, operation, batchItemId,
+                        enumeration(0x42007f, 1), enumeration(0x42007e, 5)));
+            }
+        }
+        byte[][] messageItems = new byte[responseItems.size() + 1][];
+        messageItems[0] = header;
+        for (int index = 0; index < responseItems.size(); index++) {
+            messageItems[index + 1] = responseItems.get(index);
+        }
+        return structure(0x42007b, messageItems);
     }
 
     private static byte[] locateResponseMessage(int identifierCount) throws Exception {

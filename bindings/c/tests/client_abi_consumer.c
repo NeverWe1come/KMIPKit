@@ -3766,10 +3766,11 @@ static int execute_request_builders_wire_from_c(
     static const uint8_t export_text[] = "export-text";
     static const uint8_t rekey_text[] = "rekey-text";
     static const uint8_t allocation_text[] = "allocation-text";
-    static const uint8_t batch_item_ids[11][8] = {
+    static const uint8_t batch_item_ids[15][8] = {
         "item-0", "item-1", "item-2", "item-3", "item-4", "item-5",
-        "item-6", "item-7", "item-8", "item-9", "item-10"};
-    kmipkit_unique_identifier_v1_t identifiers[6] = {{0}};
+        "item-6", "item-7", "item-8", "item-9", "item-10", "item-11",
+        "item-12", "item-13", "item-14"};
+    kmipkit_unique_identifier_v1_t identifiers[9] = {{0}};
     kmipkit_client_batch_t *batch = 0;
     kmipkit_client_batch_response_t *response = 0;
     kmipkit_client_batch_item_t *item = 0;
@@ -3782,6 +3783,11 @@ static int execute_request_builders_wire_from_c(
     set_text_identifier(&identifiers[3], rekey_text, sizeof(rekey_text) - 1);
     set_integer_identifier(&identifiers[4], -7);
     set_text_identifier(&identifiers[5], allocation_text, sizeof(allocation_text) - 1);
+    set_text_identifier(&identifiers[6], (const uint8_t *)"recertify-text", sizeof("recertify-text") - 1);
+    set_text_identifier(&identifiers[7], (const uint8_t *)"certificate-request-text",
+            sizeof("certificate-request-text") - 1);
+    set_text_identifier(&identifiers[8], (const uint8_t *)"recertify-omit-text",
+            sizeof("recertify-omit-text") - 1);
 
     if (kmipkit_client_batch_create(&batch) != 0 || batch == 0 ||
         kmipkit_client_batch_set_order_option(batch, 1) != 0 ||
@@ -3832,12 +3838,27 @@ static int execute_request_builders_wire_from_c(
         kmipkit_client_batch_item_get_usage_allocation(
             0, 7, &item) != 0 ||
         !append_request_builder_item(
-            batch, &item, batch_item_ids[10], strlen((const char *)batch_item_ids[10]))) {
+            batch, &item, batch_item_ids[10], strlen((const char *)batch_item_ids[10])) ||
+        kmipkit_client_batch_item_recertify(
+                &identifiers[6], &identifiers[7], 0, 0, 0, 1, 86400, 0, 0, &item) != 0 ||
+        !append_request_builder_item(
+            batch, &item, batch_item_ids[11], strlen((const char *)batch_item_ids[11])) ||
+        kmipkit_client_batch_item_recertify(
+                &identifiers[8], 0, 0, 0, 0, 0, 0, 0, 0, &item) != 0 ||
+        !append_request_builder_item(
+            batch, &item, batch_item_ids[12], strlen((const char *)batch_item_ids[12])) ||
+        kmipkit_client_batch_item_create_key_pair(0, 0, 0, 0, 0, 0, &item) != 0 ||
+        !append_request_builder_item(
+            batch, &item, batch_item_ids[13], strlen((const char *)batch_item_ids[13])) ||
+        kmipkit_client_batch_item_rekey_key_pair(
+                0, 1, 86400, 0, 0, 0, 0, 0, 0, &item) != 0 ||
+        !append_request_builder_item(
+            batch, &item, batch_item_ids[14], strlen((const char *)batch_item_ids[14]))) {
         goto cleanup;
     }
 
-    /* The fake peer closes after capturing the request; a transport error is expected. */
-    result = kmipkit_client_execute(client, &batch, limits, &response) == 0 ? 22 : 0;
+    /* The fake peer supplies an ordered Create Key Pair response and two key-pair results. */
+    result = kmipkit_client_execute(client, &batch, limits, &response) == 0 ? 0 : 22;
 
 cleanup:
     kmipkit_client_batch_response_release(response);

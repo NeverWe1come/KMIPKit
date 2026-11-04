@@ -346,7 +346,8 @@ fn compiled_c_consumer_exposes_profile_readiness_and_catalog_contract() {
 
 #[test]
 // OASIS KMIP v2.1 §6.1.7 Tables 183–185; §6.1.19 Tables 220–222;
-// §6.1.18 Tables 217–219; §6.1.46 Tables 305–307; §6.1.23 Tables 232–234.
+// §6.1.18 Tables 217–219; §6.1.46 Tables 305–307; §6.1.23 Tables 232–234;
+// §4.1.2; §6.1.9 Table 190; §6.1.45 Table 300; §6.1.47 Tables 310–311.
 fn compiled_c_consumer_encodes_check_get_export_rekey_and_allocation_builders_over_mtls() {
     let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
     let client_chain = pki.client_identity().certificate_chain_der();
@@ -393,6 +394,10 @@ fn compiled_c_consumer_encodes_check_get_export_rekey_and_allocation_builders_ov
         let request = read_ttlv_frame(&mut tls).expect("the bounded request frame arrives");
         let decoded = decode_test_request(&request).expect("the request is valid TTLV");
         assert_request_builder_wire(&decoded);
+        tls.write_all(&request_builder_wire_response())
+            .expect("the fake peer returns the preceding Create Key Pair private identifier");
+        tls.flush()
+            .expect("the fake peer flushes its ordered response");
         let _ = tls.get_ref().shutdown(Shutdown::Both);
     });
 
@@ -420,18 +425,23 @@ fn compiled_c_consumer_encodes_check_get_export_rekey_and_allocation_builders_ov
     let argument_count = i32::try_from(arguments.len()).expect("the C argv count fits in i32");
     let mut limits = std::ptr::null_mut();
     // SAFETY: `limits` is a writable output slot retained until the synchronous C call returns.
-    let status = unsafe {
-        kmipkit_codec_limits_create(16 * 1024 * 1024, 64, 400_000, &raw mut limits)
-    };
+    let status =
+        unsafe { kmipkit_codec_limits_create(16 * 1024 * 1024, 64, 400_000, &raw mut limits) };
     assert_eq!(status, 0, "the configured codec limits are created");
-    assert!(!limits.is_null(), "the configured codec limits return a handle");
+    assert!(
+        !limits.is_null(),
+        "the configured codec limits return a handle"
+    );
     // SAFETY: the argv strings and codec-limits handle remain live for the synchronous C call.
     let result = unsafe {
         kmipkit_client_abi_c_consumer_execute_tls(argument_count, arguments.as_mut_ptr(), limits)
     };
     // SAFETY: this test owns the limits handle; the C consumer only borrows it.
     unsafe { kmipkit_codec_limits_release(limits) };
-    assert_eq!(result, 0, "the C consumer builds and transmits ten target requests");
+    assert_eq!(
+        result, 0,
+        "the C consumer builds and decodes fifteen ordered items"
+    );
     peer.join()
         .expect("the compiled C request-builder mTLS peer completes");
 }
@@ -2531,48 +2541,167 @@ fn assert_request_builder_wire(request: &Item) {
     use RequestBuilderWireValue as V;
 
     const CHECK_VALUES: &[RequestBuilderWireField] = &[
-        RequestBuilderWireField { tag: 0x0042_0094, value: V::Text("check-text") },
-        RequestBuilderWireField { tag: 0x0042_0096, value: V::LongInteger(3) },
-        RequestBuilderWireField { tag: 0x0042_002c, value: V::Integer(2) },
-        RequestBuilderWireField { tag: 0x0042_0049, value: V::Interval(60) },
+        RequestBuilderWireField {
+            tag: 0x0042_0094,
+            value: V::Text("check-text"),
+        },
+        RequestBuilderWireField {
+            tag: 0x0042_0096,
+            value: V::LongInteger(3),
+        },
+        RequestBuilderWireField {
+            tag: 0x0042_002c,
+            value: V::Integer(2),
+        },
+        RequestBuilderWireField {
+            tag: 0x0042_0049,
+            value: V::Interval(60),
+        },
     ];
-    const INTEGER_IDENTIFIER: &[RequestBuilderWireField] = &[
-        RequestBuilderWireField { tag: 0x0042_0094, value: V::Integer(-7) },
-    ];
+    const INTEGER_IDENTIFIER: &[RequestBuilderWireField] = &[RequestBuilderWireField {
+        tag: 0x0042_0094,
+        value: V::Integer(-7),
+    }];
     const GET_VALUES: &[RequestBuilderWireField] = &[
-        RequestBuilderWireField { tag: 0x0042_0094, value: V::Text("get-text") },
-        RequestBuilderWireField { tag: 0x0042_0042, value: V::Enumeration(0xf123_4567) },
-        RequestBuilderWireField { tag: 0x0042_00f8, value: V::Enumeration(0xf123_4568) },
-        RequestBuilderWireField { tag: 0x0042_0041, value: V::Enumeration(0xf123_4569) },
+        RequestBuilderWireField {
+            tag: 0x0042_0094,
+            value: V::Text("get-text"),
+        },
+        RequestBuilderWireField {
+            tag: 0x0042_0042,
+            value: V::Enumeration(0xf123_4567),
+        },
+        RequestBuilderWireField {
+            tag: 0x0042_00f8,
+            value: V::Enumeration(0xf123_4568),
+        },
+        RequestBuilderWireField {
+            tag: 0x0042_0041,
+            value: V::Enumeration(0xf123_4569),
+        },
     ];
     const EXPORT_VALUES: &[RequestBuilderWireField] = &[
-        RequestBuilderWireField { tag: 0x0042_0094, value: V::Text("export-text") },
-        RequestBuilderWireField { tag: 0x0042_0042, value: V::Enumeration(0xfedc_ba98) },
-        RequestBuilderWireField { tag: 0x0042_00f8, value: V::Enumeration(0xfedc_ba99) },
-        RequestBuilderWireField { tag: 0x0042_0041, value: V::Enumeration(0xfedc_ba9a) },
+        RequestBuilderWireField {
+            tag: 0x0042_0094,
+            value: V::Text("export-text"),
+        },
+        RequestBuilderWireField {
+            tag: 0x0042_0042,
+            value: V::Enumeration(0xfedc_ba98),
+        },
+        RequestBuilderWireField {
+            tag: 0x0042_00f8,
+            value: V::Enumeration(0xfedc_ba99),
+        },
+        RequestBuilderWireField {
+            tag: 0x0042_0041,
+            value: V::Enumeration(0xfedc_ba9a),
+        },
     ];
     const REKEY_VALUES: &[RequestBuilderWireField] = &[
-        RequestBuilderWireField { tag: 0x0042_0094, value: V::Text("rekey-text") },
-        RequestBuilderWireField { tag: 0x0042_0058, value: V::Interval(60) },
+        RequestBuilderWireField {
+            tag: 0x0042_0094,
+            value: V::Text("rekey-text"),
+        },
+        RequestBuilderWireField {
+            tag: 0x0042_0058,
+            value: V::Interval(60),
+        },
     ];
     const ALLOCATION_VALUES: &[RequestBuilderWireField] = &[
-        RequestBuilderWireField { tag: 0x0042_0094, value: V::Text("allocation-text") },
-        RequestBuilderWireField { tag: 0x0042_0096, value: V::LongInteger(5) },
+        RequestBuilderWireField {
+            tag: 0x0042_0094,
+            value: V::Text("allocation-text"),
+        },
+        RequestBuilderWireField {
+            tag: 0x0042_0096,
+            value: V::LongInteger(5),
+        },
     ];
-    const ALLOCATION_IDENTIFIER_OMITTED: &[RequestBuilderWireField] = &[
-        RequestBuilderWireField { tag: 0x0042_0096, value: V::LongInteger(7) },
+    const ALLOCATION_IDENTIFIER_OMITTED: &[RequestBuilderWireField] = &[RequestBuilderWireField {
+        tag: 0x0042_0096,
+        value: V::LongInteger(7),
+    }];
+    const RECERTIFY_VALUES: &[RequestBuilderWireField] = &[
+        RequestBuilderWireField {
+            tag: 0x0042_0094,
+            value: V::Text("recertify-text"),
+        },
+        RequestBuilderWireField {
+            tag: 0x0042_0139,
+            value: V::Text("certificate-request-text"),
+        },
+        RequestBuilderWireField {
+            tag: 0x0042_0058,
+            value: V::Interval(86_400),
+        },
     ];
+    const RECERTIFY_OPTIONALS_OMITTED: &[RequestBuilderWireField] = &[RequestBuilderWireField {
+        tag: 0x0042_0094,
+        value: V::Text("recertify-omit-text"),
+    }];
+    const REKEY_KEY_PAIR_PLACEHOLDER: &[RequestBuilderWireField] = &[RequestBuilderWireField {
+        tag: 0x0042_0058,
+        value: V::Interval(86_400),
+    }];
+    const EMPTY_VALUES: &[RequestBuilderWireField] = &[];
     const EXPECTED: &[RequestBuilderWireItem] = &[
-        RequestBuilderWireItem { operation: 9, fields: CHECK_VALUES },
-        RequestBuilderWireItem { operation: 9, fields: INTEGER_IDENTIFIER },
-        RequestBuilderWireItem { operation: 10, fields: GET_VALUES },
-        RequestBuilderWireItem { operation: 10, fields: INTEGER_IDENTIFIER },
-        RequestBuilderWireItem { operation: 43, fields: EXPORT_VALUES },
-        RequestBuilderWireItem { operation: 43, fields: INTEGER_IDENTIFIER },
-        RequestBuilderWireItem { operation: 4, fields: REKEY_VALUES },
-        RequestBuilderWireItem { operation: 4, fields: INTEGER_IDENTIFIER },
-        RequestBuilderWireItem { operation: 17, fields: ALLOCATION_VALUES },
-        RequestBuilderWireItem { operation: 17, fields: ALLOCATION_IDENTIFIER_OMITTED },
+        RequestBuilderWireItem {
+            operation: 9,
+            fields: CHECK_VALUES,
+        },
+        RequestBuilderWireItem {
+            operation: 9,
+            fields: INTEGER_IDENTIFIER,
+        },
+        RequestBuilderWireItem {
+            operation: 10,
+            fields: GET_VALUES,
+        },
+        RequestBuilderWireItem {
+            operation: 10,
+            fields: INTEGER_IDENTIFIER,
+        },
+        RequestBuilderWireItem {
+            operation: 43,
+            fields: EXPORT_VALUES,
+        },
+        RequestBuilderWireItem {
+            operation: 43,
+            fields: INTEGER_IDENTIFIER,
+        },
+        RequestBuilderWireItem {
+            operation: 4,
+            fields: REKEY_VALUES,
+        },
+        RequestBuilderWireItem {
+            operation: 4,
+            fields: INTEGER_IDENTIFIER,
+        },
+        RequestBuilderWireItem {
+            operation: 17,
+            fields: ALLOCATION_VALUES,
+        },
+        RequestBuilderWireItem {
+            operation: 17,
+            fields: ALLOCATION_IDENTIFIER_OMITTED,
+        },
+        RequestBuilderWireItem {
+            operation: 7,
+            fields: RECERTIFY_VALUES,
+        },
+        RequestBuilderWireItem {
+            operation: 7,
+            fields: RECERTIFY_OPTIONALS_OMITTED,
+        },
+        RequestBuilderWireItem {
+            operation: 2,
+            fields: EMPTY_VALUES,
+        },
+        RequestBuilderWireItem {
+            operation: 0x1d,
+            fields: REKEY_KEY_PAIR_PLACEHOLDER,
+        },
     ];
 
     request.with_value(|value| {
@@ -2679,8 +2808,6 @@ fn assert_request_builder_wire(request: &Item) {
         }
     });
 }
-
-
 
 fn c_cancel_request_issue(encoded: &[u8], expected_correlation: &[u8]) -> &'static str {
     const BATCH_ITEM: u32 = 0x0042_000f;
@@ -3919,6 +4046,70 @@ fn rekey_key_pair_success_response() -> Vec<u8> {
         ],
     );
     structure(0x0042_007B, [header, item])
+}
+
+fn request_builder_wire_response() -> Vec<u8> {
+    const OPERATIONS: [u32; 15] = [1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d];
+    let version = structure(
+        0x0042_0069,
+        [integer(0x0042_006A, 2), integer(0x0042_006B, 1)],
+    );
+    let header = structure(
+        0x0042_007A,
+        [
+            version,
+            date_time(0x0042_0092, 1),
+            integer(
+                0x0042_000D,
+                i32::try_from(OPERATIONS.len()).expect("batch count fits i32"),
+            ),
+        ],
+    );
+    let response_items = OPERATIONS
+        .iter()
+        .enumerate()
+        .map(|(index, operation)| {
+            let batch_id = format!("item-{index}");
+            let common = [
+                enumeration(0x0042_005C, *operation),
+                ttlv_item(0x0042_0093, 0x08, batch_id.as_bytes()),
+            ];
+            if index == 13 || index == 14 {
+                let (private_identifier, public_identifier) = if index == 13 {
+                    (
+                        b"placeholder-private".as_slice(),
+                        b"placeholder-public".as_slice(),
+                    )
+                } else {
+                    (
+                        b"replacement-private".as_slice(),
+                        b"replacement-public".as_slice(),
+                    )
+                };
+                structure(
+                    0x0042_000F,
+                    common.into_iter().chain([
+                        enumeration(0x0042_007F, 0),
+                        structure(
+                            0x0042_007C,
+                            [
+                                ttlv_item(0x0042_0066, 0x07, private_identifier),
+                                ttlv_item(0x0042_006F, 0x07, public_identifier),
+                            ],
+                        ),
+                    ]),
+                )
+            } else {
+                structure(
+                    0x0042_000F,
+                    common
+                        .into_iter()
+                        .chain([enumeration(0x0042_007F, 1), enumeration(0x0042_007E, 5)]),
+                )
+            }
+        })
+        .collect::<Vec<_>>();
+    structure(0x0042_007B, std::iter::once(header).chain(response_items))
 }
 
 // This TLS batch returns 28 ordered items, including Login, Encrypt, Decrypt, Ping, and Query results.
