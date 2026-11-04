@@ -2639,10 +2639,30 @@ const RECERTIFY_OPTIONALS_OMITTED: &[RequestBuilderWireField] = &[RequestBuilder
     tag: 0x0042_0094,
     value: V::Text("recertify-omit-text"),
 }];
-const REKEY_KEY_PAIR_PLACEHOLDER: &[RequestBuilderWireField] = &[RequestBuilderWireField {
-    tag: 0x0042_0058,
-    value: V::Interval(86_400),
-}];
+const REKEY_KEY_PAIR_UID_AND_OFFSET: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
+        tag: 0x0042_0066,
+        value: V::Text("private-key-to-rekey"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0058,
+        value: V::Interval(86_400),
+    },
+];
+const JOIN_SPLIT_KEY_SECRET_DATA_TYPE: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
+        tag: 0x0042_0057,
+        value: V::Enumeration(7),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0094,
+        value: V::Text("join-split-id"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0086,
+        value: V::Enumeration(1),
+    },
+];
 const EMPTY_VALUES: &[RequestBuilderWireField] = &[];
 const REQUEST_BUILDER_WIRE_EXPECTED: &[RequestBuilderWireItem] = &[
     RequestBuilderWireItem {
@@ -2699,7 +2719,11 @@ const REQUEST_BUILDER_WIRE_EXPECTED: &[RequestBuilderWireItem] = &[
     },
     RequestBuilderWireItem {
         operation: 0x1d,
-        fields: REKEY_KEY_PAIR_PLACEHOLDER,
+        fields: REKEY_KEY_PAIR_UID_AND_OFFSET,
+    },
+    RequestBuilderWireItem {
+        operation: 0x29,
+        fields: JOIN_SPLIT_KEY_SECRET_DATA_TYPE,
     },
 ];
 
@@ -4077,7 +4101,7 @@ fn rekey_key_pair_success_response() -> Vec<u8> {
 }
 
 fn request_builder_wire_response() -> Vec<u8> {
-    const OPERATIONS: [u32; 15] = [1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d];
+    const OPERATIONS: [u32; 16] = [1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x29];
     let version = structure(
         0x0042_0069,
         [integer(0x0042_006A, 2), integer(0x0042_006B, 1)],

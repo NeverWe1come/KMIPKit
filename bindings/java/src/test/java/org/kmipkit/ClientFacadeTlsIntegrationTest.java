@@ -101,7 +101,7 @@ final class ClientFacadeTlsIntegrationTest {
     // OASIS KMIP v2.1 §6.1.7 Tables 183–185; §6.1.19 Tables 220–222;
     // §6.1.18 Tables 217–219; §6.1.46 Tables 305–307; §6.1.23 Tables 232–234;
     // OASIS KMIP v2.1 §4.1.2; §6.1.9 Tables 189–190; §6.1.45 Table 300;
-    // §6.1.47 Tables 310–311.
+    // §6.1.47 Tables 310–311; §6.1.27 Table 244; §11.52 Table 483.
     @Test
     void requestBuildersEncodeValuesAndOmissionsOverMtls()
             throws Exception {
@@ -133,7 +133,9 @@ final class ClientFacadeTlsIntegrationTest {
                         .build();
                 Client client = Client.create(extensions, transport);
                 ClientBatch batch = ClientBatch.create().ordered(true);
-                TtlvStructure createAttributes = TtlvStructure.create()) {
+                TtlvStructure createAttributes = TtlvStructure.create();
+                SplitKeyReference splitReference = new SplitKeyReference(
+                        UniqueIdentifier.textString("join-split-id"), 1)) {
             batch.add(ClientBatchItem.create(2L, createAttributes, null)
                     .withUniqueBatchItemId(uniqueBatchItemId(0)));
             batch.add(ClientBatchItem.check(
@@ -175,14 +177,17 @@ final class ClientFacadeTlsIntegrationTest {
             batch.add(ClientBatchItem.createKeyPair(null, null, null, null, null, null)
                     .withUniqueBatchItemId(uniqueBatchItemId(13)));
             batch.add(ClientBatchItem.rekeyKeyPair(
-                            null, 86_400L, null, null, null, null, null, null)
+                            UniqueIdentifier.textString("private-key-to-rekey"),
+                            86_400L, null, null, null, null, null, null)
                     .withUniqueBatchItemId(uniqueBatchItemId(14)));
+            batch.add(ClientBatchItem.joinSplitKey(7L, List.of(splitReference), 1L, null, null)
+                    .withUniqueBatchItemId(uniqueBatchItemId(15)));
             try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
                     ClientBatchItemResult createPairResult = response.itemAt(13);
                     ClientBatchItemResult rekeyPairResult = response.itemAt(14);
                     ClientBatchItemResult.RekeyKeyPairResponse rekeyPairResponse =
                             rekeyPairResult.rekeyKeyPairResponse().orElseThrow()) {
-                assertEquals(15, response.itemCount());
+                assertEquals(16, response.itemCount());
                 assertEquals(0, createPairResult.resultStatus());
                 ClientBatchItemResult.CreateKeyPairResponse createPairResponse =
                         createPairResult.createKeyPairResponse().orElseThrow();
@@ -290,7 +295,17 @@ final class ClientFacadeTlsIntegrationTest {
                 enumeration(0x42005c, 0x1d),
                 item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(14)),
                 structure(0x420079,
+                        item(0x420066, TtlvItemType.TextString.code(),
+                                "private-key-to-rekey".getBytes(StandardCharsets.UTF_8)),
                         item(0x420058, TtlvItemType.Interval.code(), integer(86_400)))));
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 0x29),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(15)),
+                structure(0x420079,
+                        enumeration(0x420057, 7),
+                        item(0x420094, TtlvItemType.TextString.code(),
+                                "join-split-id".getBytes(StandardCharsets.UTF_8)),
+                        enumeration(0x420086, 1))));
 
         assertContains(request, expectedBatchItems.toByteArray());
         assertContains(request, item(0x420010, TtlvItemType.Boolean.code(),
@@ -302,6 +317,7 @@ final class ClientFacadeTlsIntegrationTest {
         assertEquals(2, countOccurrences(request, enumeration(0x42005c, 17)));
         assertEquals(2, countOccurrences(request, enumeration(0x42005c, 7)));
         assertEquals(1, countOccurrences(request, enumeration(0x42005c, 0x1d)));
+        assertEquals(1, countOccurrences(request, enumeration(0x42005c, 0x29)));
         assertEquals(1, countOccurrences(request, enumeration(0x42005c, 2)));
         assertTrue(peer.isDone());
     }
@@ -5957,7 +5973,7 @@ final class ClientFacadeTlsIntegrationTest {
     }
 
     private static byte[] requestBuilderWireResponseMessage() throws Exception {
-        int[] operations = {1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d};
+        int[] operations = {1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x29};
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
