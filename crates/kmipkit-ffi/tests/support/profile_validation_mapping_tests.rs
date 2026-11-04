@@ -452,6 +452,25 @@ fn c_profile_validators_reject_bad_context_size_and_version_without_profile_deta
         ERROR_INVALID_INPUT
     );
     assert!(last_profile_validation_error_is_absent());
+
+    let invalid_context_version = kmipkit_profile_validation_context_v1_t {
+        struct_size: u32::try_from(size_of::<kmipkit_profile_validation_context_v1_t>())
+            .expect("C profile context size fits u32"),
+        abi_version: 99,
+        object_states: ptr::null(),
+        object_state_count: 0,
+    };
+    assert_eq!(
+        unsafe {
+            kmipkit_profile_validation_result_validate_request_with_context_v1(
+                result,
+                request_handle,
+                &raw const invalid_context_version,
+            )
+        },
+        ERROR_INVALID_INPUT
+    );
+    assert!(last_profile_validation_error_is_absent());
     kmipkit_profile_validation_result_release(result);
     kmipkit_ttlv_structure_release(request_handle);
 }
@@ -473,11 +492,17 @@ fn c_profile_result_message_validators_reject_malformed_ttlv_without_rule_detail
         ERROR_PROTOCOL
     );
     assert!(last_profile_validation_error_is_absent());
+    let valid_request = profile_request([(0x0000_001e, Structure::new())]);
+    let valid_request_tree = valid_request
+        .with_ttlv(|tree| clone_structure_view(&tree))
+        .expect("the request tree can be cloned for a borrowed ABI input");
+    let valid_request_handle =
+        make_handle(Kind::Structure, HandleValue::Structure(valid_request_tree));
     assert_eq!(
         unsafe {
             kmipkit_profile_validation_result_validate_response_v1(
                 result,
-                malformed_request,
+                valid_request_handle,
                 malformed_response,
             )
         },
@@ -487,6 +512,7 @@ fn c_profile_result_message_validators_reject_malformed_ttlv_without_rule_detail
     kmipkit_profile_validation_result_release(result);
     kmipkit_ttlv_structure_release(malformed_request);
     kmipkit_ttlv_structure_release(malformed_response);
+    kmipkit_ttlv_structure_release(valid_request_handle);
 }
 
 #[test]
