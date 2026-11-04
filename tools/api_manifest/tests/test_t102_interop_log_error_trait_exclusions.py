@@ -43,10 +43,10 @@ ERROR_SUFFIXES = {
     "::MissingResultStatus":"declared", "::UnexpectedOperation":"declared",
 }
 RELATED_STATES = {
-    "InteropRequest":{"":"verified", "::interop_function":"blocked", "::into_ttlv_payload":"blocked", "::new":"verified", "::with_extension":"blocked", "::with_interop_identifier":"blocked"},
-    "InteropResponse":{"":"verified", "::result":"verified", "::try_from_response_item":"blocked", "::with_ttlv":"verified"},
-    "LogRequest":{"":"verified", "::into_ttlv_payload":"blocked", "::new":"verified", "::with_extension":"blocked", "::with_log_message":"blocked"},
-    "LogResponse":{"":"verified", "::result":"verified", "::try_from_response_item":"blocked", "::with_ttlv":"verified"},
+    "InteropRequest":{"":"verified", "::interop_function":"verified", "::into_ttlv_payload":"verified", "::new":"verified", "::with_extension":"blocked", "::with_interop_identifier":"blocked"},
+    "InteropResponse":{"":"verified", "::result":"verified", "::try_from_response_item":"verified", "::with_ttlv":"verified"},
+    "LogRequest":{"":"verified", "::into_ttlv_payload":"verified", "::new":"verified", "::with_extension":"blocked", "::with_log_message":"blocked"},
+    "LogResponse":{"":"verified", "::result":"verified", "::try_from_response_item":"verified", "::with_ttlv":"verified"},
 }
 
 def trait_paths(name: str, suffixes: set[str]) -> set[str]:

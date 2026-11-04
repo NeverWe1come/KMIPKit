@@ -10673,6 +10673,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::InteropRequest",
     ),
     (
+        "rust-observed-326a5a1e346eb2a8787e",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::InteropRequest::interop_function",
+    ),
+    (
         "rust-observed-df96e7ac424e101c5d7e",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::InteropRequest::into_ttlv_payload",
