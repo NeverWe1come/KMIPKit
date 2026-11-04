@@ -1,4 +1,5 @@
 use super::*;
+use crate::kmipkit_byte_span_v1_t;
 use kmipkit_protocol::ProfileValidationErrorCode;
 
 #[test]
@@ -105,13 +106,21 @@ fn c_profile_selection_resolution_fails_closed_with_redacted_profile_details() {
     let mut result = 1_usize as *mut kmipkit_profile_validation_result_t;
 
     assert_eq!(
-        kmipkit_profile_validation_selection_validate_v1(&raw const selection, &raw mut result),
+        unsafe {
+            kmipkit_profile_validation_selection_validate_v1(&raw const selection, &raw mut result)
+        },
         ERROR_INVALID_INPUT
     );
-    assert!(result.is_null(), "a failed resolution must clear its output");
+    assert!(
+        result.is_null(),
+        "a failed resolution must clear its output"
+    );
 
     let (error, view) = last_profile_validation_view();
-    assert_eq!(span_text(view.error_code_data, view.error_code_length), "profile_unavailable");
+    assert_eq!(
+        span_text(view.error_code_data, view.error_code_length),
+        "profile_unavailable"
+    );
     assert_eq!(
         span_text(view.profile_id_data, view.profile_id_length),
         "KMIPKIT-PROFILE-BASELINE-CLIENT"
@@ -128,23 +137,458 @@ fn c_profile_selection_resolution_fails_closed_with_redacted_profile_details() {
 fn c_profile_result_accessors_reject_null_handles_and_clear_scalar_outputs() {
     let mut profile_count = u64::MAX;
     assert_eq!(
-        kmipkit_profile_validation_result_profile_id_count_v1(
-            ptr::null_mut(),
-            &raw mut profile_count,
-        ),
+        unsafe {
+            kmipkit_profile_validation_result_profile_id_count_v1(
+                ptr::null_mut(),
+                &raw mut profile_count,
+            )
+        },
         ERROR_INVALID_INPUT
     );
     assert_eq!(profile_count, 0);
 
     let mut requirement_count = u64::MAX;
     assert_eq!(
-        kmipkit_profile_validation_result_requirement_id_count_v1(
-            ptr::null_mut(),
-            &raw mut requirement_count,
-        ),
+        unsafe {
+            kmipkit_profile_validation_result_requirement_id_count_v1(
+                ptr::null_mut(),
+                &raw mut requirement_count,
+            )
+        },
         ERROR_INVALID_INPUT
     );
     assert_eq!(requirement_count, 0);
+}
+
+#[test]
+fn c_profile_result_accessors_preserve_ordered_dependency_closed_ids() {
+    let resolved = ProfileValidationSelection::for_test(["KMIPKIT-PROFILE-BASELINE-CLIENT"])
+        .validate()
+        .expect("the test-only selector resolves the catalogued baseline rules");
+    let expected_profiles = resolved.profile_ids().to_vec();
+    let expected_requirements = resolved.requirement_ids().to_vec();
+    let handle = try_make_handle(
+        Kind::ProfileValidationResult,
+        HandleValue::ProfileValidationResult(resolved),
+    )
+    .expect("a resolved result receives an owned C handle");
+
+    let mut profile_count = 0;
+    assert_eq!(
+        unsafe {
+            kmipkit_profile_validation_result_profile_id_count_v1(handle, &raw mut profile_count)
+        },
+        SUCCESS
+    );
+    assert_eq!(profile_count as usize, expected_profiles.len());
+    for (index, expected) in expected_profiles.iter().enumerate() {
+        let mut span = kmipkit_byte_span_v1_t {
+            data: ptr::null(),
+            length: 0,
+        };
+        assert_eq!(
+            unsafe {
+                kmipkit_profile_validation_result_profile_id_at_v1(
+                    handle,
+                    index as u64,
+                    &raw mut span,
+                )
+            },
+            SUCCESS
+        );
+        assert_eq!(span_text(span.data, span.length), *expected);
+    }
+
+    let mut requirement_count = 0;
+    assert_eq!(
+        unsafe {
+            kmipkit_profile_validation_result_requirement_id_count_v1(
+                handle,
+                &raw mut requirement_count,
+            )
+        },
+        SUCCESS
+    );
+    assert_eq!(requirement_count as usize, expected_requirements.len());
+    for (index, expected) in expected_requirements.iter().enumerate() {
+        let mut span = kmipkit_byte_span_v1_t {
+            data: ptr::null(),
+            length: 0,
+        };
+        assert_eq!(
+            unsafe {
+                kmipkit_profile_validation_result_requirement_id_at_v1(
+                    handle,
+                    index as u64,
+                    &raw mut span,
+                )
+            },
+            SUCCESS
+        );
+        assert_eq!(span_text(span.data, span.length), *expected);
+    }
+    kmipkit_profile_validation_result_release(handle);
+}
+
+#[test]
+fn c_profile_result_release_invalidates_result_access_and_borrowed_id_spans() {
+    let resolved = ProfileValidationSelection::for_test(["KMIPKIT-PROFILE-BASELINE-CLIENT"])
+        .validate()
+        .expect("the test-only selector resolves the catalogued baseline rules");
+    let handle = make_handle(
+        Kind::ProfileValidationResult,
+        HandleValue::ProfileValidationResult(resolved),
+    );
+    let mut span = kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length: 0,
+    };
+    assert_eq!(
+        unsafe {
+            kmipkit_profile_validation_result_profile_id_at_v1(handle, 0, &raw mut span)
+        },
+        SUCCESS
+    );
+    assert!(!span.data.is_null());
+    kmipkit_profile_validation_result_release(handle);
+
+    let mut count = u64::MAX;
+    assert_eq!(
+        unsafe {
+            kmipkit_profile_validation_result_profile_id_count_v1(handle, &raw mut count)
+        },
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(count, 0);
+    // The borrowed span must not be read after release; only its owner handle is checked here.
+}
+
+#[test]
+fn c_profile_result_validators_reject_null_stale_and_invalid_transport_inputs() {
+    let result = 0_usize as *mut kmipkit_profile_validation_result_t;
+    let mut count = u64::MAX;
+    assert_eq!(
+        unsafe {
+            kmipkit_profile_validation_result_validate_transport_v1(result, 1)
+        },
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        unsafe {
+            kmipkit_profile_validation_result_validate_request_v1(result, ptr::null_mut())
+        },
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        unsafe {
+            kmipkit_profile_validation_result_validate_request_with_context_v1(
+                result,
+                ptr::null_mut(),
+                ptr::null(),
+            )
+        },
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        unsafe {
+            kmipkit_profile_validation_result_validate_response_v1(
+                result,
+                ptr::null_mut(),
+                ptr::null_mut(),
+            )
+        },
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        unsafe {
+            kmipkit_profile_validation_result_validate_response_with_context_v1(
+                result,
+                ptr::null_mut(),
+                ptr::null_mut(),
+                ptr::null(),
+            )
+        },
+        ERROR_INVALID_INPUT
+    );
+
+    let resolved = ProfileValidationSelection::for_test(["KMIPKIT-PROFILE-BASELINE-CLIENT"])
+        .validate()
+        .expect("the test-only selector resolves the catalogued baseline rules");
+    result = make_handle(
+        Kind::ProfileValidationResult,
+        HandleValue::ProfileValidationResult(resolved),
+    );
+    assert_eq!(
+        unsafe { kmipkit_profile_validation_result_validate_transport_v1(result, 99) },
+        ERROR_INVALID_INPUT,
+        "transport discriminants outside the versioned ABI are rejected"
+    );
+    let mut error = ptr::null_mut();
+    assert_eq!(
+        kmipkit_last_error_profile_validation_error_get_v1(&raw mut error),
+        SUCCESS,
+        "malformed ABI inputs do not create a profile-rule detail snapshot"
+    );
+    assert!(error.is_null());
+    kmipkit_profile_validation_result_release(result);
+
+    assert_eq!(
+        unsafe { kmipkit_profile_validation_result_validate_transport_v1(result, 1) },
+        ERROR_INVALID_INPUT,
+        "a released result handle is stale"
+    );
+    assert_eq!(
+        unsafe {
+            kmipkit_profile_validation_result_profile_id_count_v1(result, &raw mut count)
+        },
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(count, 0);
+}
+
+#[test]
+fn c_profile_result_validators_match_the_canonical_rust_result_methods() {
+    let resolved = ProfileValidationSelection::for_test(["KMIPKIT-PROFILE-BASELINE-CLIENT"])
+        .validate()
+        .expect("the test-only selector resolves the catalogued baseline rules");
+    let result = make_handle(
+        Kind::ProfileValidationResult,
+        HandleValue::ProfileValidationResult(resolved.clone()),
+    );
+    let request = profile_request([(0x0000_001e, Structure::new())]);
+    let request_tree = request
+        .with_ttlv(|tree| clone_structure_view(&tree))
+        .expect("the request tree can be cloned for a borrowed ABI input");
+    let request_handle = make_handle(
+        Kind::Structure,
+        HandleValue::Structure(request_tree),
+    );
+    let response = profile_response(0x0000_001e);
+    let response_tree = response
+        .with_ttlv(|tree| clone_structure_view(&tree))
+        .expect("the response tree can be cloned for a borrowed ABI input");
+    let response_handle = make_handle(
+        Kind::Structure,
+        HandleValue::Structure(response_tree),
+    );
+
+    let expected = resolved.validate_transport(kmipkit_protocol::ProfileTransport::Https);
+    assert_profile_validation_outcome(
+        unsafe { kmipkit_profile_validation_result_validate_transport_v1(result, 2) },
+        expected,
+    );
+
+    let expected = resolved.validate_request(&request);
+    assert_profile_validation_outcome(
+        unsafe {
+            kmipkit_profile_validation_result_validate_request_v1(result, request_handle)
+        },
+        expected,
+    );
+
+    let context = ProfileValidationContext::new();
+    let expected = resolved.validate_request_with_context(&request, &context);
+    assert_profile_validation_outcome(
+        unsafe {
+            kmipkit_profile_validation_result_validate_request_with_context_v1(
+                result,
+                request_handle,
+                ptr::null(),
+            )
+        },
+        expected,
+    );
+
+    let expected = resolved.validate_response(&request, &response);
+    assert_profile_validation_outcome(
+        unsafe {
+            kmipkit_profile_validation_result_validate_response_v1(
+                result,
+                request_handle,
+                response_handle,
+            )
+        },
+        expected,
+    );
+
+    let expected = resolved.validate_response_with_context(&request, &response, &context);
+    assert_profile_validation_outcome(
+        unsafe {
+            kmipkit_profile_validation_result_validate_response_with_context_v1(
+                result,
+                request_handle,
+                response_handle,
+                ptr::null(),
+            )
+        },
+        expected,
+    );
+
+    kmipkit_profile_validation_result_release(result);
+    kmipkit_ttlv_structure_release(request_handle);
+    kmipkit_ttlv_structure_release(response_handle);
+}
+
+#[test]
+fn c_profile_validators_reject_bad_context_size_and_version_without_profile_details() {
+    let resolved = ProfileValidationSelection::for_test(["KMIPKIT-PROFILE-BASELINE-CLIENT"])
+        .validate()
+        .expect("the test-only selector resolves the catalogued baseline rules");
+    let result = make_handle(
+        Kind::ProfileValidationResult,
+        HandleValue::ProfileValidationResult(resolved),
+    );
+    let request = profile_request([(0x0000_001e, Structure::new())]);
+    let request_tree = request
+        .with_ttlv(|tree| clone_structure_view(&tree))
+        .expect("the request tree can be cloned for a borrowed ABI input");
+    let request_handle = make_handle(
+        Kind::Structure,
+        HandleValue::Structure(request_tree),
+    );
+    let invalid_context = kmipkit_profile_validation_context_v1_t {
+        struct_size: 0,
+        abi_version: 99,
+        object_states: ptr::null(),
+        object_state_count: 0,
+    };
+
+    assert_eq!(
+        unsafe {
+            kmipkit_profile_validation_result_validate_request_with_context_v1(
+                result,
+                request_handle,
+                &raw const invalid_context,
+            )
+        },
+        ERROR_INVALID_INPUT
+    );
+    assert!(last_profile_validation_error_is_absent());
+    kmipkit_profile_validation_result_release(result);
+    kmipkit_ttlv_structure_release(request_handle);
+}
+
+#[test]
+fn c_profile_result_message_validators_reject_malformed_ttlv_without_rule_details() {
+    let resolved = ProfileValidationSelection::for_test(["KMIPKIT-PROFILE-BASELINE-CLIENT"])
+        .validate()
+        .expect("the test-only selector resolves the catalogued baseline rules");
+    let result = make_handle(
+        Kind::ProfileValidationResult,
+        HandleValue::ProfileValidationResult(resolved),
+    );
+    let malformed_request = make_handle(
+        Kind::Structure,
+        HandleValue::Structure(Structure::new()),
+    );
+    let malformed_response = make_handle(
+        Kind::Structure,
+        HandleValue::Structure(Structure::new()),
+    );
+
+    assert_eq!(
+        unsafe {
+            kmipkit_profile_validation_result_validate_request_v1(result, malformed_request)
+        },
+        ERROR_PROTOCOL
+    );
+    assert!(last_profile_validation_error_is_absent());
+    assert_eq!(
+        unsafe {
+            kmipkit_profile_validation_result_validate_response_v1(
+                result,
+                malformed_request,
+                malformed_response,
+            )
+        },
+        ERROR_PROTOCOL
+    );
+    assert!(last_profile_validation_error_is_absent());
+    kmipkit_profile_validation_result_release(result);
+    kmipkit_ttlv_structure_release(malformed_request);
+    kmipkit_ttlv_structure_release(malformed_response);
+}
+
+#[test]
+fn c_profile_context_validation_redacts_request_identifiers_and_context_values() {
+    const REQUEST_IDENTIFIER: &str = "request-id-should-never-be-diagnostic";
+    const CONTEXT_IDENTIFIER: &str = "context-id-should-never-be-diagnostic";
+    let request = profile_request([
+        (0x0000_001e, Structure::new()),
+        (
+            0x0000_0031,
+            profile_structure([
+                profile_item(
+                    0x0042_0094,
+                    Value::text_string(REQUEST_IDENTIFIER.to_owned()),
+                ),
+                profile_item(
+                    0x0042_013d,
+                    Value::structure(profile_structure([profile_item(
+                        0x0042_00bc,
+                        Value::date_time(1_700_000_001),
+                    )])),
+                ),
+            ]),
+        ),
+    ]);
+    let request_tree = request
+        .with_ttlv(|tree| clone_structure_view(&tree))
+        .expect("the existing request tree can be cloned for a borrowed ABI input");
+    let request_handle = make_handle(Kind::Structure, HandleValue::Structure(request_tree));
+    let resolved = ProfileValidationSelection::for_test(["KMIPKIT-PROFILE-BASELINE-CLIENT"])
+        .validate()
+        .expect("the test-only selector resolves the catalogued baseline rules");
+    let result = make_handle(
+        Kind::ProfileValidationResult,
+        HandleValue::ProfileValidationResult(resolved),
+    );
+    let context_identifier = CONTEXT_IDENTIFIER.as_bytes();
+    let object_state = kmipkit_profile_object_state_v1_t {
+        struct_size: u32::try_from(size_of::<kmipkit_profile_object_state_v1_t>())
+            .expect("C object state size fits u32"),
+        abi_version: 1,
+        batch_item_index: 1,
+        unique_identifier_data: context_identifier.as_ptr(),
+        unique_identifier_length: context_identifier.len() as u64,
+        known_fields: PROFILE_STATE_ORIGINAL_CREATION_DATE_PRESENT,
+        boolean_values: PROFILE_STATE_ORIGINAL_CREATION_DATE_PRESENT,
+        usage_limits_total: 0,
+        usage_limits_count: 0,
+    };
+    let object_states = [object_state];
+    let context = kmipkit_profile_validation_context_v1_t {
+        struct_size: u32::try_from(size_of::<kmipkit_profile_validation_context_v1_t>())
+            .expect("C profile context size fits u32"),
+        abi_version: 1,
+        object_states: object_states.as_ptr(),
+        object_state_count: 1,
+    };
+
+    assert_eq!(
+        unsafe {
+            kmipkit_profile_validation_result_validate_request_with_context_v1(
+                result,
+                request_handle,
+                &raw const context,
+            )
+        },
+        ERROR_INVALID_INPUT
+    );
+    let (error, view) = last_profile_validation_view();
+    let diagnostics = [
+        span_text(view.error_code_data, view.error_code_length),
+        span_text(view.profile_id_data, view.profile_id_length),
+        span_text(view.requirement_id_data, view.requirement_id_length),
+        span_text(view.source_id_data, view.source_id_length),
+        span_text(view.source_locator_data, view.source_locator_length),
+    ]
+    .join(" ");
+    assert!(!diagnostics.contains(REQUEST_IDENTIFIER));
+    assert!(!diagnostics.contains(CONTEXT_IDENTIFIER));
+    kmipkit_profile_validation_error_release(error);
+    kmipkit_profile_validation_result_release(result);
+    kmipkit_ttlv_structure_release(request_handle);
 }
 
 #[test]
@@ -402,6 +846,55 @@ fn profile_request(items: impl IntoIterator<Item = (u32, Structure)>) -> Request
         .expect("profile test Request Message has a valid generic TTLV shape")
 }
 
+fn profile_response(operation: u32) -> ResponseMessage {
+    ResponseMessage::try_from_ttlv(profile_structure([
+        profile_item(
+            0x0042_007a,
+            Value::structure(profile_structure([
+                profile_item(
+                    0x0042_0069,
+                    Value::structure(profile_structure([
+                        profile_item(0x0042_006a, Value::integer(2)),
+                        profile_item(0x0042_006b, Value::integer(1)),
+                    ])),
+                ),
+                profile_item(0x0042_0092, Value::date_time(1_700_000_000)),
+                profile_item(0x0042_000d, Value::integer(1)),
+            ])),
+        ),
+        profile_item(
+            0x0042_000f,
+            Value::structure(profile_structure([
+                profile_item(0x0042_005c, Value::enumeration(operation)),
+                profile_item(0x0042_007f, Value::enumeration(0)),
+                profile_item(0x0042_007c, Value::structure(Structure::new())),
+            ])),
+        ),
+    ]))
+    .expect("profile test Response Message has a valid generic TTLV shape")
+}
+
+fn assert_profile_validation_outcome(
+    status: i32,
+    expected: Result<(), kmipkit_protocol::ProfileValidationError>,
+) {
+    match expected {
+        Ok(()) => {
+            assert_eq!(status, SUCCESS);
+            assert!(last_profile_validation_error_is_absent());
+        }
+        Err(expected_error) => {
+            assert_eq!(status, ERROR_INVALID_INPUT);
+            let (error, view) = last_profile_validation_view();
+            assert_eq!(
+                span_text(view.error_code_data, view.error_code_length),
+                expected_error.code().as_str()
+            );
+            kmipkit_profile_validation_error_release(error);
+        }
+    }
+}
+
 fn empty_profile_validation_view() -> kmipkit_profile_validation_error_view_v1_t {
     kmipkit_profile_validation_error_view_v1_t {
         struct_size: u32::try_from(size_of::<kmipkit_profile_validation_error_view_v1_t>())
@@ -441,6 +934,12 @@ fn last_profile_validation_view() -> (
         SUCCESS
     );
     (handle, view)
+}
+
+fn last_profile_validation_error_is_absent() -> bool {
+    let mut handle = ptr::null_mut();
+    kmipkit_last_error_profile_validation_error_get_v1(&raw mut handle) == SUCCESS
+        && handle.is_null()
 }
 
 fn span_text(data: *const u8, length: u64) -> String {
