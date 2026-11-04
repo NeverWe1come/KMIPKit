@@ -11045,3 +11045,18 @@ Reproduction commands (run from the repository root):
 - Focused Green mapping, operation state, and identity checks: `py -3 -B -m unittest tools.api_manifest.tests.test_t102_certify_request_identifier_member_mapping tools.api_manifest.tests.test_t102_certify_request_builder_mapping tools.api_manifest.tests.test_certify_parity_manifest tools.api_manifest.tests.test_t102_lifecycle_request_serializer_mapping tools.api_manifest.tests.test_t102_macro_lot_partition.T102MacroLotPartitionTests.test_macro_lots_are_disjoint_exhaustive_and_identity_stable`.
 - Generated API outputs: `py -3 -B tools/api_manifest/generate.py --check`.
 - Formatting and whitespace: `cargo fmt --all --check` and `git diff --check`.
+
+### T102 Macro-Lot 2 RNG Retrieve request root alias accessor parity (2026-11-04)
+
+Red `2f252e38b` adds `kmipkit::RngRetrieveRequest::data_length` to the exact approved-alias contract. The targeted regression failed because the root declaration remained blocked under the generic `public_binding_surface` capability instead of inheriting the verified protocol alias mapping. The approved owner is `specs/027-rng-operations/spec.md` (KMIPKIT-0041); OASIS KMIP Specification v2.1 §6.1.49 Tables 316–318 defines RNG Retrieve, and Table 316 requires Data Length.
+
+Green `e4bc045d6` maps the root alias to the approved RNG Retrieve capability and reuses the protocol accessor's owner, requirement set, C/Java/Python builder mapping, and parity evidence. The operation inventory records the root declaration and the alias mapping test. Refactor `5186f52e1` extracts the repeated alias comparison into a helper without changing its assertions. This inventory mapping adds no runtime behavior, wire behavior, or separate foreign-language getter claim.
+
+Verification: focused alias mapping, RNG parity, root RNG trait inventory, and macro-lot partition identity tests pass 9/9. `py -3 -B tools/api_manifest/generate.py --check` verifies all 12 generated outputs; `cargo fmt --all --check` and `git diff --check` pass. T102 decreases 80→79 blocked candidates; public declaration/exclusion totals remain 6,380/8,713. Macro-Lot 2 remains open; its full T102 and 151-test manifest-v2 closure suites remain reserved. No protocol conformance, interoperability, profile-support, or certification claim is made.
+
+Reproduction commands (run from the repository root):
+
+- Red, expected capability-mismatch failure: `py -3 -B -m unittest tools.api_manifest.tests.test_t102_approved_alias_mapping.T102ApprovedAliasMappingTests.test_exact_aliases_reuse_only_their_approved_four_language_owner_mapping`.
+- Focused Green and Refactor suite: `py -3 -B -m unittest tools.api_manifest.tests.test_t102_approved_alias_mapping tools.api_manifest.tests.test_rng_parity_manifest tools.api_manifest.tests.test_t102_rng_root_trait_batch tools.api_manifest.tests.test_t102_macro_lot_partition.T102MacroLotPartitionTests.test_macro_lots_are_disjoint_exhaustive_and_identity_stable`.
+- Generated API outputs: `py -3 -B tools/api_manifest/generate.py --check`.
+- Formatting and whitespace: `cargo fmt --all --check` and `git diff --check`.
