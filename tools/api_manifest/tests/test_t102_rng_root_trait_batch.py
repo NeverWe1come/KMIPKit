@@ -198,7 +198,7 @@ class T102RngRootTraitBatchTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
         }
         for package, type_name in ERROR_PREFIXES:
-            self.assertEqual(declarations[(package, type_name)], "blocked")
+            self.assertEqual(declarations[(package, type_name)], "declared")
             self.assertEqual(declarations[(package, f"{type_name}::kind")], "blocked")
         for type_name, _, _ in REQUESTS:
             self.assertEqual(declarations[("rust-kmipkit", type_name)], "verified")
