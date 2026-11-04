@@ -13,6 +13,7 @@ from kmipkit import (
     client,
     errors,
     extensions,
+    messages,
     ttlv,
 )
 
@@ -222,6 +223,7 @@ class _ProfileValidationLib:
         self.context_values_during_calls: list[bytes] = []
         self.context_buffer: object | None = None
         self.context_length = 0
+        self.last_error = (0, 0, 0, 0)
 
     def kmipkit_profile_validation_selection_validate_v1(self, selection, out_result):
         self.calls.append(("selection_validate", (selection,)))
@@ -282,6 +284,10 @@ class _ProfileValidationLib:
         return self._record_validator(
             "response_with_context", result, request, response, context
         )
+
+    def kmipkit_last_error_get(self, status, category, cause, delivery):
+        status[0], category[0], cause[0], delivery[0] = self.last_error
+        return 0
 
     @staticmethod
     def _pointer_for_slot(slot, address: int):
@@ -371,6 +377,86 @@ def test_profile_result_calls_all_validators_with_live_context_buffers(monkeypat
     request.close()
     response.close()
     result.close()
+
+
+def test_profile_result_keeps_input_handle_locked_from_pointer_read_to_native_call(
+    monkeypatch,
+):
+    native = _ProfileValidationLib()
+    result = _profile_result_from_mock(monkeypatch, native)
+    request = ttlv.ttlv_structure_create()
+    pointer_read = threading.Event()
+    allow_pointer_return = threading.Event()
+    close_started = threading.Event()
+    close_finished = threading.Event()
+    failures: list[BaseException] = []
+    original_pointer = messages._as_client_structure
+
+    def pause_after_pointer_read(structure):
+        pointer = original_pointer(structure)
+        pointer_read.set()
+        if not allow_pointer_return.wait(2):
+            raise AssertionError("native validation was never released")
+        return pointer
+
+    def observe_close() -> None:
+        close_started.set()
+        request.close()
+        close_finished.set()
+
+    monkeypatch.setattr(
+        messages, "_as_client_structure", pause_after_pointer_read
+    )
+    original_validator = native.kmipkit_profile_validation_result_validate_request_v1
+
+    def validate_while_handle_is_live(result_handle, request_handle):
+        assert not request.closed
+        return original_validator(result_handle, request_handle)
+
+    native.kmipkit_profile_validation_result_validate_request_v1 = (
+        validate_while_handle_is_live
+    )
+
+    def validate() -> None:
+        try:
+            result.validate_request(request)
+        except BaseException as error:
+            failures.append(error)
+
+    validation_thread = threading.Thread(target=validate, daemon=True)
+    close_thread = threading.Thread(target=observe_close, daemon=True)
+    validation_thread.start()
+    try:
+        assert pointer_read.wait(2)
+        close_thread.start()
+        assert close_started.wait(2)
+        assert not close_finished.wait(0.05), "close must wait for the borrowed pointer"
+    finally:
+        allow_pointer_return.set()
+        validation_thread.join(timeout=2)
+        close_thread.join(timeout=2)
+        result.close()
+
+    assert not validation_thread.is_alive()
+    assert not close_thread.is_alive()
+    assert failures == []
+    assert close_finished.is_set()
+    assert request.closed
+
+
+def test_profile_validation_protocol_status_uses_client_error_mapping(monkeypatch):
+    native = _ProfileValidationLib()
+    native.last_error = (8, int(errors.ClientErrorCategory.PROTOCOL), 4, 0)
+    monkeypatch.setattr(client, "lib", native)
+    monkeypatch.setattr(client, "_read_profile_validation_details", lambda: None)
+
+    with pytest.raises(errors.ClientExecutionError) as failure:
+        client._raise_profile_validation_status(8)
+
+    assert failure.value.status == 8
+    assert failure.value.client_category is errors.ClientErrorCategory.PROTOCOL
+    assert failure.value.cause is errors.ClientErrorCause.PROTOCOL_OTHER
+    assert failure.value.delivery is errors.DeliveryState.NONE
 
 
 def test_profile_transport_rejects_unknown_values_before_native_call(monkeypatch):

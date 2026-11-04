@@ -492,6 +492,30 @@ fn c_profile_result_message_validators_reject_malformed_ttlv_without_rule_detail
         ERROR_PROTOCOL
     );
     assert!(last_profile_validation_error_is_absent());
+    let mut status = SUCCESS;
+    let mut category = ERROR_CATEGORY_NONE;
+    let mut cause = ERROR_CAUSE_NONE;
+    let mut delivery = DELIVERY_STATE_NONE;
+    assert_eq!(
+        unsafe {
+            kmipkit_last_error_get(
+                &raw mut status,
+                &raw mut category,
+                &raw mut cause,
+                &raw mut delivery,
+            )
+        },
+        SUCCESS
+    );
+    assert_eq!(
+        (status, category, cause, delivery),
+        (
+            ERROR_PROTOCOL,
+            ERROR_CATEGORY_PROTOCOL,
+            ERROR_CAUSE_PROTOCOL_OTHER,
+            DELIVERY_STATE_NONE,
+        )
+    );
     let valid_request = profile_request([(0x0000_001e, Structure::new())]);
     let valid_request_tree = valid_request
         .with_ttlv(|tree| clone_structure_view(&tree))
@@ -509,6 +533,30 @@ fn c_profile_result_message_validators_reject_malformed_ttlv_without_rule_detail
         ERROR_PROTOCOL
     );
     assert!(last_profile_validation_error_is_absent());
+    status = SUCCESS;
+    category = ERROR_CATEGORY_NONE;
+    cause = ERROR_CAUSE_NONE;
+    delivery = DELIVERY_STATE_NONE;
+    assert_eq!(
+        unsafe {
+            kmipkit_last_error_get(
+                &raw mut status,
+                &raw mut category,
+                &raw mut cause,
+                &raw mut delivery,
+            )
+        },
+        SUCCESS
+    );
+    assert_eq!(
+        (status, category, cause, delivery),
+        (
+            ERROR_PROTOCOL,
+            ERROR_CATEGORY_PROTOCOL,
+            ERROR_CAUSE_PROTOCOL_OTHER,
+            DELIVERY_STATE_NONE,
+        )
+    );
     kmipkit_profile_validation_result_release(result);
     kmipkit_ttlv_structure_release(malformed_request);
     kmipkit_ttlv_structure_release(malformed_response);
