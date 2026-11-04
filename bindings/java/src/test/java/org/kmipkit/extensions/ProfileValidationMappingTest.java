@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.kmipkit.ClientOperationException;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
+import org.kmipkit.ProfileValidationException;
 import org.kmipkit.ttlv.CodecLimits;
 
 final class ProfileValidationMappingTest {
@@ -71,6 +72,22 @@ final class ProfileValidationMappingTest {
         assertThrows(InvalidInputException.class, () ->
                 NativeExtensionRegistry.clientExecuteWithProfiles(
                         0, 0, null, null, null, null, null, null, null, null, null));
+    }
+
+    @Test
+    void selectionValidationFailsClosedWithRedactedSourceBackedDetails() {
+        String selectedBaseline = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+        ProfileValidationException failure = assertThrows(
+                ProfileValidationException.class,
+                () -> new ProfileValidationSelection(List.of(selectedBaseline)).validate());
+
+        var details = failure.profileValidation();
+        assertEquals("profile_unavailable", details.errorCode());
+        assertEquals(selectedBaseline, details.profileId().orElseThrow());
+        assertEquals("KMIPKIT-REQ-SPEC-14.1-001", details.requirementId().orElseThrow());
+        assertEquals("KMIPKIT-CLAUSE-SPEC-14.1-001", details.sourceClauseId().orElseThrow());
+        assertFalse(failure.getMessage().contains(selectedBaseline));
+        assertFalse(failure.toString().contains(selectedBaseline));
     }
 
     @Test
