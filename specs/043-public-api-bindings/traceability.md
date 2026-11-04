@@ -932,3 +932,6 @@ T102 extension error taxonomy checkpoint (2026-11-04): KMIPKIT-0012-FR-003/010/0
 
 
 T102 common Python error-category checkpoint (2026-11-04): `kmipkit.errors.InvalidInputError.category` follows KMIPKIT-0013-FR-001 and the existing four-language invalid-input mapping. `kmipkit.errors.ResourceLimitError.category` follows KMIPKIT-0043-FR-007/013 and the existing four-language resource-limit mapping. Neither adds a new runtime category or an OASIS protocol requirement. The exact capability inventories were regenerated; T102 candidates decrease 570→568 (301 in Macro-Lot 1, 267 in Macro-Lot 2). See `implementation-evidence.md` for Red/Green and focused checks.
+
+
+T102 independent review correction (2026-11-04): the four Java exception classes map to their Rust/C/Python error categories, but their public constructors taking arbitrary `String` messages are exact Java-only construction signatures and have owner-backed exclusions under KMIPKIT-0012-FR-010/011. KMIPKit's JNI status conversion uses fixed messages. `KMIPKIT-0012-FR-003` is explicitly attached to both invalid compatibility-range and duplicate-key mappings. This preserves error category parity without claiming constructor-signature parity. T102 remains 568 blocked candidates (301 Macro-Lot 1, 267 Macro-Lot 2); see `implementation-evidence.md` for review and verification results.
