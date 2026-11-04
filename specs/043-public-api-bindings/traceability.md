@@ -994,7 +994,7 @@ Each existing protocol serializer below inherits the exact requirement IDs and a
 | Import | `rust-observed-eef9d3b1dc43a901bd90` `ImportRequest::into_ttlv_payload` | `rust-observed-3fb008956f4e09aff689` | §6.1.25, Tables 238–240 |
 | Join Split Key | `rust-observed-1864399564d3d70f4bbb` `JoinSplitKeyRequest::into_ttlv_payload` | `rust-observed-8dd0bcdb27c8ae91a5aa` | §6.1.27, Tables 244–246 |
 
-The six remaining protocol request members are mapped to the same approved operation builders. Each inherits the exact requirement IDs and approved owner from its verified request constructor. `tools/api_manifest/tests/test_t102_import_locate_request_member_mapping.py` pins declaration identities, inherited traceability, cross-language mappings, and the source citations; `test_t102_import_request_trait_exclusions.py` and `test_t102_locate_request_builder_mapping.py` pin the complete request-member inventories.
+The remaining protocol request members are mapped to the same approved operation builders. Each inherits the exact requirement IDs and approved owner from its verified request constructor. `tools/api_manifest/tests/test_t102_import_locate_request_member_mapping.py` and `tools/api_manifest/tests/test_t102_join_split_key_request_member_mapping.py` pin declaration identities, inherited traceability, cross-language mappings, and source citations; the request-trait tests pin the complete member inventories.
 
 | KMIP operation | Request member declaration | Constructor anchor | OASIS KMIP v2.1 source |
 |---|---|---|---|
@@ -1004,6 +1004,11 @@ The six remaining protocol request members are mapped to the same approved opera
 | Import | `rust-observed-61072f660e5d534e226c` `ImportRequest::object_type` | `rust-observed-3fb008956f4e09aff689` | §6.1.25, Tables 238–240 |
 | Import | `rust-observed-14d3acc960ccab00dbe3` `ImportRequest::replace_existing` | `rust-observed-3fb008956f4e09aff689` | §6.1.25, Tables 238–240 |
 | Import | `rust-observed-5e06cdb2edfa3494515d` `ImportRequest::unique_identifier` | `rust-observed-3fb008956f4e09aff689` | §6.1.25, Tables 238–240 |
+| Join Split Key | `rust-observed-0b291199b700388a5ee9` `JoinSplitKeyRequest::attributes` | `rust-observed-8dd0bcdb27c8ae91a5aa` | §6.1.27, Tables 244–246 |
+| Join Split Key | `rust-observed-77928c7308f9e390f8f6` `JoinSplitKeyRequest::object_type` | `rust-observed-8dd0bcdb27c8ae91a5aa` | §6.1.27, Tables 244–246 |
+| Join Split Key | `rust-observed-4fef0ce2a15f87ce8d12` `JoinSplitKeyRequest::protection_storage_masks` | `rust-observed-8dd0bcdb27c8ae91a5aa` | §6.1.27, Tables 244–246 |
+| Join Split Key | `rust-observed-dbc03ccef090eedbdbd9` `JoinSplitKeyRequest::references` | `rust-observed-8dd0bcdb27c8ae91a5aa` | §6.1.27, Tables 244–246 |
+| Join Split Key | `rust-observed-28b2674184eadc2239c5` `JoinSplitKeyRequest::secret_data_type` | `rust-observed-8dd0bcdb27c8ae91a5aa` | §6.1.27, Tables 244–246 |
 
 ## T102 — KMIPKIT-0017 Locate request member parity
 
