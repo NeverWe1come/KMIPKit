@@ -73,6 +73,7 @@ DIRECT_PARSERS = {
 PARITY_EVIDENCE = {
     "crates/kmipkit-client/src/execute.rs",
     "crates/kmipkit-client/tests/error_contract.rs",
+    "crates/kmipkit-protocol/src/cryptographic_operation.rs",
     "crates/kmipkit-client/tests/unit/hash_execution_tests.rs",
     "crates/kmipkit-client/tests/unit/mac_execution_tests.rs",
     "crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs",
@@ -115,6 +116,19 @@ class T102CryptoProtocolErrorOutcomeMappingTests(unittest.TestCase):
             for row in cls.manifest["capabilities"]
             if row["capabilityId"] == "client_execution"
         )
+
+    def test_manifest_schema_accepts_the_normalized_protocol_outcome_semantic(self) -> None:
+        manifest = copy.deepcopy(self.manifest)
+        row = next(
+            row
+            for row in manifest["publicDeclarations"]
+            if row.get("exportName") == "kmipkit_protocol::CryptographicOperationError"
+        )
+        row["mappingSemantics"] = MAPPING_SEMANTICS
+        schema = generate._load_json(
+            ROOT, generate.SCHEMA_PATH, generate.MAX_SCHEMA_BYTES
+        )
+        generate._validate_schema(manifest, schema)
 
     def test_cryptographic_errors_map_to_the_complete_protocol_outcome_surface(self) -> None:
         self.assertEqual(len(ERROR_EXPORTS), 10)
