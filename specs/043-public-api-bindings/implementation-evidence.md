@@ -10982,6 +10982,23 @@ Reproduction commands (run from the repository root):
 - Generated API outputs: `py -3 -B tools/api_manifest/generate.py --check`.
 - Formatting and whitespace: `cargo fmt --all --check` and `git diff --check`.
 
+### T102 Macro-Lot 2 Export request identifier member parity (2026-11-04)
+
+Red `85bd1b751` adds a regression for the existing `kmipkit_protocol::ExportRequest::unique_identifier` declaration. The focused test fails because the declaration is blocked and absent from the Export operation inventory. Its approved owner is `specs/023-key-material-transfer/spec.md` (KMIPKIT-0037); OASIS KMIP Specification v2.1 §6.1.18 Tables 217–219 define the operation. Table 217 marks Unique Identifier optional; the existing source-derived request test verifies its tag, order, and omission behavior.
+
+Green `3a431b5b8` maps the declaration to the existing Export capability and C, Java, and Python builders, inheriting the approved requirement set from the verified Rust constructor. It updates the operation and declaration evidence, the request state regression and candidate count, then regenerates the public API projections. Refactor `b613c9837` extracts the capability-mapping assertions. This is capability-level correspondence; it does not claim a separate foreign getter or add runtime behavior/public symbols. No field-specific OASIS `REQ-SPEC` identifier is assigned in the owner; the exact table row, tag, test, and KMIPKIT-0037 requirements are recorded in `traceability.md`.
+
+The earlier Certify snapshot tests were also refreshed to include this deliberate Export manifest change while preserving the Certify target filters. The snapshot hashes now cover the exact current manifest outside those filtered targets; focused Certify mapping/parity tests continue to pass.
+
+Verification: the focused Export mapping, Export parity, Export/Get request state, transfer serializer, prior Certify mapping/parity, and macro-lot identity modules pass 29/29. `py -3 -B tools/api_manifest/generate.py --check` verifies all 12 outputs; `cargo fmt --all --check` and `git diff --check` pass. T102 decreases 81→80 blocked candidates; public declaration/exclusion totals remain 6,380/8,713. The Macro-Lot 2 zero-unresolved gate remains open with 80 candidates, so full T102 and 151-test `manifest-v2` suites remain reserved for lot closure. No formal conformance, server-interoperability, profile-support, or certification claim is made.
+
+Reproduction commands (run from the repository root):
+
+- Red, expected blocked-state failure: `py -3 -B -m unittest tools.api_manifest.tests.test_t102_export_request_identifier_member_mapping`.
+- Focused Green mapping, operation parity, state, and identity group: `py -3 -B -m unittest tools.api_manifest.tests.test_t102_export_request_identifier_member_mapping tools.api_manifest.tests.test_export_parity_manifest tools.api_manifest.tests.test_t102_export_get_request_trait_exclusions tools.api_manifest.tests.test_t102_transfer_request_serializer_mapping tools.api_manifest.tests.test_t102_certify_request_identifier_member_mapping tools.api_manifest.tests.test_t102_certify_request_builder_mapping tools.api_manifest.tests.test_certify_parity_manifest tools.api_manifest.tests.test_t102_macro_lot_partition.T102MacroLotPartitionTests.test_macro_lots_are_disjoint_exhaustive_and_identity_stable`.
+- Generated API outputs: `py -3 -B tools/api_manifest/generate.py --check`.
+- Formatting and whitespace: `cargo fmt --all --check` and `git diff --check`.
+
 ### T102 Macro-Lot 2 lifecycle request identifier member parity (2026-11-04)
 
 Red commit `a4d047673` adds an executable contract for six blocked Rust request members: Check and Obtain Lease `unique_identifier`, Re-certify `certificate_request_unique_identifier` and `unique_identifier`, Re-key `unique_identifier`, and Re-key Key Pair `private_key_unique_identifier`. The targeted mapping test fails on the six blocked-state assertions. It pins approved KMIPKIT-0036 ownership and OASIS KMIP Specification v2.1 §6.1.7 Tables 183–185, §6.1.35 Tables 268–270, §6.1.45 Tables 300–302, §6.1.46 Tables 305–307, and §6.1.47 Tables 310–312.
