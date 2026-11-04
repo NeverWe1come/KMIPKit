@@ -4311,6 +4311,80 @@ pub extern "C" fn kmipkit_client_batch_item_pkcs11(
     })
 }
 
+/// Creates a PKCS#11 batch item with caller-ordered opaque payload extensions.
+///
+/// KMIP v2.1 §6.1.37 Table 273 defines the standard PKCS#11 request fields and
+/// does not define a generic extension field. This additive API forwards the
+/// caller's structurally valid unknown TTLV items after those standard fields
+/// for vendor or profile-specific use; it does not claim that such items are
+/// standard or interoperable. Input items are copied and remain caller-owned.
+///
+/// # Safety
+///
+/// When `payload_extension_count` is nonzero, `payload_extensions` must point
+/// to an aligned, readable array of that many live TTLV item handles. A null
+/// array is allowed only when the count is zero. `out_item` must point to an
+/// aligned, writable handle slot. The function rejects overlap between the
+/// extension handle array and the output slot before accessing the array.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_client_batch_item_pkcs11_with_extensions_v1(
+    function: *mut kmipkit_ttlv_structure_t,
+    interface: *mut kmipkit_ttlv_structure_t,
+    correlation_value: *const crate::kmipkit_byte_span_v1_t,
+    input_parameters: *mut kmipkit_ttlv_structure_t,
+    payload_extensions: *mut *mut kmipkit_ttlv_item_t,
+    payload_extension_count: u64,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_item.is_null()
+            || validate_input_overlaps_output(
+                out_item,
+                payload_extensions,
+                payload_extension_count,
+            )
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let extensions = try_ffi!(input_array(
+            payload_extensions,
+            payload_extension_count,
+            MAX_VALIDATE_INPUT_ITEMS,
+        ));
+        let out = out_slot!(out_item);
+        let Some(function) = (try_ffi!(copy_structure_handle(function, true))) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let interface = try_ffi!(copy_structure_handle(interface, false));
+        let correlation = try_ffi!(copy_optional_secret_span(correlation_value));
+        let input = try_ffi!(copy_structure_handle(input_parameters, false));
+        let default_limits = CodecLimits::defaults();
+        let mut total_encoded_input_bytes = 0_u64;
+        let mut total_input_elements = 1_u64;
+        let extensions = try_ffi!(copy_validate_extensions(
+            extensions,
+            &default_limits,
+            &mut total_encoded_input_bytes,
+            &mut total_input_elements,
+        ));
+        let mut request = Pkcs11Request::new(function);
+        if let Some(interface) = interface {
+            request = request.with_interface(interface);
+        }
+        if let Some(correlation) = correlation {
+            request = request.with_correlation_value(correlation);
+        }
+        if let Some(input) = input {
+            request = request.with_input_parameters(input);
+        }
+        for extension in extensions {
+            request = request.with_extension(extension);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::pkcs11(request)));
+        SUCCESS
+    })
+}
+
 /// Creates a KMIP v2.1 §6.1.29, Table 250 Log request.
 ///
 /// The caller must not submit secrets to the server log. The message is

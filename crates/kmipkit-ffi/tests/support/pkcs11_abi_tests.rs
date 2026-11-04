@@ -58,7 +58,7 @@ fn pkcs11_constructor_requires_function_and_clears_output() {
 fn pkcs11_constructor_copies_caller_ordered_payload_extensions() {
     let function = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
     let extension = Item::new(
-        RawTag::new(0x0042_02fe)
+        RawTag::new(0x0054_1234)
             .expect("fixture tag fits the KMIP tag field")
             .try_checked()
             .expect("fixture tag is structurally valid"),

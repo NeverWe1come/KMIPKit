@@ -49,7 +49,7 @@ final class Pkcs11MappingTest {
     void publicFactoryAcceptsCallerOrderedOpaquePayloadExtensions() {
         try (TtlvStructure function = TtlvStructure.create();
                 TtlvItem extension = TtlvCodec.decode(new byte[] {
-                        0x42, 0x02, (byte) 0xfe, 0x05, 0, 0, 0, 4,
+                        0x00, 0x54, 0x12, 0x34, 0x05, 0, 0, 4,
                         0, 0, 0, 7, 0, 0, 0, 0
                 });
                 ClientBatchItem item = ClientBatchItem.pkcs11(
