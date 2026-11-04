@@ -286089,20 +286089,6 @@
       }
     },
     {
-      "declarationId": "rust-observed-0250bd6aa11263a11796",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "kmipkit::ProfileValidationError::for_test",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
       "declarationId": "rust-observed-15c3681248dfce90130d",
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
@@ -288408,20 +288394,6 @@
           "name": "kmipkit.errors.ProfileValidationDetails.error_code"
         }
       }
-    },
-    {
-      "declarationId": "rust-observed-a60ba199580e3c2471da",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "kmipkit_client::ProfileValidationError::for_test",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
       "declarationId": "rust-observed-bccf2182ca48d2f32f96",
@@ -293602,20 +293574,6 @@
           "name": "kmipkit.errors.ProfileValidationDetails.error_code"
         }
       }
-    },
-    {
-      "declarationId": "rust-observed-2cfe2f659c6580f4b8d6",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "kmipkit_protocol::ProfileValidationError::for_test",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
       "declarationId": "rust-observed-26473f9f5e6c7ccaf802",
@@ -464481,6 +464439,42 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed against KMIPKIT-0043-FR-005 and KMIPKIT-0043-FR-021. The FFI internal status and generic binding exceptions remain distinct from the Rust client execution cause category; see docs/architecture/ffi-and-bindings.md for the stable panic-fallback ABI contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ProfileValidationError::for_test",
+      "reason": "This exact Rust helper is hidden and compiled only with the `test-support` feature. It constructs local profile-validation errors for cross-crate tests; it is not a product API surface.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "evidence": "KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 require equivalent product facades and exact, reviewed public-surface accounting. The source declaration in `crates/kmipkit-protocol/src/profile.rs` is `#[cfg(feature = \"test-support\")]`, `#[doc(hidden)]`, and explicitly intended for cross-crate client tests. The parent ProfileValidationError and its safe mapped accessors remain product declarations. This exact test constructor has no C, Java, or Python counterpart; the product profile-validation diagnostics remain available through the shared client error details."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ProfileValidationError::for_test",
+      "reason": "This exact Rust helper is hidden and compiled only with the `test-support` feature. It constructs local profile-validation errors for cross-crate tests; it is not a product API surface.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "evidence": "KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 require equivalent product facades and exact, reviewed public-surface accounting. The source declaration in `crates/kmipkit-protocol/src/profile.rs` is `#[cfg(feature = \"test-support\")]`, `#[doc(hidden)]`, and explicitly intended for cross-crate client tests. The parent ProfileValidationError and its safe mapped accessors remain product declarations. This exact test constructor has no C, Java, or Python counterpart; the product profile-validation diagnostics remain available through the shared client error details."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::ProfileValidationError::for_test",
+      "reason": "This exact Rust helper is hidden and compiled only with the `test-support` feature. It constructs local profile-validation errors for cross-crate tests; it is not a product API surface.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "evidence": "KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021 require equivalent product facades and exact, reviewed public-surface accounting. The source declaration in `crates/kmipkit-protocol/src/profile.rs` is `#[cfg(feature = \"test-support\")]`, `#[doc(hidden)]`, and explicitly intended for cross-crate client tests. The parent ProfileValidationError and its safe mapped accessors remain product declarations. This exact test constructor has no C, Java, or Python counterpart; the product profile-validation diagnostics remain available through the shared client error details."
     }
   ],
   "apiLevels": [

@@ -48,8 +48,13 @@ class T102ProfileValidationTestHelperExclusionTests(unittest.TestCase):
                 exclusion = self.exclusions[identity]
                 self.assertEqual(PROFILE_OWNER, exclusion["approvalSource"])
                 self.assertIn("test-support", exclusion["reason"])
-                self.assertIn("cross-crate tests", exclusion["evidence"])
+                self.assertIn("cross-crate client tests", exclusion["evidence"])
                 self.assertIn("crates/kmipkit-protocol/src/profile.rs", exclusion["evidence"])
+                for requirement_id in (
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, exclusion["evidence"])
 
     def test_profile_error_models_remain_product_declarations(self) -> None:
         for package_id, export_name in (
