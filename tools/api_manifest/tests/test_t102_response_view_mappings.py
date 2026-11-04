@@ -150,7 +150,7 @@ EXPECTED = (
 UNCHANGED_DECLARATIONS_SHA256 = "f1446943404050918582a8d3e74f8b5cbc1a8dc06ee8fa60efa95934a23a420b"
 UNCHANGED_OPERATIONS_SHA256 = "eb69336ea313c72f6461f5e67655d985c820969697237b4b2b8efc3d79712735"
 OTHER_MANIFEST_SHA256 = "89ce2f39dccd3e4548dc0145da0e8b4463f4f4ae769ed472d80cf44b26679ba6"
-EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = 703
+EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = 683
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",
     "rust-observed-8fff50bdd49a09ae00bf",
@@ -161,6 +161,35 @@ LOCATE_REQUEST_BUILDER_IDS = {
 LOCATE_OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-LOCATE"
 LOCATE_REQUEST_REQUIREMENT = "KMIPKIT-REQ-SPEC-6.1.28-007"
 LOCATE_SERVER_ONLY_REQUIREMENT = "KMIPKIT-REQ-SPEC-6.1.28-011"
+SCALAR_REQUEST_BUILDER_IDS = {
+    "rust-observed-3beea67907cb67493c50",
+    "rust-observed-7ef0a3fa4f7211edc2d4",
+    "rust-observed-2117b9df5e767118ae4c",
+    "rust-observed-ad3438f583c6a1a34512",
+    "rust-observed-4d485551dac41dbd1ef3",
+    "rust-observed-66a8b011f8175b8c04f5",
+    "rust-observed-684a647c13f5225359fa",
+    "rust-observed-c2da75d2d210d98b7ea5",
+    "rust-observed-6611a6ba852bddfeb702",
+    "rust-observed-e0c241319e5da88830dd",
+    "rust-observed-e4656d1822c4f833d1ba",
+    "rust-observed-27c208d3d7f52f071e4c",
+    "rust-observed-bc4b3a9f02b6b38524fa",
+    "rust-observed-ea651cfc24b62abdda90",
+    "rust-observed-5cf48b4b17981987d2f7",
+    "rust-observed-4781288042e981f6d3bd",
+    "rust-observed-43be97b668d6f5efb547",
+    "rust-observed-e04ecae89493ca7e5fbf",
+    "rust-observed-51a60237c466a9503394",
+    "rust-observed-543f908844c7bb7b67bb",
+}
+SCALAR_REQUEST_BUILDER_OPERATIONS = {
+    "KMIPKIT-ELEM-OP-C2S-CHECK",
+    "KMIPKIT-ELEM-OP-C2S-GET",
+    "KMIPKIT-ELEM-OP-C2S-EXPORT",
+    "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+    "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+}
 
 
 def canonical_sha256(value: object) -> str:
@@ -322,12 +351,24 @@ class T102ResponseViewMappingTests(unittest.TestCase):
         target_ids = {item.declaration_id for item in EXPECTED}
         target_ids.update(item.declaration_id for item in REMAINING_RESPONSE_VIEWS)
         target_ids.update(LOCATE_REQUEST_BUILDER_IDS)
+        affected_operation_ids = target_ids | SCALAR_REQUEST_BUILDER_IDS
         unchanged_declarations = copy.deepcopy([
             row
             for row in self.manifest["publicDeclarations"]
             if row["declarationId"] not in target_ids
         ])
         for declaration in unchanged_declarations:
+            if declaration["declarationId"] in SCALAR_REQUEST_BUILDER_IDS:
+                declaration["capabilityId"] = "public_binding_surface"
+                declaration["requirementIds"] = ["KMIPKIT-0043-FR-021"]
+                declaration["declarationState"] = "blocked"
+                declaration["candidateSpecId"] = "KMIPKIT-0043"
+                declaration[
+                    "blockedReason"
+                ] = "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+                declaration.pop("approvalSource", None)
+                declaration.pop("languageMappings", None)
+                declaration.pop("parityEvidenceIds", None)
             if declaration["declarationId"] in LOCATE_DECLARATIONS_WITH_MISATTRIBUTED_SERVER_REQUIREMENT:
                 requirements = set(declaration["requirementIds"])
                 requirements.discard(LOCATE_REQUEST_REQUIREMENT)
@@ -343,13 +384,14 @@ class T102ResponseViewMappingTests(unittest.TestCase):
         }
         target_operations.update(item.operation_id for item in REMAINING_RESPONSE_VIEWS)
         target_operations.add(LOCATE_OPERATION_ID)
+        target_operations.update(SCALAR_REQUEST_BUILDER_OPERATIONS)
         normalized_operations = copy.deepcopy(self.manifest["operations"])
         for operation in normalized_operations:
             if operation["operationId"] in target_operations:
                 operation["declarations"]["rust"] = [
                     value
                     for value in operation["declarations"]["rust"]
-                    if value not in target_ids
+                    if value not in affected_operation_ids
                 ]
         self.assertEqual(
             UNCHANGED_OPERATIONS_SHA256,

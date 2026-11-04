@@ -24,6 +24,7 @@ EXPECTED_ALIAS_PAIRS = (
     ('rust-kmipkit', 'kmipkit::GetConstraintsResponse::result', 'rust-kmipkit-protocol', 'kmipkit_protocol::GetConstraintsResponse::result'),
     ('rust-kmipkit', 'kmipkit::GetUsageAllocationRequest', 'rust-kmipkit-protocol', 'kmipkit_protocol::GetUsageAllocationRequest'),
     ('rust-kmipkit', 'kmipkit::GetUsageAllocationRequest::new', 'rust-kmipkit-protocol', 'kmipkit_protocol::GetUsageAllocationRequest::new'),
+    ('rust-kmipkit', 'kmipkit::GetUsageAllocationRequest::with_unique_identifier', 'rust-kmipkit-protocol', 'kmipkit_protocol::GetUsageAllocationRequest::with_unique_identifier'),
     ('rust-kmipkit', 'kmipkit::GetUsageAllocationRequest::usage_limits_count', 'rust-kmipkit-protocol', 'kmipkit_protocol::GetUsageAllocationRequest::usage_limits_count'),
     ('rust-kmipkit', 'kmipkit::GetUsageAllocationResponse', 'rust-kmipkit-protocol', 'kmipkit_protocol::GetUsageAllocationResponse'),
     ('rust-kmipkit', 'kmipkit::GetUsageAllocationResponse::result', 'rust-kmipkit-protocol', 'kmipkit_protocol::GetUsageAllocationResponse::result'),
@@ -83,7 +84,7 @@ EXPECTED_ALIAS_PAIRS = (
     ('rust-kmipkit-client', 'kmipkit_client::Pkcs11Response::with_return_code', 'rust-kmipkit-protocol', 'kmipkit_protocol::Pkcs11Response::with_return_code'),
     ('rust-kmipkit-protocol', 'kmipkit_protocol::ProfileValidationSelection::validate', 'rust-kmipkit-client', 'kmipkit_client::ProfileValidationSelection::validate'),
 )
-EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = 703
+EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = 683
 
 
 class T102ApprovedAliasMappingTests(unittest.TestCase):
@@ -95,7 +96,7 @@ class T102ApprovedAliasMappingTests(unittest.TestCase):
         }
 
     def test_exact_aliases_reuse_only_their_approved_four_language_owner_mapping(self) -> None:
-        self.assertEqual(73, len(EXPECTED_ALIAS_PAIRS))
+        self.assertEqual(74, len(EXPECTED_ALIAS_PAIRS))
         for target_package, target_name, source_package, source_name in EXPECTED_ALIAS_PAIRS:
             with self.subTest(target=target_name):
                 target = self.declarations[(target_package, target_name)]
