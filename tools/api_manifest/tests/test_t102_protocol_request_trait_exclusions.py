@@ -81,7 +81,7 @@ TYPES = {
             "::to_ttlv_payload": "blocked",
             "::unique_identifier": "blocked",
             "::usage_limits_count": "verified",
-            "::with_unique_identifier": "blocked",
+            "::with_unique_identifier": "verified",
         },
         "root_functional_states": {
             "": "verified",
@@ -89,7 +89,7 @@ TYPES = {
             "::to_ttlv_payload": "blocked",
             "::unique_identifier": "blocked",
             "::usage_limits_count": "verified",
-            "::with_unique_identifier": "blocked",
+            "::with_unique_identifier": "verified",
         },
     },
     "SplitKeyReference": {

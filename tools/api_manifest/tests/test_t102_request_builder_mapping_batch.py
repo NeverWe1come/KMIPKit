@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import json
+import re
 import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+OASIS_HTML = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
 T102_CANDIDATES_AFTER_BATCH = 683
 DEFERRED_TTLV = {
     "rust-observed-ba1772cec998d92e5148": "kmipkit_protocol::GetRequest::with_key_wrapping_specification",
@@ -186,6 +188,27 @@ class T102RequestBuilderMappingBatchTests(unittest.TestCase):
                 self.assertEqual(export_name, declaration["exportName"])
                 self.assertEqual("blocked", declaration["declarationState"])
                 self.assertEqual("KMIPKIT-0043", declaration["candidateSpecId"])
+
+    def test_rekey_table_305_request_offset_is_interval_and_uid_is_optional(self) -> None:
+        html = OASIS_HTML.read_text(encoding="cp1252")
+        text = re.sub(r"<[^>]+>", " ", html)
+        text = " ".join(text.split())
+        request_caption = "Table 305: Re-key Request Payload"
+        caption_offset = text.index(request_caption)
+        payload_start = text.rfind("Request Payload Item REQUIRED Description", 0, caption_offset)
+        payload_text = text[payload_start:caption_offset]
+        unique_identifier_start = payload_text.index("Unique Identifier")
+        offset_start = payload_text.index("Offset")
+        self.assertRegex(
+            payload_text[unique_identifier_start:offset_start],
+            r"Unique Identifier\s+No\s+Determines the existing Symmetric Key being re-keyed\. If omitted, then the ID Placeholder value is used by the server as the Unique Identifier\.",
+        )
+        self.assertRegex(
+            payload_text[offset_start:],
+            r"Offset\s+No\s+An Interval object indicating the difference between the Initial Date and the Activation Date of the replacement key to be created\.",
+        )
+        self.assertIn("Response Payload", text[caption_offset:])
+        self.assertIn("Table 306: Re-key Response Payload", text[caption_offset:])
 
 
 if __name__ == "__main__":

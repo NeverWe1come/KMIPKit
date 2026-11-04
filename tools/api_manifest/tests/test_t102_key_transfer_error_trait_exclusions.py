@@ -76,7 +76,7 @@ ERROR_SUFFIXES = {
 RELATED_STATES = {
     "DeriveKeyRequest": {"": "blocked", "::into_ttlv_payload": "blocked", "::new": "blocked"},
     "DeriveKeyResponse": {"": "verified", "::result": "verified", "::try_from_response_item": "blocked", "::unique_identifier": "verified", "::with_ttlv": "verified"},
-    "ExportRequest": {"": "verified", "::into_ttlv_payload": "blocked", "::new": "blocked", "::with_key_compression_type": "blocked", "::with_key_format_type": "blocked", "::with_key_wrap_type": "blocked", "::with_key_wrapping_specification": "blocked", "::with_unique_identifier": "blocked", "::unique_identifier": "blocked"},
+    "ExportRequest": {"": "verified", "::into_ttlv_payload": "blocked", "::new": "verified", "::with_key_compression_type": "verified", "::with_key_format_type": "verified", "::with_key_wrap_type": "verified", "::with_key_wrapping_specification": "blocked", "::with_unique_identifier": "verified", "::unique_identifier": "blocked"},
     "ExportResponse": {"": "verified", "::attributes": "verified", "::object": "verified", "::object_type": "verified", "::result": "verified", "::try_from_response_item": "blocked", "::unique_identifier": "verified", "::with_ttlv": "verified"},
     "ImportRequest": {"": "verified", "::attributes": "blocked", "::into_ttlv_payload": "blocked", "::key_wrap_type": "blocked", "::new": "verified", "::object": "blocked", "::object_type": "blocked", "::replace_existing": "blocked", "::unique_identifier": "blocked", "::with_key_wrap_type": "blocked", "::with_replace_existing": "blocked"},
     "ImportResponse": {"": "verified", "::result": "verified", "::try_from_response_item": "blocked", "::unique_identifier": "verified", "::with_ttlv": "verified"},

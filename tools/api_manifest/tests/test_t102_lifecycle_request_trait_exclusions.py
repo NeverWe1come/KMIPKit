@@ -21,7 +21,7 @@ TYPES = {
     "CheckRequest": {
         "module": "check", "section": "OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.7, Tables 183-185", "request": "Table 183 as request",
         "normative": ("KMIPKIT-REQ-SPEC-6.1.7-001", "KMIPKIT-REQ-SPEC-6.1.7-002-001", "KMIPKIT-REQ-SPEC-6.1.7-002-002", "KMIPKIT-REQ-SPEC-6.1.7-002-003", "KMIPKIT-REQ-SPEC-6.1.7-003", "KMIPKIT-REQ-SPEC-6.1.7-004-001", "KMIPKIT-REQ-SPEC-6.1.7-004-002", "KMIPKIT-REQ-SPEC-6.1.7-005"),
-        "states": {"": "verified", "::into_ttlv_payload": "blocked", "::new": "blocked", "::unique_identifier": "blocked", "::with_cryptographic_usage_mask": "blocked", "::with_lease_time": "blocked", "::with_unique_identifier": "blocked", "::with_usage_limits_count": "blocked"},
+        "states": {"": "verified", "::into_ttlv_payload": "blocked", "::new": "verified", "::unique_identifier": "blocked", "::with_cryptographic_usage_mask": "verified", "::with_lease_time": "verified", "::with_unique_identifier": "verified", "::with_usage_limits_count": "verified"},
     },
     "ObtainLeaseRequest": {
         "module": "obtain_lease", "section": "OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.35, Tables 268-270", "request": "Table 268 as request",
@@ -47,7 +47,7 @@ TYPES = {
     "RekeyRequest": {
         "module": "rekey", "section": "OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.46, Tables 305-307", "request": "Table 305 as request",
         "normative": ("KMIPKIT-REQ-SPEC-6.1.46-001", "KMIPKIT-REQ-SPEC-6.1.46-004-001"),
-        "states": {"": "verified", "::into_ttlv_payload": "blocked", "::new": "blocked", "::unique_identifier": "blocked", "::with_attributes": "blocked", "::with_offset": "blocked", "::with_protection_storage_masks": "blocked", "::with_unique_identifier": "blocked"},
+        "states": {"": "verified", "::into_ttlv_payload": "blocked", "::new": "verified", "::unique_identifier": "blocked", "::with_attributes": "blocked", "::with_offset": "verified", "::with_protection_storage_masks": "blocked", "::with_unique_identifier": "verified"},
     },
 }
 
