@@ -163,6 +163,11 @@ def _create_fixture_repo(parent: Path) -> Path:
     return root
 
 
+def _load_v1_manifest() -> dict[str, object]:
+    """Load the valid v1 fixture used by legacy reference and renderer tests."""
+    return json.loads(PUBLIC_API_V1_FIXTURE.read_text(encoding="utf-8"))
+
+
 def _reverse_object_keys(value: object) -> object:
     if isinstance(value, dict):
         return {key: _reverse_object_keys(child) for key, child in reversed(list(value.items()))}
@@ -245,7 +250,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         self.assertLessEqual(MANIFEST.stat().st_size, generate.MAX_MANIFEST_BYTES)
 
     def test_v1_reference_validation_does_not_require_v2_declarations(self) -> None:
-        manifest = json.loads(PUBLIC_API_V1_FIXTURE.read_text(encoding="utf-8"))
+        manifest = _load_v1_manifest()
 
         generate._validate_references(manifest)
 
@@ -786,7 +791,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         )
 
     def test_rust_ffi_renders_fixed_width_value_fields_from_the_type_record(self) -> None:
-        manifest = json.loads(PUBLIC_API_V1_FIXTURE.read_text(encoding="utf-8"))
+        manifest = _load_v1_manifest()
         type_name = "kmipkit_test_config_v1_t"
         manifest["types"].append(
             {
@@ -821,7 +826,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         self.assertEqual(generate._rust_c_type("const uint8_t **"), "*mut *const u8")
 
     def test_rust_ffi_escapes_keyword_names_in_fixed_width_fields(self) -> None:
-        manifest = json.loads(PUBLIC_API_V1_FIXTURE.read_text(encoding="utf-8"))
+        manifest = _load_v1_manifest()
         manifest["types"].append(
             {
                 "id": "KeywordFieldConfig",
