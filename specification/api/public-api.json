@@ -2483,6 +2483,53 @@
       }
     },
     {
+      "id": "ProfileTransport",
+      "kind": "enum",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol",
+        "name": "ProfileTransport",
+        "owner": "protocol"
+      },
+      "c": {
+        "name": "kmipkit_profile_transport_t",
+        "kind": "enum",
+        "underlyingType": "uint32_t",
+        "unknownValuePolicy": "reject-unsupported"
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "name": "ProfileTransport"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "name": "ProfileTransport"
+      },
+      "enumRepresentation": {
+        "shape": "closed-numeric",
+        "unknownValuePolicy": "reject-unsupported",
+        "values": [
+          {
+            "name": "RawTtlvTls",
+            "value": 1
+          },
+          {
+            "name": "Https",
+            "value": 2
+          }
+        ]
+      }
+    },
+    {
       "id": "TtlvDecodeErrorKind",
       "kind": "enum",
       "requirementIds": [
@@ -287717,42 +287764,129 @@
       "packageId": "rust-kmipkit",
       "kind": "type",
       "exportName": "kmipkit::ProfileTransport",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ProfileTransport"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_transport_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileTransport"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileTransport"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-f1cf1b04bf5065d65499",
       "packageId": "rust-kmipkit",
       "kind": "variant",
       "exportName": "kmipkit::ProfileTransport::Https",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ProfileTransport::Https"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_PROFILE_TRANSPORT_HTTPS"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileTransport.HTTPS"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileTransport.HTTPS"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-cd305a49aed0474ba320",
       "packageId": "rust-kmipkit",
       "kind": "variant",
       "exportName": "kmipkit::ProfileTransport::RawTtlvTls",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ProfileTransport::RawTtlvTls"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_PROFILE_TRANSPORT_RAW_TTLV_TLS"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileTransport.RAW_TTLV_TLS"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileTransport.RAW_TTLV_TLS"
+        }
+      }
     },
     {
         "declarationId": "rust-observed-a3122d44c87801662e97",
@@ -290024,42 +290158,129 @@
       "packageId": "rust-kmipkit-client",
       "kind": "type",
       "exportName": "kmipkit_client::ProfileTransport",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileTransport"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_transport_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileTransport"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileTransport"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-ea7cd0ebc952c4f45b18",
       "packageId": "rust-kmipkit-client",
       "kind": "variant",
       "exportName": "kmipkit_client::ProfileTransport::Https",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileTransport::Https"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_PROFILE_TRANSPORT_HTTPS"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileTransport.HTTPS"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileTransport.HTTPS"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-e8a78328963bb35daaa9",
       "packageId": "rust-kmipkit-client",
       "kind": "variant",
       "exportName": "kmipkit_client::ProfileTransport::RawTtlvTls",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileTransport::RawTtlvTls"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_PROFILE_TRANSPORT_RAW_TTLV_TLS"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileTransport.RAW_TTLV_TLS"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileTransport.RAW_TTLV_TLS"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-3e5633797cb54cc37a9f",
@@ -295204,42 +295425,129 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "type",
       "exportName": "kmipkit_protocol::ProfileTransport",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProfileTransport"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_transport_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileTransport"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileTransport"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-df366c6303e48d4a9a1d",
       "packageId": "rust-kmipkit-protocol",
       "kind": "variant",
       "exportName": "kmipkit_protocol::ProfileTransport::Https",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProfileTransport::Https"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_PROFILE_TRANSPORT_HTTPS"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileTransport.HTTPS"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileTransport.HTTPS"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-b59967cfd027cdcad95d",
       "packageId": "rust-kmipkit-protocol",
       "kind": "variant",
       "exportName": "kmipkit_protocol::ProfileTransport::RawTtlvTls",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProfileTransport::RawTtlvTls"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_PROFILE_TRANSPORT_RAW_TTLV_TLS"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileTransport.RAW_TTLV_TLS"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileTransport.RAW_TTLV_TLS"
+        }
+      }
     },
     {
         "declarationId": "rust-observed-2eb0132ad58b8ade014e",
@@ -299236,6 +299544,393 @@
         "python": {
           "packageId": "python-kmipkit",
           "name": "kmipkit.client.ProfileValidationContext"
+        }
+      }
+    },
+    {
+      "declarationId": "t102-profile-transport-c-kmipkit-type",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_profile_transport_t",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileTransport"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_transport_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileTransport"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileTransport"
+        }
+      }
+    },
+    {
+      "declarationId": "t102-profile-transport-java-kmipkit-type",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.ProfileTransport",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileTransport"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_transport_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileTransport"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileTransport"
+        }
+      }
+    },
+    {
+      "declarationId": "t102-profile-transport-python-kmipkit-type",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.client.ProfileTransport",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileTransport"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_transport_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileTransport"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileTransport"
+        }
+      }
+    },
+    {
+      "declarationId": "t102-profile-transport-c-kmipkit-https",
+      "packageId": "c-kmipkit",
+      "kind": "macro",
+      "exportName": "KMIPKIT_PROFILE_TRANSPORT_HTTPS",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProfileTransport::Https"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_PROFILE_TRANSPORT_HTTPS"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileTransport.HTTPS"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileTransport.HTTPS"
+        }
+      }
+    },
+    {
+      "declarationId": "t102-profile-transport-java-kmipkit-https",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ProfileTransport.HTTPS",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProfileTransport::Https"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_PROFILE_TRANSPORT_HTTPS"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileTransport.HTTPS"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileTransport.HTTPS"
+        }
+      }
+    },
+    {
+      "declarationId": "t102-profile-transport-python-kmipkit-https",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.ProfileTransport.HTTPS",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProfileTransport::Https"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_PROFILE_TRANSPORT_HTTPS"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileTransport.HTTPS"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileTransport.HTTPS"
+        }
+      }
+    },
+    {
+      "declarationId": "t102-profile-transport-c-kmipkit-rawttlvtls",
+      "packageId": "c-kmipkit",
+      "kind": "macro",
+      "exportName": "KMIPKIT_PROFILE_TRANSPORT_RAW_TTLV_TLS",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProfileTransport::RawTtlvTls"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_PROFILE_TRANSPORT_RAW_TTLV_TLS"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileTransport.RAW_TTLV_TLS"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileTransport.RAW_TTLV_TLS"
+        }
+      }
+    },
+    {
+      "declarationId": "t102-profile-transport-java-kmipkit-rawttlvtls",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ProfileTransport.RAW_TTLV_TLS",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProfileTransport::RawTtlvTls"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_PROFILE_TRANSPORT_RAW_TTLV_TLS"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileTransport.RAW_TTLV_TLS"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileTransport.RAW_TTLV_TLS"
+        }
+      }
+    },
+    {
+      "declarationId": "t102-profile-transport-python-kmipkit-rawttlvtls",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.ProfileTransport.RAW_TTLV_TLS",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProfileTransport::RawTtlvTls"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_PROFILE_TRANSPORT_RAW_TTLV_TLS"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileTransport.RAW_TTLV_TLS"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileTransport.RAW_TTLV_TLS"
         }
       }
     },
@@ -472394,286 +473089,309 @@
       }
     },
     {
-        "capabilityId": "client_profile_validation",
-        "requirementIds": [
-          "KMIPKIT-0010-FR-005",
-          "KMIPKIT-0010-FR-012",
-          "KMIPKIT-0010-FR-013",
-          "KMIPKIT-0010-FR-014",
-          "KMIPKIT-0010-FR-019",
-          "KMIPKIT-0043-FR-007",
-          "KMIPKIT-0043-FR-013",
-          "KMIPKIT-0043-FR-021"
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "capabilityState": "declared",
+      "parityScope": "four-language",
+      "ownerSpecId": "KMIPKIT-0010",
+      "approvalEvidence": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "mappings": {
+        "rust": [
+          "kmipkit::Client::execute_with_profiles",
+          "kmipkit::Client::execute_with_profiles_and_context",
+          "kmipkit::Client::execute_with_profiles_and_context_and_options",
+          "kmipkit::Client::execute_with_profiles_and_options",
+          "kmipkit::ClientError::ProfileValidation",
+          "kmipkit::ClientError::ProfileValidation::error",
+          "kmipkit::ClientError::profile_validation_error",
+          "kmipkit::ProfileObjectState",
+          "kmipkit::ProfileObjectState::new",
+          "kmipkit::ProfileObjectState::with_get_usage_allocation_changed_count",
+          "kmipkit::ProfileObjectState::with_get_usage_allocation_performed",
+          "kmipkit::ProfileObjectState::with_original_creation_date_present",
+          "kmipkit::ProfileObjectState::with_protection_use_started",
+          "kmipkit::ProfileObjectState::with_usage_limits_count",
+          "kmipkit::ProfileObjectState::with_usage_limits_present",
+          "kmipkit::ProfileObjectState::with_usage_limits_total",
+          "kmipkit::ProfileTransport",
+          "kmipkit::ProfileTransport::Https",
+          "kmipkit::ProfileTransport::RawTtlvTls",
+          "kmipkit::ProfileValidationContext",
+          "kmipkit::ProfileValidationContext::new",
+          "kmipkit::ProfileValidationContext::with_object_state",
+          "kmipkit::ProfileValidationError",
+          "kmipkit::ProfileValidationError::batch_item_index",
+          "kmipkit::ProfileValidationError::code",
+          "kmipkit::ProfileValidationError::profile_id",
+          "kmipkit::ProfileValidationError::requirement_id",
+          "kmipkit::ProfileValidationError::source_clause_id",
+          "kmipkit::ProfileValidationError::source_gap_id",
+          "kmipkit::ProfileValidationError::source_gap_locator",
+          "kmipkit::ProfileValidationErrorCode",
+          "kmipkit::ProfileValidationErrorCode::ConditionalProfileUnsatisfied",
+          "kmipkit::ProfileValidationErrorCode::ConflictingConstraints",
+          "kmipkit::ProfileValidationErrorCode::DependencyCycle",
+          "kmipkit::ProfileValidationErrorCode::DuplicateProfile",
+          "kmipkit::ProfileValidationErrorCode::EmptySelection",
+          "kmipkit::ProfileValidationErrorCode::IncompleteRuleMapping",
+          "kmipkit::ProfileValidationErrorCode::MissingCategoryTest",
+          "kmipkit::ProfileValidationErrorCode::MissingRequirementMetadata",
+          "kmipkit::ProfileValidationErrorCode::MissingRuleMapping",
+          "kmipkit::ProfileValidationErrorCode::ProfileStateBindingMismatch",
+          "kmipkit::ProfileValidationErrorCode::ProfileStateContextRequired",
+          "kmipkit::ProfileValidationErrorCode::ProfileUnavailable",
+          "kmipkit::ProfileValidationErrorCode::RequestRuleRejected",
+          "kmipkit::ProfileValidationErrorCode::ResponseRuleRejected",
+          "kmipkit::ProfileValidationErrorCode::RuleMappingMismatch",
+          "kmipkit::ProfileValidationErrorCode::TransportConstraintRejected",
+          "kmipkit::ProfileValidationErrorCode::UnknownProfile",
+          "kmipkit::ProfileValidationErrorCode::UnresolvedRequirementScope",
+          "kmipkit::ProfileValidationErrorCode::as_str",
+          "kmipkit::ProfileValidationSelection",
+          "kmipkit::ProfileValidationSelection::new",
+          "kmipkit::ProfileValidationSelection::profile_ids",
+          "kmipkit::ProfileValidationSelection::validate",
+          "kmipkit_client::Client::execute_with_profiles",
+          "kmipkit_client::Client::execute_with_profiles_and_context",
+          "kmipkit_client::Client::execute_with_profiles_and_context_and_options",
+          "kmipkit_client::Client::execute_with_profiles_and_options",
+          "kmipkit_client::ClientError::ProfileValidation",
+          "kmipkit_client::ClientError::ProfileValidation::error",
+          "kmipkit_client::ClientError::profile_validation_error",
+          "kmipkit_client::ProfileObjectState",
+          "kmipkit_client::ProfileObjectState::new",
+          "kmipkit_client::ProfileObjectState::with_get_usage_allocation_changed_count",
+          "kmipkit_client::ProfileObjectState::with_get_usage_allocation_performed",
+          "kmipkit_client::ProfileObjectState::with_original_creation_date_present",
+          "kmipkit_client::ProfileObjectState::with_protection_use_started",
+          "kmipkit_client::ProfileObjectState::with_usage_limits_count",
+          "kmipkit_client::ProfileObjectState::with_usage_limits_present",
+          "kmipkit_client::ProfileObjectState::with_usage_limits_total",
+          "kmipkit_client::ProfileTransport",
+          "kmipkit_client::ProfileTransport::Https",
+          "kmipkit_client::ProfileTransport::RawTtlvTls",
+          "kmipkit_client::ProfileValidationContext",
+          "kmipkit_client::ProfileValidationContext::new",
+          "kmipkit_client::ProfileValidationContext::with_object_state",
+          "kmipkit_client::ProfileValidationError",
+          "kmipkit_client::ProfileValidationError::batch_item_index",
+          "kmipkit_client::ProfileValidationError::code",
+          "kmipkit_client::ProfileValidationError::profile_id",
+          "kmipkit_client::ProfileValidationError::requirement_id",
+          "kmipkit_client::ProfileValidationError::source_clause_id",
+          "kmipkit_client::ProfileValidationError::source_gap_id",
+          "kmipkit_client::ProfileValidationError::source_gap_locator",
+          "kmipkit_client::ProfileValidationErrorCode",
+          "kmipkit_client::ProfileValidationErrorCode::ConditionalProfileUnsatisfied",
+          "kmipkit_client::ProfileValidationErrorCode::ConflictingConstraints",
+          "kmipkit_client::ProfileValidationErrorCode::DependencyCycle",
+          "kmipkit_client::ProfileValidationErrorCode::DuplicateProfile",
+          "kmipkit_client::ProfileValidationErrorCode::EmptySelection",
+          "kmipkit_client::ProfileValidationErrorCode::IncompleteRuleMapping",
+          "kmipkit_client::ProfileValidationErrorCode::MissingCategoryTest",
+          "kmipkit_client::ProfileValidationErrorCode::MissingRequirementMetadata",
+          "kmipkit_client::ProfileValidationErrorCode::MissingRuleMapping",
+          "kmipkit_client::ProfileValidationErrorCode::ProfileStateBindingMismatch",
+          "kmipkit_client::ProfileValidationErrorCode::ProfileStateContextRequired",
+          "kmipkit_client::ProfileValidationErrorCode::ProfileUnavailable",
+          "kmipkit_client::ProfileValidationErrorCode::RequestRuleRejected",
+          "kmipkit_client::ProfileValidationErrorCode::ResponseRuleRejected",
+          "kmipkit_client::ProfileValidationErrorCode::RuleMappingMismatch",
+          "kmipkit_client::ProfileValidationErrorCode::TransportConstraintRejected",
+          "kmipkit_client::ProfileValidationErrorCode::UnknownProfile",
+          "kmipkit_client::ProfileValidationErrorCode::UnresolvedRequirementScope",
+          "kmipkit_client::ProfileValidationErrorCode::as_str",
+          "kmipkit_client::ProfileValidationSelection",
+          "kmipkit_client::ProfileValidationSelection::new",
+          "kmipkit_client::ProfileValidationSelection::profile_ids",
+          "kmipkit_client::ProfileValidationSelection::validate",
+          "kmipkit_protocol::ProfileObjectState",
+          "kmipkit_protocol::ProfileObjectState::new",
+          "kmipkit_protocol::ProfileObjectState::with_get_usage_allocation_changed_count",
+          "kmipkit_protocol::ProfileObjectState::with_get_usage_allocation_performed",
+          "kmipkit_protocol::ProfileObjectState::with_original_creation_date_present",
+          "kmipkit_protocol::ProfileObjectState::with_protection_use_started",
+          "kmipkit_protocol::ProfileObjectState::with_usage_limits_count",
+          "kmipkit_protocol::ProfileObjectState::with_usage_limits_present",
+          "kmipkit_protocol::ProfileObjectState::with_usage_limits_total",
+          "kmipkit_protocol::ProfileTransport",
+          "kmipkit_protocol::ProfileTransport::Https",
+          "kmipkit_protocol::ProfileTransport::RawTtlvTls",
+          "kmipkit_protocol::ProfileValidationContext",
+          "kmipkit_protocol::ProfileValidationContext::new",
+          "kmipkit_protocol::ProfileValidationContext::with_object_state",
+          "kmipkit_protocol::ProfileValidationError",
+          "kmipkit_protocol::ProfileValidationError::batch_item_index",
+          "kmipkit_protocol::ProfileValidationError::code",
+          "kmipkit_protocol::ProfileValidationError::profile_id",
+          "kmipkit_protocol::ProfileValidationError::requirement_id",
+          "kmipkit_protocol::ProfileValidationError::source_clause_id",
+          "kmipkit_protocol::ProfileValidationError::source_gap_id",
+          "kmipkit_protocol::ProfileValidationError::source_gap_locator",
+          "kmipkit_protocol::ProfileValidationErrorCode",
+          "kmipkit_protocol::ProfileValidationErrorCode::ConditionalProfileUnsatisfied",
+          "kmipkit_protocol::ProfileValidationErrorCode::ConflictingConstraints",
+          "kmipkit_protocol::ProfileValidationErrorCode::DependencyCycle",
+          "kmipkit_protocol::ProfileValidationErrorCode::DuplicateProfile",
+          "kmipkit_protocol::ProfileValidationErrorCode::EmptySelection",
+          "kmipkit_protocol::ProfileValidationErrorCode::IncompleteRuleMapping",
+          "kmipkit_protocol::ProfileValidationErrorCode::MissingCategoryTest",
+          "kmipkit_protocol::ProfileValidationErrorCode::MissingRequirementMetadata",
+          "kmipkit_protocol::ProfileValidationErrorCode::MissingRuleMapping",
+          "kmipkit_protocol::ProfileValidationErrorCode::ProfileStateBindingMismatch",
+          "kmipkit_protocol::ProfileValidationErrorCode::ProfileStateContextRequired",
+          "kmipkit_protocol::ProfileValidationErrorCode::ProfileUnavailable",
+          "kmipkit_protocol::ProfileValidationErrorCode::RequestRuleRejected",
+          "kmipkit_protocol::ProfileValidationErrorCode::ResponseRuleRejected",
+          "kmipkit_protocol::ProfileValidationErrorCode::RuleMappingMismatch",
+          "kmipkit_protocol::ProfileValidationErrorCode::TransportConstraintRejected",
+          "kmipkit_protocol::ProfileValidationErrorCode::UnknownProfile",
+          "kmipkit_protocol::ProfileValidationErrorCode::UnresolvedRequirementScope",
+          "kmipkit_protocol::ProfileValidationErrorCode::as_str",
+          "kmipkit_protocol::ProfileValidationSelection",
+          "kmipkit_protocol::ProfileValidationSelection::new",
+          "kmipkit_protocol::ProfileValidationSelection::profile_ids",
+          "kmipkit_protocol::ProfileValidationSelection::validate"
         ],
-        "capabilityState": "declared",
-        "parityScope": "four-language",
-        "ownerSpecId": "KMIPKIT-0010",
-        "approvalEvidence": {
-          "kind": "feature-specification",
-          "path": "specs/010-profile-conformance/spec.md",
-          "status": "Accepted",
-          "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
-        },
-        "mappings": {
-          "rust": [
-            "kmipkit::Client::execute_with_profiles",
-            "kmipkit::Client::execute_with_profiles_and_context",
-            "kmipkit::Client::execute_with_profiles_and_context_and_options",
-            "kmipkit::Client::execute_with_profiles_and_options",
-            "kmipkit::ClientError::ProfileValidation",
-            "kmipkit::ClientError::ProfileValidation::error",
-            "kmipkit::ClientError::profile_validation_error",
-            "kmipkit::ProfileObjectState",
-            "kmipkit::ProfileObjectState::new",
-            "kmipkit::ProfileObjectState::with_get_usage_allocation_changed_count",
-            "kmipkit::ProfileObjectState::with_get_usage_allocation_performed",
-            "kmipkit::ProfileObjectState::with_original_creation_date_present",
-            "kmipkit::ProfileObjectState::with_protection_use_started",
-            "kmipkit::ProfileObjectState::with_usage_limits_count",
-            "kmipkit::ProfileObjectState::with_usage_limits_present",
-            "kmipkit::ProfileObjectState::with_usage_limits_total",
-            "kmipkit::ProfileValidationContext",
-            "kmipkit::ProfileValidationContext::new",
-            "kmipkit::ProfileValidationContext::with_object_state",
-            "kmipkit::ProfileValidationError",
-            "kmipkit::ProfileValidationError::batch_item_index",
-            "kmipkit::ProfileValidationError::code",
-            "kmipkit::ProfileValidationError::profile_id",
-            "kmipkit::ProfileValidationError::requirement_id",
-            "kmipkit::ProfileValidationError::source_clause_id",
-            "kmipkit::ProfileValidationError::source_gap_id",
-            "kmipkit::ProfileValidationError::source_gap_locator",
-            "kmipkit::ProfileValidationErrorCode",
-            "kmipkit::ProfileValidationErrorCode::ConditionalProfileUnsatisfied",
-            "kmipkit::ProfileValidationErrorCode::ConflictingConstraints",
-            "kmipkit::ProfileValidationErrorCode::DependencyCycle",
-            "kmipkit::ProfileValidationErrorCode::DuplicateProfile",
-            "kmipkit::ProfileValidationErrorCode::EmptySelection",
-            "kmipkit::ProfileValidationErrorCode::IncompleteRuleMapping",
-            "kmipkit::ProfileValidationErrorCode::MissingCategoryTest",
-            "kmipkit::ProfileValidationErrorCode::MissingRequirementMetadata",
-            "kmipkit::ProfileValidationErrorCode::MissingRuleMapping",
-            "kmipkit::ProfileValidationErrorCode::ProfileStateBindingMismatch",
-            "kmipkit::ProfileValidationErrorCode::ProfileStateContextRequired",
-            "kmipkit::ProfileValidationErrorCode::ProfileUnavailable",
-            "kmipkit::ProfileValidationErrorCode::RequestRuleRejected",
-            "kmipkit::ProfileValidationErrorCode::ResponseRuleRejected",
-            "kmipkit::ProfileValidationErrorCode::RuleMappingMismatch",
-            "kmipkit::ProfileValidationErrorCode::TransportConstraintRejected",
-            "kmipkit::ProfileValidationErrorCode::UnknownProfile",
-            "kmipkit::ProfileValidationErrorCode::UnresolvedRequirementScope",
-            "kmipkit::ProfileValidationErrorCode::as_str",
-            "kmipkit::ProfileValidationSelection",
-            "kmipkit::ProfileValidationSelection::new",
-            "kmipkit::ProfileValidationSelection::profile_ids",
-            "kmipkit::ProfileValidationSelection::validate",
-            "kmipkit_client::Client::execute_with_profiles",
-            "kmipkit_client::Client::execute_with_profiles_and_context",
-            "kmipkit_client::Client::execute_with_profiles_and_context_and_options",
-            "kmipkit_client::Client::execute_with_profiles_and_options",
-            "kmipkit_client::ClientError::ProfileValidation",
-            "kmipkit_client::ClientError::ProfileValidation::error",
-            "kmipkit_client::ClientError::profile_validation_error",
-            "kmipkit_client::ProfileObjectState",
-            "kmipkit_client::ProfileObjectState::new",
-            "kmipkit_client::ProfileObjectState::with_get_usage_allocation_changed_count",
-            "kmipkit_client::ProfileObjectState::with_get_usage_allocation_performed",
-            "kmipkit_client::ProfileObjectState::with_original_creation_date_present",
-            "kmipkit_client::ProfileObjectState::with_protection_use_started",
-            "kmipkit_client::ProfileObjectState::with_usage_limits_count",
-            "kmipkit_client::ProfileObjectState::with_usage_limits_present",
-            "kmipkit_client::ProfileObjectState::with_usage_limits_total",
-            "kmipkit_client::ProfileValidationContext",
-            "kmipkit_client::ProfileValidationContext::new",
-            "kmipkit_client::ProfileValidationContext::with_object_state",
-            "kmipkit_client::ProfileValidationError",
-            "kmipkit_client::ProfileValidationError::batch_item_index",
-            "kmipkit_client::ProfileValidationError::code",
-            "kmipkit_client::ProfileValidationError::profile_id",
-            "kmipkit_client::ProfileValidationError::requirement_id",
-            "kmipkit_client::ProfileValidationError::source_clause_id",
-            "kmipkit_client::ProfileValidationError::source_gap_id",
-            "kmipkit_client::ProfileValidationError::source_gap_locator",
-            "kmipkit_client::ProfileValidationErrorCode",
-            "kmipkit_client::ProfileValidationErrorCode::ConditionalProfileUnsatisfied",
-            "kmipkit_client::ProfileValidationErrorCode::ConflictingConstraints",
-            "kmipkit_client::ProfileValidationErrorCode::DependencyCycle",
-            "kmipkit_client::ProfileValidationErrorCode::DuplicateProfile",
-            "kmipkit_client::ProfileValidationErrorCode::EmptySelection",
-            "kmipkit_client::ProfileValidationErrorCode::IncompleteRuleMapping",
-            "kmipkit_client::ProfileValidationErrorCode::MissingCategoryTest",
-            "kmipkit_client::ProfileValidationErrorCode::MissingRequirementMetadata",
-            "kmipkit_client::ProfileValidationErrorCode::MissingRuleMapping",
-            "kmipkit_client::ProfileValidationErrorCode::ProfileStateBindingMismatch",
-            "kmipkit_client::ProfileValidationErrorCode::ProfileStateContextRequired",
-            "kmipkit_client::ProfileValidationErrorCode::ProfileUnavailable",
-            "kmipkit_client::ProfileValidationErrorCode::RequestRuleRejected",
-            "kmipkit_client::ProfileValidationErrorCode::ResponseRuleRejected",
-            "kmipkit_client::ProfileValidationErrorCode::RuleMappingMismatch",
-            "kmipkit_client::ProfileValidationErrorCode::TransportConstraintRejected",
-            "kmipkit_client::ProfileValidationErrorCode::UnknownProfile",
-            "kmipkit_client::ProfileValidationErrorCode::UnresolvedRequirementScope",
-            "kmipkit_client::ProfileValidationErrorCode::as_str",
-            "kmipkit_client::ProfileValidationSelection",
-            "kmipkit_client::ProfileValidationSelection::new",
-            "kmipkit_client::ProfileValidationSelection::profile_ids",
-            "kmipkit_client::ProfileValidationSelection::validate",
-            "kmipkit_protocol::ProfileObjectState",
-            "kmipkit_protocol::ProfileObjectState::new",
-            "kmipkit_protocol::ProfileObjectState::with_get_usage_allocation_changed_count",
-            "kmipkit_protocol::ProfileObjectState::with_get_usage_allocation_performed",
-            "kmipkit_protocol::ProfileObjectState::with_original_creation_date_present",
-            "kmipkit_protocol::ProfileObjectState::with_protection_use_started",
-            "kmipkit_protocol::ProfileObjectState::with_usage_limits_count",
-            "kmipkit_protocol::ProfileObjectState::with_usage_limits_present",
-            "kmipkit_protocol::ProfileObjectState::with_usage_limits_total",
-            "kmipkit_protocol::ProfileValidationContext",
-            "kmipkit_protocol::ProfileValidationContext::new",
-            "kmipkit_protocol::ProfileValidationContext::with_object_state",
-            "kmipkit_protocol::ProfileValidationError",
-            "kmipkit_protocol::ProfileValidationError::batch_item_index",
-            "kmipkit_protocol::ProfileValidationError::code",
-            "kmipkit_protocol::ProfileValidationError::profile_id",
-            "kmipkit_protocol::ProfileValidationError::requirement_id",
-            "kmipkit_protocol::ProfileValidationError::source_clause_id",
-            "kmipkit_protocol::ProfileValidationError::source_gap_id",
-            "kmipkit_protocol::ProfileValidationError::source_gap_locator",
-            "kmipkit_protocol::ProfileValidationErrorCode",
-            "kmipkit_protocol::ProfileValidationErrorCode::ConditionalProfileUnsatisfied",
-            "kmipkit_protocol::ProfileValidationErrorCode::ConflictingConstraints",
-            "kmipkit_protocol::ProfileValidationErrorCode::DependencyCycle",
-            "kmipkit_protocol::ProfileValidationErrorCode::DuplicateProfile",
-            "kmipkit_protocol::ProfileValidationErrorCode::EmptySelection",
-            "kmipkit_protocol::ProfileValidationErrorCode::IncompleteRuleMapping",
-            "kmipkit_protocol::ProfileValidationErrorCode::MissingCategoryTest",
-            "kmipkit_protocol::ProfileValidationErrorCode::MissingRequirementMetadata",
-            "kmipkit_protocol::ProfileValidationErrorCode::MissingRuleMapping",
-            "kmipkit_protocol::ProfileValidationErrorCode::ProfileStateBindingMismatch",
-            "kmipkit_protocol::ProfileValidationErrorCode::ProfileStateContextRequired",
-            "kmipkit_protocol::ProfileValidationErrorCode::ProfileUnavailable",
-            "kmipkit_protocol::ProfileValidationErrorCode::RequestRuleRejected",
-            "kmipkit_protocol::ProfileValidationErrorCode::ResponseRuleRejected",
-            "kmipkit_protocol::ProfileValidationErrorCode::RuleMappingMismatch",
-            "kmipkit_protocol::ProfileValidationErrorCode::TransportConstraintRejected",
-            "kmipkit_protocol::ProfileValidationErrorCode::UnknownProfile",
-            "kmipkit_protocol::ProfileValidationErrorCode::UnresolvedRequirementScope",
-            "kmipkit_protocol::ProfileValidationErrorCode::as_str",
-            "kmipkit_protocol::ProfileValidationSelection",
-            "kmipkit_protocol::ProfileValidationSelection::new",
-            "kmipkit_protocol::ProfileValidationSelection::profile_ids",
-            "kmipkit_protocol::ProfileValidationSelection::validate"
-          ],
-          "c": [
-            "kmipkit_client_execute_with_profiles",
-            "kmipkit_client_execute_with_profiles_and_context",
-            "kmipkit_client_execute_with_profiles_and_context_and_options_v1",
-            "kmipkit_client_execute_with_profiles_and_options_v1",
-            "kmipkit_last_error_profile_validation_error_get_v1",
-            "kmipkit_profile_object_state_v1_t",
-            "kmipkit_profile_object_state_v1_t.batch_item_index",
-            "kmipkit_profile_validation_context_v1_t",
-            "kmipkit_profile_validation_context_v1_t.object_states",
-            "kmipkit_profile_validation_error_release",
-            "kmipkit_profile_validation_error_t",
-            "kmipkit_profile_validation_error_view_get_v1",
-            "kmipkit_profile_validation_error_view_v1_t",
-            "kmipkit_profile_validation_error_view_v1_t.abi_version",
-            "kmipkit_profile_validation_error_view_v1_t.batch_item_index",
-            "kmipkit_profile_validation_error_view_v1_t.batch_item_index_present",
-            "kmipkit_profile_validation_error_view_v1_t.error_code_data",
-            "kmipkit_profile_validation_error_view_v1_t.error_code_length",
-            "kmipkit_profile_validation_error_view_v1_t.profile_id_data",
-            "kmipkit_profile_validation_error_view_v1_t.profile_id_length",
-            "kmipkit_profile_validation_error_view_v1_t.requirement_id_data",
-            "kmipkit_profile_validation_error_view_v1_t.requirement_id_length",
-            "kmipkit_profile_validation_error_view_v1_t.source_id_data",
-            "kmipkit_profile_validation_error_view_v1_t.source_id_length",
-            "kmipkit_profile_validation_error_view_v1_t.source_kind",
-            "kmipkit_profile_validation_error_view_v1_t.source_locator_data",
-            "kmipkit_profile_validation_error_view_v1_t.source_locator_length",
-            "kmipkit_profile_validation_error_view_v1_t.struct_size",
-            "kmipkit_profile_validation_selection_v1_t"
-          ],
-          "java": [
-            "org.kmipkit.ClientOperationException.profileValidation",
-            "org.kmipkit.ProfileValidationDetails",
-            "org.kmipkit.ProfileValidationDetails.batchItemIndex",
-            "org.kmipkit.ProfileValidationDetails.errorCode",
-            "org.kmipkit.ProfileValidationDetails.profileId",
-            "org.kmipkit.ProfileValidationDetails.requirementId",
-            "org.kmipkit.ProfileValidationDetails.sourceClauseId",
-            "org.kmipkit.ProfileValidationDetails.sourceGapId",
-            "org.kmipkit.ProfileValidationDetails.sourceGapLocator",
-            "org.kmipkit.extensions.Client.executeWithProfiles",
-            "org.kmipkit.extensions.Client.executeWithProfilesAndContext",
-            "org.kmipkit.extensions.Client.executeWithProfilesAndContextAndOptions",
-            "org.kmipkit.extensions.Client.executeWithProfilesAndOptions",
-            "org.kmipkit.extensions.ProfileObjectState",
-            "org.kmipkit.extensions.ProfileObjectState.<init>",
-            "org.kmipkit.extensions.ProfileObjectState.getUsageAllocationChangedCount",
-            "org.kmipkit.extensions.ProfileObjectState.getUsageAllocationPerformed",
-            "org.kmipkit.extensions.ProfileObjectState.originalCreationDatePresent",
-            "org.kmipkit.extensions.ProfileObjectState.protectionUseStarted",
-            "org.kmipkit.extensions.ProfileObjectState.uniqueIdentifier",
-            "org.kmipkit.extensions.ProfileObjectState.usageLimitsCount",
-            "org.kmipkit.extensions.ProfileObjectState.usageLimitsPresent",
-            "org.kmipkit.extensions.ProfileObjectState.usageLimitsTotal",
-            "org.kmipkit.extensions.ProfileObjectState.withGetUsageAllocationChangedCount",
-            "org.kmipkit.extensions.ProfileObjectState.withGetUsageAllocationPerformed",
-            "org.kmipkit.extensions.ProfileObjectState.withOriginalCreationDatePresent",
-            "org.kmipkit.extensions.ProfileObjectState.withProtectionUseStarted",
-            "org.kmipkit.extensions.ProfileObjectState.withUsageLimitsCount",
-            "org.kmipkit.extensions.ProfileObjectState.withUsageLimitsPresent",
-            "org.kmipkit.extensions.ProfileObjectState.withUsageLimitsTotal",
-            "org.kmipkit.extensions.ProfileValidationContext",
-            "org.kmipkit.extensions.ProfileValidationContext.<init>",
-            "org.kmipkit.extensions.ProfileValidationContext.Entry",
-            "org.kmipkit.extensions.ProfileValidationContext.Entry.<init>",
-            "org.kmipkit.extensions.ProfileValidationContext.Entry.batchItemIndex",
-            "org.kmipkit.extensions.ProfileValidationContext.Entry.state",
-            "org.kmipkit.extensions.ProfileValidationContext.objectStates",
-            "org.kmipkit.extensions.ProfileValidationContext.withObjectState",
-            "org.kmipkit.extensions.ProfileValidationSelection",
-            "org.kmipkit.extensions.ProfileValidationSelection.<init>",
-            "org.kmipkit.extensions.ProfileValidationSelection.profileIds"
-          ],
-          "python": [
-            "kmipkit.client.Client.execute_with_profiles",
-            "kmipkit.client.Client.execute_with_profiles_and_context",
-            "kmipkit.client.Client.execute_with_profiles_and_context_and_options",
-            "kmipkit.client.Client.execute_with_profiles_and_options",
-            "kmipkit.client.ProfileObjectState",
-            "kmipkit.client.ProfileObjectState.get_usage_allocation_changed_count",
-            "kmipkit.client.ProfileObjectState.get_usage_allocation_performed",
-            "kmipkit.client.ProfileObjectState.original_creation_date_present",
-            "kmipkit.client.ProfileObjectState.protection_use_started",
-            "kmipkit.client.ProfileObjectState.unique_identifier",
-            "kmipkit.client.ProfileObjectState.usage_limits_count",
-            "kmipkit.client.ProfileObjectState.usage_limits_present",
-            "kmipkit.client.ProfileObjectState.usage_limits_total",
-            "kmipkit.client.ProfileObjectState.with_get_usage_allocation_changed_count",
-            "kmipkit.client.ProfileObjectState.with_get_usage_allocation_performed",
-            "kmipkit.client.ProfileObjectState.with_original_creation_date_present",
-            "kmipkit.client.ProfileObjectState.with_protection_use_started",
-            "kmipkit.client.ProfileObjectState.with_usage_limits_count",
-            "kmipkit.client.ProfileObjectState.with_usage_limits_present",
-            "kmipkit.client.ProfileObjectState.with_usage_limits_total",
-            "kmipkit.client.ProfileValidationContext",
-            "kmipkit.client.ProfileValidationContext.object_states",
-            "kmipkit.client.ProfileValidationContext.with_object_state",
-            "kmipkit.client.ProfileValidationSelection",
-            "kmipkit.client.ProfileValidationSelection.profile_ids",
-            "kmipkit.errors.ClientExecutionError.profile_validation",
-            "kmipkit.errors.ProfileValidationDetails",
-            "kmipkit.errors.ProfileValidationDetails.batch_item_index",
-            "kmipkit.errors.ProfileValidationDetails.error_code",
-            "kmipkit.errors.ProfileValidationDetails.profile_id",
-            "kmipkit.errors.ProfileValidationDetails.requirement_id",
-            "kmipkit.errors.ProfileValidationDetails.source_clause_id",
-            "kmipkit.errors.ProfileValidationDetails.source_gap_id",
-            "kmipkit.errors.ProfileValidationDetails.source_gap_locator"
-          ]
-        }
+        "c": [
+          "KMIPKIT_PROFILE_TRANSPORT_HTTPS",
+          "KMIPKIT_PROFILE_TRANSPORT_RAW_TTLV_TLS",
+          "kmipkit_client_execute_with_profiles",
+          "kmipkit_client_execute_with_profiles_and_context",
+          "kmipkit_client_execute_with_profiles_and_context_and_options_v1",
+          "kmipkit_client_execute_with_profiles_and_options_v1",
+          "kmipkit_last_error_profile_validation_error_get_v1",
+          "kmipkit_profile_object_state_v1_t",
+          "kmipkit_profile_object_state_v1_t.batch_item_index",
+          "kmipkit_profile_transport_t",
+          "kmipkit_profile_validation_context_v1_t",
+          "kmipkit_profile_validation_context_v1_t.object_states",
+          "kmipkit_profile_validation_error_release",
+          "kmipkit_profile_validation_error_t",
+          "kmipkit_profile_validation_error_view_get_v1",
+          "kmipkit_profile_validation_error_view_v1_t",
+          "kmipkit_profile_validation_error_view_v1_t.abi_version",
+          "kmipkit_profile_validation_error_view_v1_t.batch_item_index",
+          "kmipkit_profile_validation_error_view_v1_t.batch_item_index_present",
+          "kmipkit_profile_validation_error_view_v1_t.error_code_data",
+          "kmipkit_profile_validation_error_view_v1_t.error_code_length",
+          "kmipkit_profile_validation_error_view_v1_t.profile_id_data",
+          "kmipkit_profile_validation_error_view_v1_t.profile_id_length",
+          "kmipkit_profile_validation_error_view_v1_t.requirement_id_data",
+          "kmipkit_profile_validation_error_view_v1_t.requirement_id_length",
+          "kmipkit_profile_validation_error_view_v1_t.source_id_data",
+          "kmipkit_profile_validation_error_view_v1_t.source_id_length",
+          "kmipkit_profile_validation_error_view_v1_t.source_kind",
+          "kmipkit_profile_validation_error_view_v1_t.source_locator_data",
+          "kmipkit_profile_validation_error_view_v1_t.source_locator_length",
+          "kmipkit_profile_validation_error_view_v1_t.struct_size",
+          "kmipkit_profile_validation_selection_v1_t"
+        ],
+        "java": [
+          "org.kmipkit.ClientOperationException.profileValidation",
+          "org.kmipkit.ProfileValidationDetails",
+          "org.kmipkit.ProfileValidationDetails.batchItemIndex",
+          "org.kmipkit.ProfileValidationDetails.errorCode",
+          "org.kmipkit.ProfileValidationDetails.profileId",
+          "org.kmipkit.ProfileValidationDetails.requirementId",
+          "org.kmipkit.ProfileValidationDetails.sourceClauseId",
+          "org.kmipkit.ProfileValidationDetails.sourceGapId",
+          "org.kmipkit.ProfileValidationDetails.sourceGapLocator",
+          "org.kmipkit.extensions.Client.executeWithProfiles",
+          "org.kmipkit.extensions.Client.executeWithProfilesAndContext",
+          "org.kmipkit.extensions.Client.executeWithProfilesAndContextAndOptions",
+          "org.kmipkit.extensions.Client.executeWithProfilesAndOptions",
+          "org.kmipkit.extensions.ProfileObjectState",
+          "org.kmipkit.extensions.ProfileObjectState.<init>",
+          "org.kmipkit.extensions.ProfileObjectState.getUsageAllocationChangedCount",
+          "org.kmipkit.extensions.ProfileObjectState.getUsageAllocationPerformed",
+          "org.kmipkit.extensions.ProfileObjectState.originalCreationDatePresent",
+          "org.kmipkit.extensions.ProfileObjectState.protectionUseStarted",
+          "org.kmipkit.extensions.ProfileObjectState.uniqueIdentifier",
+          "org.kmipkit.extensions.ProfileObjectState.usageLimitsCount",
+          "org.kmipkit.extensions.ProfileObjectState.usageLimitsPresent",
+          "org.kmipkit.extensions.ProfileObjectState.usageLimitsTotal",
+          "org.kmipkit.extensions.ProfileObjectState.withGetUsageAllocationChangedCount",
+          "org.kmipkit.extensions.ProfileObjectState.withGetUsageAllocationPerformed",
+          "org.kmipkit.extensions.ProfileObjectState.withOriginalCreationDatePresent",
+          "org.kmipkit.extensions.ProfileObjectState.withProtectionUseStarted",
+          "org.kmipkit.extensions.ProfileObjectState.withUsageLimitsCount",
+          "org.kmipkit.extensions.ProfileObjectState.withUsageLimitsPresent",
+          "org.kmipkit.extensions.ProfileObjectState.withUsageLimitsTotal",
+          "org.kmipkit.extensions.ProfileTransport",
+          "org.kmipkit.extensions.ProfileTransport.HTTPS",
+          "org.kmipkit.extensions.ProfileTransport.RAW_TTLV_TLS",
+          "org.kmipkit.extensions.ProfileValidationContext",
+          "org.kmipkit.extensions.ProfileValidationContext.<init>",
+          "org.kmipkit.extensions.ProfileValidationContext.Entry",
+          "org.kmipkit.extensions.ProfileValidationContext.Entry.<init>",
+          "org.kmipkit.extensions.ProfileValidationContext.Entry.batchItemIndex",
+          "org.kmipkit.extensions.ProfileValidationContext.Entry.state",
+          "org.kmipkit.extensions.ProfileValidationContext.objectStates",
+          "org.kmipkit.extensions.ProfileValidationContext.withObjectState",
+          "org.kmipkit.extensions.ProfileValidationSelection",
+          "org.kmipkit.extensions.ProfileValidationSelection.<init>",
+          "org.kmipkit.extensions.ProfileValidationSelection.profileIds"
+        ],
+        "python": [
+          "kmipkit.client.Client.execute_with_profiles",
+          "kmipkit.client.Client.execute_with_profiles_and_context",
+          "kmipkit.client.Client.execute_with_profiles_and_context_and_options",
+          "kmipkit.client.Client.execute_with_profiles_and_options",
+          "kmipkit.client.ProfileObjectState",
+          "kmipkit.client.ProfileObjectState.get_usage_allocation_changed_count",
+          "kmipkit.client.ProfileObjectState.get_usage_allocation_performed",
+          "kmipkit.client.ProfileObjectState.original_creation_date_present",
+          "kmipkit.client.ProfileObjectState.protection_use_started",
+          "kmipkit.client.ProfileObjectState.unique_identifier",
+          "kmipkit.client.ProfileObjectState.usage_limits_count",
+          "kmipkit.client.ProfileObjectState.usage_limits_present",
+          "kmipkit.client.ProfileObjectState.usage_limits_total",
+          "kmipkit.client.ProfileObjectState.with_get_usage_allocation_changed_count",
+          "kmipkit.client.ProfileObjectState.with_get_usage_allocation_performed",
+          "kmipkit.client.ProfileObjectState.with_original_creation_date_present",
+          "kmipkit.client.ProfileObjectState.with_protection_use_started",
+          "kmipkit.client.ProfileObjectState.with_usage_limits_count",
+          "kmipkit.client.ProfileObjectState.with_usage_limits_present",
+          "kmipkit.client.ProfileObjectState.with_usage_limits_total",
+          "kmipkit.client.ProfileTransport",
+          "kmipkit.client.ProfileTransport.HTTPS",
+          "kmipkit.client.ProfileTransport.RAW_TTLV_TLS",
+          "kmipkit.client.ProfileValidationContext",
+          "kmipkit.client.ProfileValidationContext.object_states",
+          "kmipkit.client.ProfileValidationContext.with_object_state",
+          "kmipkit.client.ProfileValidationSelection",
+          "kmipkit.client.ProfileValidationSelection.profile_ids",
+          "kmipkit.errors.ClientExecutionError.profile_validation",
+          "kmipkit.errors.ProfileValidationDetails",
+          "kmipkit.errors.ProfileValidationDetails.batch_item_index",
+          "kmipkit.errors.ProfileValidationDetails.error_code",
+          "kmipkit.errors.ProfileValidationDetails.profile_id",
+          "kmipkit.errors.ProfileValidationDetails.requirement_id",
+          "kmipkit.errors.ProfileValidationDetails.source_clause_id",
+          "kmipkit.errors.ProfileValidationDetails.source_gap_id",
+          "kmipkit.errors.ProfileValidationDetails.source_gap_locator"
+        ]
+      }
     },
     {
       "capabilityId": "credential_type_parity",

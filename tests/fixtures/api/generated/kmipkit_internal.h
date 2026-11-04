@@ -36,6 +36,10 @@ typedef uint32_t kmipkit_unique_identifier_kind_t;
 #define KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION ((kmipkit_unique_identifier_kind_t)2)
 #define KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER ((kmipkit_unique_identifier_kind_t)3)
 
+typedef uint32_t kmipkit_profile_transport_t;
+#define KMIPKIT_PROFILE_TRANSPORT_RAW_TTLV_TLS ((kmipkit_profile_transport_t)1)
+#define KMIPKIT_PROFILE_TRANSPORT_HTTPS ((kmipkit_profile_transport_t)2)
+
 typedef uint32_t kmipkit_ttlv_decode_error_kind_t;
 #define KMIPKIT_TTLV_DECODE_ERROR_KIND_MESSAGE_TOO_LARGE ((kmipkit_ttlv_decode_error_kind_t)1)
 #define KMIPKIT_TTLV_DECODE_ERROR_KIND_TRUNCATED_HEADER ((kmipkit_ttlv_decode_error_kind_t)2)

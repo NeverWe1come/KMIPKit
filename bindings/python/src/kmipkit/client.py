@@ -99,6 +99,13 @@ class EndpointKind(IntEnum):
     HTTPS = 2
 
 
+class ProfileTransport(IntEnum):
+    """Closed KMIPKit ABI selector for client profile transport validation."""
+
+    RAW_TTLV_TLS = 1
+    HTTPS = 2
+
+
 class TrustKind(IntEnum):
     """The explicit trust source used to verify the KMIP server."""
 

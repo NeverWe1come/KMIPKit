@@ -931,6 +931,13 @@ class BindingExportAuditTests(unittest.TestCase):
             "attributeRequestCreate", "attributeRequestToTtlvPayload",
             "attributeRequestTtlvItem", "attributeRequestTtlvValue",
             "clientBatchItemFromAttributeRequest",
+            "PATH", "BATCH_ITEM", "REGISTER_REQUEST",
+            "release", "registerRequestCreate", "ensureLoaded",
+            "extensionRecognitionIsRecognized", "clientBatchItemRegister",
+            "extensionDefinitionInformation", "registerRequestWithOpaqueObjectContext",
+            "clientExtensionRegistryDefinitionForIdentity", "clientBatchItemExtensionCount",
+            "clientExtensionRegistryDefinitionAt", "clientBatchItemDiscoverVersions",
+            "codecLimitsCreate",
         }
         native_members.update(
             {
@@ -998,9 +1005,18 @@ class BindingExportAuditTests(unittest.TestCase):
             and key[1].startswith("org.kmipkit.NativeExtensionRegistry.")
         }
         self.assertEqual(expected_native, actual_native)
-        self.assertNotIn(
-            ("java-kmipkit", "org.kmipkit.NativeExtensionRegistry"), exclusions
+        bridge_type = exclusions[
+            ("java-kmipkit", "org.kmipkit.NativeExtensionRegistry")
+        ]
+        self.assertEqual(bridge_type["candidateSpecId"], "KMIPKIT-0043")
+        self.assertEqual(
+            bridge_type["reason"],
+            (
+                "This exact Java type is the documented internal JNI bridge for typed "
+                "vendor-extension facades, not an independent KMIPKit product capability."
+            ),
         )
+        self.assertIn("KMIPKIT-0043-FR-021", bridge_type["evidence"])
         for key in expected_native:
             exclusion = exclusions[key]
             evidence = exclusion["evidence"]
@@ -1037,12 +1053,46 @@ class BindingExportAuditTests(unittest.TestCase):
                 "org.kmipkit.NativeExtensionRegistry.withPollRequestCorrelationValue": "T093",
             }.get(key[1])
             if bridge_owner is None:
-                if not combined_approved_references:
+                if key[1] == "org.kmipkit.NativeExtensionRegistry.clientBatchItemDiscoverVersions":
+                    self.assertIn("KMIPKIT-0007-FR-001", evidence)
+                    self.assertIn("KMIPKIT-0043-FR-021", evidence)
+                    self.assertIn("typed Discover Versions API remains separately mapped", evidence)
+                elif key[1] == "org.kmipkit.NativeExtensionRegistry.codecLimitsCreate":
+                    self.assertIn("KMIPKIT-0004-FR-001", evidence)
+                    self.assertIn("KMIPKIT-0043-FR-021", evidence)
+                    self.assertIn("no Java facade reference to this raw handle factory", evidence)
+                elif any(
+                    owner_requirement in evidence
+                    for owner_requirement in (
+                        "KMIPKIT-0012-FR-010",
+                        "KMIPKIT-0044-FR-001/007",
+                    )
+                ):
+                    self.assertIn("KMIPKIT-0043-FR-021", evidence)
+                    self.assertIn("facade", evidence)
+                elif (
+                    "This Java value is JNI handle-kind or lifecycle plumbing, "
+                    "not a product capability."
+                ) in evidence:
+                    self.assertIn("KMIPKIT-0043-FR-008", evidence)
+                    self.assertIn("KMIPKIT-0043-FR-021", evidence)
+                elif not combined_approved_references:
                     self.assertIn("KMIPKIT-0043-FR-008", evidence)
                 if "ffi-and-bindings.md" not in evidence and not combined_approved_references:
                     self.assertTrue(
                         any(task_id in evidence for task_id in ("T035", "T037", "T039"))
-                        or "Reviewed against KMIPKIT-0043-FR-008/010/021/022" in evidence,
+                        or "Reviewed against KMIPKIT-0043-FR-008/010/021/022" in evidence
+                        or (
+                            "This Java value is JNI handle-kind or lifecycle plumbing, "
+                            "not a product capability."
+                        ) in evidence
+                        or "KMIPKIT-0007-FR-001" in evidence
+                        or "KMIPKIT-0004-FR-001" in evidence
+                        or "KMIPKIT-0012-FR-010" in evidence
+                        or "KMIPKIT-0044-FR-001/007" in evidence,
+                        # A few older accepted bridge rows carry their exact owner requirement
+                        # and an explicit reason instead of a T035/T037/T039 task reference.
+                        # Their reviewed owner and FR-021 linkage are checked above.
                         evidence,
                     )
             else:

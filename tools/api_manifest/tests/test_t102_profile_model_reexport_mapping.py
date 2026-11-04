@@ -20,6 +20,7 @@ REEXPORT_PACKAGES = {
 }
 CLIENT_CRATE = "kmipkit_client"
 MODEL_SUFFIXES = {
+    "ProfileTransport": ("", "::Https", "::RawTtlvTls"),
     "ProfileObjectState": (
         "",
         "::new",
@@ -48,7 +49,7 @@ class T102ProfileModelReexportMappingTests(unittest.TestCase):
             for type_name, suffixes in MODEL_SUFFIXES.items()
             for suffix in suffixes
         }
-        self.assertEqual(32, len(expected))
+        self.assertEqual(38, len(expected))
         self.assertEqual(
             2,
             sum(name.endswith("::ProfileValidationSelection::validate") for _, name in expected),

@@ -12449,6 +12449,21 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::ProfileObjectState::with_usage_limits_total",
     ),
     (
+        "rust-observed-5ee6e37855ae8ce17a5e",
+        "rust-kmipkit",
+        "kmipkit::ProfileTransport",
+    ),
+    (
+        "rust-observed-f1cf1b04bf5065d65499",
+        "rust-kmipkit",
+        "kmipkit::ProfileTransport::Https",
+    ),
+    (
+        "rust-observed-cd305a49aed0474ba320",
+        "rust-kmipkit",
+        "kmipkit::ProfileTransport::RawTtlvTls",
+    ),
+    (
         "rust-observed-a3122d44c87801662e97",
         "rust-kmipkit",
         "kmipkit::ProfileValidationContext",
@@ -12707,6 +12722,21 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-100b2a966ee630915161",
         "rust-kmipkit-client",
         "kmipkit_client::ProfileObjectState::with_usage_limits_total",
+    ),
+    (
+        "rust-observed-a0638fb2daec1bc0eff0",
+        "rust-kmipkit-client",
+        "kmipkit_client::ProfileTransport",
+    ),
+    (
+        "rust-observed-ea7cd0ebc952c4f45b18",
+        "rust-kmipkit-client",
+        "kmipkit_client::ProfileTransport::Https",
+    ),
+    (
+        "rust-observed-e8a78328963bb35daaa9",
+        "rust-kmipkit-client",
+        "kmipkit_client::ProfileTransport::RawTtlvTls",
     ),
     (
         "rust-observed-3e5633797cb54cc37a9f",
@@ -13187,6 +13217,21 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-b999296aa92c875d3a4d",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::ProfileReadinessBlocker::source_clause_id",
+    ),
+    (
+        "rust-observed-4d9a4446741a7a001d8d",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ProfileTransport",
+    ),
+    (
+        "rust-observed-df366c6303e48d4a9a1d",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ProfileTransport::Https",
+    ),
+    (
+        "rust-observed-b59967cfd027cdcad95d",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ProfileTransport::RawTtlvTls",
     ),
     (
         "rust-observed-2eb0132ad58b8ade014e",
