@@ -7,7 +7,8 @@ from pathlib import Path
 import pytest
 
 from _test_support import mtls_transport_config
-from kmipkit import client, errors, extensions, ttlv
+from kmipkit import _handles, client, errors, extensions, messages, ttlv
+from kmipkit._handles import _wrap_owned_handle
 
 _TLS_FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
 
@@ -180,3 +181,242 @@ def test_baseline_selection_fails_closed_before_a_cffi_transport_connection() ->
     peer.join(timeout=2)
     assert not peer.is_alive(), "the connection observer must finish"
     assert accepted == [False], "incomplete Baseline readiness must make zero TCP connections"
+
+
+class _ProfileValidationLib:
+    """Narrow native-boundary seam for wrapper ownership and marshalling tests."""
+
+    def __init__(self, *, status: int = 0, validator_status: int | None = None) -> None:
+        self.status = status
+        self.validator_status = validator_status
+        self.profile_ids = ("profile-a", "profile-b")
+        self.requirement_ids = ("KMIPKIT-REQ-A", "KMIPKIT-REQ-B")
+        self.calls: list[tuple[str, tuple[object, ...]]] = []
+        self.released: list[object] = []
+        self.span_owners: list[object] = []
+        self.context_bytes_during_call: bytes | None = None
+        self.context_buffer: object | None = None
+        self.context_length = 0
+
+    def kmipkit_profile_validation_selection_validate_v1(self, selection, out_result):
+        self.calls.append(("selection_validate", (selection,)))
+        if self.status == 0:
+            out_result[0] = self._pointer_for_slot(out_result, 101)
+        return self.status
+
+    def kmipkit_profile_validation_result_profile_id_count_v1(self, result, out_count):
+        out_count[0] = len(self.profile_ids)
+        return 0
+
+    def kmipkit_profile_validation_result_profile_id_at_v1(self, result, index, out_span):
+        return self._write_span(self.profile_ids, index, out_span)
+
+    def kmipkit_profile_validation_result_requirement_id_count_v1(
+        self, result, out_count
+    ):
+        out_count[0] = len(self.requirement_ids)
+        return 0
+
+    def kmipkit_profile_validation_result_requirement_id_at_v1(
+        self, result, index, out_span
+    ):
+        return self._write_span(self.requirement_ids, index, out_span)
+
+    def kmipkit_profile_validation_result_release(self, result):
+        self.released.append(result)
+
+    def kmipkit_profile_validation_result_validate_transport_v1(
+        self, result, transport
+    ):
+        return self._record_validator("transport", result, transport)
+
+    def kmipkit_profile_validation_result_validate_request_v1(self, result, request):
+        return self._record_validator("request", result, request)
+
+    def kmipkit_profile_validation_result_validate_request_with_context_v1(
+        self, result, request, context
+    ):
+        self._capture_context(context)
+        return self._record_validator("request_with_context", result, request, context)
+
+    def kmipkit_profile_validation_result_validate_response_v1(
+        self, result, request, response
+    ):
+        return self._record_validator("response", result, request, response)
+
+    def kmipkit_profile_validation_result_validate_response_with_context_v1(
+        self, result, request, response, context
+    ):
+        self._capture_context(context)
+        return self._record_validator(
+            "response_with_context", result, request, response, context
+        )
+
+    def kmipkit_request_message_release(self, handle):
+        self.released.append(handle)
+
+    def kmipkit_response_message_release(self, handle):
+        self.released.append(handle)
+
+    @staticmethod
+    def _pointer_for_slot(slot, address: int):
+        return client.ffi.cast(client.ffi.typeof(slot[0]), address)
+
+    def _write_span(self, values, index, out_span):
+        encoded = values[int(index)].encode("utf-8")
+        buffer = client.ffi.new("uint8_t[]", encoded)
+        self.span_owners.append(buffer)
+        out_span.data = buffer
+        out_span.length = len(encoded)
+        return 0
+
+    def _record_validator(self, name: str, *arguments: object) -> int:
+        self.calls.append((name, arguments))
+        return self.status if self.validator_status is None else self.validator_status
+
+    def _capture_context(self, context) -> None:
+        if context.object_state_count:
+            state = context.object_states[0]
+            self.context_buffer = state.unique_identifier_data
+            self.context_length = int(state.unique_identifier_length)
+            self.context_bytes_during_call = client.ffi.buffer(
+                self.context_buffer, self.context_length
+            )[:]
+
+
+def _profile_result_from_mock(monkeypatch, native: _ProfileValidationLib):
+    try:
+        client.ffi.typeof("kmipkit_profile_validation_result_t *")
+    except Exception:
+        client.ffi.cdef(
+            "typedef struct kmipkit_profile_validation_result_t "
+            "kmipkit_profile_validation_result_t;"
+        )
+    monkeypatch.setattr(client, "lib", native)
+    monkeypatch.setattr(_handles, "lib", native)
+    monkeypatch.setattr(messages, "_native_lib", native)
+    return client.ProfileValidationSelection(("profile-a", "profile-b")).validate()
+
+
+def test_profile_selection_resolves_ordered_ids_into_an_immutable_snapshot(monkeypatch):
+    native = _ProfileValidationLib()
+    result = _profile_result_from_mock(monkeypatch, native)
+
+    assert result.profile_ids == ("profile-a", "profile-b")
+    assert result.requirement_ids == ("KMIPKIT-REQ-A", "KMIPKIT-REQ-B")
+    assert isinstance(result.profile_ids, tuple)
+    assert isinstance(result.requirement_ids, tuple)
+    with pytest.raises(AttributeError):
+        result.profile_ids = ("changed",)
+    with pytest.raises(AttributeError):
+        result.profile_ids.append("changed")
+    result.close()
+    assert result.profile_ids == ("profile-a", "profile-b")
+
+
+def test_profile_result_calls_all_five_validators_and_wipes_context_buffers(monkeypatch):
+    native = _ProfileValidationLib()
+    result = _profile_result_from_mock(monkeypatch, native)
+    request = _wrap_owned_handle(
+        messages.RequestMessage,
+        client.ffi.cast("kmipkit_request_message_t *", 102),
+    )
+    response = _wrap_owned_handle(
+        messages.ResponseMessage,
+        client.ffi.cast("kmipkit_response_message_t *", 103),
+    )
+    context = client.ProfileValidationContext().with_object_state(
+        0, client.ProfileObjectState("caller-context-secret")
+    )
+
+    result.validate_transport(client.ProfileTransport.HTTPS)
+    result.validate_request(request)
+    result.validate_request_with_context(request, context)
+    request_context = native.context_buffer
+    request_context_length = native.context_length
+    result.validate_response(request, response)
+    result.validate_response_with_context(request, response, context)
+
+    assert [name for name, _ in native.calls[1:]] == [
+        "transport",
+        "request",
+        "request_with_context",
+        "response",
+        "response_with_context",
+    ]
+    assert native.calls[1][1][1] == client.ProfileTransport.HTTPS.value
+    assert native.context_bytes_during_call == b"caller-context-secret"
+    assert (
+        client.ffi.buffer(request_context, request_context_length)[:]
+        == b"\x00" * request_context_length
+    )
+    assert (
+        client.ffi.buffer(native.context_buffer, native.context_length)[:]
+        == b"\x00" * native.context_length
+    )
+
+    request.close()
+    response.close()
+    result.close()
+
+
+def test_profile_transport_rejects_unknown_values_before_native_call(monkeypatch):
+    native = _ProfileValidationLib()
+    result = _profile_result_from_mock(monkeypatch, native)
+    before = len(native.calls)
+
+    with pytest.raises(errors.InvalidInputError):
+        result.validate_transport(999)
+
+    assert len(native.calls) == before
+    result.close()
+
+
+def test_profile_result_context_manager_and_repeated_close_release_once(monkeypatch):
+    native = _ProfileValidationLib()
+    result = _profile_result_from_mock(monkeypatch, native)
+    handle = result._pointer()
+
+    with result as entered:
+        assert entered is result
+        assert not result.closed
+    result.close()
+
+    assert result.closed
+    assert native.released.count(handle) == 1
+
+
+def test_profile_validation_error_keeps_safe_details_and_redacts_caller_values(monkeypatch):
+    native = _ProfileValidationLib(validator_status=4)
+    details = errors.ProfileValidationDetails(
+        error_code="profile_unavailable",
+        profile_id=None,
+        requirement_id=None,
+        source_clause_id=None,
+        source_gap_id=None,
+        source_gap_locator=None,
+        batch_item_index=None,
+    )
+    monkeypatch.setattr(client, "lib", native)
+    monkeypatch.setattr(client, "_read_profile_validation_details", lambda: details)
+    caller_context_value = "caller-context-secret"
+    raw_body = b"raw-kmip-body-secret"
+    result = _profile_result_from_mock(monkeypatch, native)
+    request = _wrap_owned_handle(
+        messages.RequestMessage,
+        client.ffi.cast("kmipkit_request_message_t *", 104),
+    )
+    context = client.ProfileValidationContext().with_object_state(
+        0, client.ProfileObjectState(caller_context_value)
+    )
+
+    with pytest.raises(errors.ProfileValidationError) as failure:
+        result.validate_request_with_context(request, context)
+
+    assert failure.value.profile_validation is details
+    assert failure.value.details is details
+    rendered = f"{failure.value!r} {failure.value} {details!r}"
+    assert caller_context_value not in rendered
+    assert raw_body.decode() not in rendered
+    request.close()
+    result.close()
