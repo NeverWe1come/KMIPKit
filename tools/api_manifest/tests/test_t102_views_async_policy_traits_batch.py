@@ -273,6 +273,24 @@ HOLDOUTS = (
         1,
     ),
 )
+HOLDOUT_OWNERS = (
+    ("rust-kmipkit-client", "<kmipkit_client::ClientResponseView<'a> as ", "specs/007-client-execution/spec.md"),
+    ("rust-kmipkit-protocol", "<kmipkit_protocol::DerivationParameters as ", "specs/023-key-material-transfer/spec.md"),
+    ("rust-kmipkit-protocol", "<kmipkit_protocol::DeriveKeyRequest as ", "specs/023-key-material-transfer/spec.md"),
+    ("rust-kmipkit", "<kmipkit::RngRetrieveResponse as ", "specs/027-rng-operations/spec.md"),
+    ("rust-kmipkit", "<kmipkit::RngSeedResponse as ", "specs/027-rng-operations/spec.md"),
+    ("rust-kmipkit", "<kmipkit::GetUsageAllocationRequest as ", "specs/025-policy-controls/spec.md"),
+)
+REDACTION_REVIEW_PENDING = {
+    (
+        "rust-kmipkit-client",
+        "<kmipkit_client::ClientResponseView<'a> as core::fmt::Debug>::fmt",
+    ),
+    (
+        "rust-kmipkit",
+        "<kmipkit::RngRetrieveResponse as core::fmt::Debug>::fmt",
+    ),
+}
 
 
 class T102ViewsAsyncPolicyTraitsBatchTests(unittest.TestCase):
@@ -344,7 +362,7 @@ class T102ViewsAsyncPolicyTraitsBatchTests(unittest.TestCase):
         self.assertEqual(len(selected.intersection(conditional_paths)), 80)
         self.assertEqual(len(selected) - 80, 86)
 
-    def test_sensitive_and_previously_held_paths_remain_blocked(self) -> None:
+    def test_resolved_traits_are_excluded_and_unreviewed_debug_paths_stay_blocked(self) -> None:
         declarations = {
             (row["packageId"], row["exportName"]): row
             for row in self.manifest["publicDeclarations"]
@@ -366,9 +384,32 @@ class T102ViewsAsyncPolicyTraitsBatchTests(unittest.TestCase):
             holdouts.update(paths)
 
         self.assertEqual(len(holdouts), 58)
-        self.assertTrue(holdouts.issubset(declarations))
-        self.assertTrue(holdouts.isdisjoint(exclusions))
-        self.assertTrue(all(declarations[path]["declarationState"] == "blocked" for path in holdouts))
+        self.assertEqual(2, len(REDACTION_REVIEW_PENDING))
+        self.assertTrue(REDACTION_REVIEW_PENDING.issubset(holdouts))
+        resolved = holdouts - REDACTION_REVIEW_PENDING
+        self.assertEqual(56, len(resolved))
+        self.assertTrue(resolved.isdisjoint(declarations))
+        self.assertEqual(resolved, resolved.intersection(exclusions))
+        self.assertTrue(REDACTION_REVIEW_PENDING.issubset(declarations))
+        self.assertTrue(REDACTION_REVIEW_PENDING.isdisjoint(exclusions))
+        self.assertTrue(
+            all(declarations[path]["declarationState"] == "blocked" for path in REDACTION_REVIEW_PENDING)
+        )
+
+        for path in resolved:
+            package, export_name = path
+            owner = next(
+                owner_path
+                for owner_package, prefix, owner_path in HOLDOUT_OWNERS
+                if package == owner_package and export_name.startswith(prefix)
+            )
+            exclusion = exclusions[path]
+            self.assertEqual(owner, exclusion["approvalSource"]["path"])
+            self.assertEqual("Approved", exclusion["approvalSource"]["status"])
+            self.assertIn("exact Rust standard-trait implementation", exclusion["reason"])
+            self.assertIn("not a separate KMIPKit product capability", exclusion["reason"])
+            for requirement in T102_REQUIREMENTS:
+                self.assertIn(requirement, exclusion["evidence"])
 
     def test_public_parent_states_and_candidate_totals_are_preserved(self) -> None:
         expected_parents = {
