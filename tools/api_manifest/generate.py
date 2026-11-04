@@ -31,7 +31,7 @@ SCHEMA_PATH = "specification/api/public-api.schema.json"
 CATALOG_PATH = "specification/catalog/kmip-2.1.json"
 # Public API parity records include exact declarations in all four languages;
 # keep parsing bounded while leaving room for the complete generated inventory.
-MAX_MANIFEST_BYTES = 22 * 1024 * 1024
+MAX_MANIFEST_BYTES = 23 * 1024 * 1024
 MAX_SCHEMA_BYTES = 4 * 1024 * 1024
 MAX_CATALOG_BYTES = 16 * 1024 * 1024
 MAX_RELEASE_METADATA_BYTES = 1024 * 1024
@@ -941,6 +941,110 @@ def _validate_capability_readiness(
             _validate_parity_evidence(capability, root)
 
 
+_NORMALIZED_CLIENT_PROTOCOL_ERROR_FAMILY_REQUIREMENTS = {
+    "GetError": frozenset(
+        {"KMIPKIT-0017-FR-001", "KMIPKIT-0017-FR-011", "KMIPKIT-0017-FR-012"}
+    ),
+    "LocateError": frozenset(
+        {"KMIPKIT-0017-FR-001", "KMIPKIT-0017-FR-011", "KMIPKIT-0017-FR-012"}
+    ),
+    **{
+        family: frozenset({"KMIPKIT-0036-FR-001", "KMIPKIT-0036-FR-004"})
+        for family in (
+            "CertifyError", "CheckError", "ObtainLeaseError", "ReProvisionError",
+            "RecertifyError", "RegisterError", "RekeyError", "RekeyKeyPairError",
+            "RevokeError",
+        )
+    },
+    **{
+        family: frozenset({"KMIPKIT-0037-FR-001", "KMIPKIT-0037-FR-004"})
+        for family in ("DeriveKeyError", "ExportError", "ImportError", "JoinSplitKeyError")
+    },
+    **{
+        family: frozenset({"KMIPKIT-0038-FR-001", "KMIPKIT-0038-FR-004"})
+        for family in ("DelegatedLoginError", "LoginError", "LogoutError")
+    },
+    **{
+        family: frozenset({"KMIPKIT-0039-FR-001", "KMIPKIT-0039-FR-004"})
+        for family in (
+            "GetConstraintsError", "GetUsageAllocationError", "SetConstraintsError",
+            "SetDefaultsError",
+        )
+    },
+    "Pkcs11Error": frozenset({"KMIPKIT-0040-FR-001", "KMIPKIT-0040-FR-004"}),
+    **{
+        family: frozenset({"KMIPKIT-0042-FR-001", "KMIPKIT-0042-FR-004"})
+        for family in ("InteropError", "LogError")
+    },
+}
+_NORMALIZED_CLIENT_PROTOCOL_ERROR_SHARED_REQUIREMENTS = frozenset(
+    {
+        "KMIPKIT-0007-FR-006", "KMIPKIT-0007-FR-008", "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-005", "KMIPKIT-0043-FR-010", "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+    }
+)
+_NORMALIZED_CLIENT_PROTOCOL_ERROR_MODULES = {
+    "rust-kmipkit": "kmipkit",
+    "rust-kmipkit-protocol": "kmipkit_protocol",
+    "rust-kmipkit-client": "kmipkit_client",
+}
+
+
+def _validate_normalized_client_protocol_error_source(
+    declaration: dict[str, Any],
+) -> None:
+    """Limit cross-package error normalization to approved response error exports."""
+    if declaration.get("declarationState") not in {"declared", "verified"}:
+        raise ManifestError(
+            "normalized client protocol error mapping requires a ready declaration"
+        )
+    parts = declaration.get("exportName", "").split("::")
+    module = _NORMALIZED_CLIENT_PROTOCOL_ERROR_MODULES.get(
+        declaration.get("packageId")
+    )
+    if not module or not parts or parts[0] != module:
+        raise ManifestError(
+            "normalized client protocol error mapping is outside an approved response error family"
+        )
+    families = [
+        (index, part)
+        for index, part in enumerate(parts)
+        if part in _NORMALIZED_CLIENT_PROTOCOL_ERROR_FAMILY_REQUIREMENTS
+    ]
+    if len(families) != 1:
+        raise ManifestError(
+            "normalized client protocol error mapping is outside an approved response error family"
+        )
+    family_index, family = families[0]
+    kind = declaration.get("kind")
+    valid_shape = (
+        (kind == "type" and family_index == len(parts) - 1)
+        or (kind == "variant" and family_index == len(parts) - 2)
+        or (
+            kind == "field"
+            and family_index == len(parts) - 3
+            and parts[-1].isdigit()
+        )
+    )
+    if not valid_shape:
+        raise ManifestError(
+            "normalized client protocol error mapping is outside an approved response error family"
+        )
+    requirements = set(declaration.get("requirementIds", []))
+    required = (
+        _NORMALIZED_CLIENT_PROTOCOL_ERROR_FAMILY_REQUIREMENTS[family]
+        | _NORMALIZED_CLIENT_PROTOCOL_ERROR_SHARED_REQUIREMENTS
+    )
+    if (
+        not required <= requirements
+        or "KMIPKIT-0007-FR-001" in requirements
+    ):
+        raise ManifestError(
+            "normalized client protocol error mapping lacks its response owner requirements"
+        )
+
+
 def _validate_public_declarations(
     declarations: list[dict[str, Any]],
     capabilities_by_id: dict[Any, dict[str, Any]],
@@ -971,6 +1075,8 @@ def _validate_public_declarations(
             declarations,
         )
         state = declaration.get("declarationState")
+        if declaration.get("mappingSemantics") == "normalized-client-protocol-error":
+            _validate_normalized_client_protocol_error_source(declaration)
         if state == "authorized_wip":
             candidate_spec_id = declaration.get("candidateSpecId")
             if (
@@ -1012,7 +1118,11 @@ def _validate_public_declarations(
                 if not isinstance(mapping.get("name"), str) or not mapping["name"]:
                     raise ManifestError("public declaration mapping has no exported name")
             owning_language = package_languages[declaration["packageId"]]
-            if mappings.get(owning_language, {}).get("packageId") != declaration["packageId"]:
+            if (
+                mappings.get(owning_language, {}).get("packageId") != declaration["packageId"]
+                and declaration.get("mappingSemantics")
+                != "normalized-client-protocol-error"
+            ):
                 raise ManifestError("declaration package differs from its owning language mapping")
         if declaration.get("declarationState") == "verified":
             _validate_parity_evidence(declaration, root)
@@ -1275,6 +1385,7 @@ def _validate_ready_mapping_targets(
             "native-handle-release",
             "native-handle-release-managed-java-value",
             "secret-buffer-wipe",
+            "normalized-client-protocol-error",
         }:
             raise ManifestError("public declaration uses unknown mapping semantics")
         lifecycle_by_language = declaration.get("lifecycleSemanticsByLanguage")
@@ -1292,6 +1403,31 @@ def _validate_ready_mapping_targets(
                 "secret response lifecycle mapping must describe each language's ownership boundary"
             )
         mappings = declaration.get("languageMappings", {})
+        if mapping_semantics == "normalized-client-protocol-error":
+            expected_mapping = {
+                "rust": {
+                    "packageId": "rust-kmipkit-client",
+                    "name": "kmipkit_client::ClientError::Protocol",
+                },
+                "c": {"packageId": "c-kmipkit", "name": "KMIPKIT_ERROR_PROTOCOL"},
+                "java": {
+                    "packageId": "java-kmipkit",
+                    "name": "org.kmipkit.ProtocolException",
+                },
+                "python": {
+                    "packageId": "python-kmipkit",
+                    "name": "kmipkit.errors.ClientExecutionError",
+                },
+            }
+            if (
+                declaration.get("capabilityId") != "client_execution"
+                or declaration.get("kind") not in {"type", "variant", "field"}
+                or declaration.get("parityScope") != "four-language"
+                or mappings != expected_mapping
+            ):
+                raise ManifestError(
+                    "normalized client protocol error mapping must use the exact execution surfaces"
+                )
         required_languages = (
             ("rust",)
             if declaration.get("parityScope") == "rust-only-adr"

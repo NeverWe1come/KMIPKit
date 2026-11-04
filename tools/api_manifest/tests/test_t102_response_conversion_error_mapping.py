@@ -155,6 +155,24 @@ class T102ResponseConversionErrorMappingTests(unittest.TestCase):
             if item.get("mappingSemantics") == MAPPING_SEMANTICS
         )
         generate._validate_normalized_client_protocol_error_source(family_row)
+        package_languages = {
+            package["id"]: package["language"] for package in self.manifest["publicPackages"]
+        }
+        capabilities_by_id = {
+            item["capabilityId"]: item for item in self.manifest["capabilities"]
+        }
+        operations_by_id = {
+            item["operationId"]: item for item in self.manifest["operations"]
+        }
+        requirements = set(self.manifest["requirementIds"])
+        generate._validate_public_declarations(
+            [family_row],
+            capabilities_by_id,
+            operations_by_id,
+            package_languages,
+            requirements,
+            ROOT,
+        )
 
         unrelated = copy.deepcopy(
             self.declarations[("rust-kmipkit-protocol", "kmipkit_protocol::GetResponse")]
@@ -163,10 +181,28 @@ class T102ResponseConversionErrorMappingTests(unittest.TestCase):
         unrelated["capabilityId"] = "client_execution"
         unrelated["parityScope"] = "four-language"
         unrelated["mappingSemantics"] = MAPPING_SEMANTICS
+        unrelated["approvalSource"] = self.client_execution["approvalEvidence"]
+        unrelated["languageMappings"] = copy.deepcopy(EXPECTED_MAPPING)
         unrelated.pop("candidateSpecId", None)
         unrelated.pop("blockedReason", None)
         with self.assertRaisesRegex(generate.ManifestError, "approved response error family"):
-            generate._validate_normalized_client_protocol_error_source(unrelated)
+            generate._validate_public_declarations(
+                [unrelated],
+                capabilities_by_id,
+                operations_by_id,
+                package_languages,
+                requirements,
+                ROOT,
+            )
+
+        missing_owner_requirement = copy.deepcopy(family_row)
+        missing_owner_requirement["requirementIds"].remove(
+            next(iter(FAMILY_OWNER[_error_family(family_row["exportName"])][2]))
+        )
+        with self.assertRaisesRegex(generate.ManifestError, "response owner requirements"):
+            generate._validate_normalized_client_protocol_error_source(
+                missing_owner_requirement
+            )
 
         work_in_progress = copy.deepcopy(family_row)
         work_in_progress["declarationState"] = "authorized_wip"
