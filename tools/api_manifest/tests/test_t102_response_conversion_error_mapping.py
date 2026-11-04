@@ -177,6 +177,10 @@ class T102ResponseConversionErrorMappingTests(unittest.TestCase):
                         any(phrase in recorded for phrase in stale_phrases),
                         row["exportName"],
                     )
+                    self.assertIn(
+                        "shared normalized four-language client outcome",
+                        row.get("evidence", ""),
+                    )
 
     def test_only_approved_error_families_may_use_normalized_mapping_semantics(self) -> None:
         family_row = next(
