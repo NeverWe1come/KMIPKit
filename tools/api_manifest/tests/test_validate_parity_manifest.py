@@ -34,6 +34,9 @@ EXPECTED_MAPPINGS = {
         "kmipkit_protocol::ValidateResponse",
         "kmipkit_protocol::ValidateResponse::validity_indicator",
         "kmipkit_protocol::ValidateResponse::with_ttlv",
+        "kmipkit_protocol::ValidityIndicator",
+        "kmipkit_protocol::ValidityIndicator::from_raw",
+        "kmipkit_protocol::ValidityIndicator::raw",
     },
     "c": {
         "kmipkit_client_batch_item_validate",
@@ -59,6 +62,7 @@ EXPECTED_MAPPINGS = {
 }
 PARITY_EVIDENCE = {
     "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs",
+    "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
     "crates/kmipkit-client/tests/unit/validate_execution_tests.rs",
     "crates/kmipkit-ffi/tests/support/validate_abi_tests.rs",
     "bindings/c/tests/client_abi_consumer.c",
