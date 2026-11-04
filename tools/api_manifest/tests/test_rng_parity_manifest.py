@@ -23,8 +23,10 @@ OPERATIONS = {
             "rust": {
                 "kmipkit_client::Client::rng_retrieve",
                 "kmipkit_protocol::RngRetrieveRequest::new",
+                "kmipkit_protocol::RngRetrieveResponse::try_from_pending_response_item",
                 "kmipkit_protocol::RngRetrieveResponse::data",
                 "kmipkit_protocol::RngRetrieveResponse::with_ttlv",
+                "kmipkit::RngRetrieveResponse::try_from_pending_response_item",
             },
             "c": {
                 "kmipkit_client_batch_item_rng_retrieve",
@@ -57,8 +59,10 @@ OPERATIONS = {
             "rust": {
                 "kmipkit_client::Client::rng_seed",
                 "kmipkit_protocol::RngSeedRequest::new",
+                "kmipkit_protocol::RngSeedResponse::try_from_pending_response_item",
                 "kmipkit_protocol::RngSeedResponse::data_length",
                 "kmipkit_protocol::RngSeedResponse::with_ttlv",
+                "kmipkit::RngSeedResponse::try_from_pending_response_item",
             },
             "c": {
                 "kmipkit_client_batch_item_rng_seed",
