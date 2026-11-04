@@ -295837,14 +295837,62 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::CertifyRequest::unique_identifier",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-CERTIFY",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-REQ-SPEC-6.1.6-001",
+        "KMIPKIT-REQ-SPEC-6.1.6-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.6-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.6-002-003",
+        "KMIPKIT-REQ-SPEC-6.1.6-003",
+        "KMIPKIT-REQ-SPEC-6.1.6-007"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CertifyRequest::unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_certify"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.certify"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_certify"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CertifyJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CertifyResponseMappingTest.java",
+        "bindings/python/tests/test_certify_operation.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_certify_request_builder_mapping.py",
+        "tools/api_manifest/tests/test_t102_certify_request_identifier_member_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-adea91ee09708737b04d",
@@ -475434,7 +475482,8 @@
           "rust-observed-9a4cd073497d09724f7e",
           "rust-observed-3620d8e9bb89e3bbe251",
           "rust-observed-ff9e3164ada9db83e6d8",
-          "rust-observed-455bf70fd49c2d1c0584"
+          "rust-observed-455bf70fd49c2d1c0584",
+          "rust-observed-d0317408cb64ea049eaf"
         ],
         "c": [
           "T043:certify:constructor:c",
@@ -475471,6 +475520,7 @@
         "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs",
         "tools/api_manifest/tests/test_t102_certify_request_builder_mapping.py",
+        "tools/api_manifest/tests/test_t102_certify_request_identifier_member_mapping.py",
         "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py"
       ]
     },

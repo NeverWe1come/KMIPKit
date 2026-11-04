@@ -13329,6 +13329,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ProfileValidationSelection::validate",
     ),
     (
+        "rust-observed-d0317408cb64ea049eaf",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CertifyRequest::unique_identifier",
+    ),
+    (
         "rust-observed-13529d9034f3ba7be342",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::GetAttributeListRequest::unique_identifier",

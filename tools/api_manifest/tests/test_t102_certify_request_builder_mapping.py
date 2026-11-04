@@ -46,8 +46,10 @@ OPERATION_ADDED_EVIDENCE = {
     "crates/kmipkit-ffi/tests/c_api_coverage.rs",
     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
     "tools/api_manifest/tests/test_t102_certify_request_builder_mapping.py",
+    "tools/api_manifest/tests/test_t102_certify_request_identifier_member_mapping.py",
     "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py",
 }
+CERTIFY_REQUEST_IDENTIFIER_ID = "rust-observed-d0317408cb64ea049eaf"
 RAW_CERTIFY_DECLARATIONS = {
     "rust-observed-e0a06a71290bee987cc7",
     "rust-observed-5722377217051635233d",
@@ -144,12 +146,11 @@ REQUEST_CONSTRUCTION_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-6.1.6-007",
 }
 BLOCKED_NEIGHBORS = {
-    "rust-observed-d0317408cb64ea049eaf": "kmipkit_protocol::CertifyRequest::unique_identifier",
 }
 BLOCKED_BEFORE = 224
 BLOCKED_AFTER = 221
-DECLARATIONS_SHA256 = "f2f0042b8bbb2252fac96d8a4fb482dca22573bd63396cc307c7990dba177ad8"
-OPERATIONS_SHA256 = "b09e694d4e3fdf6d9fba384ce34fe1549823492fa9297258a6d91fb14972dbb4"
+DECLARATIONS_SHA256 = "74dbb7e489184885b8de8fdb93f4c1d95c070d0720d64718db3af03163113e4b"
+OPERATIONS_SHA256 = "a610d490437837e8bd2cebc27fb4daa8a7fd7dee0abc74e09ebb7f0217806d02"
 
 
 def canonical_sha256(value: object) -> str:
@@ -355,7 +356,7 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
         self.assertTrue("fields: CERTIFY_TYPE_ONLY" in ffi_wire)
 
     def test_non_target_declarations_and_operation_rows_match_snapshot(self) -> None:
-        target_ids = {target["id"] for target in TARGETS} | {
+        target_ids = {target["id"] for target in TARGETS} | {CERTIFY_REQUEST_IDENTIFIER_ID} | {
             target["id"] for target in REQUEST_CONSTRUCTION_TARGETS
         }
         other_declarations = copy.deepcopy([
