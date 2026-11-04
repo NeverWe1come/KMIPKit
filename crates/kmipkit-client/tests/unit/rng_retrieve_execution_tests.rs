@@ -107,7 +107,7 @@ fn rng_retrieve_sends_required_length_once_and_returns_redacted_secret_output() 
     let response_view = item.outcome().response();
     assert!(response_view.rng_retrieve().is_some());
     assert!(response_view.rng_seed().is_none());
-    assert!(format!("{response_view:?}").contains("RngRetrieve"));
+    assert_eq!(format!("{response_view:?}"), "RngRetrieve");
     assert!(item.outcome().rng_retrieve_response().is_some());
     assert!(item.outcome().rng_seed_response().is_none());
     assert!(
