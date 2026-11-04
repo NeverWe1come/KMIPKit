@@ -786,7 +786,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         )
 
     def test_rust_ffi_renders_fixed_width_value_fields_from_the_type_record(self) -> None:
-        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        manifest = json.loads(PUBLIC_API_V1_FIXTURE.read_text(encoding="utf-8"))
         type_name = "kmipkit_test_config_v1_t"
         manifest["types"].append(
             {
@@ -821,7 +821,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         self.assertEqual(generate._rust_c_type("const uint8_t **"), "*mut *const u8")
 
     def test_rust_ffi_escapes_keyword_names_in_fixed_width_fields(self) -> None:
-        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        manifest = json.loads(PUBLIC_API_V1_FIXTURE.read_text(encoding="utf-8"))
         manifest["types"].append(
             {
                 "id": "KeywordFieldConfig",
