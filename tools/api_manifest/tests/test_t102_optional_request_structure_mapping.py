@@ -146,7 +146,7 @@ class T102RekeyStructureMappingTests(unittest.TestCase):
                 self.assertEqual(target["owner"], declaration["approvalSource"]["path"])
                 self.assertEqual("Approved", declaration["approvalSource"]["status"])
                 requirements = set(declaration["requirementIds"])
-                self.assertTrue(target["fr"] <= requirements)
+                self.assertEqual(target["fr"], requirements)
                 self.assertFalse(any(value.startswith("KMIPKIT-REQ-SPEC-") for value in requirements))
                 expected_mappings = {
                     "rust": {"packageId": "rust-kmipkit-protocol", "name": target["name"]},
