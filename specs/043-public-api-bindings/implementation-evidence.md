@@ -11060,3 +11060,18 @@ Reproduction commands (run from the repository root):
 - Focused Green and Refactor suite: `py -3 -B -m unittest tools.api_manifest.tests.test_t102_approved_alias_mapping tools.api_manifest.tests.test_rng_parity_manifest tools.api_manifest.tests.test_t102_rng_root_trait_batch tools.api_manifest.tests.test_t102_macro_lot_partition.T102MacroLotPartitionTests.test_macro_lots_are_disjoint_exhaustive_and_identity_stable`.
 - Generated API outputs: `py -3 -B tools/api_manifest/generate.py --check`.
 - Formatting and whitespace: `cargo fmt --all --check` and `git diff --check`.
+
+### T102 Macro-Lot 2 Derive Key request type and payload mapping (2026-11-04)
+
+Red `40c9f5407` adds a regression for the existing Derive Key request type, constructor, and TTLV payload serializer. All three focused assertions fail because those declarations are blocked and absent from the verified Derive Key operation inventory. The approved owner is `specs/023-key-material-transfer/spec.md` (KMIPKIT-0037); OASIS KMIP Specification v2.1 §6.1.14 Tables 205–207 defines the request, response, and errors, and §7.12 defines the derivation parameters.
+
+Green `fdb043f29` maps the declarations to the existing Derive Key capability and C, Java, and Python operation builder, inheriting the approved requirements from the verified `kmipkit_client::Client::derive_key` mapping. The operation inventory cites the new test. Refactor `00fe00c3e` extracts the repeated declaration-mapping assertions. This is capability-level inventory evidence and adds no runtime or wire behavior.
+
+Verification: the focused Derive Key mapping, transfer serializer, and macro-lot identity tests pass 5/5. `py -3 -B tools/api_manifest/generate.py --check` verifies all 12 generated outputs; `cargo fmt --all --check` and `git diff --check` pass. T102 decreases 79→76 blocked candidates; public declaration/exclusion totals remain 6,380/8,713. Macro-Lot 2 remains open, so the full T102 and 151-test manifest-v2 closure suites remain reserved. No formal protocol conformance, interoperability, profile-support, or certification claim is made.
+
+Reproduction commands (run from the repository root):
+
+- Red, expected blocked-state failures: `py -3 -B -m unittest tools.api_manifest.tests.test_t102_derive_key_request_mapping`.
+- Focused Green and Refactor suite: `py -3 -B -m unittest tools.api_manifest.tests.test_t102_derive_key_request_mapping tools.api_manifest.tests.test_t102_transfer_request_serializer_mapping tools.api_manifest.tests.test_t102_macro_lot_partition.T102MacroLotPartitionTests.test_macro_lots_are_disjoint_exhaustive_and_identity_stable`.
+- Generated API outputs: `py -3 -B tools/api_manifest/generate.py --check`.
+- Formatting and whitespace: `cargo fmt --all --check` and `git diff --check`.
