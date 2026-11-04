@@ -59,13 +59,13 @@ EXPECTED_PROTOCOL_FUNCTIONAL_STATES = {
     "kmipkit_protocol::SetConstraintsRequest": "verified",
     "kmipkit_protocol::SetConstraintsRequest::constraints": "verified",
     "kmipkit_protocol::SetConstraintsRequest::new": "verified",
-    "kmipkit_protocol::SetConstraintsRequest::to_ttlv_payload": "blocked",
+    "kmipkit_protocol::SetConstraintsRequest::to_ttlv_payload": "verified",
 }
 EXPECTED_ROOT_FACADE_STATES = {
     "kmipkit::SetConstraintsRequest": "verified",
     "kmipkit::SetConstraintsRequest::constraints": "verified",
     "kmipkit::SetConstraintsRequest::new": "verified",
-    "kmipkit::SetConstraintsRequest::to_ttlv_payload": "blocked",
+    "kmipkit::SetConstraintsRequest::to_ttlv_payload": "verified",
 }
 
 

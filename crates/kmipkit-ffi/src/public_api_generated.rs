@@ -7363,6 +7363,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::GetConstraintsRequest::new",
     ),
     (
+        "rust-observed-9f1aa2332742556e5b24",
+        "rust-kmipkit",
+        "kmipkit::GetConstraintsRequest::to_ttlv_payload",
+    ),
+    (
         "rust-observed-05520e854cdf077e2626",
         "rust-kmipkit",
         "kmipkit::GetConstraintsResponse",
@@ -7793,6 +7798,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::SetConstraintsRequest::new",
     ),
     (
+        "rust-observed-480a7b8eada6ab8078aa",
+        "rust-kmipkit",
+        "kmipkit::SetConstraintsRequest::to_ttlv_payload",
+    ),
+    (
         "rust-observed-05812962ba6b37252105",
         "rust-kmipkit",
         "kmipkit::SetConstraintsResponse",
@@ -7861,6 +7871,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-9d31d06f69c988441041",
         "rust-kmipkit",
         "kmipkit::SetDefaultsRequest::new",
+    ),
+    (
+        "rust-observed-406f1ab5b147b43150b0",
+        "rust-kmipkit",
+        "kmipkit::SetDefaultsRequest::to_ttlv_payload",
     ),
     (
         "rust-observed-693ecf17885dfc255a7e",
@@ -10193,6 +10208,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::GetConstraintsRequest::new",
     ),
     (
+        "rust-observed-0acd1d324fb7e26bfe6e",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::GetConstraintsRequest::to_ttlv_payload",
+    ),
+    (
         "rust-observed-8b981f0d69f98fc2c3c5",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::GetConstraintsResponse",
@@ -11953,6 +11973,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::SetConstraintsRequest::new",
     ),
     (
+        "rust-observed-c7d39ab287f72cc407c3",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::SetConstraintsRequest::to_ttlv_payload",
+    ),
+    (
         "rust-observed-c300b322c5871744fd3b",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::SetConstraintsResponse",
@@ -12021,6 +12046,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-6a95d173c982e7ce23f9",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::SetDefaultsRequest::new",
+    ),
+    (
+        "rust-observed-d3c9f0f386e25d092f21",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::SetDefaultsRequest::to_ttlv_payload",
     ),
     (
         "rust-observed-b96ee3941ac8daaadc8e",
