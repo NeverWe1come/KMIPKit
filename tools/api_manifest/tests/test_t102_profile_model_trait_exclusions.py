@@ -22,7 +22,7 @@ REPORT_PATH = REPORTS_PATH / "rust-export-report-2026-11-01.json"
 
 TYPE_CASES = (
     ("rust-kmipkit", "kmipkit::ProfileTransport", "kmipkit_protocol::profile::ProfileTransport", "declared", 14),
-    ("rust-kmipkit", "kmipkit::ProfileValidationResult", "kmipkit_protocol::profile::ProfileValidationResult", "blocked", 14),
+    ("rust-kmipkit", "kmipkit::ProfileValidationResult", "kmipkit_protocol::profile::ProfileValidationResult", "declared", 14),
     ("rust-kmipkit", "kmipkit::ProfileValidationSelection", "kmipkit_protocol::profile::ProfileValidationSelection", "declared", 14),
     ("rust-kmipkit-client", "kmipkit_client::ProfileTransport", "kmipkit_protocol::profile::ProfileTransport", "declared", 14),
     ("rust-kmipkit-client", "kmipkit_client::ProfileValidationSelection", "kmipkit_protocol::profile::ProfileValidationSelection", "declared", 14),
@@ -31,7 +31,7 @@ TYPE_CASES = (
     ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileReadiness", "kmipkit_protocol::profile::ProfileReadiness", "declared", 14),
     ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileReadinessBlocker", "kmipkit_protocol::profile::ProfileReadinessBlocker", "declared", 27),
     ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileTransport", "kmipkit_protocol::profile::ProfileTransport", "declared", 14),
-    ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileValidationResult", "kmipkit_protocol::profile::ProfileValidationResult", "blocked", 14),
+    ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileValidationResult", "kmipkit_protocol::profile::ProfileValidationResult", "declared", 14),
     ("rust-kmipkit-protocol", "kmipkit_protocol::ProfileValidationSelection", "kmipkit_protocol::profile::ProfileValidationSelection", "declared", 14),
     (
         "rust-kmipkit-protocol",
@@ -139,7 +139,7 @@ T102_REQUIREMENTS = ("KMIPKIT-0043-FR-010", "KMIPKIT-0043-FR-021")
 
 # Stable digests pin the non-trait API records for these exact owner paths and
 # the out-of-scope state/context models while the trait inventory is reconciled.
-PROTECTED_API_SHA256 = "3b112f0a99f9356de5909a59622f241ba4aaf5057556a14aad3ae74b46060f34"
+PROTECTED_API_SHA256 = "ef999d342d35d4a17c0f12f966f1a28824decf4820dc27269511243eba57a68c"
 PROTOCOL_REEXPORT_API_SHA256 = "d6d3f60a9707baa2ca55718370402a87c3c9ac269ebc696fe64d6c0e03726118"
 PROFILE_CATALOG_SHA256 = "034aa2e2456e9ac28a24314ee99f00005903978da8d24c5958e4833e748840fb"
 T102_MAPPED_PROFILE_VALIDATION_ALIASES = {
