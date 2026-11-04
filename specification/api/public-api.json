@@ -85356,42 +85356,167 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "type",
       "exportName": "kmipkit_protocol::CryptographicAlgorithm",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CryptographicAlgorithm"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.Value"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-dec84f7b6a69ff689d70",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::CryptographicAlgorithm::from_raw",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CryptographicAlgorithm::from_raw"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_enumeration"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.Enumeration"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_enumeration"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-6fc3fe5988e26eeb65b5",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::CryptographicAlgorithm::raw",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0021-FR-009",
+        "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CryptographicAlgorithm::raw"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_view_enumeration"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValueView.enumeration"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_view_enumeration"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-7811b6f9570a85156588",
@@ -86282,84 +86407,334 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "type",
       "exportName": "kmipkit_protocol::DigitalSignatureAlgorithm",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::DigitalSignatureAlgorithm"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.Value"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-9953f80901da4e75a82c",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::DigitalSignatureAlgorithm::from_raw",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::DigitalSignatureAlgorithm::from_raw"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_enumeration"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.Enumeration"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_enumeration"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-5ccd360172fa4fd026a7",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::DigitalSignatureAlgorithm::raw",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0021-FR-009",
+        "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::DigitalSignatureAlgorithm::raw"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_view_enumeration"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValueView.enumeration"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_view_enumeration"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-0ed998cd345aaf8d76e7",
       "packageId": "rust-kmipkit-protocol",
       "kind": "type",
       "exportName": "kmipkit_protocol::HashingAlgorithm",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::HashingAlgorithm"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.Value"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-41b8b82d29e8a60e71f1",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::HashingAlgorithm::from_raw",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::HashingAlgorithm::from_raw"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_enumeration"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.Enumeration"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_enumeration"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-d54f99b7a6decc829c8c",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::HashingAlgorithm::raw",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0021-FR-009",
+        "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::HashingAlgorithm::raw"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_view_enumeration"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValueView.enumeration"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_view_enumeration"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-1939f403026259009750",
@@ -96286,70 +96661,298 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "type",
       "exportName": "kmipkit_protocol::OperationData",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::OperationData"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.Value"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/crypto_robustness_property_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/operation_data_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-688bd2525df810f7cd9e",
       "packageId": "rust-kmipkit-protocol",
       "kind": "variant",
       "exportName": "kmipkit_protocol::OperationData::ByteString",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::OperationData::ByteString"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_byte_string"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.ByteString"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_byte_string"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/crypto_robustness_property_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/operation_data_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-f69d67f312bdc180f244",
       "packageId": "rust-kmipkit-protocol",
       "kind": "variant",
       "exportName": "kmipkit_protocol::OperationData::Enumeration",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::OperationData::Enumeration"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_enumeration"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.Enumeration"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_enumeration"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/crypto_robustness_property_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/operation_data_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-401464420590f6dacfdb",
       "packageId": "rust-kmipkit-protocol",
       "kind": "variant",
       "exportName": "kmipkit_protocol::OperationData::Integer",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::OperationData::Integer"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_integer"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.Integer"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_integer"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/crypto_robustness_property_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/operation_data_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-e2a52bdd069792196013",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::OperationData::into_ttlv_value",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::OperationData::into_ttlv_value"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.Value"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/crypto_robustness_property_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/operation_data_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-4c4ecdbae370ed612bb1",
@@ -198366,126 +198969,501 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "type",
       "exportName": "kmipkit_protocol::KeyCompressionType",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::KeyCompressionType"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.Value"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-273ada782f3046b109d9",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::KeyCompressionType::from_raw",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::KeyCompressionType::from_raw"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_enumeration"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.Enumeration"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_enumeration"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-4341ca30af106f8c7c0c",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::KeyCompressionType::raw",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0021-FR-009",
+        "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::KeyCompressionType::raw"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_view_enumeration"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValueView.enumeration"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_view_enumeration"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-00a9ce145d9c795d04b9",
       "packageId": "rust-kmipkit-protocol",
       "kind": "type",
       "exportName": "kmipkit_protocol::KeyFormatType",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::KeyFormatType"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.Value"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-4f6c801493055987f59c",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::KeyFormatType::from_raw",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::KeyFormatType::from_raw"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_enumeration"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.Enumeration"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_enumeration"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-428078fd5721e475f493",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::KeyFormatType::raw",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0021-FR-009",
+        "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::KeyFormatType::raw"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_view_enumeration"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValueView.enumeration"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_view_enumeration"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-a502d9b4b8e3fddc9b77",
       "packageId": "rust-kmipkit-protocol",
       "kind": "type",
       "exportName": "kmipkit_protocol::KeyWrapType",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::KeyWrapType"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.Value"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-5db066e451c1609f6c05",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::KeyWrapType::from_raw",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::KeyWrapType::from_raw"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_enumeration"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.Enumeration"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_enumeration"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-ceda5910bc2cfd294b0a",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::KeyWrapType::raw",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0021-FR-009",
+        "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::KeyWrapType::raw"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_view_enumeration"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValueView.enumeration"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_view_enumeration"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-9f39071463bbdc23e5d6",
@@ -204629,42 +205607,178 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "field",
       "exportName": "kmipkit_protocol::OperationData::ByteString::0",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::OperationData::ByteString::0"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_byte_string"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.ByteString"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_byte_string"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/crypto_robustness_property_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/operation_data_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-6a7f5a7d884b58e351fc",
       "packageId": "rust-kmipkit-protocol",
       "kind": "field",
       "exportName": "kmipkit_protocol::OperationData::Enumeration::0",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::OperationData::Enumeration::0"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_enumeration"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.Enumeration"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_enumeration"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/crypto_robustness_property_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/operation_data_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-a824df1a7c6587a7b97f",
       "packageId": "rust-kmipkit-protocol",
       "kind": "field",
       "exportName": "kmipkit_protocol::OperationData::Integer::0",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::OperationData::Integer::0"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_integer"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.Integer"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_integer"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/crypto_robustness_property_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/operation_data_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-82b84f058ae5947a8da1",
@@ -482580,6 +483694,32 @@
       },
       "mappings": {
         "rust": [
+          "kmipkit_protocol::CryptographicAlgorithm",
+          "kmipkit_protocol::CryptographicAlgorithm::from_raw",
+          "kmipkit_protocol::CryptographicAlgorithm::raw",
+          "kmipkit_protocol::DigitalSignatureAlgorithm",
+          "kmipkit_protocol::DigitalSignatureAlgorithm::from_raw",
+          "kmipkit_protocol::DigitalSignatureAlgorithm::raw",
+          "kmipkit_protocol::HashingAlgorithm",
+          "kmipkit_protocol::HashingAlgorithm::from_raw",
+          "kmipkit_protocol::HashingAlgorithm::raw",
+          "kmipkit_protocol::KeyCompressionType",
+          "kmipkit_protocol::KeyCompressionType::from_raw",
+          "kmipkit_protocol::KeyCompressionType::raw",
+          "kmipkit_protocol::KeyFormatType",
+          "kmipkit_protocol::KeyFormatType::from_raw",
+          "kmipkit_protocol::KeyFormatType::raw",
+          "kmipkit_protocol::KeyWrapType",
+          "kmipkit_protocol::KeyWrapType::from_raw",
+          "kmipkit_protocol::KeyWrapType::raw",
+          "kmipkit_protocol::OperationData",
+          "kmipkit_protocol::OperationData::ByteString",
+          "kmipkit_protocol::OperationData::ByteString::0",
+          "kmipkit_protocol::OperationData::Enumeration",
+          "kmipkit_protocol::OperationData::Enumeration::0",
+          "kmipkit_protocol::OperationData::Integer",
+          "kmipkit_protocol::OperationData::Integer::0",
+          "kmipkit_protocol::OperationData::into_ttlv_value",
           "kmipkit_ttlv::Item",
           "kmipkit_ttlv::Item::item_type",
           "kmipkit_ttlv::Item::new",
