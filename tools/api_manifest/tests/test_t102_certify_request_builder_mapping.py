@@ -98,16 +98,46 @@ TARGETS = (
         "fr": {"KMIPKIT-0036-FR-001", "KMIPKIT-0036-FR-004", "KMIPKIT-0036-FR-008"},
         "requirements": set(),
     },
+    {
+        "id": "rust-observed-3620d8e9bb89e3bbe251",
+        "name": "kmipkit_protocol::CertifyRequest::with_certificate_request_value",
+        "field": "Certificate Request Value",
+        "tag": 0x420140,
+        "fr": {"KMIPKIT-0036-FR-001", "KMIPKIT-0036-FR-002", "KMIPKIT-0036-FR-004", "KMIPKIT-0036-FR-006", "KMIPKIT-0036-FR-008"},
+        "requirements": {"KMIPKIT-REQ-SPEC-6.1.6-007"},
+    },
 )
+REQUEST_CONSTRUCTION_TARGETS = (
+    {
+        "id": "rust-observed-f928aa3b375fa686e506",
+        "name": "kmipkit_protocol::CertifyRequest",
+        "kind": "type",
+    },
+    {
+        "id": "rust-observed-9a4cd073497d09724f7e",
+        "name": "kmipkit_protocol::CertifyRequest::new",
+        "kind": "associated-item",
+    },
+)
+REQUEST_CONSTRUCTION_REQUIREMENTS = {
+    "KMIPKIT-0036-FR-001",
+    "KMIPKIT-0036-FR-002",
+    "KMIPKIT-0036-FR-004",
+    "KMIPKIT-0036-FR-006",
+    "KMIPKIT-0036-FR-008",
+    "KMIPKIT-REQ-SPEC-6.1.6-001",
+    "KMIPKIT-REQ-SPEC-6.1.6-002-001",
+    "KMIPKIT-REQ-SPEC-6.1.6-002-002",
+    "KMIPKIT-REQ-SPEC-6.1.6-002-003",
+    "KMIPKIT-REQ-SPEC-6.1.6-003",
+    "KMIPKIT-REQ-SPEC-6.1.6-007",
+}
 BLOCKED_NEIGHBORS = {
-    "rust-observed-f928aa3b375fa686e506": "kmipkit_protocol::CertifyRequest",
-    "rust-observed-9a4cd073497d09724f7e": "kmipkit_protocol::CertifyRequest::new",
-    "rust-observed-3620d8e9bb89e3bbe251": "kmipkit_protocol::CertifyRequest::with_certificate_request_value",
     "rust-observed-d0317408cb64ea049eaf": "kmipkit_protocol::CertifyRequest::unique_identifier",
     "rust-observed-455bf70fd49c2d1c0584": "kmipkit_protocol::CertifyRequest::into_ttlv_payload",
 }
-BLOCKED_BEFORE = 663
-BLOCKED_AFTER = 659
+BLOCKED_BEFORE = 224
+BLOCKED_AFTER = 221
 DECLARATIONS_SHA256 = "55a8baeee4e4dad38909d4f34a08ffa5fa060a16d9e109ed584e9697e2d90e58"
 OPERATIONS_SHA256 = "8ee7f0c367d2125be38c05d42159b515900b868ec1a898206492bc3c2fad969a"
 
@@ -126,7 +156,7 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
         cls.elements = {row["element_id"]: row for row in cls.catalog["elements"]}
 
     def test_exact_four_certify_request_setters_map_to_existing_builders(self) -> None:
-        self.assertEqual(4, len(TARGETS))
+        self.assertEqual(5, len(TARGETS))
         for target in TARGETS:
             with self.subTest(declaration=target["id"], field=target["field"]):
                 declaration = self.declarations[target["id"]]
@@ -155,9 +185,9 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                 self.assertEqual("client_1_0", self.elements[tag_id]["scope_state"])
                 self.assertIn(target["id"], self.operation["declarations"]["rust"])
 
-    def test_only_the_four_audited_setters_move_from_blocked_and_neighbors_stay_blocked(self) -> None:
+    def test_only_audited_setters_move_from_blocked_and_neighbors_stay_blocked(self) -> None:
         target_ids = {target["id"] for target in TARGETS}
-        self.assertEqual(4, len(target_ids))
+        self.assertEqual(5, len(target_ids))
         for declaration_id, name in BLOCKED_NEIGHBORS.items():
             with self.subTest(blocked_neighbor=name):
                 row = self.declarations[declaration_id]
@@ -168,15 +198,68 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
             row.get("candidateSpecId") == "KMIPKIT-0043" and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(BLOCKED_BEFORE - len(target_ids), BLOCKED_AFTER)
+        self.assertEqual(BLOCKED_BEFORE - 3, BLOCKED_AFTER)
         self.assertEqual(4, len(WRAPPING_REQUEST_BUILDER_IDS))
         self.assertEqual(T102_BLOCKED_CANDIDATES, blocked)
+        self.assertEqual(BLOCKED_AFTER, blocked)
         self.assertEqual(
             "verified",
             self.declarations[RECERTIFY_TYPE_ID]["declarationState"],
         )
         self.assertEqual(T102_PUBLIC_DECLARATIONS, len(self.manifest["publicDeclarations"]))
         self.assertEqual(T102_APPROVED_EXCLUSIONS, len(self.manifest["approvedExclusions"]))
+
+    def test_certify_request_type_and_constructor_map_to_the_four_language_builder(self) -> None:
+        expected_mappings = {
+            "rust": {"packageId": "rust-kmipkit-protocol"},
+            "c": {"packageId": "c-kmipkit", "name": C_BUILDER},
+            "java": {"packageId": "java-kmipkit", "name": JAVA_BUILDER},
+            "python": {"packageId": "python-kmipkit", "name": PYTHON_BUILDER},
+        }
+        operation_declarations = self.operation["declarations"]["rust"]
+        self.assertEqual(2, len(REQUEST_CONSTRUCTION_TARGETS))
+        for target in REQUEST_CONSTRUCTION_TARGETS:
+            expected_mappings["rust"]["name"] = target["name"]
+            declaration = self.declarations[target["id"]]
+            with self.subTest(export=target["name"]):
+                self.assertEqual(target["name"], declaration["exportName"])
+                self.assertEqual(target["kind"], declaration["kind"])
+                self.assertEqual("verified", declaration["declarationState"])
+                self.assertNotIn("candidateSpecId", declaration)
+                self.assertNotIn("blockedReason", declaration)
+                self.assertEqual(OPERATION, declaration["capabilityId"])
+                self.assertEqual("four-language", declaration["parityScope"])
+                self.assertEqual(REQUEST_CONSTRUCTION_REQUIREMENTS, set(declaration["requirementIds"]))
+                self.assertEqual(OWNER, declaration["approvalSource"]["path"])
+                self.assertEqual("Approved", declaration["approvalSource"]["status"])
+                self.assertEqual(expected_mappings, declaration["languageMappings"])
+                self.assertTrue(EVIDENCE <= set(declaration["parityEvidenceIds"]))
+                self.assertIn(target["id"], operation_declarations)
+
+    def test_certificate_request_value_mapping_preserves_secret_input_and_wire_evidence(self) -> None:
+        rust = (ROOT / "crates/kmipkit-protocol/src/certify.rs").read_text(encoding="utf-8")
+        c_header = (ROOT / "bindings/c/include/kmipkit.h").read_text(encoding="utf-8")
+        c_ffi = (ROOT / "crates/kmipkit-ffi/src/extension_registry.rs").read_text(encoding="utf-8")
+        java = (ROOT / "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java").read_text(encoding="utf-8")
+        python = (ROOT / "bindings/python/src/kmipkit/extensions.py").read_text(encoding="utf-8")
+        self.assertIn("with_certificate_request_value(mut self, value: SecretBytes)", rust)
+        self.assertIn("kmipkit_byte_span_v1_t * certificate_request_value", c_header)
+        self.assertIn("copy_optional_secret_span(certificate_request_value)", c_ffi)
+        certify_java = java.split("public static ClientBatchItem certify(", 1)[1].split("/** Creates a Re-certify", 1)[0]
+        self.assertIn("byte[] certificateRequestValue", certify_java)
+        self.assertIn("copyForNative(certificateRequestValue)", certify_java)
+        self.assertIn("clearNativeCopies(identifierText, requestValueCopy)", certify_java)
+        certify_python = python.split("def client_batch_item_certify(", 1)[1].split("def client_batch_item_recertify(", 1)[0]
+        self.assertIn("certificate_request_value: bytes | bytearray | memoryview | None", certify_python)
+        self.assertIn("_native_optional_span(\n            certificate_request_value, staging_buffers", certify_python)
+
+        c_consumer = (ROOT / "bindings/c/tests/client_abi_consumer.c").read_text(encoding="utf-8")
+        java_consumer = (ROOT / "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java").read_text(encoding="utf-8")
+        python_consumer = (ROOT / "bindings/python/tests/test_certify_operation.py").read_text(encoding="utf-8")
+        self.assertIn("0x420140", python_consumer)
+        self.assertIn("0x420140", java_consumer)
+        self.assertIn("0x0042_0140", (ROOT / "crates/kmipkit-ffi/tests/c_api_coverage.rs").read_text(encoding="utf-8"))
+        self.assertIn("&certify_request_value", c_consumer)
 
     def test_oasis_table_179_fields_and_child_mask_tag_are_pinned(self) -> None:
         raw_html = OASIS_HTML.read_bytes()
