@@ -8,17 +8,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
-EVIDENCE = {
+COMMON_EVIDENCE = {
     "bindings/c/tests/client_abi_consumer.c",
     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
     "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
     "bindings/python/tests/test_rng_native_integration.py",
     "bindings/python/tests/test_rng_operation.py",
-    "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
-    "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
     "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
-    "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
-    "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
     "tools/api_manifest/tests/test_rng_parity_manifest.py",
     "tools/api_manifest/tests/test_t102_rng_pending_response_mapping.py",
 }
@@ -37,11 +33,16 @@ OPERATIONS = {
             "KMIPKIT-0041-FR-001",
             "KMIPKIT-0041-FR-003",
             "KMIPKIT-0041-FR-004",
+            "KMIPKIT-0009-FR-002",
         },
         "c": "kmipkit_client_batch_item_response_rng_retrieve",
         "java": "org.kmipkit.extensions.ClientBatchItemResult.rngRetrieveResponse",
         "python": "kmipkit.client.BatchItemResult.rng_retrieve_response",
         "rust": "rng_retrieve_response",
+        "evidence": COMMON_EVIDENCE | {
+            "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
+            "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
+        },
     },
     "RngSeed": {
         "capability": "KMIPKIT-ELEM-OP-C2S-RNG-SEED",
@@ -49,13 +50,28 @@ OPERATIONS = {
             "KMIPKIT-0041-FR-001",
             "KMIPKIT-0041-FR-003",
             "KMIPKIT-0041-FR-004",
+            "KMIPKIT-0009-FR-002",
         },
         "c": "kmipkit_client_batch_item_response_rng_seed",
         "java": "org.kmipkit.extensions.ClientBatchItemResult.rngSeedResponse",
         "python": "kmipkit.client.BatchItemResult.rng_seed_response",
         "rust": "rng_seed_response",
+        "evidence": COMMON_EVIDENCE | {
+            "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
+            "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
+        },
     },
 }
+
+
+def _rust_pending_parsers(response: str) -> tuple[tuple[str, str], ...]:
+    return (
+        ("rust-kmipkit", f"kmipkit::{response}Response::try_from_pending_response_item"),
+        (
+            "rust-kmipkit-protocol",
+            f"kmipkit_protocol::{response}Response::try_from_pending_response_item",
+        ),
+    )
 
 
 class T102RngPendingResponseMappingTests(unittest.TestCase):
@@ -74,13 +90,7 @@ class T102RngPendingResponseMappingTests(unittest.TestCase):
             self.assertEqual("approved", operation["ownerDependency"]["state"])
             self.assertEqual("specs/027-rng-operations/spec.md", operation["approvalEvidence"]["path"])
 
-            for package, rust_path in (
-                ("rust-kmipkit", f"kmipkit::{response}Response::try_from_pending_response_item"),
-                (
-                    "rust-kmipkit-protocol",
-                    f"kmipkit_protocol::{response}Response::try_from_pending_response_item",
-                ),
-            ):
+            for package, rust_path in _rust_pending_parsers(response):
                 with self.subTest(response=response, package=package):
                     declaration = self.declarations[(package, rust_path)]
                     self.assertEqual("verified", declaration["declarationState"])
@@ -104,18 +114,12 @@ class T102RngPendingResponseMappingTests(unittest.TestCase):
                     self.assertEqual(("python-kmipkit", expected["python"]), (
                         mappings["python"]["packageId"], mappings["python"]["name"]
                     ))
-                    self.assertTrue(EVIDENCE <= set(declaration["parityEvidenceIds"]))
+                    self.assertTrue(expected["evidence"] <= set(declaration["parityEvidenceIds"]))
                     for path in declaration["parityEvidenceIds"]:
                         self.assertTrue((ROOT / path).is_file(), path)
 
             rust_ids = set(operation["declarations"]["rust"])
-            for package, rust_path in (
-                ("rust-kmipkit", f"kmipkit::{response}Response::try_from_pending_response_item"),
-                (
-                    "rust-kmipkit-protocol",
-                    f"kmipkit_protocol::{response}Response::try_from_pending_response_item",
-                ),
-            ):
+            for package, rust_path in _rust_pending_parsers(response):
                 self.assertIn(self.declarations[(package, rust_path)]["declarationId"], rust_ids)
 
 
