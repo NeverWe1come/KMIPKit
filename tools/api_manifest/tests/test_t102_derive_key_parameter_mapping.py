@@ -30,6 +30,15 @@ DECLARATIONS = (
 
 
 class T102DeriveKeyParameterMappingTests(unittest.TestCase):
+    def read_source(self, *parts: str) -> str:
+        return ROOT.joinpath(*parts).read_text(encoding="utf-8")
+
+    def assert_source_contains(self, parts: tuple[str, ...], *fragments: str) -> None:
+        source = self.read_source(*parts)
+        for fragment in fragments:
+            with self.subTest(path="/".join(parts), fragment=fragment):
+                self.assertIn(fragment, source)
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
@@ -75,30 +84,50 @@ class T102DeriveKeyParameterMappingTests(unittest.TestCase):
                 self.assertIn(MAPPING_EVIDENCE, self.operation["parityEvidenceIds"])
 
     def test_foreign_builders_accept_the_generic_derivation_structure(self) -> None:
-        owner = (ROOT / OWNER).read_text(encoding="utf-8")
-        self.assertIn(
+        self.assert_source_contains(
+            tuple(OWNER.split("/")),
             "| Derive Key | KMIPKIT-ELEM-OP-C2S-DERIVE-KEY | §6.1.14 | 205 | 206 | 207 |",
-            owner,
+            "§7.12, Table 364",
         )
-        self.assertIn("§7.12, Table 364", owner)
-
-        c_header = (ROOT / "bindings/c/include/kmipkit.h").read_text(encoding="utf-8")
-        self.assertIn("uint32_t derivation_method", c_header)
-        self.assertIn("kmipkit_ttlv_structure_t * derivation_parameters", c_header)
-
-        java_source = (
-            ROOT / "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java"
-        ).read_text(encoding="utf-8")
-        self.assertIn("long derivationMethod", java_source)
-        self.assertIn("TtlvStructure derivationParameters", java_source)
-
-        python_source = (ROOT / "bindings/python/src/kmipkit/extensions.py").read_text(
-            encoding="utf-8"
+        self.assert_source_contains(
+            ("bindings", "c", "include", "kmipkit.h"),
+            "uint32_t derivation_method",
+            "kmipkit_ttlv_structure_t * derivation_parameters",
         )
-        self.assertIn("derivation_method: int", python_source)
-        self.assertIn("derivation_parameters: ttlv.Structure", python_source)
-        self.assertIn("DERIVATION_DATA", (ROOT / "crates/kmipkit-protocol/src/derive_key.rs").read_text(encoding="utf-8"))
-        self.assertIn("request_encodes_required_table_205_fields_in_order_and_repeats_identifiers", (ROOT / "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs").read_text(encoding="utf-8"))
+        self.assert_source_contains(
+            (
+                "bindings",
+                "java",
+                "src",
+                "main",
+                "java",
+                "org",
+                "kmipkit",
+                "extensions",
+                "ClientBatchItem.java",
+            ),
+            "long derivationMethod",
+            "TtlvStructure derivationParameters",
+        )
+        self.assert_source_contains(
+            ("bindings", "python", "src", "kmipkit", "extensions.py"),
+            "derivation_method: int",
+            "derivation_parameters: ttlv.Structure",
+        )
+        self.assert_source_contains(
+            ("crates", "kmipkit-protocol", "src", "derive_key.rs"),
+            "DERIVATION_DATA",
+        )
+        self.assert_source_contains(
+            (
+                "crates",
+                "kmipkit-protocol",
+                "tests",
+                "unit",
+                "derive_key_operation_tests.rs",
+            ),
+            "request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
+        )
         self.assertEqual(
             T102_BLOCKED_CANDIDATES,
             sum(
