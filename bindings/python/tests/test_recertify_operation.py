@@ -11,7 +11,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
-from _test_support import mtls_transport_config
+from _test_support import mtls_transport_config, start_tls13_mtls_peer
 
 from kmipkit import client, errors, extensions, ttlv
 from kmipkit._client_ffi import ffi
@@ -27,6 +27,17 @@ def _ttlv_item(tag: int, item_type: int, value: bytes) -> bytes:
 
 def _ttlv_structure(tag: int, *children: bytes) -> bytes:
     return _ttlv_item(tag, 1, b"".join(children))
+
+
+def _single_child_structure(
+    child_tag: int, value: ttlv.Value, limits: ttlv.CodecLimits
+) -> ttlv.Structure:
+    with ttlv.raw_tag_from_raw(child_tag) as raw_tag:
+        with ttlv.raw_tag_try_checked(raw_tag) as tag:
+            with value:
+                with ttlv.ttlv_item_create(tag, value, limits) as item:
+                    with ttlv.ttlv_structure_create() as empty:
+                        return ttlv.ttlv_structure_with_item(empty, item, limits)
 
 
 def _read_exact(stream: ssl.SSLSocket, length: int) -> bytes:
@@ -68,6 +79,66 @@ def _recertify_response_message() -> bytes:
         response_payload,
     )
     return _ttlv_structure(0x42007B, response_header, response_item)
+
+
+def _capture_recertify_structure_request(with_structures: bool) -> bytes:
+    received: list[bytes] = []
+
+    def handle(stream: ssl.SSLSocket) -> None:
+        received.append(_read_ttlv_frame(stream))
+        stream.sendall(_recertify_response_message())
+
+    port, failures, peer = start_tls13_mtls_peer(_TLS_FIXTURES, handle)
+    registry = extensions.create_client_extension_registry(
+        (), extensions.default_extension_registry_limits()
+    )
+    configuration = extensions.create_client_configuration(registry)
+    result = None
+    batch = None
+    try:
+        with configuration, client.Client.create(
+            configuration, mtls_transport_config(port, _TLS_FIXTURES)
+        ) as kmip_client:
+            with ttlv.codec_limits_defaults() as limits:
+                batch = client.Batch.create()
+                if with_structures:
+                    with (
+                        _single_child_structure(
+                            0x4200FD,
+                            ttlv.ttlv_value_text_string(b"recertify-attributes", limits),
+                            limits,
+                        ) as attributes,
+                        _single_child_structure(
+                            0x420160, ttlv.ttlv_value_integer(3), limits
+                        ) as masks,
+                    ):
+                        item = extensions.client_batch_item_recertify(
+                            extensions.UniqueIdentifier.text_string("certificate-7"),
+                            attributes=attributes,
+                            protection_storage_masks=masks,
+                        )
+                        batch.add_item(item)
+                else:
+                    batch.add_item(
+                        extensions.client_batch_item_recertify(
+                            extensions.UniqueIdentifier.text_string("certificate-7")
+                        )
+                    )
+                result = kmip_client.execute(batch, limits)
+        assert failures.empty(), "the fake TLS 1.3 peer completes Re-certify"
+        assert len(received) == 1
+        assert result is not None and len(result.items) == 1
+        return received[0]
+    finally:
+        if batch is not None:
+            batch.close()
+        if result is not None:
+            result.close()
+        peer.join(timeout=4)
+        if peer.is_alive():
+            raise AssertionError("the Re-certify fake peer did not finish")
+        if not failures.empty():
+            raise failures.get()
 
 
 def _structure_view_tags(view: ttlv.TtlvStructureView) -> list[int]:
@@ -336,6 +407,25 @@ def test_recertify_builder_passes_typed_identifier_to_native_client_abi() -> Non
         certificate_request_value=b"certificate-request",
     )
     item.close()
+
+
+def test_recertify_optional_structures_are_captured_in_order_and_can_be_omitted() -> None:
+    # OASIS KMIP Specification v2.1 §6.1.45, Table 300.
+    present = _capture_recertify_structure_request(True)
+    omitted = _capture_recertify_structure_request(False)
+    expected_attributes = _ttlv_structure(
+        0x420125,
+        _ttlv_item(0x4200FD, 7, b"recertify-attributes"),
+    )
+    expected_masks = _ttlv_structure(
+        0x42015F,
+        _ttlv_item(0x420160, 2, struct.pack(">i", 3)),
+    )
+    assert expected_attributes in present
+    assert expected_masks in present
+    assert present.index(expected_attributes) < present.index(expected_masks)
+    assert b"\x42\x01\x25" not in omitted
+    assert b"\x42\x01\x5f" not in omitted
 
 
 def test_recertify_round_trips_through_native_client_over_mtls_and_retains_ttlv(

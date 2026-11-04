@@ -3,6 +3,7 @@ from __future__ import annotations
 # KMIP Specification v2.1 §6.1.27, Tables 244–246.
 
 import ssl
+import struct
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -29,6 +30,17 @@ def _split_reference(identifier: str, threshold: int):
     reference_type = getattr(extensions, "SplitKeyReference", None)
     assert reference_type is not None, "the Python facade must expose paired split-key references"
     return reference_type(extensions.UniqueIdentifier.text_string(identifier), threshold)
+
+
+def _single_child_structure(
+    child_tag: int, value: ttlv.Value, limits: ttlv.CodecLimits
+) -> ttlv.Structure:
+    with ttlv.raw_tag_from_raw(child_tag) as raw_tag:
+        with ttlv.raw_tag_try_checked(raw_tag) as tag:
+            with value:
+                with ttlv.ttlv_item_create(tag, value, limits) as item:
+                    with ttlv.ttlv_structure_create() as empty:
+                        return ttlv.ttlv_structure_with_item(empty, item, limits)
 
 
 def test_join_split_key_builder_preserves_repeated_reference_order_and_per_entry_thresholds(
@@ -133,9 +145,23 @@ def _capture_join_split_request(secret_data_type: int | None) -> bytes:
             ) as kmip,
         ):
             batch = client.Batch.create()
-            item = extensions.client_batch_item_join_split_key(
-                7, [reference], secret_data_type=secret_data_type
-            )
+            with (
+                _single_child_structure(
+                    0x4200FD,
+                    ttlv.ttlv_value_text_string(b"join-split-attributes", limits),
+                    limits,
+                ) as attributes,
+                _single_child_structure(
+                    0x420160, ttlv.ttlv_value_integer(3), limits
+                ) as masks,
+            ):
+                item = extensions.client_batch_item_join_split_key(
+                    7,
+                    [reference],
+                    secret_data_type=secret_data_type,
+                    attributes=attributes if secret_data_type is not None else None,
+                    protection_storage_masks=masks if secret_data_type is not None else None,
+                )
             batch.add_item(
                 extensions.with_unique_batch_item_id(item, _JOIN_SPLIT_BATCH_ID)
             )
@@ -165,8 +191,20 @@ def test_join_split_secret_data_type_and_omission_are_encoded_over_mtls() -> Non
     omitted_request = _capture_join_split_request(None)
 
     encoded_secret_data_type = ttlv_enumeration(0x0042_0086, 0x81234568)
+    encoded_attributes = ttlv_item(
+        0x420125, 1, ttlv_item(0x4200FD, 7, b"join-split-attributes")
+    )
+    encoded_masks = ttlv_item(
+        0x42015F, 1, ttlv_item(0x420160, 2, struct.pack(">i", 3))
+    )
     assert encoded_secret_data_type in typed_request
+    assert encoded_attributes in typed_request
+    assert encoded_masks in typed_request
+    assert typed_request.index(encoded_secret_data_type) < typed_request.index(encoded_attributes)
+    assert typed_request.index(encoded_attributes) < typed_request.index(encoded_masks)
     assert b"\x42\x00\x86" not in omitted_request
+    assert b"\x42\x01\x25" not in omitted_request
+    assert b"\x42\x01\x5f" not in omitted_request
 
 
 def test_join_split_key_builder_rejects_missing_and_insufficient_threshold_context_before_native_call(

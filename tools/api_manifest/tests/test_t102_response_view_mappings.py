@@ -158,11 +158,11 @@ EXPECTED = (
     ),
 )
 
-# Baseline fingerprints exclude the response-view rows and the exact five Locate builders.
+# Baseline fingerprints exclude response views and exact request-builder batches.
 UNCHANGED_DECLARATIONS_SHA256 = "2acce4bd039fb5d594376f03e1f25f7ecf11f167e14b8a9d9488b22743381593"
 UNCHANGED_OPERATIONS_SHA256 = "eb69336ea313c72f6461f5e67655d985c820969697237b4b2b8efc3d79712735"
 OTHER_MANIFEST_SHA256 = "89ce2f39dccd3e4548dc0145da0e8b4463f4f4ae769ed472d80cf44b26679ba6"
-EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = 669
+EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = 665
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",
     "rust-observed-8fff50bdd49a09ae00bf",
@@ -182,6 +182,18 @@ REKEY_KEY_PAIR_STRUCTURE_IDS = {
     "rust-observed-f428c5bc2011a1634a10",
     "rust-observed-d51793dbfa80b42a8e94",
     "rust-observed-1bdba1f1266aff84ed52",
+}
+REKEY_STRUCTURE_IDS = {
+    "rust-observed-55695fec9108789be098",
+    "rust-observed-3c3be169b5ff8899e1c7",
+}
+JOIN_SPLIT_STRUCTURE_IDS = {
+    "rust-observed-f894598b6998d1b416b1",
+    "rust-observed-236134f1fc8e195442a0",
+}
+RECERTIFY_STRUCTURE_IDS = {
+    "rust-observed-0cad07b4f1010a7d9a55",
+    "rust-observed-6e9fb656f103c43fa2de",
 }
 JOIN_SPLIT_OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY"
 REKEY_KEY_PAIR_OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR"
@@ -395,10 +407,16 @@ class T102ResponseViewMappingTests(unittest.TestCase):
         target_ids.update(item.declaration_id for item in REMAINING_RESPONSE_VIEWS)
         target_ids.update(LOCATE_REQUEST_BUILDER_IDS)
         target_ids.update(RECERTIFY_REKEY_KEY_PAIR_TARGETS)
+        target_ids.update(REKEY_STRUCTURE_IDS)
+        target_ids.update(JOIN_SPLIT_STRUCTURE_IDS)
+        target_ids.update(RECERTIFY_STRUCTURE_IDS)
         affected_operation_ids = target_ids | SCALAR_REQUEST_BUILDER_IDS | {
             JOIN_SPLIT_SECRET_DATA_TYPE_ID,
             REKEY_KEY_PAIR_UID_ID,
             *REKEY_KEY_PAIR_STRUCTURE_IDS,
+            *REKEY_STRUCTURE_IDS,
+            *JOIN_SPLIT_STRUCTURE_IDS,
+            *RECERTIFY_STRUCTURE_IDS,
         }
         unchanged_declarations = copy.deepcopy([
             row
@@ -410,6 +428,9 @@ class T102ResponseViewMappingTests(unittest.TestCase):
                 JOIN_SPLIT_SECRET_DATA_TYPE_ID,
                 REKEY_KEY_PAIR_UID_ID,
                 *REKEY_KEY_PAIR_STRUCTURE_IDS,
+                *REKEY_STRUCTURE_IDS,
+                *JOIN_SPLIT_STRUCTURE_IDS,
+                *RECERTIFY_STRUCTURE_IDS,
             }:
                 declaration["capabilityId"] = "public_binding_surface"
                 declaration["requirementIds"] = ["KMIPKIT-0043-FR-021"]
@@ -462,6 +483,11 @@ class T102ResponseViewMappingTests(unittest.TestCase):
         target_operations.update(item.operation_id for item in REMAINING_RESPONSE_VIEWS)
         target_operations.add(LOCATE_OPERATION_ID)
         target_operations.update({RECERTIFY, REKEY_KEY_PAIR})
+        target_operations.update({
+            "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+            "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
+            "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
+        })
         target_operations.update({JOIN_SPLIT_OPERATION_ID, REKEY_KEY_PAIR_OPERATION_ID})
         target_operations.update(SCALAR_REQUEST_BUILDER_OPERATIONS)
         normalized_operations = copy.deepcopy(self.manifest["operations"])

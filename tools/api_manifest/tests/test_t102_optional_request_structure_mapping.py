@@ -1,0 +1,229 @@
+"""Pin the exact optional Re-key Table 305 Structure fields for T102."""
+
+from __future__ import annotations
+
+import copy
+import hashlib
+import json
+import re
+import unittest
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+CATALOG = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+OASIS_HTML = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+OWNER = "specs/022-object-lifecycle/spec.md"
+TARGETS = (
+    {
+        "id": "rust-observed-55695fec9108789be098",
+        "name": "kmipkit_protocol::RekeyRequest::with_attributes",
+        "operation": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+        "tag": 0x420125,
+        "owner": OWNER,
+        "fr": {"KMIPKIT-0036-FR-001", "KMIPKIT-0036-FR-002", "KMIPKIT-0036-FR-004", "KMIPKIT-0036-FR-008"},
+        "c": "kmipkit_client_batch_item_rekey",
+        "java": "org.kmipkit.extensions.ClientBatchItem.rekey",
+        "python": "kmipkit.extensions.client_batch_item_rekey",
+        "evidence": {
+            "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "bindings/c/tests/client_abi_consumer.c",
+            "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+            "bindings/python/tests/test_rekey_native_integration.py",
+            "tools/api_manifest/tests/test_t102_optional_request_structure_mapping.py",
+        },
+    },
+    {
+        "id": "rust-observed-3c3be169b5ff8899e1c7",
+        "name": "kmipkit_protocol::RekeyRequest::with_protection_storage_masks",
+        "operation": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+        "tag": 0x42015F,
+        "owner": OWNER,
+        "fr": {"KMIPKIT-0036-FR-001", "KMIPKIT-0036-FR-002", "KMIPKIT-0036-FR-004", "KMIPKIT-0036-FR-008"},
+        "c": "kmipkit_client_batch_item_rekey",
+        "java": "org.kmipkit.extensions.ClientBatchItem.rekey",
+        "python": "kmipkit.extensions.client_batch_item_rekey",
+    },
+    {
+        "id": "rust-observed-f894598b6998d1b416b1",
+        "name": "kmipkit_protocol::JoinSplitKeyRequest::with_attributes",
+        "operation": "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
+        "tag": 0x420125,
+        "owner": "specs/023-key-material-transfer/spec.md",
+        "fr": {"KMIPKIT-0037-FR-001", "KMIPKIT-0037-FR-002", "KMIPKIT-0037-FR-004", "KMIPKIT-0037-FR-006", "KMIPKIT-0037-FR-008"},
+        "c": "kmipkit_client_batch_item_join_split_key",
+        "java": "org.kmipkit.extensions.ClientBatchItem.joinSplitKey",
+        "python": "kmipkit.extensions.client_batch_item_join_split_key",
+        "evidence": {
+            "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs",
+            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "bindings/c/tests/client_abi_consumer.c",
+            "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+            "bindings/python/tests/test_join_split_key_operation.py",
+            "tools/api_manifest/tests/test_t102_optional_request_structure_mapping.py",
+        },
+    },
+    {
+        "id": "rust-observed-236134f1fc8e195442a0",
+        "name": "kmipkit_protocol::JoinSplitKeyRequest::with_protection_storage_masks",
+        "operation": "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
+        "tag": 0x42015F,
+        "owner": "specs/023-key-material-transfer/spec.md",
+        "fr": {"KMIPKIT-0037-FR-001", "KMIPKIT-0037-FR-002", "KMIPKIT-0037-FR-004", "KMIPKIT-0037-FR-006", "KMIPKIT-0037-FR-008"},
+        "c": "kmipkit_client_batch_item_join_split_key",
+        "java": "org.kmipkit.extensions.ClientBatchItem.joinSplitKey",
+        "python": "kmipkit.extensions.client_batch_item_join_split_key",
+    },
+    {
+        "id": "rust-observed-0cad07b4f1010a7d9a55",
+        "name": "kmipkit_protocol::RecertifyRequest::with_attributes",
+        "operation": "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
+        "tag": 0x420125,
+        "owner": OWNER,
+        "fr": {"KMIPKIT-0036-FR-001", "KMIPKIT-0036-FR-002", "KMIPKIT-0036-FR-004", "KMIPKIT-0036-FR-006", "KMIPKIT-0036-FR-008"},
+        "c": "kmipkit_client_batch_item_recertify",
+        "java": "org.kmipkit.extensions.ClientBatchItem.recertify",
+        "python": "kmipkit.extensions.client_batch_item_recertify",
+        "evidence": {
+            "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
+            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "bindings/c/tests/client_abi_consumer.c",
+            "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+            "bindings/python/tests/test_recertify_operation.py",
+            "tools/api_manifest/tests/test_t102_optional_request_structure_mapping.py",
+        },
+    },
+    {
+        "id": "rust-observed-6e9fb656f103c43fa2de",
+        "name": "kmipkit_protocol::RecertifyRequest::with_protection_storage_masks",
+        "operation": "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
+        "tag": 0x42015F,
+        "owner": OWNER,
+        "fr": {"KMIPKIT-0036-FR-001", "KMIPKIT-0036-FR-002", "KMIPKIT-0036-FR-004", "KMIPKIT-0036-FR-006", "KMIPKIT-0036-FR-008"},
+        "c": "kmipkit_client_batch_item_recertify",
+        "java": "org.kmipkit.extensions.ClientBatchItem.recertify",
+        "python": "kmipkit.extensions.client_batch_item_recertify",
+    },
+)
+BLOCKED_CANDIDATES_AFTER_BATCH = 665
+OTHER_DECLARATIONS_SHA256 = "160f02f1f8feedc737fbb24570c134ff3d6855ec0812a6e7e3ffacb4de5e152b"
+OTHER_OPERATIONS_SHA256 = "17ecaeb860c429b0f92509ccf4fd6a8a9b83f0cefd2ed9a358f099fe0463c8d5"
+def canonical_sha256(value: object) -> str:
+    encoded = json.dumps(
+        value,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+class T102RekeyStructureMappingTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        cls.declarations = {
+            row["declarationId"]: row for row in cls.manifest["publicDeclarations"]
+        }
+
+    def test_exact_six_optional_request_structures_map_to_existing_builders(self) -> None:
+        self.assertEqual(6, len(TARGETS))
+        for target in TARGETS:
+            with self.subTest(export_name=target["name"], tag=f"{target['tag']:06x}"):
+                declaration = self.declarations[target["id"]]
+                operation = next(
+                    row for row in self.manifest["operations"]
+                    if row["operationId"] == target["operation"]
+                )
+                self.assertEqual(target["name"], declaration["exportName"])
+                self.assertEqual("verified", declaration["declarationState"])
+                self.assertNotIn("candidateSpecId", declaration)
+                self.assertNotIn("blockedReason", declaration)
+                self.assertEqual(target["operation"], declaration["capabilityId"])
+                self.assertEqual("four-language", declaration["parityScope"])
+                self.assertEqual(target["owner"], declaration["approvalSource"]["path"])
+                self.assertEqual("Approved", declaration["approvalSource"]["status"])
+                requirements = set(declaration["requirementIds"])
+                self.assertTrue(target["fr"] <= requirements)
+                self.assertFalse(any(value.startswith("KMIPKIT-REQ-SPEC-") for value in requirements))
+                expected_mappings = {
+                    "rust": {"packageId": "rust-kmipkit-protocol", "name": target["name"]},
+                    "c": {"packageId": "c-kmipkit", "name": target["c"]},
+                    "java": {"packageId": "java-kmipkit", "name": target["java"]},
+                    "python": {"packageId": "python-kmipkit", "name": target["python"]},
+                }
+                self.assertEqual(
+                    expected_mappings,
+                    declaration["languageMappings"],
+                )
+                self.assertTrue(target["evidence"] <= set(declaration["parityEvidenceIds"]))
+                self.assertIn(target["id"], operation["declarations"]["rust"])
+
+    def test_oasis_request_tables_mark_fields_optional_and_tags_are_catalogued(self) -> None:
+        raw_html = OASIS_HTML.read_bytes()
+        self.assertEqual(
+            "8BF9D914C097E98A6509AA1FFCBF03406F738066E940597AEE93D0A5E07ADDCF",
+            hashlib.sha256(raw_html).hexdigest().upper(),
+        )
+        text = " ".join(re.sub(r"<[^>]+>", " ", raw_html.decode("cp1252")).split())
+        for table_title in (
+            "Table 244: Join Split Key Request Payload",
+            "Table 300: Re-certify Request Payload",
+            "Table 305: Re-key Request Payload",
+        ):
+            with self.subTest(table=table_title):
+                caption_offset = text.index(table_title)
+                payload_header = text.rfind(
+                    "Request Payload Item REQUIRED Description", 0, caption_offset
+                )
+                payload = text[payload_header:caption_offset]
+                self.assertRegex(payload, r"Attributes\s+No\s+Specifies desired object attributes\.")
+                self.assertRegex(
+                    payload,
+                    r"Protection Storage Masks\s+No\s+Specifies all permissible Protection Storage Mask selections for the new object",
+                )
+
+        catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+        elements = {row["element_id"]: row for row in catalog["elements"]}
+        for target in TARGETS:
+            tag_id = f"KMIPKIT-ELEM-TAG-{target['tag']:06X}"
+            self.assertIn(tag_id, elements)
+            self.assertEqual("assigned", elements[tag_id]["allocation"])
+            self.assertEqual("client_1_0", elements[tag_id]["scope_state"])
+
+    def test_only_these_two_rows_leave_the_t102_blocked_inventory(self) -> None:
+        blocked = sum(
+            row.get("candidateSpecId") == "KMIPKIT-0043"
+            and row["declarationState"] == "blocked"
+            for row in self.manifest["publicDeclarations"]
+        )
+        self.assertEqual(BLOCKED_CANDIDATES_AFTER_BATCH, blocked)
+        self.assertEqual(6_470, len(self.manifest["publicDeclarations"]))
+        self.assertEqual(8_554, len(self.manifest["approvedExclusions"]))
+
+    def test_all_non_target_declarations_and_operations_match_the_pinned_snapshot(self) -> None:
+        target_ids = {target["id"] for target in TARGETS}
+        other_declarations = [
+            row for row in self.manifest["publicDeclarations"]
+            if row["declarationId"] not in target_ids
+        ]
+        self.assertEqual(OTHER_DECLARATIONS_SHA256, canonical_sha256(other_declarations))
+
+        other_operations = copy.deepcopy(self.manifest["operations"])
+        for operation in other_operations:
+            operation_target_ids = {
+                target["id"]
+                for target in TARGETS
+                if target["operation"] == operation["operationId"]
+            }
+            if operation_target_ids:
+                operation["declarations"]["rust"] = [
+                    value for value in operation["declarations"]["rust"]
+                    if value not in operation_target_ids
+                ]
+        self.assertEqual(OTHER_OPERATIONS_SHA256, canonical_sha256(other_operations))
+
+
+if __name__ == "__main__":
+    unittest.main()

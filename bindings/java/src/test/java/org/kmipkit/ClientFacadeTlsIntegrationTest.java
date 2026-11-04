@@ -118,6 +118,7 @@ final class ClientFacadeTlsIntegrationTest {
         peerThread.setDaemon(true);
         peerThread.start();
 
+        CodecLimits requestLimits = CodecLimits.defaults();
         byte[] request;
         try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
                         List.of(), ExtensionRegistryLimits.defaults());
@@ -134,6 +135,13 @@ final class ClientFacadeTlsIntegrationTest {
                 Client client = Client.create(extensions, transport);
                 ClientBatch batch = ClientBatch.create().ordered(true);
                 TtlvStructure createAttributes = TtlvStructure.create();
+                TtlvStructure rekeyAttributes = rekeyRequestStructure(
+                        0x4200fd,
+                        TtlvValue.TextString(
+                                "rekey-attributes".getBytes(StandardCharsets.UTF_8), requestLimits),
+                        requestLimits);
+                TtlvStructure rekeyMasks = rekeyRequestStructure(
+                        0x420160, TtlvValue.Integer(3), requestLimits);
                 SplitKeyReference splitReference = new SplitKeyReference(
                         UniqueIdentifier.textString("join-split-id"), 1)) {
             batch.add(ClientBatchItem.create(2L, createAttributes, null)
@@ -156,7 +164,8 @@ final class ClientFacadeTlsIntegrationTest {
             batch.add(ClientBatchItem.export(UniqueIdentifier.integer(-7), null, null, null, null)
                     .withUniqueBatchItemId(uniqueBatchItemId(6)));
             batch.add(ClientBatchItem.rekey(
-                    UniqueIdentifier.textString("rekey-text"), 60L, null, null)
+                    UniqueIdentifier.textString("rekey-text"), 60L,
+                    rekeyAttributes, rekeyMasks)
                     .withUniqueBatchItemId(uniqueBatchItemId(7)));
             batch.add(ClientBatchItem.rekey(UniqueIdentifier.integer(-7), null, null, null)
                     .withUniqueBatchItemId(uniqueBatchItemId(8)));
@@ -168,7 +177,7 @@ final class ClientFacadeTlsIntegrationTest {
             batch.add(ClientBatchItem.recertify(
                             UniqueIdentifier.textString("recertify-text"),
                             UniqueIdentifier.textString("certificate-request-text"),
-                            null, null, 86_400L, null, null)
+                            null, null, 86_400L, rekeyAttributes, rekeyMasks)
                     .withUniqueBatchItemId(uniqueBatchItemId(11)));
             batch.add(ClientBatchItem.recertify(
                             UniqueIdentifier.textString("recertify-omit-text"),
@@ -182,7 +191,8 @@ final class ClientFacadeTlsIntegrationTest {
                             UniqueIdentifier.textString("private-key-to-rekey"),
                             86_400L, null, null, null, null, null, null)
                     .withUniqueBatchItemId(uniqueBatchItemId(15)));
-            batch.add(ClientBatchItem.joinSplitKey(7L, List.of(splitReference), 0x81234568L, null, null)
+            batch.add(ClientBatchItem.joinSplitKey(
+                    7L, List.of(splitReference), 0x81234568L, rekeyAttributes, rekeyMasks)
                     .withUniqueBatchItemId(uniqueBatchItemId(16)));
             batch.add(ClientBatchItem.joinSplitKey(7L, List.of(splitReference))
                     .withUniqueBatchItemId(uniqueBatchItemId(17)));
@@ -260,7 +270,12 @@ final class ClientFacadeTlsIntegrationTest {
                 structure(0x420079,
                         item(0x420094, TtlvItemType.TextString.code(),
                                 "rekey-text".getBytes(StandardCharsets.UTF_8)),
-                        item(0x420058, TtlvItemType.Interval.code(), integer(60)))));
+                        item(0x420058, TtlvItemType.Interval.code(), integer(60)),
+                        structure(0x420125,
+                                item(0x4200fd, TtlvItemType.TextString.code(),
+                                        "rekey-attributes".getBytes(StandardCharsets.UTF_8))),
+                        structure(0x42015f,
+                                item(0x420160, TtlvItemType.Integer.code(), integer(3))))));
         expectedBatchItems.write(structure(0x42000f,
                 enumeration(0x42005c, 4),
                 item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(8)),
@@ -286,7 +301,12 @@ final class ClientFacadeTlsIntegrationTest {
                                 "recertify-text".getBytes(StandardCharsets.UTF_8)),
                         item(0x420139, TtlvItemType.TextString.code(),
                                 "certificate-request-text".getBytes(StandardCharsets.UTF_8)),
-                        item(0x420058, TtlvItemType.Interval.code(), integer(86_400)))));
+                        item(0x420058, TtlvItemType.Interval.code(), integer(86_400)),
+                        structure(0x420125,
+                                item(0x4200fd, TtlvItemType.TextString.code(),
+                                        "rekey-attributes".getBytes(StandardCharsets.UTF_8))),
+                        structure(0x42015f,
+                                item(0x420160, TtlvItemType.Integer.code(), integer(3))))));
         expectedBatchItems.write(structure(0x42000f,
                 enumeration(0x42005c, 7),
                 item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(12)),
@@ -316,7 +336,12 @@ final class ClientFacadeTlsIntegrationTest {
                         enumeration(0x420057, 7),
                         item(0x420094, TtlvItemType.TextString.code(),
                                 "join-split-id".getBytes(StandardCharsets.UTF_8)),
-                        enumeration(0x420086, 0x81234568))));
+                        enumeration(0x420086, 0x81234568),
+                        structure(0x420125,
+                                item(0x4200fd, TtlvItemType.TextString.code(),
+                                        "rekey-attributes".getBytes(StandardCharsets.UTF_8))),
+                        structure(0x42015f,
+                                item(0x420160, TtlvItemType.Integer.code(), integer(3))))));
         expectedBatchItems.write(structure(0x42000f,
                 enumeration(0x42005c, 0x29),
                 item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(17)),
@@ -4490,6 +4515,18 @@ final class ClientFacadeTlsIntegrationTest {
             return TtlvStructure.withItem(empty, item, limits);
         } finally {
             empty.close();
+        }
+    }
+
+    private static TtlvStructure rekeyRequestStructure(
+            int childTag, TtlvValue childValue, CodecLimits limits) {
+        TtlvStructure empty = TtlvStructure.create();
+        try {
+            return TtlvStructure.withItem(
+                    empty, registerTtlvItem(childTag, childValue, limits), limits);
+        } catch (RuntimeException failure) {
+            empty.close();
+            throw failure;
         }
     }
 

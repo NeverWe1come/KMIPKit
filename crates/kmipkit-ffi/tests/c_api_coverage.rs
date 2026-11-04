@@ -2523,6 +2523,8 @@ enum RequestBuilderWireValue {
     LongInteger(i64),
     Enumeration(u32),
     Interval(u32),
+    StructureText { child_tag: u32, text: &'static str },
+    StructureInteger { child_tag: u32, integer: i32 },
 }
 
 #[derive(Clone, Copy)]
@@ -2606,6 +2608,20 @@ const REKEY_VALUES: &[RequestBuilderWireField] = &[
         tag: 0x0042_0058,
         value: V::Interval(60),
     },
+    RequestBuilderWireField {
+        tag: 0x0042_0125,
+        value: V::StructureText {
+            child_tag: 0x0042_00fd,
+            text: "rekey-attributes",
+        },
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_015f,
+        value: V::StructureInteger {
+            child_tag: 0x0042_0160,
+            integer: 3,
+        },
+    },
 ];
 const ALLOCATION_VALUES: &[RequestBuilderWireField] = &[
     RequestBuilderWireField {
@@ -2633,6 +2649,20 @@ const RECERTIFY_VALUES: &[RequestBuilderWireField] = &[
     RequestBuilderWireField {
         tag: 0x0042_0058,
         value: V::Interval(86_400),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0125,
+        value: V::StructureText {
+            child_tag: 0x0042_00fd,
+            text: "rekey-attributes",
+        },
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_015f,
+        value: V::StructureInteger {
+            child_tag: 0x0042_0160,
+            integer: 3,
+        },
     },
 ];
 const RECERTIFY_OPTIONALS_OMITTED: &[RequestBuilderWireField] = &[RequestBuilderWireField {
@@ -2665,6 +2695,20 @@ const JOIN_SPLIT_KEY_SECRET_DATA_TYPE: &[RequestBuilderWireField] = &[
     RequestBuilderWireField {
         tag: 0x0042_0086,
         value: V::Enumeration(0x8123_4568),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0125,
+        value: V::StructureText {
+            child_tag: 0x0042_00fd,
+            text: "rekey-attributes",
+        },
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_015f,
+        value: V::StructureInteger {
+            child_tag: 0x0042_0160,
+            integer: 3,
+        },
     },
 ];
 const JOIN_SPLIT_KEY_SECRET_DATA_TYPE_OMITTED: &[RequestBuilderWireField] = &[
@@ -2879,6 +2923,20 @@ fn request_builder_wire_field_matches(actual: &Item, expected: RequestBuilderWir
         (ValueView::LongInteger(actual), V::LongInteger(expected)) => *actual == expected,
         (ValueView::Enumeration(actual), V::Enumeration(expected))
         | (ValueView::Interval(actual), V::Interval(expected)) => *actual == expected,
+        (ValueView::Structure(actual), V::StructureText { child_tag, text }) => {
+            actual.children().len() == 1
+                && actual.children()[0].tag().raw() == child_tag
+                && actual.children()[0].with_value(
+                    |value| matches!(value, ValueView::TextString(actual) if actual == text),
+                )
+        }
+        (ValueView::Structure(actual), V::StructureInteger { child_tag, integer }) => {
+            actual.children().len() == 1
+                && actual.children()[0].tag().raw() == child_tag
+                && actual.children()[0].with_value(
+                    |value| matches!(value, ValueView::Integer(actual) if *actual == integer),
+                )
+        }
         _ => false,
     })
 }

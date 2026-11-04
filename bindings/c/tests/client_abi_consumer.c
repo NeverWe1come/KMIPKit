@@ -3778,6 +3778,10 @@ static int execute_request_builders_wire_from_c(
     kmipkit_client_batch_item_t *item = 0;
     kmipkit_split_key_reference_t *split_key_reference = 0;
     kmipkit_ttlv_structure_t *create_attributes = 0;
+    kmipkit_ttlv_structure_t *rekey_attributes = 0;
+    kmipkit_ttlv_structure_t *rekey_masks = 0;
+    kmipkit_ttlv_value_t *rekey_attribute_value = 0;
+    kmipkit_ttlv_value_t *rekey_mask_value = 0;
     int result = 21;
 
     set_text_identifier(&identifiers[0], check_text, sizeof(check_text) - 1);
@@ -3805,6 +3809,19 @@ static int execute_request_builders_wire_from_c(
     kmipkit_ttlv_structure_release(create_attributes);
     create_attributes = 0;
 
+    if (kmipkit_ttlv_structure_create(&rekey_attributes) != 0 ||
+        kmipkit_ttlv_structure_create(&rekey_masks) != 0 ||
+        kmipkit_ttlv_value_text_string(
+            limits, (const uint8_t *)"rekey-attributes",
+            sizeof("rekey-attributes") - 1, &rekey_attribute_value) != 0 ||
+        !append_derive_key_parameter(
+            limits, &rekey_attributes, UINT32_C(0x4200fd), &rekey_attribute_value) ||
+        kmipkit_ttlv_value_integer(3, &rekey_mask_value) != 0 ||
+        !append_derive_key_parameter(
+            limits, &rekey_masks, UINT32_C(0x420160), &rekey_mask_value)) {
+        goto cleanup;
+    }
+
     if (kmipkit_client_batch_item_check(
             &identifiers[0], 1, 3, 1, 2, 1, 60, &item) != 0 ||
         !append_request_builder_item(
@@ -3829,7 +3846,7 @@ static int execute_request_builders_wire_from_c(
         !append_request_builder_item(
             batch, &item, batch_item_ids[6], strlen((const char *)batch_item_ids[6])) ||
         kmipkit_client_batch_item_rekey(
-            &identifiers[3], 1, 60, 0, 0, &item) != 0 ||
+            &identifiers[3], 1, 60, rekey_attributes, rekey_masks, &item) != 0 ||
         !append_request_builder_item(
             batch, &item, batch_item_ids[7], strlen((const char *)batch_item_ids[7])) ||
         kmipkit_client_batch_item_rekey(
@@ -3845,7 +3862,8 @@ static int execute_request_builders_wire_from_c(
         !append_request_builder_item(
             batch, &item, batch_item_ids[10], strlen((const char *)batch_item_ids[10])) ||
         kmipkit_client_batch_item_recertify(
-                &identifiers[6], &identifiers[7], 0, 0, 0, 1, 86400, 0, 0, &item) != 0 ||
+                &identifiers[6], &identifiers[7], 0, 0, 0, 1, 86400,
+                rekey_attributes, rekey_masks, &item) != 0 ||
         !append_request_builder_item(
             batch, &item, batch_item_ids[11], strlen((const char *)batch_item_ids[11])) ||
         kmipkit_client_batch_item_recertify(
@@ -3871,7 +3889,8 @@ static int execute_request_builders_wire_from_c(
 
     if (kmipkit_split_key_reference_create(&identifiers[9], 1, &split_key_reference) != 0 ||
         kmipkit_client_batch_item_join_split_key(
-            7, &split_key_reference, 1, 1, UINT32_C(0x81234568), 0, 0, &item) != 0 ||
+            7, &split_key_reference, 1, 1, UINT32_C(0x81234568),
+            rekey_attributes, rekey_masks, &item) != 0 ||
         !append_request_builder_item(
             batch, &item, batch_item_ids[16], strlen((const char *)batch_item_ids[16]))) {
         goto cleanup;
@@ -3898,6 +3917,10 @@ cleanup:
     kmipkit_client_batch_item_release(item);
     kmipkit_split_key_reference_release(split_key_reference);
     kmipkit_ttlv_structure_release(create_attributes);
+    kmipkit_ttlv_structure_release(rekey_attributes);
+    kmipkit_ttlv_structure_release(rekey_masks);
+    kmipkit_ttlv_value_release(rekey_attribute_value);
+    kmipkit_ttlv_value_release(rekey_mask_value);
     return result;
 }
 

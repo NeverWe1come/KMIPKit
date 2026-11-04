@@ -30,6 +30,17 @@ def _ttlv_structure(tag: int, *children: bytes) -> bytes:
     return _ttlv_item(tag, 1, b"".join(children))
 
 
+def _single_child_structure(
+    child_tag: int, value: ttlv.Value, limits: ttlv.CodecLimits
+) -> ttlv.Structure:
+    with ttlv.raw_tag_from_raw(child_tag) as raw_tag:
+        with ttlv.raw_tag_try_checked(raw_tag) as tag:
+            with value:
+                with ttlv.ttlv_item_create(tag, value, limits) as item:
+                    with ttlv.ttlv_structure_create() as empty:
+                        return ttlv.ttlv_structure_with_item(empty, item, limits)
+
+
 def _enumeration(tag: int, value: int) -> bytes:
     return _ttlv_item(tag, 5, struct.pack(">I", value))
 
@@ -145,22 +156,54 @@ def test_rekey_success_ttlv_outlives_source_and_failures_expose_no_success_resul
     try:
         with configuration, client.Client.create(configuration, _transport(port)) as kmip_client:
             with ttlv.codec_limits_defaults() as limits:
-                batch = client.Batch.create()
-                batch.set_asynchronous_indicator(1)
-                for identifier, batch_id in zip(
-                    ("existing-success", "existing-failure", "existing-pending"), _BATCH_IDS,
-                    strict=True,
+                with (
+                    _single_child_structure(
+                        0x4200FD,
+                        ttlv.ttlv_value_text_string(b"rekey-attributes", limits),
+                        limits,
+                    ) as attributes,
+                    _single_child_structure(
+                        0x420160, ttlv.ttlv_value_integer(3), limits
+                    ) as masks,
                 ):
-                    item = extensions.client_batch_item_rekey(
-                        extensions.UniqueIdentifier.text_string(identifier)
-                    )
-                    batch.add_item(extensions.with_unique_batch_item_id(item, batch_id))
-                batch_result = kmip_client.execute(batch, limits)
+                    batch = client.Batch.create()
+                    batch.set_asynchronous_indicator(1)
+                    for index, (identifier, batch_id) in enumerate(zip(
+                        ("existing-success", "existing-failure", "existing-pending"), _BATCH_IDS,
+                        strict=True,
+                    )):
+                        if index == 0:
+                            item = extensions.client_batch_item_rekey(
+                                extensions.UniqueIdentifier.text_string(identifier),
+                                attributes=attributes,
+                                protection_storage_masks=masks,
+                            )
+                        else:
+                            item = extensions.client_batch_item_rekey(
+                                extensions.UniqueIdentifier.text_string(identifier)
+                            )
+                        batch.add_item(extensions.with_unique_batch_item_id(item, batch_id))
+                    batch_result = kmip_client.execute(batch, limits)
 
         assert len(received_requests) == 1
         assert received_requests[0].count(
             b"\x42\x00\x5c\x05\x00\x00\x00\x04\x00\x00\x00\x04"
         ) == 3
+        expected_attributes = _ttlv_structure(
+            0x420125,
+            _ttlv_item(0x4200FD, 7, b"rekey-attributes"),
+        )
+        expected_masks = _ttlv_structure(
+            0x42015F,
+            _ttlv_item(0x420160, 2, struct.pack(">i", 3)),
+        )
+        expected_rekey_payload = _ttlv_structure(
+            0x420079,
+            _ttlv_item(0x420094, 7, b"existing-success"),
+            expected_attributes,
+            expected_masks,
+        )
+        assert expected_rekey_payload in received_requests[0]
         assert peer_failures.empty()
         assert batch_result is not None and len(batch_result.items) == 3
         success, failure, pending = batch_result.items
