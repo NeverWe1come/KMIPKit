@@ -15,12 +15,36 @@ OWNER = "specs/024-credential-sessions/spec.md"
 OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN"
 MAPPING_EVIDENCE = "tools/api_manifest/tests/test_t102_ticket_model_members_mapping.py"
 DECLARATIONS = (
-    ("rust-observed-3aea4d793e81b69de4c1", "rust-kmipkit", "kmipkit::Ticket::into_ttlv"),
-    ("rust-observed-90e17cd1f37c1b13ee4e", "rust-kmipkit", "kmipkit::Ticket::new"),
-    ("rust-observed-ecb07fb359ca3c15dc52", "rust-kmipkit", "kmipkit::Ticket::try_from_ttlv"),
-    ("rust-observed-217734a91c391cce3c90", "rust-kmipkit", "kmipkit::TicketType::LOGIN"),
-    ("rust-observed-4381db95e713c012fc3b", "rust-kmipkit", "kmipkit::TicketType::from_raw"),
-    ("rust-observed-fa0a474eca458bb09446", "rust-kmipkit", "kmipkit::TicketType::known_name"),
+    (
+        "rust-observed-3aea4d793e81b69de4c1",
+        "rust-kmipkit",
+        "kmipkit::Ticket::into_ttlv",
+    ),
+    (
+        "rust-observed-90e17cd1f37c1b13ee4e",
+        "rust-kmipkit",
+        "kmipkit::Ticket::new",
+    ),
+    (
+        "rust-observed-ecb07fb359ca3c15dc52",
+        "rust-kmipkit",
+        "kmipkit::Ticket::try_from_ttlv",
+    ),
+    (
+        "rust-observed-217734a91c391cce3c90",
+        "rust-kmipkit",
+        "kmipkit::TicketType::LOGIN",
+    ),
+    (
+        "rust-observed-4381db95e713c012fc3b",
+        "rust-kmipkit",
+        "kmipkit::TicketType::from_raw",
+    ),
+    (
+        "rust-observed-fa0a474eca458bb09446",
+        "rust-kmipkit",
+        "kmipkit::TicketType::known_name",
+    ),
     (
         "rust-observed-1905a67e3c9d0194df4c",
         "rust-kmipkit-protocol",
@@ -55,6 +79,15 @@ DECLARATIONS = (
 
 
 class T102TicketModelMemberMappingTests(unittest.TestCase):
+    def read_source(self, *parts: str) -> str:
+        return ROOT.joinpath(*parts).read_text(encoding="utf-8")
+
+    def assert_source_contains(self, parts: tuple[str, ...], *fragments: str) -> None:
+        source = self.read_source(*parts)
+        for fragment in fragments:
+            with self.subTest(path="/".join(parts), fragment=fragment):
+                self.assertIn(fragment, source)
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
@@ -101,30 +134,41 @@ class T102TicketModelMemberMappingTests(unittest.TestCase):
                 self.assertIn(MAPPING_EVIDENCE, self.operation["parityEvidenceIds"])
 
     def test_mapping_has_normative_ttlv_and_secret_safe_source_evidence(self) -> None:
-        protocol_source = (ROOT / "crates/kmipkit-protocol/src/ticket.rs").read_text(
-            encoding="utf-8"
+        self.assert_source_contains(
+            ("crates", "kmipkit-protocol", "src", "ticket.rs"),
+            "§7.39, Table 391",
+            "§11.57, Table 488",
         )
-        self.assertIn("§7.39, Table 391", protocol_source)
-        self.assertIn("§11.57, Table 488", protocol_source)
-        model_tests = (
-            ROOT / "crates/kmipkit-protocol/tests/unit/ticket_model_tests.rs"
-        ).read_text(encoding="utf-8")
-        self.assertIn("ticket_constructor_owns_value_and_redacts_debug_and_display", model_tests)
-        self.assertIn("ticket_type_preserves_unassigned_and_vendor_enumeration_values", model_tests)
-        self.assertIn("ttlv_parse_preserves_unknown_children_and_original_order", model_tests)
-
-        c_header = (ROOT / "bindings/c/include/kmipkit.h").read_text(encoding="utf-8")
-        self.assertIn("kmipkit_client_batch_item_response_delegated_login", c_header)
-        java_source = (
-            ROOT / "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItemResult.java"
-        ).read_text(encoding="utf-8")
-        self.assertIn("ticketTypeRaw()", java_source)
-        self.assertIn("ticketTtlv()", java_source)
-        python_source = (ROOT / "bindings/python/src/kmipkit/client.py").read_text(
-            encoding="utf-8"
+        self.assert_source_contains(
+            ("crates", "kmipkit-protocol", "tests", "unit", "ticket_model_tests.rs"),
+            "ticket_constructor_owns_value_and_redacts_debug_and_display",
+            "ticket_type_preserves_unassigned_and_vendor_enumeration_values",
+            "ttlv_parse_preserves_unknown_children_and_original_order",
         )
-        self.assertIn("ticket_type_raw", python_source)
-        self.assertIn("ticket_ttlv", python_source)
+        self.assert_source_contains(
+            ("bindings", "c", "include", "kmipkit.h"),
+            "kmipkit_client_batch_item_response_delegated_login",
+        )
+        self.assert_source_contains(
+            (
+                "bindings",
+                "java",
+                "src",
+                "main",
+                "java",
+                "org",
+                "kmipkit",
+                "extensions",
+                "ClientBatchItemResult.java",
+            ),
+            "ticketTypeRaw()",
+            "ticketTtlv()",
+        )
+        self.assert_source_contains(
+            ("bindings", "python", "src", "kmipkit", "client.py"),
+            "ticket_type_raw",
+            "ticket_ttlv",
+        )
 
         self.assertEqual(
             T102_BLOCKED_CANDIDATES,
