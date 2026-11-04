@@ -106,7 +106,8 @@ TARGETS = (
         "python": "kmipkit.extensions.client_batch_item_recertify",
     },
 )
-BLOCKED_CANDIDATES_AFTER_BATCH = 665
+BLOCKED_CANDIDATES_BEFORE_BATCH = 669
+BLOCKED_CANDIDATES_AFTER_BATCH = 663
 OTHER_DECLARATIONS_SHA256 = "160f02f1f8feedc737fbb24570c134ff3d6855ec0812a6e7e3ffacb4de5e152b"
 OTHER_OPERATIONS_SHA256 = "17ecaeb860c429b0f92509ccf4fd6a8a9b83f0cefd2ed9a358f099fe0463c8d5"
 def canonical_sha256(value: object) -> str:
@@ -192,11 +193,24 @@ class T102RekeyStructureMappingTests(unittest.TestCase):
             self.assertEqual("assigned", elements[tag_id]["allocation"])
             self.assertEqual("client_1_0", elements[tag_id]["scope_state"])
 
-    def test_only_these_two_rows_leave_the_t102_blocked_inventory(self) -> None:
+    def test_only_these_six_rows_leave_the_t102_blocked_inventory(self) -> None:
+        target_ids = {target["id"] for target in TARGETS}
+        self.assertEqual(6, len(target_ids))
+        verified_target_ids = {
+            row["declarationId"]
+            for row in self.manifest["publicDeclarations"]
+            if row["declarationId"] in target_ids
+            and row["declarationState"] == "verified"
+        }
+        self.assertEqual(target_ids, verified_target_ids)
         blocked = sum(
             row.get("candidateSpecId") == "KMIPKIT-0043"
             and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
+        )
+        self.assertEqual(
+            BLOCKED_CANDIDATES_BEFORE_BATCH - len(target_ids),
+            BLOCKED_CANDIDATES_AFTER_BATCH,
         )
         self.assertEqual(BLOCKED_CANDIDATES_AFTER_BATCH, blocked)
         self.assertEqual(6_470, len(self.manifest["publicDeclarations"]))
