@@ -9412,8 +9412,10 @@ int kmipkit_client_abi_c_consumer_profile_validation_result_exercise(
     kmipkit_profile_validation_error_t *error = 0;
     kmipkit_profile_validation_error_view_v1_t view = {0};
     kmipkit_byte_span_v1_t profile_id = {0};
+    kmipkit_byte_span_v1_t diagnostics[5];
     uint64_t profile_count = 0;
     uint64_t requirement_count = 0;
+    size_t index;
 
     state.struct_size = (uint32_t)sizeof(state);
     state.abi_version = 1;
@@ -9443,27 +9445,27 @@ int kmipkit_client_abi_c_consumer_profile_validation_result_exercise(
     if (kmipkit_profile_validation_result_validate_request_with_context_v1(
             result, request, &context) != T076_ERROR_INVALID_INPUT ||
         kmipkit_last_error_profile_validation_error_get_v1(&error) != 0 || error == 0 ||
-        kmipkit_profile_validation_error_view_get_v1(error, &view) != 0 ||
-        profile_span_contains(
-            (kmipkit_byte_span_v1_t){view.profile_id_data, view.profile_id_length},
-            "request-id-must-not-leak") ||
-        profile_span_contains(
-            (kmipkit_byte_span_v1_t){view.profile_id_data, view.profile_id_length},
-            (const char *)context_identifier) ||
-        profile_span_contains(
-            (kmipkit_byte_span_v1_t){view.requirement_id_data, view.requirement_id_length},
-            "request-id-must-not-leak") ||
-        profile_span_contains(
-            (kmipkit_byte_span_v1_t){view.requirement_id_data, view.requirement_id_length},
-            (const char *)context_identifier) ||
-        profile_span_contains(
-            (kmipkit_byte_span_v1_t){view.error_code_data, view.error_code_length},
-            "request-id-must-not-leak") ||
-        profile_span_contains(
-            (kmipkit_byte_span_v1_t){view.error_code_data, view.error_code_length},
-            (const char *)context_identifier)) {
+        kmipkit_profile_validation_error_view_get_v1(error, &view) != 0) {
         kmipkit_profile_validation_error_release(error);
         return 0;
+    }
+
+    diagnostics[0] =
+        (kmipkit_byte_span_v1_t){view.error_code_data, view.error_code_length};
+    diagnostics[1] =
+        (kmipkit_byte_span_v1_t){view.profile_id_data, view.profile_id_length};
+    diagnostics[2] =
+        (kmipkit_byte_span_v1_t){view.requirement_id_data, view.requirement_id_length};
+    diagnostics[3] =
+        (kmipkit_byte_span_v1_t){view.source_id_data, view.source_id_length};
+    diagnostics[4] =
+        (kmipkit_byte_span_v1_t){view.source_locator_data, view.source_locator_length};
+    for (index = 0; index < sizeof(diagnostics) / sizeof(diagnostics[0]); ++index) {
+        if (profile_span_contains(diagnostics[index], "request-id-must-not-leak") ||
+            profile_span_contains(diagnostics[index], (const char *)context_identifier)) {
+            kmipkit_profile_validation_error_release(error);
+            return 0;
+        }
     }
 
     kmipkit_profile_validation_error_release(error);
