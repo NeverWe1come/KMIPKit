@@ -128,7 +128,7 @@ class T102PolicyRootTraitBatchTests(unittest.TestCase):
         cls.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         cls.report = json.loads(RUST_REPORT.read_text(encoding="utf-8"))
 
-    def test_exact_root_trait_paths_are_excluded_and_sensitive_debug_stays_blocked(self) -> None:
+    def test_exact_root_trait_paths_are_excluded_and_sensitive_debug_is_redacted(self) -> None:
         self.assertTrue(self.report["complete"])
         self.assertEqual(self.report["toolchain"], "1.94.0")
         self.assertTrue(self.report["matchesManifest"])
@@ -189,7 +189,21 @@ class T102PolicyRootTraitBatchTests(unittest.TestCase):
                 }
             )
 
-        self.assertEqual(len(expected), 206)
+        uid_debug = ("rust-kmipkit", "<kmipkit::GetUsageAllocationRequest as core::fmt::Debug>::fmt")
+        expected[uid_debug] = (
+            "request",
+            "6.1.23",
+            "232",
+            (
+                "KMIPKIT-0039-FR-001",
+                "KMIPKIT-0039-FR-002",
+                "KMIPKIT-0039-FR-004",
+                "KMIPKIT-0039-FR-005",
+                "KMIPKIT-0039-FR-008",
+            ),
+        )
+
+        self.assertEqual(len(expected), 207)
         observed_direct = {
             (row["packageId"], row["exportName"])
             for row in self.report["declarations"]
@@ -200,7 +214,7 @@ class T102PolicyRootTraitBatchTests(unittest.TestCase):
             for row in self.report["conditionalDeclarations"]
             if (row.get("packageId"), row.get("exportName")) in expected
         }
-        self.assertEqual(len(observed_direct), 156)
+        self.assertEqual(len(observed_direct), 157)
         self.assertEqual(len(observed_conditional), 50)
         self.assertEqual(observed_direct | observed_conditional, set(expected))
 
@@ -231,10 +245,10 @@ class T102PolicyRootTraitBatchTests(unittest.TestCase):
                 if category == "error" or "core::fmt::Debug>::fmt" in key[1] or "core::fmt::Display>::fmt" in key[1]:
                     self.assertIn("KMIPKIT-0043-FR-013", row["evidence"])
 
-        uid_debug = ("rust-kmipkit", "<kmipkit::GetUsageAllocationRequest as core::fmt::Debug>::fmt")
-        self.assertIn(uid_debug, declarations)
-        self.assertEqual(declarations[uid_debug].get("candidateSpecId"), "KMIPKIT-0043")
-        self.assertNotIn(uid_debug, exclusions)
+        self.assertNotIn(uid_debug, declarations)
+        self.assertEqual(exclusions[uid_debug].get("candidateSpecId"), "KMIPKIT-0039")
+        self.assertIn("KMIPKIT-0043-FR-013", exclusions[uid_debug]["evidence"])
+        self.assertIn("KMIP_USAGE_ALLOCATION_IDENTIFIER_SENTINEL", exclusions[uid_debug]["evidence"])
 
         for package, public_type in (
             ("rust-kmipkit", "kmipkit::GetConstraintsError"),
