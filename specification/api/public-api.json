@@ -151559,14 +151559,65 @@
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "kmipkit::RngRetrieveRequest::to_ttlv_payload",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0041-FR-001",
+        "KMIPKIT-0041-FR-002",
+        "KMIPKIT-0041-FR-003",
+        "KMIPKIT-0041-FR-004",
+        "KMIPKIT-0041-FR-005",
+        "KMIPKIT-0041-FR-006",
+        "KMIPKIT-0041-FR-007",
+        "KMIPKIT-0041-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::RngRetrieveRequest::to_ttlv_payload"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_rng_retrieve"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.rngRetrieve"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_rng_retrieve"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
+        "tools/api_manifest/tests/test_rng_parity_manifest.py"
+      ]
     },
     {
       "declarationId": "rust-observed-5bce6b3f11baf66275fd",
@@ -152150,14 +152201,66 @@
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "kmipkit::RngSeedRequest::to_ttlv_payload",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RNG-SEED",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0041-FR-001",
+        "KMIPKIT-0041-FR-002",
+        "KMIPKIT-0041-FR-003",
+        "KMIPKIT-0041-FR-004",
+        "KMIPKIT-0041-FR-005",
+        "KMIPKIT-0041-FR-006",
+        "KMIPKIT-0041-FR-007",
+        "KMIPKIT-0041-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.50-001"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::RngSeedRequest::to_ttlv_payload"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_rng_seed"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.rngSeed"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_rng_seed"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
+        "tools/api_manifest/tests/test_rng_parity_manifest.py"
+      ]
     },
     {
       "declarationId": "rust-observed-0e8f42fe4cd1c09f843f",
@@ -209915,14 +210018,65 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::RngRetrieveRequest::data_length",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0041-FR-001",
+        "KMIPKIT-0041-FR-002",
+        "KMIPKIT-0041-FR-003",
+        "KMIPKIT-0041-FR-004",
+        "KMIPKIT-0041-FR-005",
+        "KMIPKIT-0041-FR-006",
+        "KMIPKIT-0041-FR-007",
+        "KMIPKIT-0041-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RngRetrieveRequest::data_length"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_rng_retrieve"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.rngRetrieve"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_rng_retrieve"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
+        "tools/api_manifest/tests/test_rng_parity_manifest.py"
+      ]
     },
     {
       "declarationId": "rust-observed-1f043dc645780cf9987d",
@@ -209994,14 +210148,65 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::RngRetrieveRequest::to_ttlv_payload",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0041-FR-001",
+        "KMIPKIT-0041-FR-002",
+        "KMIPKIT-0041-FR-003",
+        "KMIPKIT-0041-FR-004",
+        "KMIPKIT-0041-FR-005",
+        "KMIPKIT-0041-FR-006",
+        "KMIPKIT-0041-FR-007",
+        "KMIPKIT-0041-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RngRetrieveRequest::to_ttlv_payload"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_rng_retrieve"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.rngRetrieve"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_rng_retrieve"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
+        "tools/api_manifest/tests/test_rng_parity_manifest.py"
+      ]
     },
     {
       "declarationId": "rust-observed-1446ce9311402212e3ba",
@@ -210585,14 +210790,66 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::RngSeedRequest::to_ttlv_payload",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RNG-SEED",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0041-FR-001",
+        "KMIPKIT-0041-FR-002",
+        "KMIPKIT-0041-FR-003",
+        "KMIPKIT-0041-FR-004",
+        "KMIPKIT-0041-FR-005",
+        "KMIPKIT-0041-FR-006",
+        "KMIPKIT-0041-FR-007",
+        "KMIPKIT-0041-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.50-001"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RngSeedRequest::to_ttlv_payload"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_rng_seed"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.rngSeed"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_rng_seed"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
+        "tools/api_manifest/tests/test_rng_parity_manifest.py"
+      ]
     },
     {
       "declarationId": "rust-observed-d820c9bb846c9a8f7da4",
@@ -475056,6 +475313,9 @@
         "rust": [
           "rust-observed-0960b8952bd6dedbf0cb",
           "rust-observed-1446ce9311402212e3ba",
+          "rust-observed-1dc6501cc933f4d1d602",
+          "rust-observed-321d5a78f457fdf08602",
+          "rust-observed-2c3d9fbfb0d9cf74fdc4",
           "rust-observed-1f043dc645780cf9987d",
           "rust-observed-2d4f88c07fe03f101102",
           "rust-observed-2d9d58af46509cacef8b",
@@ -475151,6 +475411,8 @@
           "rust-observed-87b41a5927a75d001e04",
           "rust-observed-910a28ad78ac72eff0ca",
           "rust-observed-a2dfd7f303a11bb991d7",
+          "rust-observed-2fcd36fc653fdbdd7e0a",
+          "rust-observed-d22f2b5c1fa02ac7c5ce",
           "rust-observed-b0801b0a944e661dcba1",
           "rust-observed-b49e37f21886f755e1e3",
           "rust-observed-bff5ab538ec303cc94a9",

@@ -156254,6 +156254,9 @@
         "rust": [
           "rust-observed-0960b8952bd6dedbf0cb",
           "rust-observed-1446ce9311402212e3ba",
+          "rust-observed-1dc6501cc933f4d1d602",
+          "rust-observed-321d5a78f457fdf08602",
+          "rust-observed-2c3d9fbfb0d9cf74fdc4",
           "rust-observed-1f043dc645780cf9987d",
           "rust-observed-2d4f88c07fe03f101102",
           "rust-observed-2d9d58af46509cacef8b",
@@ -156349,6 +156352,8 @@
           "rust-observed-87b41a5927a75d001e04",
           "rust-observed-910a28ad78ac72eff0ca",
           "rust-observed-a2dfd7f303a11bb991d7",
+          "rust-observed-2fcd36fc653fdbdd7e0a",
+          "rust-observed-d22f2b5c1fa02ac7c5ce",
           "rust-observed-b0801b0a944e661dcba1",
           "rust-observed-b49e37f21886f755e1e3",
           "rust-observed-bff5ab538ec303cc94a9",
@@ -260395,6 +260400,71 @@
         "status": "Approved"
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE",
+      "declarationId": "rust-observed-1dc6501cc933f4d1d602",
+      "declarationState": "verified",
+      "exportName": "kmipkit::RngRetrieveRequest::to_ttlv_payload",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_rng_retrieve",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.rngRetrieve",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_rng_retrieve",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::RngRetrieveRequest::to_ttlv_payload",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
+        "tools/api_manifest/tests/test_rng_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0041-FR-001",
+        "KMIPKIT-0041-FR-002",
+        "KMIPKIT-0041-FR-003",
+        "KMIPKIT-0041-FR-004",
+        "KMIPKIT-0041-FR-005",
+        "KMIPKIT-0041-FR-006",
+        "KMIPKIT-0041-FR-007",
+        "KMIPKIT-0041-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE",
       "declarationId": "rust-observed-5bce6b3f11baf66275fd",
       "declarationState": "verified",
       "exportName": "kmipkit::RngRetrieveResponse",
@@ -260925,6 +260995,72 @@
         },
         "rust": {
           "name": "kmipkit::RngSeedRequest::new",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
+        "tools/api_manifest/tests/test_rng_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0041-FR-001",
+        "KMIPKIT-0041-FR-002",
+        "KMIPKIT-0041-FR-003",
+        "KMIPKIT-0041-FR-004",
+        "KMIPKIT-0041-FR-005",
+        "KMIPKIT-0041-FR-006",
+        "KMIPKIT-0041-FR-007",
+        "KMIPKIT-0041-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.50-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RNG-SEED",
+      "declarationId": "rust-observed-2fcd36fc653fdbdd7e0a",
+      "declarationState": "verified",
+      "exportName": "kmipkit::RngSeedRequest::to_ttlv_payload",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_rng_seed",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.rngSeed",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_rng_seed",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::RngSeedRequest::to_ttlv_payload",
           "packageId": "rust-kmipkit"
         }
       },
@@ -312505,6 +312641,71 @@
         "status": "Approved"
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE",
+      "declarationId": "rust-observed-321d5a78f457fdf08602",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::RngRetrieveRequest::data_length",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_rng_retrieve",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.rngRetrieve",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_rng_retrieve",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RngRetrieveRequest::data_length",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
+        "tools/api_manifest/tests/test_rng_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0041-FR-001",
+        "KMIPKIT-0041-FR-002",
+        "KMIPKIT-0041-FR-003",
+        "KMIPKIT-0041-FR-004",
+        "KMIPKIT-0041-FR-005",
+        "KMIPKIT-0041-FR-006",
+        "KMIPKIT-0041-FR-007",
+        "KMIPKIT-0041-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE",
       "declarationId": "rust-observed-1f043dc645780cf9987d",
       "declarationState": "verified",
       "exportName": "kmipkit_protocol::RngRetrieveRequest::new",
@@ -312524,6 +312725,71 @@
         },
         "rust": {
           "name": "kmipkit_protocol::RngRetrieveRequest::new",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
+        "tools/api_manifest/tests/test_rng_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0041-FR-001",
+        "KMIPKIT-0041-FR-002",
+        "KMIPKIT-0041-FR-003",
+        "KMIPKIT-0041-FR-004",
+        "KMIPKIT-0041-FR-005",
+        "KMIPKIT-0041-FR-006",
+        "KMIPKIT-0041-FR-007",
+        "KMIPKIT-0041-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE",
+      "declarationId": "rust-observed-2c3d9fbfb0d9cf74fdc4",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::RngRetrieveRequest::to_ttlv_payload",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_rng_retrieve",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.rngRetrieve",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_rng_retrieve",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RngRetrieveRequest::to_ttlv_payload",
           "packageId": "rust-kmipkit-protocol"
         }
       },
@@ -313100,6 +313366,72 @@
         },
         "rust": {
           "name": "kmipkit_protocol::RngSeedRequest::new",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
+        "tools/api_manifest/tests/test_rng_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0041-FR-001",
+        "KMIPKIT-0041-FR-002",
+        "KMIPKIT-0041-FR-003",
+        "KMIPKIT-0041-FR-004",
+        "KMIPKIT-0041-FR-005",
+        "KMIPKIT-0041-FR-006",
+        "KMIPKIT-0041-FR-007",
+        "KMIPKIT-0041-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.50-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RNG-SEED",
+      "declarationId": "rust-observed-d22f2b5c1fa02ac7c5ce",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::RngSeedRequest::to_ttlv_payload",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_rng_seed",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.rngSeed",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_rng_seed",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RngSeedRequest::to_ttlv_payload",
           "packageId": "rust-kmipkit-protocol"
         }
       },
