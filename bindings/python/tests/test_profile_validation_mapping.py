@@ -60,6 +60,24 @@ def test_profile_validation_result_exposes_all_rust_backed_validators() -> None:
     assert hasattr(result_type, "requirement_ids")
 
 
+def test_client_cffi_declares_the_profile_validation_result_abi() -> None:
+    client.ffi.typeof("kmipkit_profile_validation_result_t *")
+    for name in (
+        "kmipkit_profile_validation_selection_validate_v1",
+        "kmipkit_profile_validation_result_release",
+        "kmipkit_profile_validation_result_profile_id_count_v1",
+        "kmipkit_profile_validation_result_profile_id_at_v1",
+        "kmipkit_profile_validation_result_requirement_id_count_v1",
+        "kmipkit_profile_validation_result_requirement_id_at_v1",
+        "kmipkit_profile_validation_result_validate_transport_v1",
+        "kmipkit_profile_validation_result_validate_request_v1",
+        "kmipkit_profile_validation_result_validate_request_with_context_v1",
+        "kmipkit_profile_validation_result_validate_response_v1",
+        "kmipkit_profile_validation_result_validate_response_with_context_v1",
+    ):
+        assert callable(getattr(client.lib, name))
+
+
 def test_profile_validation_records_copy_tri_state_context_into_one_call() -> None:
     selection = client.ProfileValidationSelection(("baseline_client",))
     state = client.ProfileObjectState("caller-object-id").with_usage_limits_present(True)

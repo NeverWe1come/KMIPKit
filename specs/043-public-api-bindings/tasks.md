@@ -515,3 +515,5 @@ T102 `ProfileValidationResult` exact facade mapping Red follow-up (2026-11-04): 
 T102 ProfileValidationResult Java JNI bridge inventory Red (2026-11-04): commit `be35ec9b8` requires explicit KMIPKIT-0043-FR-008/021 exclusions for the 11 new public `NativeExtensionRegistry` methods. The focused exclusion test fails once against the unupdated manifest. See implementation-evidence.md.
 
 T102 `ProfileValidationResult` Red contract expansion (2026-11-04): adds the exact protocol-owned result type record and closes a test assertion that referred to another test's local variable. The focused result-mapping plus JNI-exclusion run reports 5 expected failing tests and 1 pass before manifest reconciliation. No manifest or generated output was edited.
+
+T102 Python CFFI Red (2026-11-04): the live adapter contract fails because `_client_ffi.py` cannot parse the missing `kmipkit_profile_validation_result_t` CFFI declaration. Add the handle type and all result/resolver symbols before testing native-backed Python calls.
