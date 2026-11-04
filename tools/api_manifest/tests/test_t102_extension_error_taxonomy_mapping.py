@@ -71,6 +71,15 @@ class T102ExtensionErrorTaxonomyMappingTests(unittest.TestCase):
                     f'#define {expected["c"]} ((int32_t){expected["cValue"]})',
                     self.header,
                 )
+                c_row = self.declarations[("c-kmipkit", expected["c"])]
+                self.assertEqual("declared", c_row["declarationState"])
+                self.assertNotIn("candidateSpecId", c_row)
+                self.assertEqual("vendor_extension_registry", c_row["capabilityId"])
+                self.assertIn("KMIPKIT-0012-FR-010", c_row["requirementIds"])
+                self.assertEqual(
+                    "rust-kmipkit-protocol",
+                    c_row["languageMappings"]["rust"]["packageId"],
+                )
 
     def test_observed_exception_exports_have_approved_owner_and_parity(self) -> None:
         requirements = {
@@ -156,8 +165,9 @@ class T102ExtensionErrorTaxonomyMappingTests(unittest.TestCase):
                 row = exclusions[(package_id, export_name)]
                 self.assertIn("no distinct cross-language enum type", row["reason"])
                 self.assertIn("each named error variant is mapped", row["evidence"])
-                self.assertEqual(OWNER_SPEC, row["approvalSource"]["path"])
+                self.assertEqual("specs/003-core-types-errors/spec.md", row["approvalSource"]["path"])
                 self.assertEqual("Approved", row["approvalSource"]["status"])
+                self.assertIn("KMIPKIT-0012-FR-010/011", row["evidence"])
 
     def test_duplicate_key_documentation_covers_both_duplicate_rules(self) -> None:
         errors_source = (ROOT / "bindings/python/src/kmipkit/errors.py").read_text(
