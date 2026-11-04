@@ -178,6 +178,19 @@ class RegisterParityManifestTests(unittest.TestCase):
                 self.assertIn(evidence["implementation"], t062_row)
                 self.assertIn(evidence["test"], t062_row)
 
+    def test_protection_storage_masks_ffi_function_is_in_generated_api_contract(self) -> None:
+        function = next(
+            row
+            for row in self.manifest["functions"]
+            if row["id"] == "register_request_with_protection_storage_masks"
+        )
+        self.assertEqual(
+            "kmipkit_register_request_with_protection_storage_masks",
+            function["c"]["symbol"],
+        )
+        header = (ROOT / "bindings/c/include/kmipkit.h").read_text(encoding="utf-8")
+        self.assertIn(function["c"]["symbol"], header)
+
     def test_register_response_python_dataclass_artifacts_are_exactly_excluded(self) -> None:
         generated_members = (
             "__dataclass_fields__",
