@@ -338,7 +338,7 @@ fn create_convenience_method_maps_shared_fixture_over_one_exchange() {
     assert!(response_view.set_attribute().is_none());
     assert!(response_view.get_attributes().is_none());
     assert!(response_view.get_attribute_list().is_none());
-    assert!(format!("{response_view:?}").starts_with("Create("));
+    assert_eq!(format!("{response_view:?}"), "Create");
     assert!(outcome.discover_versions_response().is_none());
     assert!(outcome.create_response().is_some());
     assert!(outcome.create_key_pair_response().is_none());
@@ -492,7 +492,7 @@ fn create_pending_retains_operation_result_and_exact_correlation_without_follow_
     assert!(response_view.set_attribute().is_none());
     assert!(response_view.get_attributes().is_none());
     assert!(response_view.get_attribute_list().is_none());
-    assert!(format!("{response_view:?}").starts_with("Create("));
+    assert_eq!(format!("{response_view:?}"), "Create");
     assert_eq!(pending.operation(), ClientOperation::Create);
     assert_eq!(pending.result().status().raw(), OPERATION_PENDING);
     assert_eq!(

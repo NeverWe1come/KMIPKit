@@ -464,7 +464,7 @@ fn create_key_pair_maps_shared_fixture_over_one_exchange() {
     assert!(response_view.set_attribute().is_none());
     assert!(response_view.get_attributes().is_none());
     assert!(response_view.get_attribute_list().is_none());
-    assert!(format!("{response_view:?}").starts_with("CreateKeyPair("));
+    assert_eq!(format!("{response_view:?}"), "CreateKeyPair");
     assert!(outcome.discover_versions_response().is_none());
     assert!(outcome.create_response().is_none());
     assert!(outcome.create_key_pair_response().is_some());
@@ -676,7 +676,7 @@ fn create_key_pair_pending_retains_operation_result_and_exact_correlation_withou
     assert!(response_view.set_attribute().is_none());
     assert!(response_view.get_attributes().is_none());
     assert!(response_view.get_attribute_list().is_none());
-    assert!(format!("{response_view:?}").starts_with("CreateKeyPair("));
+    assert_eq!(format!("{response_view:?}"), "CreateKeyPair");
     assert_eq!(pending.operation(), ClientOperation::CreateKeyPair);
     assert_eq!(pending.result().status().raw(), OPERATION_PENDING);
     assert_eq!(

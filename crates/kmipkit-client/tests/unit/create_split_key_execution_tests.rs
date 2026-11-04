@@ -622,7 +622,7 @@ fn create_split_key_convenience_method_uses_one_exchange_and_returns_typed_resul
     assert!(response_view.set_attribute().is_none());
     assert!(response_view.get_attributes().is_none());
     assert!(response_view.get_attribute_list().is_none());
-    assert!(format!("{response_view:?}").starts_with("CreateSplitKey("));
+    assert_eq!(format!("{response_view:?}"), "CreateSplitKey");
     assert!(outcome.discover_versions_response().is_none());
     assert!(outcome.create_response().is_none());
     assert!(outcome.create_key_pair_response().is_none());
@@ -745,7 +745,7 @@ fn create_split_key_pending_retains_operation_result_and_exact_correlation_witho
     assert!(response_view.set_attribute().is_none());
     assert!(response_view.get_attributes().is_none());
     assert!(response_view.get_attribute_list().is_none());
-    assert!(format!("{response_view:?}").starts_with("CreateSplitKey("));
+    assert_eq!(format!("{response_view:?}"), "CreateSplitKey");
     assert_eq!(pending.operation(), ClientOperation::CreateSplitKey);
     assert_eq!(pending.result().status().raw(), OPERATION_PENDING);
     assert_eq!(
