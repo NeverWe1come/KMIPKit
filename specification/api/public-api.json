@@ -45950,8 +45950,7 @@
       "cValue": 1,
       "javaException": "org.kmipkit.extensions.ExtensionCompatibilityException",
       "pythonException": "kmipkit.errors.CompatibilityMismatchError",
-      "mappingState": "blocked",
-      "blockedReason": "The C, Java, Python, and Rust error exports for this category remain blocked pending an approved cross-language mapping."
+      "mappingState": "ready"
     },
     {
       "id": "duplicate_key",
@@ -45960,8 +45959,7 @@
       "cValue": 2,
       "javaException": "org.kmipkit.extensions.DuplicateExtensionKeyException",
       "pythonException": "kmipkit.errors.DuplicateKeyError",
-      "mappingState": "blocked",
-      "blockedReason": "The C, Java, Python, and Rust error exports for this category remain blocked pending an approved cross-language mapping."
+      "mappingState": "ready"
     },
     {
       "id": "invalid_identity",
@@ -45970,8 +45968,7 @@
       "cValue": 3,
       "javaException": "org.kmipkit.extensions.InvalidExtensionIdentityException",
       "pythonException": "kmipkit.errors.InvalidIdentityError",
-      "mappingState": "blocked",
-      "blockedReason": "The C, Java, Python, and Rust error exports for this category remain blocked pending an approved cross-language mapping."
+      "mappingState": "ready"
     },
     {
       "id": "invalid_input",
@@ -45989,8 +45986,7 @@
       "cValue": 5,
       "javaException": "org.kmipkit.extensions.InvalidExtensionSchemaException",
       "pythonException": "kmipkit.errors.InvalidExtensionSchemaError",
-      "mappingState": "blocked",
-      "blockedReason": "The C, Java, Python, and Rust error exports for this category remain blocked pending an approved cross-language mapping."
+      "mappingState": "ready"
     },
     {
       "id": "resource_limit",
@@ -66759,56 +66755,174 @@
       "packageId": "java-kmipkit",
       "kind": "type",
       "exportName": "org.kmipkit.extensions.DuplicateExtensionKeyException",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0012-FR-003"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolErrorKind::DuplicateKey"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_DUPLICATE_KEY"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.DuplicateExtensionKeyException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.DuplicateKeyError"
+        }
+      }
     },
     {
       "declarationId": "java-observed-6f5350e5f9515c371ad7",
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.extensions.DuplicateExtensionKeyException.<init>",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0012-FR-003"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolErrorKind::DuplicateKey"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_DUPLICATE_KEY"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.DuplicateExtensionKeyException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.DuplicateKeyError"
+        }
+      }
     },
     {
       "declarationId": "java-observed-af3ebee89c44b6509a5c",
       "packageId": "java-kmipkit",
       "kind": "type",
       "exportName": "org.kmipkit.extensions.ExtensionCompatibilityException",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolErrorKind::CompatibilityMismatch"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_COMPATIBILITY_MISMATCH"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ExtensionCompatibilityException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.CompatibilityMismatchError"
+        }
+      }
     },
     {
       "declarationId": "java-observed-e4bda48b63cfb6f47e50",
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.extensions.ExtensionCompatibilityException.<init>",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolErrorKind::CompatibilityMismatch"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_COMPATIBILITY_MISMATCH"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ExtensionCompatibilityException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.CompatibilityMismatchError"
+        }
+      }
     },
     {
       "declarationId": "java-observed-ff345b808a6bde18d992",
@@ -67283,56 +67397,172 @@
       "packageId": "java-kmipkit",
       "kind": "type",
       "exportName": "org.kmipkit.extensions.InvalidExtensionIdentityException",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolErrorKind::InvalidIdentity"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_INVALID_IDENTITY"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.InvalidExtensionIdentityException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.InvalidIdentityError"
+        }
+      }
     },
     {
       "declarationId": "java-observed-d4cdffec71bfed34240d",
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.extensions.InvalidExtensionIdentityException.<init>",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolErrorKind::InvalidIdentity"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_INVALID_IDENTITY"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.InvalidExtensionIdentityException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.InvalidIdentityError"
+        }
+      }
     },
     {
       "declarationId": "java-observed-c68c4b51e0df8de65534",
       "packageId": "java-kmipkit",
       "kind": "type",
       "exportName": "org.kmipkit.extensions.InvalidExtensionSchemaException",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolErrorKind::InvalidSchema"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_INVALID_SCHEMA"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.InvalidExtensionSchemaException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.InvalidExtensionSchemaError"
+        }
+      }
     },
     {
       "declarationId": "java-observed-7247823ab98f61f05154",
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.extensions.InvalidExtensionSchemaException.<init>",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolErrorKind::InvalidSchema"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_INVALID_SCHEMA"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.InvalidExtensionSchemaException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.InvalidExtensionSchemaError"
+        }
+      }
     },
     {
       "declarationId": "java-observed-2d155ab9cb61a0c14a95",
@@ -68021,56 +68251,173 @@
       "packageId": "python-kmipkit",
       "kind": "type",
       "exportName": "kmipkit.errors.CompatibilityMismatchError",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The Python exception is exported from kmipkit.errors but is not reconciled to the manifest's stable cross-language error-category mapping."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolErrorKind::CompatibilityMismatch"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_COMPATIBILITY_MISMATCH"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ExtensionCompatibilityException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.CompatibilityMismatchError"
+        }
+      }
     },
     {
       "declarationId": "python-observed-5f7c90c60473ebc87a95",
       "packageId": "python-kmipkit",
       "kind": "type",
       "exportName": "kmipkit.errors.DuplicateKeyError",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0012-FR-003"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The Python exception is exported from kmipkit.errors but is not reconciled to the manifest's stable cross-language error-category mapping."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolErrorKind::DuplicateKey"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_DUPLICATE_KEY"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.DuplicateExtensionKeyException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.DuplicateKeyError"
+        }
+      }
     },
     {
       "declarationId": "python-observed-5a4817921443715e0f21",
       "packageId": "python-kmipkit",
       "kind": "type",
       "exportName": "kmipkit.errors.InvalidExtensionSchemaError",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The Python exception is exported from kmipkit.errors but is not reconciled to the manifest's stable cross-language error-category mapping."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolErrorKind::InvalidSchema"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_INVALID_SCHEMA"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.InvalidExtensionSchemaException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.InvalidExtensionSchemaError"
+        }
+      }
     },
     {
       "declarationId": "python-observed-bdf59672d3146329a1d8",
       "packageId": "python-kmipkit",
       "kind": "type",
       "exportName": "kmipkit.errors.InvalidIdentityError",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The Python exception is exported from kmipkit.errors but is not reconciled to the manifest's stable cross-language error-category mapping."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolErrorKind::InvalidIdentity"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_INVALID_IDENTITY"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.InvalidExtensionIdentityException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.InvalidIdentityError"
+        }
+      }
     },
     {
       "declarationId": "python-observed-4f295980a983a1f2aa05",
@@ -127254,42 +127601,130 @@
       "packageId": "c-kmipkit",
       "kind": "constant",
       "exportName": "KMIPKIT_ERROR_COMPATIBILITY_MISMATCH",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This error constant is explicitly exported by the C header, but its owning logical capability and equivalent cross-language declaration mapping have not been reviewed."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolErrorKind::CompatibilityMismatch"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_COMPATIBILITY_MISMATCH"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ExtensionCompatibilityException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.CompatibilityMismatchError"
+        }
+      }
     },
     {
       "declarationId": "t011-observed-c-duplicate_key",
       "packageId": "c-kmipkit",
       "kind": "constant",
       "exportName": "KMIPKIT_ERROR_DUPLICATE_KEY",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0012-FR-003"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This error constant is explicitly exported by the C header, but its owning logical capability and equivalent cross-language declaration mapping have not been reviewed."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolErrorKind::DuplicateKey"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_DUPLICATE_KEY"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.DuplicateExtensionKeyException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.DuplicateKeyError"
+        }
+      }
     },
     {
       "declarationId": "t011-observed-c-invalid_identity",
       "packageId": "c-kmipkit",
       "kind": "constant",
       "exportName": "KMIPKIT_ERROR_INVALID_IDENTITY",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This error constant is explicitly exported by the C header, but its owning logical capability and equivalent cross-language declaration mapping have not been reviewed."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolErrorKind::InvalidIdentity"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_INVALID_IDENTITY"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.InvalidExtensionIdentityException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.InvalidIdentityError"
+        }
+      }
     },
     {
       "declarationId": "t011-observed-c-invalid_input",
@@ -127339,14 +127774,43 @@
       "packageId": "c-kmipkit",
       "kind": "constant",
       "exportName": "KMIPKIT_ERROR_INVALID_SCHEMA",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This error constant is explicitly exported by the C header, but its owning logical capability and equivalent cross-language declaration mapping have not been reviewed."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolErrorKind::InvalidSchema"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_INVALID_SCHEMA"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.InvalidExtensionSchemaException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.InvalidExtensionSchemaError"
+        }
+      }
     },
     {
       "declarationId": "t011-observed-java-abiVersion",
@@ -127559,56 +128023,173 @@
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.errors.CompatibilityMismatchError.category",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This public Python package export is observable, but it has no reviewed logical capability or cross-language declaration mapping in the current inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolErrorKind::CompatibilityMismatch"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_COMPATIBILITY_MISMATCH"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ExtensionCompatibilityException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.CompatibilityMismatchError"
+        }
+      }
     },
     {
       "declarationId": "t011-observed-python-duplicatekeyerror-category",
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.errors.DuplicateKeyError.category",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0012-FR-003"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This public Python package export is observable, but it has no reviewed logical capability or cross-language declaration mapping in the current inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolErrorKind::DuplicateKey"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_DUPLICATE_KEY"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.DuplicateExtensionKeyException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.DuplicateKeyError"
+        }
+      }
     },
     {
       "declarationId": "t011-observed-python-invalidextensionschemaerror-category",
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.errors.InvalidExtensionSchemaError.category",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This public Python package export is observable, but it has no reviewed logical capability or cross-language declaration mapping in the current inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolErrorKind::InvalidSchema"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_INVALID_SCHEMA"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.InvalidExtensionSchemaException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.InvalidExtensionSchemaError"
+        }
+      }
     },
     {
       "declarationId": "t011-observed-python-invalididentityerror-category",
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.errors.InvalidIdentityError.category",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "vendor_extension_registry",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This public Python package export is observable, but it has no reviewed logical capability or cross-language declaration mapping in the current inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolErrorKind::InvalidIdentity"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_INVALID_IDENTITY"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.InvalidExtensionIdentityException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.InvalidIdentityError"
+        }
+      }
     },
     {
       "declarationId": "t011-observed-python-invalidinputerror-category",
@@ -346740,7 +347321,354 @@
           "name": "kmipkit.profile_readiness.ProfileReadinessBlocker.test_id"
         }
       }
-    }],
+    },
+    {
+      "declarationId": "t102-extension-error-protocol-compatibilitymismatch",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "variant",
+      "exportName": "kmipkit_protocol::ProtocolErrorKind::CompatibilityMismatch",
+      "capabilityId": "vendor_extension_registry",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolErrorKind::CompatibilityMismatch"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_COMPATIBILITY_MISMATCH"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ExtensionCompatibilityException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.CompatibilityMismatchError"
+        }
+      }
+    },
+    {
+      "declarationId": "t102-extension-error-rust-kmipkit-compatibilitymismatch",
+      "packageId": "rust-kmipkit",
+      "kind": "variant",
+      "exportName": "kmipkit::ProtocolErrorKind::CompatibilityMismatch",
+      "capabilityId": "vendor_extension_registry",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ProtocolErrorKind::CompatibilityMismatch"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_COMPATIBILITY_MISMATCH"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ExtensionCompatibilityException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.CompatibilityMismatchError"
+        }
+      }
+    },
+    {
+      "declarationId": "t102-extension-error-protocol-duplicatekey",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "variant",
+      "exportName": "kmipkit_protocol::ProtocolErrorKind::DuplicateKey",
+      "capabilityId": "vendor_extension_registry",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0012-FR-003"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolErrorKind::DuplicateKey"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_DUPLICATE_KEY"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.DuplicateExtensionKeyException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.DuplicateKeyError"
+        }
+      }
+    },
+    {
+      "declarationId": "t102-extension-error-rust-kmipkit-duplicatekey",
+      "packageId": "rust-kmipkit",
+      "kind": "variant",
+      "exportName": "kmipkit::ProtocolErrorKind::DuplicateKey",
+      "capabilityId": "vendor_extension_registry",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0012-FR-003"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ProtocolErrorKind::DuplicateKey"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_DUPLICATE_KEY"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.DuplicateExtensionKeyException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.DuplicateKeyError"
+        }
+      }
+    },
+    {
+      "declarationId": "t102-extension-error-protocol-invalididentity",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "variant",
+      "exportName": "kmipkit_protocol::ProtocolErrorKind::InvalidIdentity",
+      "capabilityId": "vendor_extension_registry",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolErrorKind::InvalidIdentity"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_INVALID_IDENTITY"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.InvalidExtensionIdentityException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.InvalidIdentityError"
+        }
+      }
+    },
+    {
+      "declarationId": "t102-extension-error-rust-kmipkit-invalididentity",
+      "packageId": "rust-kmipkit",
+      "kind": "variant",
+      "exportName": "kmipkit::ProtocolErrorKind::InvalidIdentity",
+      "capabilityId": "vendor_extension_registry",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ProtocolErrorKind::InvalidIdentity"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_INVALID_IDENTITY"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.InvalidExtensionIdentityException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.InvalidIdentityError"
+        }
+      }
+    },
+    {
+      "declarationId": "t102-extension-error-protocol-invalidschema",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "variant",
+      "exportName": "kmipkit_protocol::ProtocolErrorKind::InvalidSchema",
+      "capabilityId": "vendor_extension_registry",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolErrorKind::InvalidSchema"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_INVALID_SCHEMA"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.InvalidExtensionSchemaException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.InvalidExtensionSchemaError"
+        }
+      }
+    },
+    {
+      "declarationId": "t102-extension-error-rust-kmipkit-invalidschema",
+      "packageId": "rust-kmipkit",
+      "kind": "variant",
+      "exportName": "kmipkit::ProtocolErrorKind::InvalidSchema",
+      "capabilityId": "vendor_extension_registry",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ProtocolErrorKind::InvalidSchema"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_INVALID_SCHEMA"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.InvalidExtensionSchemaException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.InvalidExtensionSchemaError"
+        }
+      }
+    }
+  ],
   "approvedExclusions": [
     {
       "packageId": "c-kmipkit",
@@ -360595,51 +361523,18 @@
     {
       "packageId": "rust-kmipkit",
       "exportName": "kmipkit::ProtocolErrorKind",
-      "reason": "This exact Rust diagnostic type, discriminator, or constructor is not a distinct cross-language error capability; bindings expose the stable sanitized client error category and cause contract.",
+      "reason": "This exact Rust diagnostic enum has no distinct cross-language enum type. Its four extension-specific variants map individually to stable C status constants and typed Java/Python errors; the other diagnostic categories keep their existing reviewed treatment.",
       "approvalSource": {
         "kind": "feature-specification",
         "path": "specs/003-core-types-errors/spec.md",
         "status": "Approved",
         "evidence": "**Status**: Approved — scope preauthorized by the maintainer's direct instruction to execute the roadmap autonomously."
       },
-      "evidence": "KMIPKIT-0003-FR-001, KMIPKIT-0003-FR-005, KMIPKIT-0003-FR-006; the owning error contract is Rust-specific in implementation, while KMIPKIT-0007 maps safe error status/category/cause data to C, Java, and Python. This exact local diagnostic representation is not required to preserve those public semantics."
+      "evidence": "The four extension-specific categories are separately inventoried with exact Rust, C, Java, and Python mappings under KMIPKIT-0012-FR-010/011; each named error variant is mapped individually. The enum type itself is not an independent product capability."
     },
-    {
-      "packageId": "rust-kmipkit",
-      "exportName": "kmipkit::ProtocolErrorKind::CompatibilityMismatch",
-      "reason": "This exact Rust diagnostic type, discriminator, or constructor is not a distinct cross-language error capability; bindings expose the stable sanitized client error category and cause contract.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/003-core-types-errors/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved — scope preauthorized by the maintainer's direct instruction to execute the roadmap autonomously."
-      },
-      "evidence": "KMIPKIT-0003-FR-001, KMIPKIT-0003-FR-005, KMIPKIT-0003-FR-006; the owning error contract is Rust-specific in implementation, while KMIPKIT-0007 maps safe error status/category/cause data to C, Java, and Python. This exact local diagnostic representation is not required to preserve those public semantics."
-    },
-    {
-      "packageId": "rust-kmipkit",
-      "exportName": "kmipkit::ProtocolErrorKind::DuplicateKey",
-      "reason": "This exact Rust diagnostic type, discriminator, or constructor is not a distinct cross-language error capability; bindings expose the stable sanitized client error category and cause contract.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/003-core-types-errors/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved — scope preauthorized by the maintainer's direct instruction to execute the roadmap autonomously."
-      },
-      "evidence": "KMIPKIT-0003-FR-001, KMIPKIT-0003-FR-005, KMIPKIT-0003-FR-006; the owning error contract is Rust-specific in implementation, while KMIPKIT-0007 maps safe error status/category/cause data to C, Java, and Python. This exact local diagnostic representation is not required to preserve those public semantics."
-    },
-    {
-      "packageId": "rust-kmipkit",
-      "exportName": "kmipkit::ProtocolErrorKind::InvalidIdentity",
-      "reason": "This exact Rust diagnostic type, discriminator, or constructor is not a distinct cross-language error capability; bindings expose the stable sanitized client error category and cause contract.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/003-core-types-errors/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved — scope preauthorized by the maintainer's direct instruction to execute the roadmap autonomously."
-      },
-      "evidence": "KMIPKIT-0003-FR-001, KMIPKIT-0003-FR-005, KMIPKIT-0003-FR-006; the owning error contract is Rust-specific in implementation, while KMIPKIT-0007 maps safe error status/category/cause data to C, Java, and Python. This exact local diagnostic representation is not required to preserve those public semantics."
-    },
+
+
+
     {
       "packageId": "rust-kmipkit",
       "exportName": "kmipkit::ProtocolErrorKind::InvalidInput",
@@ -360652,18 +361547,7 @@
       },
       "evidence": "KMIPKIT-0003-FR-001, KMIPKIT-0003-FR-005, KMIPKIT-0003-FR-006; the owning error contract is Rust-specific in implementation, while KMIPKIT-0007 maps safe error status/category/cause data to C, Java, and Python. This exact local diagnostic representation is not required to preserve those public semantics."
     },
-    {
-      "packageId": "rust-kmipkit",
-      "exportName": "kmipkit::ProtocolErrorKind::InvalidSchema",
-      "reason": "This exact Rust diagnostic type, discriminator, or constructor is not a distinct cross-language error capability; bindings expose the stable sanitized client error category and cause contract.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/003-core-types-errors/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved — scope preauthorized by the maintainer's direct instruction to execute the roadmap autonomously."
-      },
-      "evidence": "KMIPKIT-0003-FR-001, KMIPKIT-0003-FR-005, KMIPKIT-0003-FR-006; the owning error contract is Rust-specific in implementation, while KMIPKIT-0007 maps safe error status/category/cause data to C, Java, and Python. This exact local diagnostic representation is not required to preserve those public semantics."
-    },
+
     {
       "packageId": "rust-kmipkit",
       "exportName": "kmipkit::ProtocolErrorKind::InvalidValue",
@@ -364711,51 +365595,18 @@
     {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "kmipkit_protocol::ProtocolErrorKind",
-      "reason": "This exact Rust diagnostic type, discriminator, or constructor is not a distinct cross-language error capability; bindings expose the stable sanitized client error category and cause contract.",
+      "reason": "This exact Rust diagnostic enum has no distinct cross-language enum type. Its four extension-specific variants map individually to stable C status constants and typed Java/Python errors; the other diagnostic categories keep their existing reviewed treatment.",
       "approvalSource": {
         "kind": "feature-specification",
         "path": "specs/003-core-types-errors/spec.md",
         "status": "Approved",
         "evidence": "**Status**: Approved — scope preauthorized by the maintainer's direct instruction to execute the roadmap autonomously."
       },
-      "evidence": "KMIPKIT-0003-FR-001, KMIPKIT-0003-FR-005, KMIPKIT-0003-FR-006; the owning error contract is Rust-specific in implementation, while KMIPKIT-0007 maps safe error status/category/cause data to C, Java, and Python. This exact local diagnostic representation is not required to preserve those public semantics."
+      "evidence": "The four extension-specific categories are separately inventoried with exact Rust, C, Java, and Python mappings under KMIPKIT-0012-FR-010/011; each named error variant is mapped individually. The enum type itself is not an independent product capability."
     },
-    {
-      "packageId": "rust-kmipkit-protocol",
-      "exportName": "kmipkit_protocol::ProtocolErrorKind::CompatibilityMismatch",
-      "reason": "This exact Rust diagnostic type, discriminator, or constructor is not a distinct cross-language error capability; bindings expose the stable sanitized client error category and cause contract.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/003-core-types-errors/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved — scope preauthorized by the maintainer's direct instruction to execute the roadmap autonomously."
-      },
-      "evidence": "KMIPKIT-0003-FR-001, KMIPKIT-0003-FR-005, KMIPKIT-0003-FR-006; the owning error contract is Rust-specific in implementation, while KMIPKIT-0007 maps safe error status/category/cause data to C, Java, and Python. This exact local diagnostic representation is not required to preserve those public semantics."
-    },
-    {
-      "packageId": "rust-kmipkit-protocol",
-      "exportName": "kmipkit_protocol::ProtocolErrorKind::DuplicateKey",
-      "reason": "This exact Rust diagnostic type, discriminator, or constructor is not a distinct cross-language error capability; bindings expose the stable sanitized client error category and cause contract.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/003-core-types-errors/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved — scope preauthorized by the maintainer's direct instruction to execute the roadmap autonomously."
-      },
-      "evidence": "KMIPKIT-0003-FR-001, KMIPKIT-0003-FR-005, KMIPKIT-0003-FR-006; the owning error contract is Rust-specific in implementation, while KMIPKIT-0007 maps safe error status/category/cause data to C, Java, and Python. This exact local diagnostic representation is not required to preserve those public semantics."
-    },
-    {
-      "packageId": "rust-kmipkit-protocol",
-      "exportName": "kmipkit_protocol::ProtocolErrorKind::InvalidIdentity",
-      "reason": "This exact Rust diagnostic type, discriminator, or constructor is not a distinct cross-language error capability; bindings expose the stable sanitized client error category and cause contract.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/003-core-types-errors/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved — scope preauthorized by the maintainer's direct instruction to execute the roadmap autonomously."
-      },
-      "evidence": "KMIPKIT-0003-FR-001, KMIPKIT-0003-FR-005, KMIPKIT-0003-FR-006; the owning error contract is Rust-specific in implementation, while KMIPKIT-0007 maps safe error status/category/cause data to C, Java, and Python. This exact local diagnostic representation is not required to preserve those public semantics."
-    },
+
+
+
     {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "kmipkit_protocol::ProtocolErrorKind::InvalidInput",
@@ -364768,18 +365619,7 @@
       },
       "evidence": "KMIPKIT-0003-FR-001, KMIPKIT-0003-FR-005, KMIPKIT-0003-FR-006; the owning error contract is Rust-specific in implementation, while KMIPKIT-0007 maps safe error status/category/cause data to C, Java, and Python. This exact local diagnostic representation is not required to preserve those public semantics."
     },
-    {
-      "packageId": "rust-kmipkit-protocol",
-      "exportName": "kmipkit_protocol::ProtocolErrorKind::InvalidSchema",
-      "reason": "This exact Rust diagnostic type, discriminator, or constructor is not a distinct cross-language error capability; bindings expose the stable sanitized client error category and cause contract.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/003-core-types-errors/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved — scope preauthorized by the maintainer's direct instruction to execute the roadmap autonomously."
-      },
-      "evidence": "KMIPKIT-0003-FR-001, KMIPKIT-0003-FR-005, KMIPKIT-0003-FR-006; the owning error contract is Rust-specific in implementation, while KMIPKIT-0007 maps safe error status/category/cause data to C, Java, and Python. This exact local diagnostic representation is not required to preserve those public semantics."
-    },
+
     {
       "packageId": "rust-kmipkit-protocol",
       "exportName": "kmipkit_protocol::ProtocolErrorKind::InvalidValue",
@@ -459101,6 +459941,10 @@
           "kmipkit::ClientBatchItem::extension_criticality_indicator_at",
           "kmipkit::ClientBatchItem::extension_identity_at",
           "kmipkit::ClientBatchItem::with_extension",
+          "kmipkit::ProtocolErrorKind::CompatibilityMismatch",
+          "kmipkit::ProtocolErrorKind::DuplicateKey",
+          "kmipkit::ProtocolErrorKind::InvalidIdentity",
+          "kmipkit::ProtocolErrorKind::InvalidSchema",
           "kmipkit_client::ClientBatchItem",
           "kmipkit_client::ClientBatchItem::extension_count",
           "kmipkit_client::ClientBatchItem::extension_criticality_indicator_at",
@@ -459126,6 +459970,10 @@
           "kmipkit_client::extension_registry::limits",
           "kmipkit_client::extension_registry::validate_extension_value",
           "kmipkit_client::extension_registry::validated_value",
+          "kmipkit_protocol::ProtocolErrorKind::CompatibilityMismatch",
+          "kmipkit_protocol::ProtocolErrorKind::DuplicateKey",
+          "kmipkit_protocol::ProtocolErrorKind::InvalidIdentity",
+          "kmipkit_protocol::ProtocolErrorKind::InvalidSchema",
           "kmipkit_protocol::extension::Compatibility",
           "kmipkit_protocol::extension::Discriminator",
           "kmipkit_protocol::extension::ExtensionChildRule",
@@ -459190,6 +460038,10 @@
           "kmipkit_protocol::extension::with_values"
         ],
         "c": [
+          "KMIPKIT_ERROR_COMPATIBILITY_MISMATCH",
+          "KMIPKIT_ERROR_DUPLICATE_KEY",
+          "KMIPKIT_ERROR_INVALID_IDENTITY",
+          "KMIPKIT_ERROR_INVALID_SCHEMA",
           "kmipkit_client_batch_item_extension_count",
           "kmipkit_client_batch_item_extension_criticality_indicator_at",
           "kmipkit_client_batch_item_extension_identity_at",
@@ -459324,11 +460176,13 @@
           "org.kmipkit.extensions.Discriminator",
           "org.kmipkit.extensions.Discriminator.close",
           "org.kmipkit.extensions.Discriminator.create",
+          "org.kmipkit.extensions.DuplicateExtensionKeyException",
           "org.kmipkit.extensions.ExtensionChildRule",
           "org.kmipkit.extensions.ExtensionChildRule.close",
           "org.kmipkit.extensions.ExtensionChildRule.optional",
           "org.kmipkit.extensions.ExtensionChildRule.repeated",
           "org.kmipkit.extensions.ExtensionChildRule.required",
+          "org.kmipkit.extensions.ExtensionCompatibilityException",
           "org.kmipkit.extensions.ExtensionDefinition",
           "org.kmipkit.extensions.ExtensionDefinition.close",
           "org.kmipkit.extensions.ExtensionDefinition.create",
@@ -459386,6 +460240,8 @@
           "org.kmipkit.extensions.ExtensionSchema.with_required_bit_mask",
           "org.kmipkit.extensions.ExtensionSchema.with_signed_range",
           "org.kmipkit.extensions.ExtensionSchema.with_unsigned_range",
+          "org.kmipkit.extensions.InvalidExtensionIdentityException",
+          "org.kmipkit.extensions.InvalidExtensionSchemaException",
           "org.kmipkit.extensions.RegisteredExtensionValue",
           "org.kmipkit.extensions.RegisteredExtensionValue.close",
           "org.kmipkit.extensions.TtlvPath",
@@ -459399,6 +460255,10 @@
           "org.kmipkit.extensions.ValidatedExtensionValue.valueAt"
         ],
         "python": [
+          "kmipkit.errors.CompatibilityMismatchError",
+          "kmipkit.errors.DuplicateKeyError",
+          "kmipkit.errors.InvalidExtensionSchemaError",
+          "kmipkit.errors.InvalidIdentityError",
           "kmipkit.extensions.ClientBatchItem",
           "kmipkit.extensions.ClientBatchItem.close",
           "kmipkit.extensions.ClientConfiguration",

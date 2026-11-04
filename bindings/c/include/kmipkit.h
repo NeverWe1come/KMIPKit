@@ -529,7 +529,11 @@ void kmipkit_get_attributes_request_release(kmipkit_get_attributes_request_t *ha
 void kmipkit_get_attribute_list_request_release(kmipkit_get_attribute_list_request_t *handle);
 void kmipkit_attribute_set_release(kmipkit_attribute_set_t *handle);
 void kmipkit_profile_readiness_release(kmipkit_profile_readiness_t *handle);
+#define KMIPKIT_ERROR_COMPATIBILITY_MISMATCH ((int32_t)1)
+#define KMIPKIT_ERROR_DUPLICATE_KEY ((int32_t)2)
+#define KMIPKIT_ERROR_INVALID_IDENTITY ((int32_t)3)
 #define KMIPKIT_ERROR_INVALID_INPUT ((int32_t)4)
+#define KMIPKIT_ERROR_INVALID_SCHEMA ((int32_t)5)
 #define KMIPKIT_ERROR_RESOURCE_LIMIT ((int32_t)6)
 #define KMIPKIT_ERROR_INTERNAL ((int32_t)7)
 #define KMIPKIT_ERROR_PROTOCOL ((int32_t)8)

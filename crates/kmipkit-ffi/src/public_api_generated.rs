@@ -12263,4 +12263,44 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-kmipkit-protocol",
         "kmipkit_protocol::attribute::AttributeSet::try_push",
     ),
+    (
+        "t102-extension-error-protocol-compatibilitymismatch",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ProtocolErrorKind::CompatibilityMismatch",
+    ),
+    (
+        "t102-extension-error-rust-kmipkit-compatibilitymismatch",
+        "rust-kmipkit",
+        "kmipkit::ProtocolErrorKind::CompatibilityMismatch",
+    ),
+    (
+        "t102-extension-error-protocol-duplicatekey",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ProtocolErrorKind::DuplicateKey",
+    ),
+    (
+        "t102-extension-error-rust-kmipkit-duplicatekey",
+        "rust-kmipkit",
+        "kmipkit::ProtocolErrorKind::DuplicateKey",
+    ),
+    (
+        "t102-extension-error-protocol-invalididentity",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ProtocolErrorKind::InvalidIdentity",
+    ),
+    (
+        "t102-extension-error-rust-kmipkit-invalididentity",
+        "rust-kmipkit",
+        "kmipkit::ProtocolErrorKind::InvalidIdentity",
+    ),
+    (
+        "t102-extension-error-protocol-invalidschema",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ProtocolErrorKind::InvalidSchema",
+    ),
+    (
+        "t102-extension-error-rust-kmipkit-invalidschema",
+        "rust-kmipkit",
+        "kmipkit::ProtocolErrorKind::InvalidSchema",
+    ),
 ];

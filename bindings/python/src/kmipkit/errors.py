@@ -24,7 +24,7 @@ class CompatibilityMismatchError(KmipKitError):
 
 
 class DuplicateKeyError(KmipKitError):
-    """An extension definition duplicates a registry identity."""
+    """A definition duplicates a registry identity or discriminator key for its vendor."""
 
     category = "duplicate_key"
 
