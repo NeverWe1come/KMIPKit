@@ -458,6 +458,7 @@ fn request_encodes_a_valid_wrapped_get_specification() {
     ]);
 
     let payload = GetRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString("wrapped-object".to_owned()))
         .with_key_wrapping_specification(wrapping_specification)
         .to_ttlv_payload()
         .expect("the valid Table 370 request structure is representable");
@@ -466,9 +467,13 @@ fn request_encodes_a_valid_wrapped_get_specification() {
 
     assert_eq!(
         field_signature(&payload),
-        [(KEY_WRAPPING_SPECIFICATION_TAG, ItemType::Structure)]
+        [
+            (UNIQUE_IDENTIFIER_TAG, ItemType::TextString),
+            (KEY_WRAPPING_SPECIFICATION_TAG, ItemType::Structure),
+        ]
     );
-    assert!(fields[0].with_value(|value| {
+    assert!(fields[0].with_value(|value| matches!(value, ValueView::TextString("wrapped-object"))));
+    assert!(fields[1].with_value(|value| {
         let ValueView::Structure(specification) = value else {
             return false;
         };

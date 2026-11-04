@@ -63,7 +63,7 @@ unsafe extern "C" {
 
 use kmipkit_ffi::kmipkit_codec_limits_t;
 use kmipkit_test_support::EphemeralPki;
-use kmipkit_ttlv::{Item, ValueView};
+use kmipkit_ttlv::{Item, StructureView, ValueView};
 use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
 use rustls::server::WebPkiClientVerifier;
 use rustls::{RootCertStore, ServerConfig, ServerConnection, StreamOwned};
@@ -346,7 +346,8 @@ fn compiled_c_consumer_exposes_profile_readiness_and_catalog_contract() {
 
 #[test]
 // OASIS KMIP v2.1 §6.1.7 Tables 183–185; §6.1.19 Tables 220–222;
-// §6.1.18 Tables 217–219; §6.1.46 Tables 305–307; §6.1.23 Tables 232–234;
+// §6.1.18 Tables 217–219; §6.1.25 Table 238; §7.18 Table 370;
+// §6.1.46 Tables 305–307; §6.1.23 Tables 232–234;
 // §4.1.2; §6.1.6 Tables 179–181 and §4.44 Table 117; §6.1.9 Table 190;
 // §6.1.45 Table 300; §6.1.47 Tables 310–311.
 fn compiled_c_consumer_encodes_check_get_export_rekey_and_allocation_builders_over_mtls() {
@@ -441,7 +442,7 @@ fn compiled_c_consumer_encodes_check_get_export_rekey_and_allocation_builders_ov
     unsafe { kmipkit_codec_limits_release(limits) };
     assert_eq!(
         result, 0,
-        "the C consumer builds and decodes twenty-two ordered items"
+        "the C consumer builds and decodes twenty-eight ordered items"
     );
     peer.join()
         .expect("the compiled C request-builder mTLS peer completes");
@@ -2908,7 +2909,7 @@ fn assert_request_builder_wire(request: &Item) {
             .iter()
             .filter(|item| item.tag().raw() == 0x0042_000f)
             .collect::<Vec<_>>();
-        assert_eq!(batch_items.len(), REQUEST_BUILDER_WIRE_EXPECTED.len() + 1);
+        assert_eq!(batch_items.len(), REQUEST_BUILDER_WIRE_EXPECTED.len() + 6);
         assert_placeholder_producer(batch_items[0]);
         for (index, (actual, expected)) in batch_items[1..]
             .iter()
@@ -2917,6 +2918,196 @@ fn assert_request_builder_wire(request: &Item) {
         {
             assert_request_builder_item(actual, expected, index);
         }
+        for (offset, actual) in batch_items[23..].iter().enumerate() {
+            assert_wrapping_builder_item(actual, offset);
+        }
+    });
+}
+
+fn assert_wrapping_builder_item(actual: &Item, index: usize) {
+    const OPERATIONS: [u32; 5] = [42, 42, 42, 43, 10];
+    const IDENTIFIERS: [&str; 5] = [
+        "import-replace-omitted",
+        "import-replace-false",
+        "import-replace-true",
+        "export-wrapped",
+        "get-wrapped",
+    ];
+    actual.with_value(|value| {
+        let ValueView::Structure(batch_item) = value else {
+            panic!("wrapping batch item is a Structure");
+        };
+        assert_eq!(
+            batch_item.children().iter().map(|item| item.tag().raw()).collect::<Vec<_>>(),
+            [0x0042_005c, 0x0042_0093, 0x0042_0079],
+        );
+        assert!(batch_item.children()[0].with_value(
+            |value| matches!(value, ValueView::Enumeration(operation) if *operation == OPERATIONS[index]),
+        ));
+        let expected_id = format!("item-{}", index + 23);
+        assert!(batch_item.children()[1].with_value(
+            |value| matches!(value, ValueView::ByteString(id) if id == expected_id.as_bytes()),
+        ));
+        batch_item.children()[2].with_value(|value| {
+            let ValueView::Structure(payload) = value else {
+                panic!("wrapping request payload is a Structure");
+            };
+            if index < 3 {
+                assert_import_wrapping_payload(&payload, index, IDENTIFIERS[index]);
+            } else {
+                assert_eq!(
+                    payload.children().iter().map(|item| item.tag().raw()).collect::<Vec<_>>(),
+                    [0x0042_0094, 0x0042_0047],
+                );
+                let expected_identifier = IDENTIFIERS[index];
+                assert!(payload.children()[0].with_value(
+                    |value| matches!(value, ValueView::TextString(actual) if actual == expected_identifier),
+                ));
+                assert_wrapping_specification(&payload.children()[1]);
+            }
+        });
+    });
+}
+
+fn assert_import_wrapping_payload(payload: &StructureView<'_>, index: usize, identifier: &str) {
+    let expected_tags: &[u32] = if index == 0 {
+        &[
+            0x0042_0094,
+            0x0042_0057,
+            0x0042_00f8,
+            0x0042_0125,
+            0x0042_008f,
+        ]
+    } else {
+        &[
+            0x0042_0094,
+            0x0042_0057,
+            0x0042_0124,
+            0x0042_00f8,
+            0x0042_0125,
+            0x0042_008f,
+        ]
+    };
+    assert_eq!(
+        payload
+            .children()
+            .iter()
+            .map(|item| item.tag().raw())
+            .collect::<Vec<_>>(),
+        expected_tags,
+    );
+    assert!(payload.children()[0].with_value(
+        |value| matches!(value, ValueView::TextString(actual) if actual == identifier),
+    ));
+    assert!(payload.children()[1].with_value(
+        |value| matches!(value, ValueView::Enumeration(object_type) if *object_type == 2),
+    ));
+    let mut key_wrap_index = 2;
+    if index != 0 {
+        let expected_replace_existing = index == 2;
+        assert!(payload.children()[2].with_value(
+            |value| matches!(value, ValueView::Boolean(actual) if *actual == expected_replace_existing),
+        ));
+        key_wrap_index += 1;
+    }
+    assert!(
+        payload.children()[key_wrap_index].with_value(
+            |value| matches!(value, ValueView::Enumeration(raw) if *raw == 0xf123_4568),
+        )
+    );
+    let attributes_index = key_wrap_index + 1;
+    assert_eq!(
+        payload.children()[attributes_index].tag().raw(),
+        0x0042_0125
+    );
+    assert!(payload.children()[attributes_index].with_value(
+        |value| matches!(value, ValueView::Structure(fields) if fields.children().is_empty())
+    ));
+    assert_wrapped_import_object(&payload.children()[attributes_index + 1]);
+}
+
+fn assert_wrapped_import_object(object: &Item) {
+    assert_eq!(object.tag().raw(), 0x0042_008f);
+    object.with_value(|value| {
+        let ValueView::Structure(key_object) = value else {
+            panic!("Symmetric Key is a Structure");
+        };
+        assert_eq!(key_object.children().len(), 1);
+        assert_eq!(key_object.children()[0].tag().raw(), 0x0042_0040);
+        key_object.children()[0].with_value(|value| {
+            let ValueView::Structure(key_block) = value else {
+                panic!("Key Block is a Structure");
+            };
+            assert_eq!(
+                key_block.children().iter().map(|item| item.tag().raw()).collect::<Vec<_>>(),
+                [0x0042_0042, 0x0042_0045, 0x0042_0046],
+            );
+            assert!(key_block.children()[0].with_value(
+                |value| matches!(value, ValueView::Enumeration(format) if *format == 1),
+            ));
+            assert!(key_block.children()[1].with_value(
+                |value| matches!(value, ValueView::ByteString(bytes) if bytes == b"synthetic-wrapped-key-value"),
+            ));
+            assert_wrapping_data(&key_block.children()[2]);
+        });
+    });
+}
+
+fn assert_wrapping_data(item: &Item) {
+    item.with_value(|value| {
+        let ValueView::Structure(wrapping_data) = value else {
+            panic!("Key Wrapping Data is a Structure");
+        };
+        assert_eq!(
+            wrapping_data
+                .children()
+                .iter()
+                .map(|item| item.tag().raw())
+                .collect::<Vec<_>>(),
+            [0x0042_009e, 0x0042_0036],
+        );
+        assert!(
+            wrapping_data.children()[0].with_value(
+                |value| matches!(value, ValueView::Enumeration(method) if *method == 1),
+            )
+        );
+        assert_key_information(&wrapping_data.children()[1], "wrapping-key");
+    });
+}
+
+fn assert_wrapping_specification(item: &Item) {
+    item.with_value(|value| {
+        let ValueView::Structure(specification) = value else {
+            panic!("Key Wrapping Specification is a Structure");
+        };
+        assert_eq!(
+            specification
+                .children()
+                .iter()
+                .map(|item| item.tag().raw())
+                .collect::<Vec<_>>(),
+            [0x0042_009e, 0x0042_0036],
+        );
+        assert!(
+            specification.children()[0].with_value(
+                |value| matches!(value, ValueView::Enumeration(method) if *method == 1),
+            )
+        );
+        assert_key_information(&specification.children()[1], "wrapping-key-id");
+    });
+}
+
+fn assert_key_information(item: &Item, expected_identifier: &str) {
+    assert_eq!(item.tag().raw(), 0x0042_0036);
+    item.with_value(|value| {
+        let ValueView::Structure(key_information) = value else {
+            panic!("Encryption Key Information is a Structure");
+        };
+        assert_eq!(key_information.children().len(), 1);
+        assert_eq!(key_information.children()[0].tag().raw(), 0x0042_0094);
+        assert!(key_information.children()[0].with_value(
+            |value| matches!(value, ValueView::TextString(actual) if actual == expected_identifier),
+        ));
     });
 }
 
@@ -4291,8 +4482,9 @@ fn rekey_key_pair_success_response() -> Vec<u8> {
 }
 
 fn request_builder_wire_response() -> Vec<u8> {
-    const OPERATIONS: [u32; 23] = [
-        1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x1d, 0x29, 0x29, 6, 6, 6, 6, 7,
+    const OPERATIONS: [u32; 28] = [
+        1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x1d, 0x29, 0x29, 6, 6, 6, 6, 7, 42,
+        42, 42, 43, 10,
     ];
     let version = structure(
         0x0042_0069,

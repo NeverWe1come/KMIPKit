@@ -24,6 +24,8 @@ const KEY_BLOCK: u32 = 0x0042_0040;
 const KEY_FORMAT_TYPE_IN_OBJECT: u32 = 0x0042_0042;
 const KEY_VALUE: u32 = 0x0042_0045;
 const KEY_MATERIAL: u32 = 0x0042_0043;
+const WRAPPING_METHOD: u32 = 0x0042_009E;
+const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
 const UNKNOWN_VENDOR_TAG: u32 = 0x0054_1234;
 const FUTURE_RESULT_REASON: u32 = 0xF123_4567;
 
@@ -140,6 +142,58 @@ fn request_preserves_all_explicit_optional_choices_and_omits_absent_fields() {
         fields[1]
             .with_value(|value| matches!(value, ValueView::Enumeration(v) if *v == 0xF123_4569))
     );
+}
+
+#[test]
+fn request_encodes_a_valid_table_370_wrapping_specification() {
+    // OASIS KMIP 2.1 §6.1.18 Table 217 carries the optional selector; §7.18 Table 370
+    // requires a Wrapping Method and Encryption Key Information when MAC information is absent.
+    let key_information = structure([item(
+        UNIQUE_IDENTIFIER,
+        Value::text_string("wrapping-key-id".to_owned()),
+    )]);
+    let specification = structure([
+        item(WRAPPING_METHOD, Value::enumeration(1)),
+        item(
+            ENCRYPTION_KEY_INFORMATION,
+            Value::structure(key_information),
+        ),
+    ]);
+    let payload = ExportRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString("wrapped-object".to_owned()))
+        .with_key_wrapping_specification(specification)
+        .into_ttlv_payload()
+        .expect("Table 217 permits a valid Table 370 Key Wrapping Specification");
+
+    let payload_view = payload.view();
+    let fields = payload_view.children();
+    assert_eq!(
+        fields
+            .iter()
+            .map(|field| field.tag().raw())
+            .collect::<Vec<_>>(),
+        [UNIQUE_IDENTIFIER, KEY_WRAPPING_SPECIFICATION],
+    );
+    assert!(fields[1].with_value(|value| {
+        let ValueView::Structure(specification) = value else {
+            return false;
+        };
+        let children = specification.children();
+        children.len() == 2
+            && children[0].tag().raw() == WRAPPING_METHOD
+            && children[0].with_value(|value| matches!(value, ValueView::Enumeration(1)))
+            && children[1].tag().raw() == ENCRYPTION_KEY_INFORMATION
+            && children[1].with_value(|value| {
+                let ValueView::Structure(information) = value else {
+                    return false;
+                };
+                information.children().len() == 1
+                    && information.children()[0].tag().raw() == UNIQUE_IDENTIFIER
+                    && information.children()[0].with_value(|value| {
+                        matches!(value, ValueView::TextString("wrapping-key-id"))
+                    })
+            })
+    }));
 }
 
 #[test]

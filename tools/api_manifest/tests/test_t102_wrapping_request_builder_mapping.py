@@ -96,8 +96,15 @@ class T102WrappingRequestBuilderMappingTests(unittest.TestCase):
                 self.assertEqual(expected["operation"], declaration["capabilityId"])
                 self.assertEqual(expected["owner"], declaration["approvalSource"]["path"])
                 linked_ids = set(declaration["requirementIds"])
-                self.assertTrue(expected["fr"] <= linked_ids)
-                self.assertTrue(expected["requirements"] <= linked_ids)
+                owner_fr_prefix = next(iter(expected["fr"])).split("-FR-", 1)[0] + "-FR-"
+                owner_fr_ids = {
+                    value for value in linked_ids if value.startswith(owner_fr_prefix)
+                }
+                self.assertEqual(expected["fr"], owner_fr_ids)
+                normative_ids = {
+                    value for value in linked_ids if value.startswith("KMIPKIT-REQ-SPEC-")
+                }
+                self.assertEqual(expected["requirements"], normative_ids)
                 expected_evidence = set(COMMON_EVIDENCE.values()) | {expected["rust_test"]}
                 self.assertTrue(expected_evidence <= set(declaration["parityEvidenceIds"]))
                 self.assertEqual("four-language", declaration["parityScope"])

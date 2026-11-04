@@ -99,7 +99,8 @@ final class ClientFacadeTlsIntegrationTest {
     Path temporaryDirectory;
 
     // OASIS KMIP v2.1 §6.1.7 Tables 183–185; §6.1.19 Tables 220–222;
-    // §6.1.18 Tables 217–219; §6.1.46 Tables 305–307; §6.1.23 Tables 232–234;
+    // §6.1.18 Tables 217–219; §6.1.25 Table 238; §7.18 Table 370;
+    // §6.1.46 Tables 305–307; §6.1.23 Tables 232–234;
     // OASIS KMIP v2.1 §4.1.2; §6.1.9 Tables 189–190; §6.1.45 Table 300;
     // §6.1.47 Tables 310–311; §6.1.27 Table 244; §11.52 Table 483;
     // OASIS KMIP v2.1 §6.1.6 Tables 179–181 and §4.44 Table 117.
@@ -153,6 +154,9 @@ final class ClientFacadeTlsIntegrationTest {
                         requestLimits);
                 TtlvStructure certifyAttributes = rekeyRequestStructure(
                         0x42001d, TtlvValue.Enumeration(1), requestLimits);
+                TtlvStructure importAttributes = TtlvStructure.create();
+                TtlvStructure wrappedImportObject = wrappedImportAnyObjectStructure(requestLimits);
+                TtlvStructure wrappingSpecification = wrappingSpecificationStructure(requestLimits);
                 TtlvStructure rekeyMasks = rekeyRequestStructure(
                         0x42015e, TtlvValue.Integer(3), requestLimits);
                 TtlvStructure certifyMasks = rekeyRequestStructure(
@@ -232,6 +236,26 @@ final class ClientFacadeTlsIntegrationTest {
                             UniqueIdentifier.textString("recertify-type-only"), null,
                             5L, null, null, null, null)
                     .withUniqueBatchItemId(uniqueBatchItemId(22)));
+            batch.add(ClientBatchItem.importObject(
+                            UniqueIdentifier.textString("import-replace-omitted"),
+                            2, null, 0xf1234568L, importAttributes, wrappedImportObject)
+                    .withUniqueBatchItemId(uniqueBatchItemId(23)));
+            batch.add(ClientBatchItem.importObject(
+                            UniqueIdentifier.textString("import-replace-false"),
+                            2, Boolean.FALSE, 0xf1234568L, importAttributes, wrappedImportObject)
+                    .withUniqueBatchItemId(uniqueBatchItemId(24)));
+            batch.add(ClientBatchItem.importObject(
+                            UniqueIdentifier.textString("import-replace-true"),
+                            2, Boolean.TRUE, 0xf1234568L, importAttributes, wrappedImportObject)
+                    .withUniqueBatchItemId(uniqueBatchItemId(25)));
+            batch.add(ClientBatchItem.export(
+                            UniqueIdentifier.textString("export-wrapped"), null, null, null,
+                            wrappingSpecification)
+                    .withUniqueBatchItemId(uniqueBatchItemId(26)));
+            batch.add(ClientBatchItem.get(
+                            UniqueIdentifier.textString("get-wrapped"), null, null, null,
+                            wrappingSpecification)
+                    .withUniqueBatchItemId(uniqueBatchItemId(27)));
             try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
                     ClientBatchItemResult createPairResult = response.itemAt(13);
                     ClientBatchItemResult rekeyPairResult = response.itemAt(14);
@@ -242,7 +266,7 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult certifyResult19 = response.itemAt(19);
                     ClientBatchItemResult certifyResult20 = response.itemAt(20);
                     ClientBatchItemResult certifyResult21 = response.itemAt(21)) {
-                assertEquals(23, response.itemCount());
+                assertEquals(28, response.itemCount());
                 assertEquals(0, createPairResult.resultStatus());
                 ClientBatchItemResult.CreateKeyPairResponse createPairResponse =
                         createPairResult.createKeyPairResponse().orElseThrow();
@@ -435,13 +459,68 @@ final class ClientFacadeTlsIntegrationTest {
                         item(0x420094, TtlvItemType.TextString.code(),
                                 "recertify-type-only".getBytes(StandardCharsets.UTF_8)),
                         enumeration(0x420019, 5))));
+        byte[] wrappedAnyObject = wrappedImportAnyObjectBytes();
+        byte[] importCommon = concatTtlv(
+                enumeration(0x420057, 2),
+                enumeration(0x4200f8, 0xf1234568),
+                structure(0x420125),
+                wrappedAnyObject);
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 42),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(23)),
+                structure(0x420079,
+                        item(0x420094, TtlvItemType.TextString.code(),
+                                "import-replace-omitted".getBytes(StandardCharsets.UTF_8)),
+                        importCommon)));
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 42),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(24)),
+                structure(0x420079,
+                        item(0x420094, TtlvItemType.TextString.code(),
+                                "import-replace-false".getBytes(StandardCharsets.UTF_8)),
+                        enumeration(0x420057, 2),
+                        item(0x420124, TtlvItemType.Boolean.code(), new byte[8]),
+                        enumeration(0x4200f8, 0xf1234568),
+                        structure(0x420125),
+                        wrappedAnyObject)));
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 42),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(25)),
+                structure(0x420079,
+                        item(0x420094, TtlvItemType.TextString.code(),
+                                "import-replace-true".getBytes(StandardCharsets.UTF_8)),
+                        enumeration(0x420057, 2),
+                        item(0x420124, TtlvItemType.Boolean.code(),
+                                new byte[] {0, 0, 0, 0, 0, 0, 0, 1}),
+                        enumeration(0x4200f8, 0xf1234568),
+                        structure(0x420125),
+                        wrappedAnyObject)));
+        byte[] expectedWrappingSpecification = structure(0x420047,
+                enumeration(0x42009e, 1),
+                structure(0x420036,
+                        item(0x420094, TtlvItemType.TextString.code(),
+                                "wrapping-key-id".getBytes(StandardCharsets.UTF_8))));
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 43),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(26)),
+                structure(0x420079,
+                        item(0x420094, TtlvItemType.TextString.code(),
+                                "export-wrapped".getBytes(StandardCharsets.UTF_8)),
+                        expectedWrappingSpecification)));
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 10),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(27)),
+                structure(0x420079,
+                        item(0x420094, TtlvItemType.TextString.code(),
+                                "get-wrapped".getBytes(StandardCharsets.UTF_8)),
+                        expectedWrappingSpecification)));
 
         assertContains(request, expectedBatchItems.toByteArray());
         assertContains(request, item(0x420010, TtlvItemType.Boolean.code(),
                 new byte[] {0, 0, 0, 0, 0, 0, 0, 1}));
         assertEquals(2, countOccurrences(request, enumeration(0x42005c, 9)));
-        assertEquals(2, countOccurrences(request, enumeration(0x42005c, 10)));
-        assertEquals(2, countOccurrences(request, enumeration(0x42005c, 43)));
+        assertEquals(3, countOccurrences(request, enumeration(0x42005c, 10)));
+        assertEquals(3, countOccurrences(request, enumeration(0x42005c, 43)));
         assertEquals(2, countOccurrences(request, enumeration(0x42005c, 4)));
         assertEquals(2, countOccurrences(request, enumeration(0x42005c, 17)));
         assertEquals(3, countOccurrences(request, enumeration(0x42005c, 7)));
@@ -449,6 +528,8 @@ final class ClientFacadeTlsIntegrationTest {
         assertEquals(2, countOccurrences(request, enumeration(0x42005c, 0x29)));
         assertEquals(4, countOccurrences(request, enumeration(0x42005c, 6)));
         assertEquals(1, countOccurrences(request, enumeration(0x42005c, 2)));
+        assertEquals(3, countOccurrences(request, enumeration(0x42005c, 42)));
+        assertEquals(4, countOccurrences(request, enumeration(0x4200f8, 0xf1234568)));
         assertTrue(peer.isDone());
     }
 
@@ -4762,6 +4843,65 @@ final class ClientFacadeTlsIntegrationTest {
         }
     }
 
+    private static TtlvStructure wrappingSpecificationStructure(CodecLimits limits) {
+        TtlvStructure keyInformation = rekeyRequestStructure(
+                0x420094,
+                TtlvValue.TextString("wrapping-key-id".getBytes(StandardCharsets.UTF_8), limits),
+                limits);
+        TtlvStructure specification = rekeyRequestStructure(
+                0x42009e, TtlvValue.Enumeration(1), limits);
+        return TtlvStructure.withItem(
+                specification,
+                registerTtlvItem(
+                        0x420036, TtlvValue.structure(keyInformation, limits), limits),
+                limits);
+    }
+
+    private static TtlvStructure wrappedImportAnyObjectStructure(CodecLimits limits) {
+        TtlvStructure keyInformation = rekeyRequestStructure(
+                0x420094,
+                TtlvValue.TextString("wrapping-key".getBytes(StandardCharsets.UTF_8), limits),
+                limits);
+        TtlvStructure wrappingData = rekeyRequestStructure(
+                0x42009e, TtlvValue.Enumeration(1), limits);
+        wrappingData = TtlvStructure.withItem(
+                wrappingData,
+                registerTtlvItem(
+                        0x420036, TtlvValue.structure(keyInformation, limits), limits),
+                limits);
+        TtlvStructure keyBlock = rekeyRequestStructure(
+                0x420042, TtlvValue.Enumeration(1), limits);
+        keyBlock = TtlvStructure.withItem(
+                keyBlock,
+                registerTtlvItem(
+                        0x420045,
+                        TtlvValue.ByteString(
+                                "synthetic-wrapped-key-value".getBytes(StandardCharsets.US_ASCII),
+                                limits),
+                        limits),
+                limits);
+        keyBlock = TtlvStructure.withItem(
+                keyBlock,
+                registerTtlvItem(0x420046, TtlvValue.structure(wrappingData, limits), limits),
+                limits);
+        TtlvStructure keyObject = rekeyRequestStructure(
+                0x420040, TtlvValue.structure(keyBlock, limits), limits);
+        return rekeyRequestStructure(0x42008f, TtlvValue.structure(keyObject, limits), limits);
+    }
+
+    private static byte[] wrappedImportAnyObjectBytes() throws Exception {
+        return structure(0x42008f,
+                structure(0x420040,
+                        enumeration(0x420042, 1),
+                        item(0x420045, TtlvItemType.ByteString.code(),
+                                "synthetic-wrapped-key-value".getBytes(StandardCharsets.US_ASCII)),
+                        structure(0x420046,
+                                enumeration(0x42009e, 1),
+                                structure(0x420036,
+                                        item(0x420094, TtlvItemType.TextString.code(),
+                                                "wrapping-key".getBytes(StandardCharsets.UTF_8))))));
+    }
+
     private static List<?> cryptoOperations() throws Exception {
         Field operations = CryptoOperationsJavaFacadeTest.class.getDeclaredField("OPERATIONS");
         if (!operations.trySetAccessible()) {
@@ -6116,7 +6256,8 @@ final class ClientFacadeTlsIntegrationTest {
 
     private static byte[] requestBuilderWireResponseMessage() throws Exception {
         int[] operations = {
-            1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x1d, 0x29, 0x29, 6, 6, 6, 6, 7
+            1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x1d, 0x29, 0x29,
+            6, 6, 6, 6, 7, 42, 42, 42, 43, 10
         };
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
@@ -6195,6 +6336,12 @@ final class ClientFacadeTlsIntegrationTest {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         for (byte[] item : items) output.write(item);
         return item(tag, 1, output.toByteArray());
+    }
+
+    private static byte[] concatTtlv(byte[]... values) {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        for (byte[] value : values) output.writeBytes(value);
+        return output.toByteArray();
     }
 
     private static byte[] item(int tag, int type, byte[] value) throws Exception {
