@@ -364815,7 +364815,96 @@
           "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
           "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
         ]
+      },
+    {
+      "declarationId": "T102:profile-validation-result:python-kmipkit:python-error-type-root-alias",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.ProfileValidationError",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProfileValidationError"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_error_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ProfileValidationException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ProfileValidationError"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ProfileValidationMappingTest.java",
+        "bindings/python/tests/test_profile_validation_mapping.py",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "tools/api_manifest/tests/test_t102_profile_model_reexport_mapping.py"
+      ]
+    },
+    {
+      "declarationId": "T102:profile-validation-result:python-kmipkit:python-error-details-root-alias",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.ProfileValidationDetails",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProfileValidationError"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_error_view_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ProfileValidationDetails"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ProfileValidationDetails"
+        }
       }
+    }
   ],
   "approvedExclusions": [
     {
@@ -471650,7 +471739,55 @@
         "exportName": "org.kmipkit.NativeExtensionRegistry.profileValidationResultRelease",
         "packageId": "java-kmipkit",
         "reason": "This internal profile-validation JNI plumbing only bridges the public facade to the KMIPKit C ABI; it is not a separate product capability."
-      }
+      },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ProfileValidationResult.__slots__",
+      "reason": "This exact Python storage layout member constrains assignment for the result wrapper and is not an independent cross-language profile capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+        "evidence": "Reviewed against KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, and KMIPKIT-0043-FR-021. The public result values and validators are mapped; this implementation storage member adds no capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ProfileValidationResult.closed",
+      "reason": "This exact member is local resource lifecycle convenience for close/context-manager use, not an independent KMIP operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+        "evidence": "Reviewed against KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, and KMIPKIT-0043-FR-021. T102 maps result resolution, release, and validation methods; the local closed-state helper has no separate profile capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.errors.ProfileValidationError.args",
+      "reason": "This exact BaseException construction/storage member only holds the fixed redacted profile-validation message and is not an independent profile-validation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+        "evidence": "Reviewed against KMIPKIT-0010-FR-013, KMIPKIT-0043-FR-013, and KMIPKIT-0043-FR-021. The typed profile error and safe source-backed details are mapped; this standard Python exception storage does not add a capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.errors.ProfileValidationError.category",
+      "reason": "This exact string identifies the exception subclass within the local Python error taxonomy. It is not an independent KMIP capability; the typed profile error and safe detail fields define the cross-language data.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+        "evidence": "Reviewed against KMIPKIT-0010-FR-013, KMIPKIT-0043-FR-013, and KMIPKIT-0043-FR-021. The profile-validation error type and source-backed identifiers are mapped across Rust, C, Java, and Python."
+    }
   ],
   "apiLevels": [
     {
@@ -476914,6 +477051,8 @@
             "org.kmipkit.extensions.ProfileValidationSelection.validate"
           ],
           "python": [
+            "kmipkit.ProfileValidationDetails",
+            "kmipkit.ProfileValidationError",
             "kmipkit.client.Client.execute_with_profiles",
             "kmipkit.client.Client.execute_with_profiles_and_context",
             "kmipkit.client.Client.execute_with_profiles_and_context_and_options",
