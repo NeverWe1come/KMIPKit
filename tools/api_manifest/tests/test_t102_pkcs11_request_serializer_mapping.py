@@ -46,6 +46,36 @@ class T102Pkcs11RequestSerializerMappingTests(unittest.TestCase):
             for row in cls.manifest["publicDeclarations"]
         }
 
+    def _assert_target_mapping(
+        self,
+        target: tuple[str, str, str, str],
+        builder: dict[str, object],
+        operation: dict[str, object],
+    ) -> None:
+        declaration_id, rust_package, rust_name, constructor_name = target
+        declaration = self.declarations[declaration_id]
+        constructor = self.by_package_name[(rust_package, constructor_name)]
+        self.assertEqual(rust_name, declaration["exportName"])
+        self.assertEqual(rust_package, declaration["packageId"])
+        self.assertEqual("associated-item", declaration["kind"])
+        self.assertEqual("verified", declaration["declarationState"])
+        self.assertNotIn("candidateSpecId", declaration)
+        self.assertNotIn("blockedReason", declaration)
+        self.assertEqual(CAPABILITY, declaration["capabilityId"])
+        self.assertEqual(constructor["approvalSource"], declaration["approvalSource"])
+        self.assertEqual(constructor["requirementIds"], declaration["requirementIds"])
+
+        expected_mappings = dict(builder["languageMappings"])
+        expected_mappings["rust"] = {"packageId": rust_package, "name": rust_name}
+        self.assertEqual(expected_mappings, declaration["languageMappings"])
+        self.assertEqual("four-language", declaration["parityScope"])
+        self.assertTrue(
+            set(builder["parityEvidenceIds"])
+            <= set(declaration["parityEvidenceIds"])
+        )
+        self.assertIn(PARITY_TEST_EVIDENCE_ID, declaration["parityEvidenceIds"])
+        self.assertIn(declaration_id, operation["declarations"]["rust"])
+
     def test_both_pkcs11_request_serializers_map_to_the_approved_capability(self) -> None:
         builder = self.by_package_name[("c-kmipkit", "kmipkit_client_batch_item_pkcs11")]
         operation = next(
@@ -56,30 +86,10 @@ class T102Pkcs11RequestSerializerMappingTests(unittest.TestCase):
         self.assertEqual(OWNER, builder["approvalSource"]["path"])
         self.assertEqual("Approved", builder["approvalSource"]["status"])
 
-        for declaration_id, rust_package, rust_name, constructor_name in TARGETS:
+        for target in TARGETS:
+            _, _, rust_name, _ = target
             with self.subTest(declaration=rust_name):
-                declaration = self.declarations[declaration_id]
-                constructor = self.by_package_name[(rust_package, constructor_name)]
-                self.assertEqual(rust_name, declaration["exportName"])
-                self.assertEqual(rust_package, declaration["packageId"])
-                self.assertEqual("associated-item", declaration["kind"])
-                self.assertEqual("verified", declaration["declarationState"])
-                self.assertNotIn("candidateSpecId", declaration)
-                self.assertNotIn("blockedReason", declaration)
-                self.assertEqual(CAPABILITY, declaration["capabilityId"])
-                self.assertEqual(constructor["approvalSource"], declaration["approvalSource"])
-                self.assertEqual(constructor["requirementIds"], declaration["requirementIds"])
-
-                expected_mappings = dict(builder["languageMappings"])
-                expected_mappings["rust"] = {"packageId": rust_package, "name": rust_name}
-                self.assertEqual(expected_mappings, declaration["languageMappings"])
-                self.assertEqual("four-language", declaration["parityScope"])
-                self.assertTrue(
-                    set(builder["parityEvidenceIds"])
-                    <= set(declaration["parityEvidenceIds"])
-                )
-                self.assertIn(PARITY_TEST_EVIDENCE_ID, declaration["parityEvidenceIds"])
-                self.assertIn(declaration_id, operation["declarations"]["rust"])
+                self._assert_target_mapping(target, builder, operation)
 
         self.assertIn(PARITY_TEST_EVIDENCE_ID, operation["parityEvidenceIds"])
 
