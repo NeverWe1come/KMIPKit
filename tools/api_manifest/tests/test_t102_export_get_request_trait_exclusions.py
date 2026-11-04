@@ -67,7 +67,7 @@ OWNER = {
 FUNCTIONAL_STATES = {
     "ExportRequest": {
         "": "verified",
-        "::into_ttlv_payload": "blocked",
+        "::into_ttlv_payload": "verified",
         "::new": "verified",
         "::unique_identifier": "blocked",
         "::with_unique_identifier": "verified",
@@ -78,13 +78,13 @@ FUNCTIONAL_STATES = {
     },
     "GetRequest": {
         "": "verified",
-        "::unique_identifier": "blocked",
-        "::key_format_type": "blocked",
-        "::key_wrap_type": "blocked",
-        "::key_compression_type": "blocked",
-        "::key_wrapping_specification": "blocked",
+        "::unique_identifier": "verified",
+        "::key_format_type": "verified",
+        "::key_wrap_type": "verified",
+        "::key_compression_type": "verified",
+        "::key_wrapping_specification": "verified",
         "::new": "verified",
-        "::to_ttlv_payload": "blocked",
+        "::to_ttlv_payload": "verified",
         "::with_unique_identifier": "verified",
         "::with_key_format_type": "verified",
         "::with_key_wrap_type": "verified",

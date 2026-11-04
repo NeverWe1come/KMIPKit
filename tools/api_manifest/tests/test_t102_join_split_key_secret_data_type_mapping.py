@@ -139,7 +139,6 @@ class T102JoinSplitKeySecretDataTypeMappingTests(unittest.TestCase):
     def test_neighboring_ttlv_and_response_surfaces_remain_blocked(self) -> None:
         expected_blocked = {
             "kmipkit_protocol::JoinSplitKeyRequest::attributes",
-            "kmipkit_protocol::JoinSplitKeyRequest::into_ttlv_payload",
             "kmipkit_protocol::JoinSplitKeyRequest::object_type",
             "kmipkit_protocol::JoinSplitKeyRequest::protection_storage_masks",
             "kmipkit_protocol::JoinSplitKeyRequest::references",
