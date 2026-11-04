@@ -516,20 +516,19 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         self.assertEqual(observed_trait_paths, EXPECTED_ROOT_TRAIT_EXPORTS)
         self.assertEqual(audited_exclusions, EXPECTED_ROOT_TRAIT_EXPORTS)
 
-    def test_root_response_facade_remains_blocked_except_existing_ttlv_constructor(self) -> None:
+    def test_root_response_facade_maps_parser_and_ttlv_constructor(self) -> None:
         rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit"
             and row.get("exportName", "").startswith("kmipkit::GetConstraintsResponse")
         }
-        blocked = {
-            "kmipkit::GetConstraintsResponse::try_from_response_item",
-        }
+        blocked = set()
         mapped = {
             "kmipkit::GetConstraintsResponse",
             "kmipkit::GetConstraintsResponse::constraints",
             "kmipkit::GetConstraintsResponse::result",
+            "kmipkit::GetConstraintsResponse::try_from_response_item",
         }
         ttlv_constructor = "kmipkit::GetConstraintsResponse::with_ttlv"
         self.assertEqual(set(rows), blocked | mapped | {ttlv_constructor})
@@ -606,8 +605,9 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             "kmipkit_protocol::SetConstraintsResponse",
             "kmipkit_protocol::SetConstraintsResponse::result",
             "kmipkit_protocol::SetConstraintsResponse::with_ttlv",
+            "kmipkit_protocol::SetConstraintsResponse::try_from_response_item",
         }
-        blocked = {"kmipkit_protocol::SetConstraintsResponse::try_from_response_item"}
+        blocked = set()
         rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -682,13 +682,12 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         self.assertEqual(observed_trait_paths, EXPECTED_SET_ROOT_TRAIT_EXPORTS)
         self.assertEqual(audited_exclusions, EXPECTED_SET_ROOT_TRAIT_EXPORTS)
 
-    def test_set_root_response_facade_remains_blocked_except_existing_ttlv_constructor(self) -> None:
-        blocked = {
-            "kmipkit::SetConstraintsResponse::try_from_response_item",
-        }
+    def test_set_root_response_facade_maps_parser_and_ttlv_constructor(self) -> None:
+        blocked = set()
         mapped = {
             "kmipkit::SetConstraintsResponse",
             "kmipkit::SetConstraintsResponse::result",
+            "kmipkit::SetConstraintsResponse::try_from_response_item",
         }
         ttlv_constructor = "kmipkit::SetConstraintsResponse::with_ttlv"
         rows = {
@@ -772,10 +771,9 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             "kmipkit_protocol::CertifyResponse::unique_identifier",
             "kmipkit_protocol::CertifyResponse::with_ttlv",
             "kmipkit_protocol::CertifyResponse::result",
-        }
-        blocked = {
             "kmipkit_protocol::CertifyResponse::try_from_response_item",
         }
+        blocked = set()
         rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -934,7 +932,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         self.assertEqual(observed_trait_paths, EXPECTED_CHECK_TRAIT_EXPORTS)
         self.assertEqual(audited_exclusions, EXPECTED_CHECK_TRAIT_EXPORTS)
 
-    def test_check_response_preserves_verified_accessors_and_blocked_helpers(self) -> None:
+    def test_check_response_preserves_verified_accessors_and_mapped_parser(self) -> None:
         verified = {
             "kmipkit_protocol::CheckResponse",
             "kmipkit_protocol::CheckResponse::cryptographic_usage_mask",
@@ -943,10 +941,9 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             "kmipkit_protocol::CheckResponse::usage_limits_count",
             "kmipkit_protocol::CheckResponse::with_ttlv",
             "kmipkit_protocol::CheckResponse::result",
-        }
-        blocked = {
             "kmipkit_protocol::CheckResponse::try_from_response_item",
         }
+        blocked = set()
         rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -1029,16 +1026,15 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         self.assertEqual(observed_trait_paths, EXPECTED_DERIVE_KEY_TRAIT_EXPORTS)
         self.assertEqual(audited_exclusions, EXPECTED_DERIVE_KEY_TRAIT_EXPORTS)
 
-    def test_derive_key_response_preserves_verified_accessor_and_blocked_helpers(self) -> None:
+    def test_derive_key_response_preserves_verified_accessor_and_mapped_parser(self) -> None:
         verified = {
             "kmipkit_protocol::DeriveKeyResponse",
             "kmipkit_protocol::DeriveKeyResponse::unique_identifier",
             "kmipkit_protocol::DeriveKeyResponse::with_ttlv",
             "kmipkit_protocol::DeriveKeyResponse::result",
-        }
-        blocked = {
             "kmipkit_protocol::DeriveKeyResponse::try_from_response_item",
         }
+        blocked = set()
         rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -1128,7 +1124,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         self.assertEqual(observed_trait_paths, EXPECTED_EXPORT_TRAIT_EXPORTS)
         self.assertEqual(audited_exclusions, EXPECTED_EXPORT_TRAIT_EXPORTS)
 
-    def test_export_response_preserves_verified_accessors_and_blocked_helpers(self) -> None:
+    def test_export_response_preserves_verified_accessors_and_mapped_parser(self) -> None:
         verified = {
             "kmipkit_protocol::ExportResponse",
             "kmipkit_protocol::ExportResponse::attributes",
@@ -1137,10 +1133,9 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             "kmipkit_protocol::ExportResponse::unique_identifier",
             "kmipkit_protocol::ExportResponse::with_ttlv",
             "kmipkit_protocol::ExportResponse::result",
-        }
-        blocked = {
             "kmipkit_protocol::ExportResponse::try_from_response_item",
         }
+        blocked = set()
         rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -1230,17 +1225,16 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         self.assertEqual(observed_trait_paths, EXPECTED_GET_TRAIT_EXPORTS)
         self.assertEqual(audited_exclusions, EXPECTED_GET_TRAIT_EXPORTS)
 
-    def test_get_response_preserves_verified_accessors_and_blocked_helpers(self) -> None:
+    def test_get_response_preserves_verified_accessors_and_mapped_parser(self) -> None:
         verified = {
             "kmipkit_protocol::GetResponse",
             "kmipkit_protocol::GetResponse::object",
             "kmipkit_protocol::GetResponse::object_type",
             "kmipkit_protocol::GetResponse::unique_identifier",
             "kmipkit_protocol::GetResponse::result",
-        }
-        blocked = {
             "kmipkit_protocol::GetResponse::try_from_response_item",
         }
+        blocked = set()
         rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -1330,16 +1324,15 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         self.assertEqual(observed_trait_paths, EXPECTED_LOCATE_TRAIT_EXPORTS)
         self.assertEqual(audited_exclusions, EXPECTED_LOCATE_TRAIT_EXPORTS)
 
-    def test_locate_response_preserves_verified_accessors_and_blocked_helpers(self) -> None:
+    def test_locate_response_preserves_verified_accessors_and_mapped_parser(self) -> None:
         verified = {
             "kmipkit_protocol::LocateResponse",
             "kmipkit_protocol::LocateResponse::located_items",
             "kmipkit_protocol::LocateResponse::unique_identifiers",
             "kmipkit_protocol::LocateResponse::result",
-        }
-        blocked = {
             "kmipkit_protocol::LocateResponse::try_from_response_item",
         }
+        blocked = set()
         rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -1430,15 +1423,14 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         self.assertEqual(observed_trait_paths, EXPECTED_INTEROP_TRAIT_EXPORTS)
         self.assertEqual(audited_exclusions, EXPECTED_INTEROP_TRAIT_EXPORTS)
 
-    def test_interop_response_preserves_verified_members_and_blocked_parser(self) -> None:
+    def test_interop_response_preserves_verified_members_and_mapped_parser(self) -> None:
         verified = {
             "kmipkit_protocol::InteropResponse",
             "kmipkit_protocol::InteropResponse::result",
             "kmipkit_protocol::InteropResponse::with_ttlv",
-        }
-        blocked = {
             "kmipkit_protocol::InteropResponse::try_from_response_item",
         }
+        blocked = set()
         rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -1639,13 +1631,14 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         self.assertEqual(observed_trait_paths, EXPECTED_LOG_TRAIT_EXPORTS)
         self.assertEqual(audited_exclusions, EXPECTED_LOG_TRAIT_EXPORTS)
 
-    def test_log_response_preserves_verified_members_and_blocked_parser(self) -> None:
+    def test_log_response_preserves_verified_members_and_mapped_parser(self) -> None:
         verified = {
             "kmipkit_protocol::LogResponse",
             "kmipkit_protocol::LogResponse::result",
             "kmipkit_protocol::LogResponse::with_ttlv",
+            "kmipkit_protocol::LogResponse::try_from_response_item",
         }
-        blocked = {"kmipkit_protocol::LogResponse::try_from_response_item"}
+        blocked = set()
         rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -1736,16 +1729,15 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         self.assertEqual(observed_trait_paths, EXPECTED_IMPORT_TRAIT_EXPORTS)
         self.assertEqual(audited_exclusions, EXPECTED_IMPORT_TRAIT_EXPORTS)
 
-    def test_import_response_preserves_verified_accessors_and_blocked_helpers(self) -> None:
+    def test_import_response_preserves_verified_accessors_and_mapped_parser(self) -> None:
         verified = {
             "kmipkit_protocol::ImportResponse",
             "kmipkit_protocol::ImportResponse::unique_identifier",
             "kmipkit_protocol::ImportResponse::with_ttlv",
             "kmipkit_protocol::ImportResponse::result",
-        }
-        blocked = {
             "kmipkit_protocol::ImportResponse::try_from_response_item",
         }
+        blocked = set()
         rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -1829,16 +1821,15 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         self.assertEqual(observed_trait_paths, EXPECTED_JOIN_SPLIT_RESPONSE_TRAIT_EXPORTS)
         self.assertEqual(audited_exclusions, EXPECTED_JOIN_SPLIT_RESPONSE_TRAIT_EXPORTS)
 
-    def test_join_split_key_response_preserves_verified_accessor_and_blocked_helpers(self) -> None:
+    def test_join_split_key_response_preserves_verified_accessor_and_mapped_parser(self) -> None:
         verified = {
             "kmipkit_protocol::JoinSplitKeyResponse",
             "kmipkit_protocol::JoinSplitKeyResponse::unique_identifier",
             "kmipkit_protocol::JoinSplitKeyResponse::with_ttlv",
             "kmipkit_protocol::JoinSplitKeyResponse::result",
-        }
-        blocked = {
             "kmipkit_protocol::JoinSplitKeyResponse::try_from_response_item",
         }
+        blocked = set()
         rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -1953,7 +1944,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         self.assertEqual(conditional_paths, expected_conditional)
         self.assertEqual(audited_exclusions, EXPECTED_OBTAIN_LEASE_RESPONSE_TRAIT_EXPORTS)
 
-    def test_obtain_lease_response_preserves_verified_fields_and_blocked_helpers(self) -> None:
+    def test_obtain_lease_response_preserves_verified_fields_and_mapped_parser(self) -> None:
         verified = {
             "kmipkit_protocol::ObtainLeaseResponse",
             "kmipkit_protocol::ObtainLeaseResponse::last_change_date",
@@ -1961,10 +1952,9 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             "kmipkit_protocol::ObtainLeaseResponse::unique_identifier",
             "kmipkit_protocol::ObtainLeaseResponse::with_ttlv",
             "kmipkit_protocol::ObtainLeaseResponse::result",
-        }
-        blocked = {
             "kmipkit_protocol::ObtainLeaseResponse::try_from_response_item",
         }
+        blocked = set()
         rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -2079,17 +2069,16 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         self.assertEqual(conditional_paths, expected_conditional)
         self.assertEqual(audited_exclusions, EXPECTED_REKEY_KEY_PAIR_RESPONSE_TRAIT_EXPORTS)
 
-    def test_rekey_key_pair_response_preserves_verified_fields_and_blocked_helpers(self) -> None:
+    def test_rekey_key_pair_response_preserves_verified_fields_and_mapped_parser(self) -> None:
         verified = {
             "kmipkit_protocol::RekeyKeyPairResponse",
             "kmipkit_protocol::RekeyKeyPairResponse::private_key_unique_identifier",
             "kmipkit_protocol::RekeyKeyPairResponse::public_key_unique_identifier",
             "kmipkit_protocol::RekeyKeyPairResponse::with_ttlv",
             "kmipkit_protocol::RekeyKeyPairResponse::result",
-        }
-        blocked = {
             "kmipkit_protocol::RekeyKeyPairResponse::try_from_response_item",
         }
+        blocked = set()
         rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -2330,16 +2319,15 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         self.assertEqual(len(conditional_paths), 5)
         self.assertEqual(audited_exclusions, EXPECTED_REKEY_RESPONSE_TRAIT_EXPORTS)
 
-    def test_rekey_response_preserves_verified_fields_and_blocked_helpers(self) -> None:
+    def test_rekey_response_preserves_verified_fields_and_mapped_parser(self) -> None:
         verified = {
             "kmipkit_protocol::RekeyResponse",
             "kmipkit_protocol::RekeyResponse::unique_identifier",
             "kmipkit_protocol::RekeyResponse::with_ttlv",
             "kmipkit_protocol::RekeyResponse::result",
-        }
-        blocked = {
             "kmipkit_protocol::RekeyResponse::try_from_response_item",
         }
+        blocked = set()
         rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -2464,16 +2452,15 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         self.assertEqual(len(conditional_paths), 5)
         self.assertEqual(audited_exclusions, EXPECTED_RECERTIFY_RESPONSE_TRAIT_EXPORTS)
 
-    def test_recertify_response_preserves_verified_fields_and_blocked_helpers(self) -> None:
+    def test_recertify_response_preserves_verified_fields_and_mapped_parser(self) -> None:
         verified = {
             "kmipkit_protocol::RecertifyResponse",
             "kmipkit_protocol::RecertifyResponse::unique_identifier",
             "kmipkit_protocol::RecertifyResponse::with_ttlv",
             "kmipkit_protocol::RecertifyResponse::result",
-        }
-        blocked = {
             "kmipkit_protocol::RecertifyResponse::try_from_response_item",
         }
+        blocked = set()
         rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -2596,16 +2583,15 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         self.assertEqual(len(conditional_paths), 5)
         self.assertEqual(audited_exclusions, EXPECTED_REGISTER_RESPONSE_TRAIT_EXPORTS)
 
-    def test_register_response_preserves_verified_fields_and_blocked_helpers(self) -> None:
+    def test_register_response_preserves_verified_fields_and_mapped_parser(self) -> None:
         verified = {
             "kmipkit_protocol::RegisterResponse",
             "kmipkit_protocol::RegisterResponse::unique_identifier",
             "kmipkit_protocol::RegisterResponse::with_ttlv",
             "kmipkit_protocol::RegisterResponse::result",
-        }
-        blocked = {
             "kmipkit_protocol::RegisterResponse::try_from_response_item",
         }
+        blocked = set()
         rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -2729,16 +2715,15 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         self.assertEqual(len(conditional_paths), 5)
         self.assertEqual(audited_exclusions, EXPECTED_REVOKE_RESPONSE_TRAIT_EXPORTS)
 
-    def test_revoke_response_preserves_verified_fields_and_blocked_helpers(self) -> None:
+    def test_revoke_response_preserves_verified_fields_and_mapped_parser(self) -> None:
         verified = {
             "kmipkit_protocol::RevokeResponse",
             "kmipkit_protocol::RevokeResponse::unique_identifier",
             "kmipkit_protocol::RevokeResponse::with_ttlv",
             "kmipkit_protocol::RevokeResponse::result",
-        }
-        blocked = {
             "kmipkit_protocol::RevokeResponse::try_from_response_item",
         }
+        blocked = set()
         rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -2862,16 +2847,15 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         self.assertEqual(len(conditional_paths), 5)
         self.assertEqual(audited_exclusions, EXPECTED_REPROVISION_RESPONSE_TRAIT_EXPORTS)
 
-    def test_reprovision_response_preserves_verified_fields_and_blocked_helpers(self) -> None:
+    def test_reprovision_response_preserves_verified_fields_and_mapped_parser(self) -> None:
         verified = {
             "kmipkit_protocol::ReProvisionResponse",
             "kmipkit_protocol::ReProvisionResponse::unique_identifier",
             "kmipkit_protocol::ReProvisionResponse::with_ttlv",
             "kmipkit_protocol::ReProvisionResponse::result",
-        }
-        blocked = {
             "kmipkit_protocol::ReProvisionResponse::try_from_response_item",
         }
+        blocked = set()
         rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -3013,10 +2997,10 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             "kmipkit_protocol::RngRetrieveResponse::data",
             "kmipkit_protocol::RngRetrieveResponse::with_ttlv",
             "kmipkit_protocol::RngRetrieveResponse::result",
+            "kmipkit_protocol::RngRetrieveResponse::try_from_response_item",
         }
         blocked = {
             "kmipkit_protocol::RngRetrieveResponse::try_from_pending_response_item",
-            "kmipkit_protocol::RngRetrieveResponse::try_from_response_item",
         }
         rows = {
             row["exportName"]: row
@@ -3045,13 +3029,13 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
         expected_root_blocked = {
             "kmipkit::RngRetrieveResponse::try_from_pending_response_item",
-            "kmipkit::RngRetrieveResponse::try_from_response_item",
         }
         expected_root_verified = {
             "kmipkit::RngRetrieveResponse",
             "kmipkit::RngRetrieveResponse::data",
             "kmipkit::RngRetrieveResponse::with_ttlv",
             "kmipkit::RngRetrieveResponse::result",
+            "kmipkit::RngRetrieveResponse::try_from_response_item",
         }
         root_rows = {
             row["exportName"]: row
@@ -3172,10 +3156,10 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             "kmipkit_protocol::RngSeedResponse::data_length",
             "kmipkit_protocol::RngSeedResponse::with_ttlv",
             "kmipkit_protocol::RngSeedResponse::result",
+            "kmipkit_protocol::RngSeedResponse::try_from_response_item",
         }
         blocked = {
             "kmipkit_protocol::RngSeedResponse::try_from_pending_response_item",
-            "kmipkit_protocol::RngSeedResponse::try_from_response_item",
         }
         rows = {
             row["exportName"]: row
@@ -3204,13 +3188,13 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
         expected_root_blocked = {
             "kmipkit::RngSeedResponse::try_from_pending_response_item",
-            "kmipkit::RngSeedResponse::try_from_response_item",
         }
         expected_root_verified = {
             "kmipkit::RngSeedResponse",
             "kmipkit::RngSeedResponse::data_length",
             "kmipkit::RngSeedResponse::with_ttlv",
             "kmipkit::RngSeedResponse::result",
+            "kmipkit::RngSeedResponse::try_from_response_item",
         }
         root_rows = {
             row["exportName"]: row
@@ -3269,7 +3253,7 @@ POLICY_RESPONSE_TRAIT_CASES = {
         "root_rows": {
             "kmipkit::GetUsageAllocationResponse": "verified",
             "kmipkit::GetUsageAllocationResponse::result": "verified",
-            "kmipkit::GetUsageAllocationResponse::try_from_response_item": "blocked",
+            "kmipkit::GetUsageAllocationResponse::try_from_response_item": "verified",
             "kmipkit::GetUsageAllocationResponse::unique_identifier": "verified",
             "kmipkit::GetUsageAllocationResponse::with_ttlv": "verified",
         },
@@ -3293,7 +3277,7 @@ POLICY_RESPONSE_TRAIT_CASES = {
         "root_rows": {
             "kmipkit::SetDefaultsResponse": "verified",
             "kmipkit::SetDefaultsResponse::result": "verified",
-            "kmipkit::SetDefaultsResponse::try_from_response_item": "blocked",
+            "kmipkit::SetDefaultsResponse::try_from_response_item": "verified",
             "kmipkit::SetDefaultsResponse::with_ttlv": "verified",
         },
     },
@@ -3345,13 +3329,14 @@ class T102PolicyResponseTraitExclusionTests(unittest.TestCase):
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(prefix)
         }
-        blocked_parser = f"{prefix}::try_from_response_item"
-        self.assertEqual(set(protocol_rows), case["verified_members"] | {blocked_parser})
+        mapped_parser = f"{prefix}::try_from_response_item"
+        expected_verified = case["verified_members"] | {mapped_parser}
+        self.assertEqual(set(protocol_rows), expected_verified)
         self.assertEqual(
             {path for path, row in protocol_rows.items() if row["declarationState"] == "verified"},
-            case["verified_members"],
+            expected_verified,
         )
-        self.assertEqual(protocol_rows[blocked_parser]["declarationState"], "blocked")
+        self.assertEqual(protocol_rows[mapped_parser]["declarationState"], "verified")
 
         root_prefix = f"kmipkit::{response}"
         root_rows = {
