@@ -106650,6 +106650,32 @@
       "exportName": "kmipkit",
       "packageId": "python-kmipkit",
       "reason": "This Python package namespace groups inventoried modules and adds no independent callable or data capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "The exact Java namespace contains independently mapped `version`, `capabilityIsAvailable`, and `apiLevels` declarations; the version and capability calls map to `ffi_runtime_metadata`, while API-level discovery remains separately declared. This exclusion does not remove or narrow any callable capability. KMIPKIT-0043-FR-007; KMIPKIT-0043-FR-021.",
+      "exportName": "org.kmipkit.RuntimeMetadata",
+      "packageId": "java-kmipkit",
+      "reason": "This Java type is a static metadata namespace; its callable methods are inventoried as separate capabilities and the container adds no independent behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "The exact Python module contains independently mapped `get_version`, `capability_is_available`, and `get_api_levels` declarations and the mapped `Version` type. This exclusion does not remove or narrow any callable capability. KMIPKIT-0043-FR-007; KMIPKIT-0043-FR-021.",
+      "exportName": "kmipkit.metadata",
+      "packageId": "python-kmipkit",
+      "reason": "This Python module is a runtime metadata namespace; its callable functions and Version type are inventoried as separate capabilities."
     }
   ],
   "capabilities": [

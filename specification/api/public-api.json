@@ -127197,20 +127197,6 @@
       }
     },
     {
-      "declarationId": "org.kmipkit.RuntimeMetadata:java",
-      "packageId": "java-kmipkit",
-      "kind": "type",
-      "exportName": "org.kmipkit.RuntimeMetadata",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The Rust crate root is not an exported declaration matching this binding namespace; parity remains blocked."
-    },
-    {
       "declarationId": "org.kmipkit.RuntimeMetadata.Version:java",
       "packageId": "java-kmipkit",
       "kind": "type",
@@ -127317,20 +127303,6 @@
           "name": "kmipkit.metadata.capability_is_available"
         }
       }
-    },
-    {
-      "declarationId": "kmipkit.metadata:python",
-      "packageId": "python-kmipkit",
-      "kind": "module",
-      "exportName": "kmipkit.metadata",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The Rust crate root is not an exported declaration matching this binding namespace; parity remains blocked."
     },
     {
       "declarationId": "kmipkit.metadata.Version:python",
@@ -465382,6 +465354,32 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Exact export kmipkit appears in the pinned Python binding export inventory. Child modules and user-facing declarations are inventoried independently. KMIPKIT-0043-FR-020; KMIPKIT-0043-FR-021."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "candidateSpecId": "KMIPKIT-0043",
+      "exportName": "org.kmipkit.RuntimeMetadata",
+      "reason": "This Java type is a static metadata namespace; its callable methods are inventoried as separate capabilities and the container adds no independent behavior.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "The exact Java namespace contains independently mapped `version`, `capabilityIsAvailable`, and `apiLevels` declarations; the version and capability calls map to `ffi_runtime_metadata`, while API-level discovery remains separately declared. This exclusion does not remove or narrow any callable capability. KMIPKIT-0043-FR-007; KMIPKIT-0043-FR-021."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "candidateSpecId": "KMIPKIT-0043",
+      "exportName": "kmipkit.metadata",
+      "reason": "This Python module is a runtime metadata namespace; its callable functions and Version type are inventoried as separate capabilities.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "The exact Python module contains independently mapped `get_version`, `capability_is_available`, and `get_api_levels` declarations and the mapped `Version` type. This exclusion does not remove or narrow any callable capability. KMIPKIT-0043-FR-007; KMIPKIT-0043-FR-021."
     }
   ],
   "apiLevels": [
