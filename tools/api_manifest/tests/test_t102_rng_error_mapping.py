@@ -15,6 +15,8 @@ MAPPING_SEMANTICS = "normalized-client-protocol-error"
 OWNER_REQUIREMENTS = {
     "KMIPKIT-0041-FR-001",
     "KMIPKIT-0041-FR-003",
+    "KMIPKIT-0041-FR-004",
+    "KMIPKIT-0041-FR-005",
     "KMIPKIT-0041-FR-006",
 }
 SHARED_REQUIREMENTS = {
@@ -41,9 +43,15 @@ EXPECTED_MAPPING = {
 PARITY_EVIDENCE = {
     "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
     "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
+    "crates/kmipkit-client/tests/error_contract.rs",
+    "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
+    "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
     "bindings/c/tests/client_abi_consumer.c",
     "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
+    "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
     "bindings/python/tests/test_client.py",
+    "bindings/python/tests/test_rng_operation.py",
+    "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
     "tools/api_manifest/tests/test_t102_rng_error_mapping.py",
 }
 
