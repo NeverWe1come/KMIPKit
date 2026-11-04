@@ -19,6 +19,11 @@ class T102MacroLotPartitionTests(unittest.TestCase):
 
     def test_macro_lots_are_disjoint_exhaustive_and_identity_stable(self) -> None:
         self.assertEqual("KMIPKIT-0043", self.partition["candidateSpecId"])
+        self.assertEqual(648, self.partition["baselineBlockedCandidateCount"])
+        self.assertEqual(
+            {"traitPaths": 58, "errorNameRows": 321, "overlap": 10},
+            self.partition["classificationCounts"],
+        )
         lot1 = self.partition["macroLots"]["1"]["declarations"]
         lot2 = self.partition["macroLots"]["2"]["declarations"]
         lot1_ids = {item["declarationId"] for item in lot1}
