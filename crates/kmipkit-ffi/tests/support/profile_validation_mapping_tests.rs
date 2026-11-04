@@ -497,14 +497,12 @@ fn c_profile_result_message_validators_reject_malformed_ttlv_without_rule_detail
     let mut cause = ERROR_CAUSE_NONE;
     let mut delivery = DELIVERY_STATE_NONE;
     assert_eq!(
-        unsafe {
-            kmipkit_last_error_get(
-                &raw mut status,
-                &raw mut category,
-                &raw mut cause,
-                &raw mut delivery,
-            )
-        },
+        kmipkit_last_error_get(
+            &raw mut status,
+            &raw mut category,
+            &raw mut cause,
+            &raw mut delivery,
+        ),
         SUCCESS
     );
     assert_eq!(
@@ -538,14 +536,12 @@ fn c_profile_result_message_validators_reject_malformed_ttlv_without_rule_detail
     cause = ERROR_CAUSE_NONE;
     delivery = DELIVERY_STATE_NONE;
     assert_eq!(
-        unsafe {
-            kmipkit_last_error_get(
-                &raw mut status,
-                &raw mut category,
-                &raw mut cause,
-                &raw mut delivery,
-            )
-        },
+        kmipkit_last_error_get(
+            &raw mut status,
+            &raw mut category,
+            &raw mut cause,
+            &raw mut delivery,
+        ),
         SUCCESS
     );
     assert_eq!(

@@ -910,6 +910,8 @@ def _raise_profile_validation_status(status: int) -> None:
     details = _read_profile_validation_details()
     if details is not None:
         raise errors.ProfileValidationError(details)
+    if status == 8:
+        _raise_client_status(status)
     errors.raise_for_status(status)
 
 
@@ -989,26 +991,22 @@ class ProfileValidationResult(NativeHandle):
 
     def validate_request(self, request: ttlv.Structure) -> None:
         """Validate rules observable in one outbound Request Message."""
-        from . import messages as _messages
-
         if not isinstance(request, ttlv.Structure):
             errors.raise_for_status(4)
-        self._validate_native(
+        self._validate_ttlv(
             "kmipkit_profile_validation_result_validate_request_v1",
-            _messages._as_client_structure(request),
+            request,
         )
 
     def validate_request_with_context(
         self, request: ttlv.Structure, context: ProfileValidationContext
     ) -> None:
         """Validate one outbound Request Message using caller-attested state."""
-        from . import messages as _messages
-
         if not isinstance(request, ttlv.Structure):
             errors.raise_for_status(4)
-        self._validate_native(
+        self._validate_ttlv(
             "kmipkit_profile_validation_result_validate_request_with_context_v1",
-            _messages._as_client_structure(request),
+            request,
             context=context,
         )
 
@@ -1016,16 +1014,14 @@ class ProfileValidationResult(NativeHandle):
         self, request: ttlv.Structure, response: ttlv.Structure
     ) -> None:
         """Validate a received Response Message against its original request."""
-        from . import messages as _messages
-
         if not isinstance(request, ttlv.Structure) or not isinstance(
             response, ttlv.Structure
         ):
             errors.raise_for_status(4)
-        self._validate_native(
+        self._validate_ttlv(
             "kmipkit_profile_validation_result_validate_response_v1",
-            _messages._as_client_structure(request),
-            _messages._as_client_structure(response),
+            request,
+            response,
         )
 
     def validate_response_with_context(
@@ -1035,18 +1031,35 @@ class ProfileValidationResult(NativeHandle):
         context: ProfileValidationContext,
     ) -> None:
         """Validate a response exchange using the same caller-attested state."""
-        from . import messages as _messages
-
         if not isinstance(request, ttlv.Structure) or not isinstance(
             response, ttlv.Structure
         ):
             errors.raise_for_status(4)
-        self._validate_native(
+        self._validate_ttlv(
             "kmipkit_profile_validation_result_validate_response_with_context_v1",
-            _messages._as_client_structure(request),
-            _messages._as_client_structure(response),
+            request,
+            response,
             context=context,
         )
+
+    def _validate_ttlv(
+        self,
+        function_name: str,
+        *structures: ttlv.Structure,
+        context: ProfileValidationContext | None = None,
+    ) -> None:
+        """Keep borrowed native TTLV handles live until their validation call returns."""
+        from . import messages as _messages
+
+        with _NATIVE_CALL_LOCK:
+            native_structures = tuple(
+                _messages._as_client_structure(structure) for structure in structures
+            )
+            self._validate_native(
+                function_name,
+                *native_structures,
+                context=context,
+            )
 
     def _validate_native(
         self,

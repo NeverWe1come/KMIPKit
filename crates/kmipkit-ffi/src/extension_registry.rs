@@ -303,6 +303,7 @@ thread_local! {
 
 fn record_ffi_error(status: i32) -> i32 {
     let (category, cause) = match status {
+        ERROR_PROTOCOL => (ERROR_CATEGORY_PROTOCOL, ERROR_CAUSE_PROTOCOL_OTHER),
         ERROR_INVALID_INPUT | ERROR_INVALID_IDENTITY => {
             (ERROR_CATEGORY_VALIDATION, ERROR_CAUSE_INVALID_INPUT)
         }
