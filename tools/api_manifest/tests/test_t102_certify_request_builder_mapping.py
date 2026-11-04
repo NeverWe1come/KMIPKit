@@ -138,7 +138,7 @@ BLOCKED_NEIGHBORS = {
 }
 BLOCKED_BEFORE = 224
 BLOCKED_AFTER = 221
-DECLARATIONS_SHA256 = "55a8baeee4e4dad38909d4f34a08ffa5fa060a16d9e109ed584e9697e2d90e58"
+DECLARATIONS_SHA256 = "e879d011d86f12365bfd0855efd6fbce26f4616e5288d4decee6eb81f719f9b3"
 OPERATIONS_SHA256 = "8ee7f0c367d2125be38c05d42159b515900b868ec1a898206492bc3c2fad969a"
 
 
@@ -155,7 +155,7 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
         cls.catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
         cls.elements = {row["element_id"]: row for row in cls.catalog["elements"]}
 
-    def test_exact_four_certify_request_setters_map_to_existing_builders(self) -> None:
+    def test_exact_certify_request_setters_map_to_existing_builders(self) -> None:
         self.assertEqual(5, len(TARGETS))
         for target in TARGETS:
             with self.subTest(declaration=target["id"], field=target["field"]):
@@ -346,7 +346,9 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
         self.assertTrue("fields: CERTIFY_TYPE_ONLY" in ffi_wire)
 
     def test_non_target_declarations_and_operation_rows_match_snapshot(self) -> None:
-        target_ids = {target["id"] for target in TARGETS}
+        target_ids = {target["id"] for target in TARGETS} | {
+            target["id"] for target in REQUEST_CONSTRUCTION_TARGETS
+        }
         other_declarations = copy.deepcopy([
             row for row in self.manifest["publicDeclarations"] if row["declarationId"] not in target_ids
         ])
