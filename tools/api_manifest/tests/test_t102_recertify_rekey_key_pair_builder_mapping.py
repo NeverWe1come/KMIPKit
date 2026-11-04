@@ -26,7 +26,17 @@ WIRE_EVIDENCE = {JAVA_WIRE, C_WIRE}
 NEW_EVIDENCE = WIRE_EVIDENCE | {"tools/api_manifest/tests/test_t102_recertify_rekey_key_pair_builder_mapping.py"}
 RECERTIFY_TYPE_ID = "rust-observed-4e379cb3b97bca658dbf"
 RECERTIFY_TYPE_NAME = "kmipkit_protocol::RecertifyRequest::with_certificate_request_type"
+RECERTIFY_VALUE_ID = "rust-observed-be7b44dc6c8bae24ad53"
+RECERTIFY_VALUE_NAME = "kmipkit_protocol::RecertifyRequest::with_certificate_request_value"
 RECERTIFY_TYPE_REQUIREMENTS = {
+    "KMIPKIT-0036-FR-001",
+    "KMIPKIT-0036-FR-002",
+    "KMIPKIT-0036-FR-004",
+    "KMIPKIT-0036-FR-006",
+    "KMIPKIT-0036-FR-008",
+    "KMIPKIT-REQ-SPEC-6.1.45-008",
+}
+RECERTIFY_VALUE_REQUIREMENTS = {
     "KMIPKIT-0036-FR-001",
     "KMIPKIT-0036-FR-002",
     "KMIPKIT-0036-FR-004",
@@ -39,6 +49,14 @@ RECERTIFY_TYPE_EVIDENCE = {
     "bindings/c/tests/client_abi_consumer.c",
     JAVA_WIRE,
     "bindings/python/tests/test_recertify_operation.py",
+    "tools/api_manifest/tests/test_t102_recertify_rekey_key_pair_builder_mapping.py",
+}
+RECERTIFY_VALUE_EVIDENCE = {
+    "bindings/c/tests/client_abi_consumer.c",
+    JAVA_WIRE,
+    "bindings/python/tests/test_recertify_operation.py",
+    C_WIRE,
+    "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
     "tools/api_manifest/tests/test_t102_recertify_rekey_key_pair_builder_mapping.py",
 }
 RAW_RECERTIFY_DECLARATIONS = {
@@ -210,6 +228,29 @@ class T102RecertifyRekeyKeyPairBuilderMappingTests(unittest.TestCase):
         source = MANIFEST.read_text(encoding="utf-8")
         self.assertTrue("Certificate Request Type is optional and may appear without Certificate Request Value" in source)
         self.assertFalse("Certificate Request Type is present only with Certificate Request Value" in source)
+
+    def test_recertify_request_value_maps_to_the_sensitive_four_language_builder(self) -> None:
+        declaration = self.declarations[RECERTIFY_VALUE_ID]
+        self.assertEqual(RECERTIFY_VALUE_NAME, declaration["exportName"])
+        self.assertEqual("verified", declaration["declarationState"])
+        self.assertEqual(RECERTIFY, declaration["capabilityId"])
+        self.assertEqual(RECERTIFY_VALUE_REQUIREMENTS, set(declaration["requirementIds"]))
+        self.assertEqual("four-language", declaration["parityScope"])
+        builder = self.by_name[("c-kmipkit", "kmipkit_client_batch_item_recertify")]
+        expected_mappings = dict(builder["languageMappings"])
+        expected_mappings["rust"] = {
+            "packageId": "rust-kmipkit-protocol",
+            "name": RECERTIFY_VALUE_NAME,
+        }
+        self.assertEqual(expected_mappings, declaration["languageMappings"])
+        self.assertTrue(RECERTIFY_VALUE_EVIDENCE.issubset(set(declaration["parityEvidenceIds"])))
+
+        for path in (
+            "bindings/c/tests/client_abi_consumer.c",
+            JAVA_WIRE,
+            "bindings/python/tests/test_recertify_operation.py",
+        ):
+            self.assertIn("recertify-request-sentinel", (ROOT / path).read_text(encoding="utf-8"))
 
     def test_raw_recertify_operation_has_direct_metadata_evidence_in_each_binding(self) -> None:
         self.assertEqual(2, len(RAW_RECERTIFY_DECLARATIONS))
