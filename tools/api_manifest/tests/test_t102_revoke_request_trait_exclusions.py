@@ -138,12 +138,11 @@ class T102RevokeRequestTraitExclusionTests(unittest.TestCase):
             "kmipkit_protocol::RevokeRequest::with_compromise_occurrence_date",
             "kmipkit_protocol::RevokeRequest::with_revocation_message",
             "kmipkit_protocol::RevokeRequest::with_unique_identifier",
-        }
-        blocked = {
             "kmipkit_protocol::RevokeRequest::compromise_occurrence_date",
             "kmipkit_protocol::RevokeRequest::revocation_reason",
             "kmipkit_protocol::RevokeRequest::unique_identifier",
         }
+        blocked = set()
         self.assertEqual(set(protocol_rows), verified | blocked)
         self.assertEqual(
             {

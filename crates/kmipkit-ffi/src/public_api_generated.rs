@@ -11928,6 +11928,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::RevokeRequest",
     ),
     (
+        "rust-observed-12003f4a97a411611f15",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RevokeRequest::compromise_occurrence_date",
+    ),
+    (
         "rust-observed-3110caf46cc1e36cbcc9",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::RevokeRequest::into_ttlv_payload",
@@ -11941,6 +11946,16 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-32ec0e264a5dbefa4869",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::RevokeRequest::revocation_message",
+    ),
+    (
+        "rust-observed-3020c4fea7458e2d97c4",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RevokeRequest::revocation_reason",
+    ),
+    (
+        "rust-observed-b20a90b8e34124a1006c",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RevokeRequest::unique_identifier",
     ),
     (
         "rust-observed-d14ce26fbd9f064c6f09",
