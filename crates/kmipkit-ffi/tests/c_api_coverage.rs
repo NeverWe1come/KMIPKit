@@ -440,7 +440,7 @@ fn compiled_c_consumer_encodes_check_get_export_rekey_and_allocation_builders_ov
     unsafe { kmipkit_codec_limits_release(limits) };
     assert_eq!(
         result, 0,
-        "the C consumer builds and decodes fifteen ordered items"
+        "the C consumer builds and decodes eighteen ordered items"
     );
     peer.join()
         .expect("the compiled C request-builder mTLS peer completes");
@@ -2667,6 +2667,16 @@ const JOIN_SPLIT_KEY_SECRET_DATA_TYPE: &[RequestBuilderWireField] = &[
         value: V::Enumeration(1),
     },
 ];
+const JOIN_SPLIT_KEY_SECRET_DATA_TYPE_OMITTED: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
+        tag: 0x0042_0057,
+        value: V::Enumeration(7),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0094,
+        value: V::Text("join-split-id"),
+    },
+];
 const EMPTY_VALUES: &[RequestBuilderWireField] = &[];
 const REQUEST_BUILDER_WIRE_EXPECTED: &[RequestBuilderWireItem] = &[
     RequestBuilderWireItem {
@@ -2732,6 +2742,10 @@ const REQUEST_BUILDER_WIRE_EXPECTED: &[RequestBuilderWireItem] = &[
     RequestBuilderWireItem {
         operation: 0x29,
         fields: JOIN_SPLIT_KEY_SECRET_DATA_TYPE,
+    },
+    RequestBuilderWireItem {
+        operation: 0x29,
+        fields: JOIN_SPLIT_KEY_SECRET_DATA_TYPE_OMITTED,
     },
 ];
 
@@ -4109,8 +4123,8 @@ fn rekey_key_pair_success_response() -> Vec<u8> {
 }
 
 fn request_builder_wire_response() -> Vec<u8> {
-    const OPERATIONS: [u32; 17] = [
-        1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x1d, 0x29,
+    const OPERATIONS: [u32; 18] = [
+        1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x1d, 0x29, 0x29,
     ];
     let version = structure(
         0x0042_0069,

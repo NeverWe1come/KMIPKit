@@ -184,13 +184,15 @@ final class ClientFacadeTlsIntegrationTest {
                     .withUniqueBatchItemId(uniqueBatchItemId(15)));
             batch.add(ClientBatchItem.joinSplitKey(7L, List.of(splitReference), 1L, null, null)
                     .withUniqueBatchItemId(uniqueBatchItemId(16)));
+            batch.add(ClientBatchItem.joinSplitKey(7L, List.of(splitReference))
+                    .withUniqueBatchItemId(uniqueBatchItemId(17)));
             try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
                     ClientBatchItemResult createPairResult = response.itemAt(13);
                     ClientBatchItemResult rekeyPairResult = response.itemAt(14);
                     ClientBatchItemResult.RekeyKeyPairResponse rekeyPairResponse =
                             rekeyPairResult.rekeyKeyPairResponse().orElseThrow();
                     ClientBatchItemResult explicitRekeyPairResult = response.itemAt(15)) {
-                assertEquals(17, response.itemCount());
+                assertEquals(18, response.itemCount());
                 assertEquals(0, createPairResult.resultStatus());
                 ClientBatchItemResult.CreateKeyPairResponse createPairResponse =
                         createPairResult.createKeyPairResponse().orElseThrow();
@@ -315,6 +317,13 @@ final class ClientFacadeTlsIntegrationTest {
                         item(0x420094, TtlvItemType.TextString.code(),
                                 "join-split-id".getBytes(StandardCharsets.UTF_8)),
                         enumeration(0x420086, 1))));
+        expectedBatchItems.write(structure(0x42000f,
+                enumeration(0x42005c, 0x29),
+                item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(17)),
+                structure(0x420079,
+                        enumeration(0x420057, 7),
+                        item(0x420094, TtlvItemType.TextString.code(),
+                                "join-split-id".getBytes(StandardCharsets.UTF_8)))));
 
         assertContains(request, expectedBatchItems.toByteArray());
         assertContains(request, item(0x420010, TtlvItemType.Boolean.code(),
@@ -326,7 +335,7 @@ final class ClientFacadeTlsIntegrationTest {
         assertEquals(2, countOccurrences(request, enumeration(0x42005c, 17)));
         assertEquals(2, countOccurrences(request, enumeration(0x42005c, 7)));
         assertEquals(2, countOccurrences(request, enumeration(0x42005c, 0x1d)));
-        assertEquals(1, countOccurrences(request, enumeration(0x42005c, 0x29)));
+        assertEquals(2, countOccurrences(request, enumeration(0x42005c, 0x29)));
         assertEquals(1, countOccurrences(request, enumeration(0x42005c, 2)));
         assertTrue(peer.isDone());
     }
@@ -5982,7 +5991,7 @@ final class ClientFacadeTlsIntegrationTest {
     }
 
     private static byte[] requestBuilderWireResponseMessage() throws Exception {
-        int[] operations = {1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x1d, 0x29};
+        int[] operations = {1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x1d, 0x29, 0x29};
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),

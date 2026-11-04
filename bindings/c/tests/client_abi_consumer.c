@@ -3768,10 +3768,10 @@ static int execute_request_builders_wire_from_c(
     static const uint8_t allocation_text[] = "allocation-text";
     static const uint8_t split_key_text[] = "join-split-id";
     static const uint8_t private_key_text[] = "private-key-to-rekey";
-    static const uint8_t batch_item_ids[17][8] = {
+    static const uint8_t batch_item_ids[18][8] = {
         "item-0", "item-1", "item-2", "item-3", "item-4", "item-5",
         "item-6", "item-7", "item-8", "item-9", "item-10", "item-11",
-        "item-12", "item-13", "item-14", "item-15", "item-16"};
+        "item-12", "item-13", "item-14", "item-15", "item-16", "item-17"};
     kmipkit_unique_identifier_v1_t identifiers[11] = {{0}};
     kmipkit_client_batch_t *batch = 0;
     kmipkit_client_batch_response_t *response = 0;
@@ -3874,6 +3874,16 @@ static int execute_request_builders_wire_from_c(
             7, &split_key_reference, 1, 1, 1, 0, 0, &item) != 0 ||
         !append_request_builder_item(
             batch, &item, batch_item_ids[16], strlen((const char *)batch_item_ids[16]))) {
+        goto cleanup;
+    }
+    kmipkit_split_key_reference_release(split_key_reference);
+    split_key_reference = 0;
+
+    if (kmipkit_split_key_reference_create(&identifiers[9], 1, &split_key_reference) != 0 ||
+        kmipkit_client_batch_item_join_split_key(
+            7, &split_key_reference, 1, 0, 0, 0, 0, &item) != 0 ||
+        !append_request_builder_item(
+            batch, &item, batch_item_ids[17], strlen((const char *)batch_item_ids[17]))) {
         goto cleanup;
     }
     kmipkit_split_key_reference_release(split_key_reference);
