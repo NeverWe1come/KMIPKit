@@ -2654,7 +2654,7 @@ const RECERTIFY_VALUES: &[RequestBuilderWireField] = &[
         tag: 0x0042_0125,
         value: V::StructureText {
             child_tag: 0x0042_00fd,
-            text: "rekey-attributes",
+            text: "recertify-attributes",
         },
     },
     RequestBuilderWireField {
@@ -2700,7 +2700,7 @@ const JOIN_SPLIT_KEY_SECRET_DATA_TYPE: &[RequestBuilderWireField] = &[
         tag: 0x0042_0125,
         value: V::StructureText {
             child_tag: 0x0042_00fd,
-            text: "rekey-attributes",
+            text: "join-split-attributes",
         },
     },
     RequestBuilderWireField {

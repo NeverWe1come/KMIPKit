@@ -304,7 +304,7 @@ final class ClientFacadeTlsIntegrationTest {
                         item(0x420058, TtlvItemType.Interval.code(), integer(86_400)),
                         structure(0x420125,
                                 item(0x4200fd, TtlvItemType.TextString.code(),
-                                        "rekey-attributes".getBytes(StandardCharsets.UTF_8))),
+                                        "recertify-attributes".getBytes(StandardCharsets.UTF_8))),
                         structure(0x42015f,
                                 item(0x420160, TtlvItemType.Integer.code(), integer(3))))));
         expectedBatchItems.write(structure(0x42000f,
@@ -339,7 +339,7 @@ final class ClientFacadeTlsIntegrationTest {
                         enumeration(0x420086, 0x81234568),
                         structure(0x420125,
                                 item(0x4200fd, TtlvItemType.TextString.code(),
-                                        "rekey-attributes".getBytes(StandardCharsets.UTF_8))),
+                                        "join-split-attributes".getBytes(StandardCharsets.UTF_8))),
                         structure(0x42015f,
                                 item(0x420160, TtlvItemType.Integer.code(), integer(3))))));
         expectedBatchItems.write(structure(0x42000f,
