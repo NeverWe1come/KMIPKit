@@ -158,6 +158,24 @@ EXPECTED_NON_FACADE_VENDOR_EXTENSION_BRIDGE_MEMBERS = frozenset(
         "release",
     }
 )
+EXPECTED_PROFILE_VALIDATION_BRIDGE_EXPORTS = frozenset(
+    f"org.kmipkit.NativeExtensionRegistry.{name}"
+    for name in (
+        "profileValidationSelectionValidate",
+        "profileValidationResultProfileIdCount",
+        "profileValidationResultProfileIdAt",
+        "profileValidationResultRequirementIdCount",
+        "profileValidationResultRequirementIdAt",
+        "profileValidationResultValidateTransport",
+        "profileValidationResultValidateRequest",
+        "profileValidationResultValidateRequestWithContext",
+        "profileValidationResultValidateResponse",
+        "profileValidationResultValidateResponseWithContext",
+        "profileValidationResultRelease",
+    )
+)
+
+
 class JavaTtlvBridgeExclusionTests(unittest.TestCase):
     def setUp(self) -> None:
         self.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
@@ -342,6 +360,26 @@ class JavaTtlvBridgeExclusionTests(unittest.TestCase):
         self.assertIn("internal JNI bridge", bridge_type["reason"])
         self.assertIn("KMIPKIT-0043-FR-008", bridge_type["evidence"])
         self.assertIn("KMIPKIT-0043-FR-021", bridge_type["evidence"])
+
+    def test_profile_validation_native_bridge_exports_are_exactly_excluded(self) -> None:
+        actual_exclusions = {
+            export_name
+            for package, export_name in self.exclusions
+            if package == PACKAGE and export_name in EXPECTED_PROFILE_VALIDATION_BRIDGE_EXPORTS
+        }
+        self.assertEqual(EXPECTED_PROFILE_VALIDATION_BRIDGE_EXPORTS, actual_exclusions)
+        if actual_exclusions != EXPECTED_PROFILE_VALIDATION_BRIDGE_EXPORTS:
+            return
+
+        for export_name in sorted(EXPECTED_PROFILE_VALIDATION_BRIDGE_EXPORTS):
+            with self.subTest(export_name=export_name):
+                exclusion = self.exclusions[(PACKAGE, export_name)]
+                self.assertEqual(OWNER_SPEC, exclusion["approvalSource"]["path"])
+                self.assertEqual("Approved", exclusion["approvalSource"]["status"])
+                self.assertIn("internal profile-validation JNI plumbing", exclusion["reason"])
+                self.assertIn("KMIPKIT-0043-FR-008", exclusion["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+                self.assertNotIn((PACKAGE, export_name), self.declarations)
 
 
 if __name__ == "__main__":
