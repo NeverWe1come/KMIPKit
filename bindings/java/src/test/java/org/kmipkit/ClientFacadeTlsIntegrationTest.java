@@ -140,6 +140,16 @@ final class ClientFacadeTlsIntegrationTest {
                         TtlvValue.TextString(
                                 "rekey-attributes".getBytes(StandardCharsets.UTF_8), requestLimits),
                         requestLimits);
+                TtlvStructure recertifyAttributes = rekeyRequestStructure(
+                        0x4200fd,
+                        TtlvValue.TextString(
+                                "recertify-attributes".getBytes(StandardCharsets.UTF_8), requestLimits),
+                        requestLimits);
+                TtlvStructure joinSplitAttributes = rekeyRequestStructure(
+                        0x4200fd,
+                        TtlvValue.TextString(
+                                "join-split-attributes".getBytes(StandardCharsets.UTF_8), requestLimits),
+                        requestLimits);
                 TtlvStructure rekeyMasks = rekeyRequestStructure(
                         0x420160, TtlvValue.Integer(3), requestLimits);
                 SplitKeyReference splitReference = new SplitKeyReference(
@@ -177,7 +187,7 @@ final class ClientFacadeTlsIntegrationTest {
             batch.add(ClientBatchItem.recertify(
                             UniqueIdentifier.textString("recertify-text"),
                             UniqueIdentifier.textString("certificate-request-text"),
-                            null, null, 86_400L, rekeyAttributes, rekeyMasks)
+                            null, null, 86_400L, recertifyAttributes, rekeyMasks)
                     .withUniqueBatchItemId(uniqueBatchItemId(11)));
             batch.add(ClientBatchItem.recertify(
                             UniqueIdentifier.textString("recertify-omit-text"),
@@ -192,7 +202,7 @@ final class ClientFacadeTlsIntegrationTest {
                             86_400L, null, null, null, null, null, null)
                     .withUniqueBatchItemId(uniqueBatchItemId(15)));
             batch.add(ClientBatchItem.joinSplitKey(
-                    7L, List.of(splitReference), 0x81234568L, rekeyAttributes, rekeyMasks)
+                    7L, List.of(splitReference), 0x81234568L, joinSplitAttributes, rekeyMasks)
                     .withUniqueBatchItemId(uniqueBatchItemId(16)));
             batch.add(ClientBatchItem.joinSplitKey(7L, List.of(splitReference))
                     .withUniqueBatchItemId(uniqueBatchItemId(17)));
