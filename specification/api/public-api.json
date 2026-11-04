@@ -210236,19 +210236,78 @@
         }
       }
     },
-    {
+        {
       "declarationId": "rust-observed-cd5e9a9afb29cd4dc1f4",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::RegisterRequest::with_protection_storage_masks",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-REGISTER",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-ELEM-TAG-42015F",
+        "KMIPKIT-REQ-SPEC-6.1.43-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-005",
+        "KMIPKIT-REQ-SPEC-6.1.43-007",
+        "KMIPKIT-REQ-SPEC-6.1.43-009-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-009-002",
+        "KMIPKIT-REQ-SPEC-6.1.43-010-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-010-002",
+        "KMIPKIT-REQ-SPEC-6.1.43-011"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RegisterRequest::with_protection_storage_masks"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_register_request_with_protection_storage_masks"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RegisterRequest.withProtectionStorageMasks"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.RegisterRequest.with_protection_storage_masks"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RegisterMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RegisterOpaqueContextParityTest.java",
+        "bindings/python/tests/test_register_operation.py",
+        "bindings/python/tests/test_register_opaque_context.py",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+        "tools/api_manifest/tests/test_register_parity_manifest.py",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
+      ]
     },
     {
       "declarationId": "rust-observed-29dd201a735ff1169a8d",
@@ -370867,6 +370926,225 @@
           "name": "kmipkit.ProfileValidationDetails"
         }
       }
+    },
+        {
+      "declarationId": "T102:register:protection-storage-masks:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_register_request_with_protection_storage_masks",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-REGISTER",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-ELEM-TAG-42015F",
+        "KMIPKIT-REQ-SPEC-6.1.43-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-005",
+        "KMIPKIT-REQ-SPEC-6.1.43-007",
+        "KMIPKIT-REQ-SPEC-6.1.43-009-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-009-002",
+        "KMIPKIT-REQ-SPEC-6.1.43-010-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-010-002",
+        "KMIPKIT-REQ-SPEC-6.1.43-011"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RegisterRequest::with_protection_storage_masks"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_register_request_with_protection_storage_masks"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RegisterRequest.withProtectionStorageMasks"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.RegisterRequest.with_protection_storage_masks"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RegisterMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RegisterOpaqueContextParityTest.java",
+        "bindings/python/tests/test_register_operation.py",
+        "bindings/python/tests/test_register_opaque_context.py",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+        "tools/api_manifest/tests/test_register_parity_manifest.py",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
+      ]
+    },
+        {
+      "declarationId": "T102:register:protection-storage-masks:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.RegisterRequest.withProtectionStorageMasks",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-REGISTER",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-ELEM-TAG-42015F",
+        "KMIPKIT-REQ-SPEC-6.1.43-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-005",
+        "KMIPKIT-REQ-SPEC-6.1.43-007",
+        "KMIPKIT-REQ-SPEC-6.1.43-009-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-009-002",
+        "KMIPKIT-REQ-SPEC-6.1.43-010-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-010-002",
+        "KMIPKIT-REQ-SPEC-6.1.43-011"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RegisterRequest::with_protection_storage_masks"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_register_request_with_protection_storage_masks"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RegisterRequest.withProtectionStorageMasks"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.RegisterRequest.with_protection_storage_masks"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RegisterMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RegisterOpaqueContextParityTest.java",
+        "bindings/python/tests/test_register_operation.py",
+        "bindings/python/tests/test_register_opaque_context.py",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+        "tools/api_manifest/tests/test_register_parity_manifest.py",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
+      ]
+    },
+        {
+      "declarationId": "T102:register:protection-storage-masks:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.RegisterRequest.with_protection_storage_masks",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-REGISTER",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-ELEM-TAG-42015F",
+        "KMIPKIT-REQ-SPEC-6.1.43-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-005",
+        "KMIPKIT-REQ-SPEC-6.1.43-007",
+        "KMIPKIT-REQ-SPEC-6.1.43-009-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-009-002",
+        "KMIPKIT-REQ-SPEC-6.1.43-010-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-010-002",
+        "KMIPKIT-REQ-SPEC-6.1.43-011"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RegisterRequest::with_protection_storage_masks"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_register_request_with_protection_storage_masks"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.RegisterRequest.withProtectionStorageMasks"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.RegisterRequest.with_protection_storage_masks"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RegisterMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RegisterOpaqueContextParityTest.java",
+        "bindings/python/tests/test_register_operation.py",
+        "bindings/python/tests/test_register_opaque_context.py",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+        "tools/api_manifest/tests/test_register_parity_manifest.py",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
+      ]
     }
   ],
   "approvedExclusions": [
@@ -478724,7 +479002,7 @@
         "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
       ]
     },
-        {
+    {
           "operationId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
           "name": "Delegated Login",
           "section": "6.1.12",
@@ -479509,7 +479787,7 @@
         "crates/kmipkit-protocol/src/attribute_reference.rs"
       ]
     },
-        {
+    {
       "operationId": "KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS",
       "name": "Get Constraints",
       "section": "6.1.22",
@@ -479591,7 +479869,7 @@
         "tools/api_manifest/tests/test_t102_policy_request_serializer_mapping.py"
       ]
     },
-        {
+    {
       "operationId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
       "name": "Get Usage Allocation",
       "section": "6.1.23",
@@ -480167,7 +480445,7 @@
         ]
       }
     },
-        {
+    {
       "operationId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
       "name": "Login",
       "section": "6.1.30",
@@ -480259,7 +480537,7 @@
         "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py"
       ]
     },
-        {
+    {
       "operationId": "KMIPKIT-ELEM-OP-C2S-LOGOUT",
       "name": "Logout",
       "section": "6.1.31",
@@ -480647,7 +480925,7 @@
         ]
       }
     },
-        {
+    {
       "operationId": "KMIPKIT-ELEM-OP-C2S-PKCS-11",
       "name": "PKCS#11",
       "section": "6.1.37",
@@ -480991,7 +481269,7 @@
         ]
       }
     },
-    {
+        {
       "operationId": "KMIPKIT-ELEM-OP-C2S-REGISTER",
       "name": "Register",
       "section": "6.1.43",
@@ -481006,7 +481284,7 @@
         "kind": "feature-specification",
         "path": "specs/022-object-lifecycle/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+        "evidence": "**Status**: Approved for implementation \u2014 2026-10-11"
       },
       "declarations": {
         "rust": [
@@ -481045,7 +481323,8 @@
           "rust-observed-6e3391953972c4548640",
           "rust-observed-0e423c1d2c8da37b44e3",
           "rust-observed-180183b70604b127e90d",
-          "rust-observed-479c345f536d32cba703"
+          "rust-observed-479c345f536d32cba703",
+          "rust-observed-cd5e9a9afb29cd4dc1f4"
         ],
         "c": [
           "KMIPKIT-0044-register-batch-item-root:c",
@@ -481054,7 +481333,8 @@
           "KMIPKIT-0044-register-request-release:c",
           "KMIPKIT-0044-register-request-type:c",
           "T062:register:response-ttlv:c",
-          "T062:register:response:c"
+          "T062:register:response:c",
+          "T102:register:protection-storage-masks:c"
         ],
         "java": [
           "KMIPKIT-0044-register-batch-item-root:java",
@@ -481066,7 +481346,8 @@
           "T062:register:response-ttlv:java",
           "T062:register:response:java",
           "T062:register:result:type:java",
-          "T062:register:result:uniqueIdentifier:java"
+          "T062:register:result:uniqueIdentifier:java",
+          "T102:register:protection-storage-masks:java"
         ],
         "python": [
           "KMIPKIT-0044-register-batch-item-root:python",
@@ -481078,7 +481359,8 @@
           "T062:register:response-ttlv:python",
           "T062:register:response:python",
           "T062:register:result:type:python",
-          "T062:register:result:uniqueIdentifier:python"
+          "T062:register:result:uniqueIdentifier:python",
+          "T102:register:protection-storage-masks:python"
         ]
       },
       "parityEvidenceIds": [
@@ -481966,7 +482248,7 @@
         "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ]
     },
-        {
+    {
       "operationId": "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS",
       "name": "Set Constraints",
       "section": "6.1.52",
@@ -482048,7 +482330,7 @@
         "tools/api_manifest/tests/test_t102_policy_request_serializer_mapping.py"
       ]
     },
-        {
+    {
       "operationId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
       "name": "Set Defaults",
       "section": "6.1.53",

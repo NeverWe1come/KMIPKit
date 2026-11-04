@@ -1243,6 +1243,10 @@ ffi.cdef(
         kmipkit_register_request_t *request,
         uint32_t context,
         kmipkit_register_request_t **out_request);
+    int32_t kmipkit_register_request_with_protection_storage_masks(
+        kmipkit_register_request_t *request,
+        kmipkit_ttlv_structure_t *masks,
+        kmipkit_register_request_t **out_request);
     int32_t kmipkit_client_batch_item_register(
         kmipkit_register_request_t *request,
         kmipkit_client_batch_item_t **out_item);

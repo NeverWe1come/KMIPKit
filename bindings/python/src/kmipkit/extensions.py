@@ -571,6 +571,20 @@ class RegisterRequest(NativeHandle):
         )
         return _wrap_owned_handle(RegisterRequest, handle)
 
+    def with_protection_storage_masks(
+        self, masks: ttlv.Structure
+    ) -> RegisterRequest:
+        """Set the optional Register Protection Storage Masks structure."""
+        if not isinstance(masks, ttlv.Structure):
+            errors.raise_for_status(4)
+        handle = _make_handle(
+            "kmipkit_register_request_t",
+            "kmipkit_register_request_with_protection_storage_masks",
+            (self, masks),
+            consumed_indices=(0,),
+        )
+        return _wrap_owned_handle(RegisterRequest, handle)
+
 
 class ExtensionRecognition(NativeHandle):
     _release_name = "kmipkit_extension_recognition_release"

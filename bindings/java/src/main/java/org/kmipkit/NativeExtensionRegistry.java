@@ -378,6 +378,7 @@ public final class NativeExtensionRegistry {
             @Nullable byte[] correlationValue, int initIndicator, int finalIndicator);
     public static native long registerRequestCreate(int objectType, long attributes, long object);
     public static native long registerRequestWithOpaqueObjectContext(long request, int context);
+    public static native long registerRequestWithProtectionStorageMasks(long request, long masks);
     public static native long clientBatchItemRegister(long request);
     public static native long cancelRequestCreate(byte[] correlationValue);
     public static native boolean withCancelRequestCorrelationValue(

@@ -2087,6 +2087,59 @@ cleanup:
     return result;
 }
 
+static int register_protection_storage_masks_builder_is_callable_from_c(void) {
+    kmipkit_codec_limits_t *limits = 0;
+    kmipkit_ttlv_structure_t *attributes = 0;
+    kmipkit_ttlv_structure_t *masks = 0;
+    kmipkit_ttlv_structure_t *object_fields = 0;
+    kmipkit_raw_tag_t *raw_tag = 0;
+    kmipkit_tag_t *tag = 0;
+    kmipkit_ttlv_value_t *object_value = 0;
+    kmipkit_ttlv_item_t *object = 0;
+    kmipkit_register_request_t *request = 0;
+    kmipkit_register_request_t *with_masks = 0;
+    int result = 0;
+
+    if (kmipkit_codec_limits_defaults(&limits) != 0 ||
+        kmipkit_ttlv_structure_create(&attributes) != 0 ||
+        kmipkit_ttlv_structure_create(&masks) != 0 ||
+        kmipkit_ttlv_structure_create(&object_fields) != 0 ||
+        kmipkit_ttlv_raw_tag_create(UINT32_C(0x0042005b), &raw_tag) != 0 ||
+        kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag) != 0 ||
+        kmipkit_ttlv_value_structure(object_fields, limits, &object_value) != 0) {
+        goto cleanup;
+    }
+    object_fields = 0;
+    if (kmipkit_ttlv_item_create(tag, object_value, limits, &object) != 0) {
+        goto cleanup;
+    }
+    object_value = 0;
+    if (kmipkit_register_request_create(8, attributes, object, &request) != 0) {
+        goto cleanup;
+    }
+    attributes = 0;
+    object = 0;
+    if (kmipkit_register_request_with_protection_storage_masks(
+            request, masks, &with_masks) != 0) {
+        goto cleanup;
+    }
+    request = 0;
+    result = with_masks != 0;
+
+cleanup:
+    kmipkit_register_request_release(with_masks);
+    kmipkit_register_request_release(request);
+    kmipkit_ttlv_item_release(object);
+    kmipkit_ttlv_value_release(object_value);
+    kmipkit_tag_release(tag);
+    kmipkit_ttlv_raw_tag_release(raw_tag);
+    kmipkit_ttlv_structure_release(object_fields);
+    kmipkit_ttlv_structure_release(masks);
+    kmipkit_ttlv_structure_release(attributes);
+    kmipkit_codec_limits_release(limits);
+    return result;
+}
+
 static int validate_constructor_copies_payload_extensions(void) {
     static const uint8_t extension_text[] = "validate-extension-sentinel";
     kmipkit_codec_limits_t *limits = 0;
@@ -7392,6 +7445,7 @@ int main(int argc, char **argv) {
         !get_locate_abi_is_callable_from_c() ||
         !ping_query_abi_is_callable() ||
         !lifecycle_constructors_are_callable_from_c() ||
+        !register_protection_storage_masks_builder_is_callable_from_c() ||
         !obtain_lease_abi_is_callable_from_c() ||
         !get_usage_allocation_constructor_is_callable_from_c() ||
         !import_constructor_rejects_invalid_table_238_inputs_from_c() ||

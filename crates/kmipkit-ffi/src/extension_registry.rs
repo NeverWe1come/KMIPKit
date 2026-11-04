@@ -6975,6 +6975,33 @@ pub extern "C" fn kmipkit_register_request_with_opaque_object_context(
     })
 }
 
+/// Replaces a Register request with one containing caller-supplied Protection Storage Masks.
+///
+/// The request handle is consumed. The mask structure is borrowed and copied; pass an empty
+/// structure to preserve present-empty separately from omission.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_register_request_with_protection_storage_masks(
+    request: *mut kmipkit_register_request_t,
+    masks: *mut kmipkit_ttlv_structure_t,
+    out_request: *mut *mut kmipkit_register_request_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_request);
+        let _ = read_handle!(request, RegisterRequest);
+        let masks = try_ffi!(copy_required_structure_handle(masks));
+        let request = try_ffi!(owned_payload(request, Kind::RegisterRequest));
+        let HandleValue::RegisterRequest(request) = request else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let request = request.with_protection_storage_masks(masks);
+        *out = try_ffi!(try_make_handle(
+            Kind::RegisterRequest,
+            HandleValue::RegisterRequest(Box::new(request)),
+        ));
+        SUCCESS
+    })
+}
+
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_register(
     request: *mut kmipkit_register_request_t,

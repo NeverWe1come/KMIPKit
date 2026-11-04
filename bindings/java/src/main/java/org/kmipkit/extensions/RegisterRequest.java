@@ -45,6 +45,19 @@ public final class RegisterRequest implements AutoCloseable {
                 request, context.nativeValue()));
     }
 
+    /** Sets the optional Protection Storage Masks structure and consumes this request. */
+    public RegisterRequest withProtectionStorageMasks(TtlvStructure masks) {
+        NativeExtensionRegistry.ensureLoaded();
+        if (masks == null) {
+            throw new InvalidInputException("Protection Storage Masks are invalid");
+        }
+        return NativeHandle.withValues(
+                new NativeHandle[] {handle, masks.nativeHandleOwner()},
+                values -> new RegisterRequest(
+                        NativeExtensionRegistry.registerRequestWithProtectionStorageMasks(
+                                handle.transfer(), values[1])));
+    }
+
     NativeHandle nativeHandleOwner() {
         return handle;
     }
