@@ -149,6 +149,35 @@ class T102ResponseConversionErrorMappingTests(unittest.TestCase):
                 self.assertEqual("blocked", parser["declarationState"])
                 self.assertEqual("KMIPKIT-0043", parser["candidateSpecId"])
 
+    def test_mapped_error_trait_exclusion_evidence_does_not_claim_parent_is_blocked(self) -> None:
+        mapped_errors = (
+            ("rust-kmipkit-protocol", "kmipkit_protocol::CryptographicOperationError"),
+            ("rust-kmipkit-protocol", "kmipkit_protocol::CryptographicOperationErrorKind"),
+            ("rust-kmipkit-client", "kmipkit_client::Pkcs11Error"),
+            ("rust-kmipkit-protocol", "kmipkit_protocol::Pkcs11Error"),
+        )
+        stale_phrases = (
+            "error types remain blocked and unmapped",
+            "error types themselves remain blocked pending four-language mapping",
+            "the pkcs11error type, variants, and fields remain blocked",
+        )
+        for package_id, error_type in mapped_errors:
+            prefix = f"<{error_type} as "
+            rows = [
+                row
+                for row in self.manifest["approvedExclusions"]
+                if row.get("packageId") == package_id
+                and row.get("exportName", "").startswith(prefix)
+            ]
+            self.assertTrue(rows, (package_id, error_type))
+            for row in rows:
+                recorded = f"{row.get('evidence', '')} {row.get('reason', '')}".lower()
+                with self.subTest(export=row["exportName"]):
+                    self.assertFalse(
+                        any(phrase in recorded for phrase in stale_phrases),
+                        row["exportName"],
+                    )
+
     def test_only_approved_error_families_may_use_normalized_mapping_semantics(self) -> None:
         family_row = next(
             item for item in self.manifest["publicDeclarations"]
