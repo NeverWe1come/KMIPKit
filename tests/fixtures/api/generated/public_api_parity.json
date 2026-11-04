@@ -194858,7 +194858,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -194915,7 +194915,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -194972,7 +194972,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -195029,7 +195029,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -195086,7 +195086,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -195143,7 +195143,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -195200,7 +195200,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -195257,7 +195257,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -195604,7 +195604,6 @@
       "mappingSemantics": "normalized-client-protocol-error-outcome",
       "packageId": "rust-kmipkit-protocol",
       "parityEvidenceIds": [
-        "bindings/c/include/kmipkit.h",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
@@ -195697,7 +195696,6 @@
       "mappingSemantics": "normalized-client-protocol-error-outcome",
       "packageId": "rust-kmipkit-protocol",
       "parityEvidenceIds": [
-        "bindings/c/include/kmipkit.h",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
@@ -195790,7 +195788,6 @@
       "mappingSemantics": "normalized-client-protocol-error-outcome",
       "packageId": "rust-kmipkit-protocol",
       "parityEvidenceIds": [
-        "bindings/c/include/kmipkit.h",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
@@ -195883,7 +195880,6 @@
       "mappingSemantics": "normalized-client-protocol-error-outcome",
       "packageId": "rust-kmipkit-protocol",
       "parityEvidenceIds": [
-        "bindings/c/include/kmipkit.h",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
@@ -195976,7 +195972,6 @@
       "mappingSemantics": "normalized-client-protocol-error-outcome",
       "packageId": "rust-kmipkit-protocol",
       "parityEvidenceIds": [
-        "bindings/c/include/kmipkit.h",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
@@ -196069,7 +196064,6 @@
       "mappingSemantics": "normalized-client-protocol-error-outcome",
       "packageId": "rust-kmipkit-protocol",
       "parityEvidenceIds": [
-        "bindings/c/include/kmipkit.h",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
@@ -196162,7 +196156,6 @@
       "mappingSemantics": "normalized-client-protocol-error-outcome",
       "packageId": "rust-kmipkit-protocol",
       "parityEvidenceIds": [
-        "bindings/c/include/kmipkit.h",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
@@ -196255,7 +196248,6 @@
       "mappingSemantics": "normalized-client-protocol-error-outcome",
       "packageId": "rust-kmipkit-protocol",
       "parityEvidenceIds": [
-        "bindings/c/include/kmipkit.h",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
@@ -196348,7 +196340,6 @@
       "mappingSemantics": "normalized-client-protocol-error-outcome",
       "packageId": "rust-kmipkit-protocol",
       "parityEvidenceIds": [
-        "bindings/c/include/kmipkit.h",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
@@ -200156,7 +200147,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -200216,7 +200206,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -200276,7 +200265,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -200336,7 +200324,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -200394,7 +200381,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -200452,7 +200438,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -200560,7 +200545,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -200617,7 +200601,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -200775,7 +200758,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -200837,7 +200819,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -200899,7 +200880,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -200957,7 +200937,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -201016,7 +200995,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -201076,7 +201054,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -201134,7 +201111,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -201192,7 +201168,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -201302,7 +201277,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -201359,7 +201333,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -201573,7 +201546,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -201635,7 +201607,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -201697,7 +201668,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -201755,7 +201725,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -201814,7 +201783,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -201874,7 +201842,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -201933,7 +201900,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -201991,7 +201957,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -202049,7 +202014,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -202159,7 +202123,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -202216,7 +202179,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -202326,7 +202288,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -208519,7 +208480,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -208581,7 +208541,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -208643,7 +208602,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -208701,7 +208659,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -208760,7 +208717,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -208820,7 +208776,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -208879,7 +208834,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -208937,7 +208891,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -208995,7 +208948,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -209105,7 +209057,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -209162,7 +209113,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -209376,7 +209326,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -209438,7 +209387,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -209500,7 +209448,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -209558,7 +209505,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -209617,7 +209563,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -209677,7 +209622,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -209736,7 +209680,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -209795,7 +209738,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -209853,7 +209795,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -209911,7 +209852,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -210021,7 +209961,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -210078,7 +210017,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -210188,7 +210126,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -217233,7 +217170,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -217292,7 +217228,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -217404,7 +217339,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -220031,7 +219965,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -220091,7 +220024,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -220208,7 +220140,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -222374,7 +222305,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -222488,7 +222418,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -223372,7 +223301,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -223431,7 +223359,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -223491,7 +223418,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -223551,7 +223477,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -223611,7 +223536,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -228016,7 +227940,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -228075,7 +227998,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -228187,7 +228109,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -231684,7 +231605,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -231744,7 +231664,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -231861,7 +231780,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -233425,7 +233343,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -233485,7 +233402,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -233599,7 +233515,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -234002,7 +233917,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -234062,7 +233976,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -234176,7 +234089,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -241934,7 +241846,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -242915,7 +242826,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -244807,7 +244717,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -250412,7 +250321,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -251396,7 +251304,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -253347,7 +253254,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -261580,7 +261486,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -261637,7 +261543,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -261694,7 +261600,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -261751,7 +261657,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -288768,7 +288674,6 @@
       "mappingSemantics": "normalized-client-protocol-error-outcome",
       "packageId": "rust-kmipkit-protocol",
       "parityEvidenceIds": [
-        "bindings/c/include/kmipkit.h",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
@@ -434668,7 +434573,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -434725,7 +434630,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -434782,7 +434687,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -434839,7 +434744,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -434896,7 +434801,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -434953,7 +434858,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -435010,7 +434915,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -435067,7 +434972,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -435124,7 +435029,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -435181,7 +435086,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -435238,7 +435143,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -435295,7 +435200,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -435353,7 +435258,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -435411,7 +435316,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -435469,7 +435374,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -435526,7 +435431,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -435583,7 +435488,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -435640,7 +435545,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -435697,7 +435602,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -435754,7 +435659,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -435811,7 +435716,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -435868,7 +435773,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -435925,7 +435830,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -435982,7 +435887,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -436039,7 +435944,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -436096,7 +436001,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -436153,7 +436058,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -436210,7 +436115,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -436267,7 +436172,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -436324,7 +436229,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -436381,7 +436286,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -436438,7 +436343,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -436496,7 +436401,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -436554,7 +436459,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -436612,7 +436517,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -436669,7 +436574,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -436726,7 +436631,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -436783,7 +436688,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -436840,7 +436745,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -436897,7 +436802,7 @@
         "bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java",
         "bindings/python/tests/test_credential_secrets.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "crates/kmipkit-protocol/tests/credential_secret_contract.rs"
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -453750,7 +453655,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -453808,7 +453712,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -453866,7 +453769,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -453924,7 +453826,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -453982,7 +453883,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -454040,7 +453940,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -454098,7 +453997,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -454156,7 +454054,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -454214,7 +454111,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -454272,7 +454168,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -454330,7 +454225,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -454388,7 +454282,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -454446,7 +454339,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -454504,7 +454396,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
@@ -454562,7 +454453,6 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
-        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
