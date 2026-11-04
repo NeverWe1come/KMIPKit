@@ -21,12 +21,12 @@ TYPES = {
     "CheckRequest": {
         "module": "check", "section": "OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.7, Tables 183-185", "request": "Table 183 as request",
         "normative": ("KMIPKIT-REQ-SPEC-6.1.7-001", "KMIPKIT-REQ-SPEC-6.1.7-002-001", "KMIPKIT-REQ-SPEC-6.1.7-002-002", "KMIPKIT-REQ-SPEC-6.1.7-002-003", "KMIPKIT-REQ-SPEC-6.1.7-003", "KMIPKIT-REQ-SPEC-6.1.7-004-001", "KMIPKIT-REQ-SPEC-6.1.7-004-002", "KMIPKIT-REQ-SPEC-6.1.7-005"),
-        "states": {"": "verified", "::into_ttlv_payload": "verified", "::new": "verified", "::unique_identifier": "blocked", "::with_cryptographic_usage_mask": "verified", "::with_lease_time": "verified", "::with_unique_identifier": "verified", "::with_usage_limits_count": "verified"},
+        "states": {"": "verified", "::into_ttlv_payload": "verified", "::new": "verified", "::unique_identifier": "verified", "::with_cryptographic_usage_mask": "verified", "::with_lease_time": "verified", "::with_unique_identifier": "verified", "::with_usage_limits_count": "verified"},
     },
     "ObtainLeaseRequest": {
         "module": "obtain_lease", "section": "OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.35, Tables 268-270", "request": "Table 268 as request",
         "normative": ("KMIPKIT-REQ-SPEC-6.1.35-001-001", "KMIPKIT-REQ-SPEC-6.1.35-001-002", "KMIPKIT-REQ-SPEC-6.1.35-002", "KMIPKIT-REQ-SPEC-6.1.35-005"),
-        "states": {"": "verified", "::into_ttlv_payload": "verified", "::new": "verified", "::unique_identifier": "blocked", "::with_unique_identifier": "verified"},
+        "states": {"": "verified", "::into_ttlv_payload": "verified", "::new": "verified", "::unique_identifier": "verified", "::with_unique_identifier": "verified"},
     },
     "ReProvisionRequest": {
         "module": "reprovision", "section": "OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.48 Tables 313-314; Section 6.1.48.1 Table 315", "request": "Table 313 as request",
@@ -37,17 +37,17 @@ TYPES = {
     "RecertifyRequest": {
         "module": "recertify", "section": "OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.45, Tables 300-302", "request": "Table 300 as request",
         "normative": ("KMIPKIT-REQ-SPEC-6.1.45-001", "KMIPKIT-REQ-SPEC-6.1.45-002-001", "KMIPKIT-REQ-SPEC-6.1.45-002-003", "KMIPKIT-REQ-SPEC-6.1.45-004", "KMIPKIT-REQ-SPEC-6.1.45-006-001", "KMIPKIT-REQ-SPEC-6.1.45-008"),
-        "states": {"": "verified", "::certificate_request_unique_identifier": "blocked", "::into_ttlv_payload": "verified", "::new": "verified", "::unique_identifier": "blocked", "::with_attributes": "verified", "::with_certificate_request_type": "verified", "::with_certificate_request_unique_identifier": "verified", "::with_certificate_request_value": "verified", "::with_offset": "verified", "::with_protection_storage_masks": "verified", "::with_unique_identifier": "verified"},
+        "states": {"": "verified", "::certificate_request_unique_identifier": "verified", "::into_ttlv_payload": "verified", "::new": "verified", "::unique_identifier": "verified", "::with_attributes": "verified", "::with_certificate_request_type": "verified", "::with_certificate_request_unique_identifier": "verified", "::with_certificate_request_value": "verified", "::with_offset": "verified", "::with_protection_storage_masks": "verified", "::with_unique_identifier": "verified"},
     },
     "RekeyKeyPairRequest": {
         "module": "rekey_key_pair", "section": "OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.47, Tables 310-312", "request": "Table 310 as request",
         "normative": ("KMIPKIT-REQ-SPEC-6.1.47-001", "KMIPKIT-REQ-SPEC-6.1.47-004-001"),
-        "states": {"": "verified", "::into_ttlv_payload": "verified", "::new": "verified", "::private_key_unique_identifier": "blocked", "::with_common_attributes": "verified", "::with_common_protection_storage_masks": "verified", "::with_offset": "verified", "::with_private_key_attributes": "verified", "::with_private_key_unique_identifier": "verified", "::with_private_protection_storage_masks": "verified", "::with_public_key_attributes": "verified", "::with_public_protection_storage_masks": "verified"},
+        "states": {"": "verified", "::into_ttlv_payload": "verified", "::new": "verified", "::private_key_unique_identifier": "verified", "::with_common_attributes": "verified", "::with_common_protection_storage_masks": "verified", "::with_offset": "verified", "::with_private_key_attributes": "verified", "::with_private_key_unique_identifier": "verified", "::with_private_protection_storage_masks": "verified", "::with_public_key_attributes": "verified", "::with_public_protection_storage_masks": "verified"},
     },
     "RekeyRequest": {
         "module": "rekey", "section": "OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.46, Tables 305-307", "request": "Table 305 as request",
         "normative": ("KMIPKIT-REQ-SPEC-6.1.46-001", "KMIPKIT-REQ-SPEC-6.1.46-004-001"),
-        "states": {"": "verified", "::into_ttlv_payload": "verified", "::new": "verified", "::unique_identifier": "blocked", "::with_attributes": "verified", "::with_offset": "verified", "::with_protection_storage_masks": "verified", "::with_unique_identifier": "verified"},
+        "states": {"": "verified", "::into_ttlv_payload": "verified", "::new": "verified", "::unique_identifier": "verified", "::with_attributes": "verified", "::with_offset": "verified", "::with_protection_storage_masks": "verified", "::with_unique_identifier": "verified"},
     },
 }
 

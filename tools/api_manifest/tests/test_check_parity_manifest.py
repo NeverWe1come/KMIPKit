@@ -34,6 +34,7 @@ EXPECTED_MAPPINGS = {
         "kmipkit_client::ClientRequest::check",
         "kmipkit_client::ClientBatchOutcome::check_response",
         "kmipkit_protocol::CheckRequest",
+        "kmipkit_protocol::CheckRequest::unique_identifier",
         "kmipkit_protocol::CheckResponse",
         "kmipkit_protocol::CheckResponse::unique_identifier",
         "kmipkit_protocol::CheckResponse::usage_limits_count",

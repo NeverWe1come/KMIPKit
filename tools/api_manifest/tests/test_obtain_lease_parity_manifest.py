@@ -45,6 +45,7 @@ EXPECTED_MAPPINGS = {
         "kmipkit_client::ClientBatchOutcome::obtain_lease_response",
         "kmipkit_protocol::ObtainLeaseRequest",
         "kmipkit_protocol::ObtainLeaseRequest::new",
+        "kmipkit_protocol::ObtainLeaseRequest::unique_identifier",
         "kmipkit_protocol::ObtainLeaseRequest::with_unique_identifier",
         "kmipkit_protocol::ObtainLeaseResponse",
         "kmipkit_protocol::ObtainLeaseResponse::unique_identifier",

@@ -183932,14 +183932,73 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::CheckRequest::unique_identifier",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-CHECK",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.7-001",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-003",
+        "KMIPKIT-REQ-SPEC-6.1.7-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.7-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CheckRequest::unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_check"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.check"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_check"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CheckResponseMappingTest.java",
+        "bindings/python/tests/test_check_operation.py",
+        "crates/kmipkit-client/tests/unit/check_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/check_operation_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "tools/api_manifest/tests/test_t102_request_builder_mapping_batch.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_identifier_member_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-ad3438f583c6a1a34512",
@@ -202497,14 +202556,71 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::ObtainLeaseRequest::unique_identifier",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-007",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.35-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.35-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.35-002",
+        "KMIPKIT-REQ-SPEC-6.1.35-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ObtainLeaseRequest::unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_obtain_lease"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.obtainLease"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_obtain_lease"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ObtainLeaseMappingTest.java",
+        "bindings/python/tests/test_obtain_lease_operation.py",
+        "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs",
+        "tools/api_manifest/tests/test_obtain_lease_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_identifier_member_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-f377ba707e703f9d816f",
@@ -206190,14 +206306,52 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::RecertifyRequest::certificate_request_unique_identifier",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-REQ-SPEC-6.1.45-001"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RecertifyRequest::certificate_request_unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_recertify"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.recertify"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_recertify"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RecertifyMappingTest.java",
+        "bindings/python/tests/test_recertify_operation.py",
+        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
+        "tools/api_manifest/tests/test_recertify_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_recertify_rekey_key_pair_builder_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_identifier_member_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-d7bf84b1a5fd4c705597",
@@ -206247,7 +206401,8 @@
         "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
         "tools/api_manifest/tests/test_recertify_parity_manifest.py",
         "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py",
-        "tools/api_manifest/tests/test_t102_recertify_rekey_key_pair_builder_mapping.py"
+        "tools/api_manifest/tests/test_t102_recertify_rekey_key_pair_builder_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_identifier_member_mapping.py"
       ]
     },
     {
@@ -206305,14 +206460,52 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::RecertifyRequest::unique_identifier",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-REQ-SPEC-6.1.45-001"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RecertifyRequest::unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_recertify"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.recertify"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_recertify"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RecertifyMappingTest.java",
+        "bindings/python/tests/test_recertify_operation.py",
+        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
+        "tools/api_manifest/tests/test_recertify_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_recertify_rekey_key_pair_builder_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_identifier_member_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-0cad07b4f1010a7d9a55",
@@ -206508,7 +206701,13 @@
         "bindings/python/tests/test_recertify_operation.py",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
         "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
-        "tools/api_manifest/tests/test_t102_recertify_rekey_key_pair_builder_mapping.py"
+        "tools/api_manifest/tests/test_t102_recertify_rekey_key_pair_builder_mapping.py",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RecertifyMappingTest.java",
+        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "tools/api_manifest/tests/test_recertify_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_identifier_member_mapping.py"
       ]
     },
     {
@@ -206854,7 +207053,10 @@
         "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
-        "tools/api_manifest/tests/test_recertify_parity_manifest.py"
+        "tools/api_manifest/tests/test_recertify_parity_manifest.py",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_identifier_member_mapping.py"
       ]
     },
     {
@@ -209067,14 +209269,58 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::RekeyKeyPairRequest::private_key_unique_identifier",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-REQ-SPEC-6.1.47-001"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RekeyKeyPairRequest::private_key_unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_rekey_key_pair"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.rekeyKeyPair"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_rekey_key_pair"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_key_pair_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_recertify_rekey_key_pair_builder_mapping.py",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyKeyPairMappingTest.java",
+        "bindings/python/tests/test_rekey_key_pair_native_integration.py",
+        "bindings/python/tests/test_rekey_key_pair_operation.py",
+        "tools/api_manifest/tests/test_t102_join_split_key_secret_data_type_mapping.py",
+        "tools/api_manifest/tests/test_t102_rekey_key_pair_structure_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_identifier_member_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-9deea2dde23e9a92294d",
@@ -210157,14 +210403,72 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::RekeyRequest::unique_identifier",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::RekeyRequest::unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_rekey"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.rekey"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_rekey"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_parity_manifest.py",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "tools/api_manifest/tests/test_t102_request_builder_mapping_batch.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_identifier_member_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-55695fec9108789be098",
@@ -475179,7 +475483,8 @@
           "rust-observed-ad3438f583c6a1a34512",
           "rust-observed-4d485551dac41dbd1ef3",
           "rust-observed-65d774b35eb37037489c",
-          "rust-observed-1aa8855f67251843003b"
+          "rust-observed-1aa8855f67251843003b",
+          "rust-observed-0cac70728b14d2cc2029"
         ],
         "c": [
           "T044:check:constructor:c",
@@ -475216,7 +475521,8 @@
         "crates/kmipkit-client/tests/unit/check_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/check_operation_tests.rs",
-        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py"
+        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_identifier_member_mapping.py"
       ]
     },
     {
@@ -477263,7 +477569,8 @@
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs",
         "tools/api_manifest/tests/test_obtain_lease_parity_manifest.py",
-        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py"
+        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_identifier_member_mapping.py"
       ],
       "declarations": {
         "rust": [
@@ -477296,7 +477603,8 @@
           "rust-observed-bab5f3119a04dc27703d",
           "rust-observed-89221bf1ef6ac98cfe5c",
           "rust-observed-434fb63f67544fafe593",
-          "rust-observed-3f7281ffc6f28316cdb2"
+          "rust-observed-3f7281ffc6f28316cdb2",
+          "rust-observed-c2c1ef4a9b7cde16f0b8"
         ],
         "c": [
           "T056:constructor:c",
@@ -478138,7 +478446,9 @@
           "rust-observed-6e9fb656f103c43fa2de",
           "rust-observed-be7b44dc6c8bae24ad53",
           "rust-observed-df01f6f04f8d9cf4ba99",
-          "rust-observed-d7bf84b1a5fd4c705597"
+          "rust-observed-d7bf84b1a5fd4c705597",
+          "rust-observed-1f4d5ae1f197c06d274f",
+          "rust-observed-e1413e6ad346eed590c5"
         ],
         "c": [
           "T058:recertify:constructor:c",
@@ -478171,7 +478481,8 @@
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
         "tools/api_manifest/tests/test_recertify_parity_manifest.py",
-        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py"
+        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_identifier_member_mapping.py"
       ]
     },
     {
@@ -478223,7 +478534,8 @@
           "rust-observed-55695fec9108789be098",
           "rust-observed-3c3be169b5ff8899e1c7",
           "rust-observed-4d0d3b95f24eb43db67a",
-          "rust-observed-1477c49c457fdc10fa5b"
+          "rust-observed-1477c49c457fdc10fa5b",
+          "rust-observed-c0e54cfc91f60a80e3b9"
         ],
         "c": [
           "T059:rekey:constructor:c",
@@ -478257,7 +478569,8 @@
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
         "tools/api_manifest/tests/test_rekey_parity_manifest.py",
-        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py"
+        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_identifier_member_mapping.py"
       ]
     },
     {
@@ -478314,7 +478627,8 @@
           "rust-observed-d51793dbfa80b42a8e94",
           "rust-observed-1bdba1f1266aff84ed52",
           "rust-observed-68df328df6ad480b4be4",
-          "rust-observed-92442b7d3422ffe465c3"
+          "rust-observed-92442b7d3422ffe465c3",
+          "rust-observed-0f930bd1ba867141cf20"
         ],
         "c": [
           "T060:rekey-key-pair:constructor:c",
@@ -478353,7 +478667,8 @@
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
         "tools/api_manifest/tests/test_t102_join_split_key_secret_data_type_mapping.py",
         "tools/api_manifest/tests/test_t102_rekey_key_pair_structure_mapping.py",
-        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py"
+        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_identifier_member_mapping.py"
       ]
     },
     {

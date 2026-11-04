@@ -47,6 +47,7 @@ EXPECTED_MAPPINGS = {
         "kmipkit_client::ClientRequest::Rekey",
         "kmipkit_client::ClientBatchOutcome::rekey_response",
         "kmipkit_protocol::RekeyRequest",
+        "kmipkit_protocol::RekeyRequest::unique_identifier",
         "kmipkit_protocol::RekeyResponse",
         "kmipkit_protocol::RekeyResponse::unique_identifier",
         "kmipkit_protocol::RekeyResponse::with_ttlv",
@@ -139,7 +140,7 @@ class RekeyParityManifestTests(unittest.TestCase):
             row for row in self.manifest["publicDeclarations"]
             if row.get("capabilityId") == OPERATION_ID
         ]
-        self.assertEqual(42, len(declarations))
+        self.assertEqual(47, len(declarations))
         functions = {
             row["id"]: row for row in self.manifest["functions"]
             if row["id"] in REKEY_FUNCTION_IDS

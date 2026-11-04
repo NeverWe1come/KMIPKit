@@ -48,6 +48,17 @@ class RekeyKeyPairManifestTests(unittest.TestCase):
         )
         operation = next(row for row in manifest["operations"] if row["operationId"] == OPERATION_ID)
         self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])
+        member = next(
+            row
+            for row in manifest["publicDeclarations"]
+            if row["declarationId"] == "rust-observed-0f930bd1ba867141cf20"
+        )
+        self.assertEqual("verified", member["declarationState"])
+        self.assertEqual(
+            "kmipkit_protocol::RekeyKeyPairRequest::private_key_unique_identifier",
+            member["exportName"],
+        )
+        self.assertIn(member["declarationId"], operation["declarations"]["rust"])
         self.assertEqual(
             {
                 "rust": {"packageId": "rust-kmipkit-protocol", "name": declaration["exportName"]},

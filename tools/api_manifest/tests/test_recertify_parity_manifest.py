@@ -86,6 +86,10 @@ REQUEST_DECLARATIONS = {
     "rust-observed-0cad07b4f1010a7d9a55",  # RecertifyRequest::with_attributes
     "rust-observed-6e9fb656f103c43fa2de",  # RecertifyRequest::with_protection_storage_masks
     "rust-observed-4e379cb3b97bca658dbf",  # RecertifyRequest::with_certificate_request_type
+    "rust-observed-d7bf84b1a5fd4c705597",  # RecertifyRequest::into_ttlv_payload
+    "rust-observed-be7b44dc6c8bae24ad53",  # RecertifyRequest::with_certificate_request_value
+    "rust-observed-1f4d5ae1f197c06d274f",  # RecertifyRequest::certificate_request_unique_identifier
+    "rust-observed-e1413e6ad346eed590c5",  # RecertifyRequest::unique_identifier
     "T058:recertify:constructor:c",
     "T058:recertify:constructor:java",
     "T058:recertify:constructor:python",
@@ -101,6 +105,7 @@ NON_REQUEST_DECLARATIONS = {
     "rust-observed-4c37b205dc5bee05df9a",
     "rust-observed-d771ff20731cba0fe337",
     "rust-observed-12bf8df7cd387813c576",  # foreign mappings resolve to response classes
+    "rust-observed-df01f6f04f8d9cf4ba99",  # RecertifyResponse::try_from_response_item
     "rust-observed-c12b6edc157fdc7037b1",
     "rust-observed-1f59cf7cfe8fbb9bfe63",
     "rust-observed-3f429f5ae2d84d55badf",
@@ -177,6 +182,8 @@ EXPECTED_MAPPINGS = {
         "kmipkit_client::ClientRequest::Recertify",
         "kmipkit_client::ClientBatchOutcome::recertify_response",
         "kmipkit_protocol::RecertifyRequest",
+        "kmipkit_protocol::RecertifyRequest::certificate_request_unique_identifier",
+        "kmipkit_protocol::RecertifyRequest::unique_identifier",
         "kmipkit_protocol::RecertifyResponse",
         "kmipkit_protocol::RecertifyResponse::unique_identifier",
         "kmipkit_protocol::RecertifyResponse::with_ttlv",
@@ -272,7 +279,7 @@ class RecertifyParityManifestTests(unittest.TestCase):
             if row.get("capabilityId") == OPERATION_ID
         ]
         declarations_by_id = {row["declarationId"]: row for row in operation_declarations}
-        self.assertEqual(46, len(operation_declarations))
+        self.assertEqual(51, len(operation_declarations))
         self.assertEqual(set(declarations_by_id), REQUEST_DECLARATIONS | NON_REQUEST_DECLARATIONS)
         active_declarations = {
             row["declarationId"] for row in operation_declarations
