@@ -104847,6 +104847,702 @@
       "exportName": "kmipkit.profile_readiness.ProfileReadinessBlocker.__slots__",
       "packageId": "python-kmipkit",
       "reason": "This exact dataclass-generated Python dunder member is interpreter/model mechanics for ProfileReadinessBlocker and has no independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_client::ClientResponseView<'a> as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation of alloc::borrow::ToOwned is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_client::ClientResponseView<'a> as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation of alloc::borrow::ToOwned is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_client::ClientResponseView<'a> as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation of alloc::borrow::ToOwned is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_client::ClientResponseView<'a> as core::borrow::Borrow<kmipkit_client::execute::ClientResponseView<'a>>>::borrow",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation of core::borrow::Borrow<kmipkit_client::execute::ClientResponseView<'a>> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_client::ClientResponseView<'a> as core::borrow::BorrowMut<kmipkit_client::execute::ClientResponseView<'a>>>::borrow_mut",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation of core::borrow::BorrowMut<kmipkit_client::execute::ClientResponseView<'a>> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_client::ClientResponseView<'a> as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation of core::clone::Clone is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_client::ClientResponseView<'a> as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation of core::clone::Clone is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_client::ClientResponseView<'a> as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation of core::clone::CloneToUninit is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_client::ClientResponseView<'a> as core::convert::From<kmipkit_client::execute::ClientResponseView<'a>>>::from",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation of core::convert::From<kmipkit_client::execute::ClientResponseView<'a>> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_client::ClientResponseView<'a> as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation of core::any::Any is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_client::ClientResponseView<'a> as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation of core::convert::Into<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_client::ClientResponseView<'a> as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_client::ClientResponseView<'a> as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_client::ClientResponseView<'a> as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_client::ClientResponseView<'a> as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.12 and Section 6.1.14, Table 205. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits presence and count metadata only. Default is the empty `new()` value, not an implicit cryptographic selection. No Clone or secret-copy path is included. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_protocol::DerivationParameters as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation of core::any::Any is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.12 and Section 6.1.14, Table 205. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits presence and count metadata only. Default is the empty `new()` value, not an implicit cryptographic selection. No Clone or secret-copy path is included. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_protocol::DerivationParameters as core::borrow::Borrow<kmipkit_protocol::derive_key::DerivationParameters>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation of core::borrow::Borrow<kmipkit_protocol::derive_key::DerivationParameters> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.12 and Section 6.1.14, Table 205. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits presence and count metadata only. Default is the empty `new()` value, not an implicit cryptographic selection. No Clone or secret-copy path is included. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_protocol::DerivationParameters as core::borrow::BorrowMut<kmipkit_protocol::derive_key::DerivationParameters>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation of core::borrow::BorrowMut<kmipkit_protocol::derive_key::DerivationParameters> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.12 and Section 6.1.14, Table 205. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits presence and count metadata only. Default is the empty `new()` value, not an implicit cryptographic selection. No Clone or secret-copy path is included. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_protocol::DerivationParameters as core::convert::From<kmipkit_protocol::derive_key::DerivationParameters>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation of core::convert::From<kmipkit_protocol::derive_key::DerivationParameters> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.12 and Section 6.1.14, Table 205. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits presence and count metadata only. Default is the empty `new()` value, not an implicit cryptographic selection. No Clone or secret-copy path is included. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_protocol::DerivationParameters as core::default::Default>::default",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation of core::default::Default is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.12 and Section 6.1.14, Table 205. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits presence and count metadata only. Default is the empty `new()` value, not an implicit cryptographic selection. No Clone or secret-copy path is included. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_protocol::DerivationParameters as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation of core::fmt::Debug is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.12 and Section 6.1.14, Table 205. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits presence and count metadata only. Default is the empty `new()` value, not an implicit cryptographic selection. No Clone or secret-copy path is included. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_protocol::DerivationParameters as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation of core::convert::Into<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.12 and Section 6.1.14, Table 205. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits presence and count metadata only. Default is the empty `new()` value, not an implicit cryptographic selection. No Clone or secret-copy path is included. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_protocol::DerivationParameters as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.12 and Section 6.1.14, Table 205. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits presence and count metadata only. Default is the empty `new()` value, not an implicit cryptographic selection. No Clone or secret-copy path is included. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_protocol::DerivationParameters as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.12 and Section 6.1.14, Table 205. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits presence and count metadata only. Default is the empty `new()` value, not an implicit cryptographic selection. No Clone or secret-copy path is included. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_protocol::DerivationParameters as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.12 and Section 6.1.14, Table 205. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits presence and count metadata only. Default is the empty `new()` value, not an implicit cryptographic selection. No Clone or secret-copy path is included. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_protocol::DerivationParameters as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.14, Table 205, and Section 7.12. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits only type codes and collection counts, with nested secret parameters redacted. Identity conversions and borrow paths add no separate KMIP operation capability. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation of core::any::Any is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.14, Table 205, and Section 7.12. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits only type codes and collection counts, with nested secret parameters redacted. Identity conversions and borrow paths add no separate KMIP operation capability. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::borrow::Borrow<kmipkit_protocol::derive_key::DeriveKeyRequest>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation of core::borrow::Borrow<kmipkit_protocol::derive_key::DeriveKeyRequest> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.14, Table 205, and Section 7.12. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits only type codes and collection counts, with nested secret parameters redacted. Identity conversions and borrow paths add no separate KMIP operation capability. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::borrow::BorrowMut<kmipkit_protocol::derive_key::DeriveKeyRequest>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation of core::borrow::BorrowMut<kmipkit_protocol::derive_key::DeriveKeyRequest> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.14, Table 205, and Section 7.12. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits only type codes and collection counts, with nested secret parameters redacted. Identity conversions and borrow paths add no separate KMIP operation capability. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::convert::From<kmipkit_protocol::derive_key::DeriveKeyRequest>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation of core::convert::From<kmipkit_protocol::derive_key::DeriveKeyRequest> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.14, Table 205, and Section 7.12. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits only type codes and collection counts, with nested secret parameters redacted. Identity conversions and borrow paths add no separate KMIP operation capability. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation of core::fmt::Debug is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.14, Table 205, and Section 7.12. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits only type codes and collection counts, with nested secret parameters redacted. Identity conversions and borrow paths add no separate KMIP operation capability. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation of core::convert::Into<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.14, Table 205, and Section 7.12. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits only type codes and collection counts, with nested secret parameters redacted. Identity conversions and borrow paths add no separate KMIP operation capability. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.14, Table 205, and Section 7.12. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits only type codes and collection counts, with nested secret parameters redacted. Identity conversions and borrow paths add no separate KMIP operation capability. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.14, Table 205, and Section 7.12. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits only type codes and collection counts, with nested secret parameters redacted. Identity conversions and borrow paths add no separate KMIP operation capability. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.14, Table 205, and Section 7.12. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits only type codes and collection counts, with nested secret parameters redacted. Identity conversions and borrow paths add no separate KMIP operation capability. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.49, Tables 317-318. No OASIS normative clause directly applies to Rust standard-trait paths. The excluded non-Debug paths are standard identity conversion, borrow, and type metadata only; this record does not exclude the separately held Debug path. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit::RngRetrieveResponse as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation of core::any::Any is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.49, Tables 317-318. No OASIS normative clause directly applies to Rust standard-trait paths. The excluded non-Debug paths are standard identity conversion, borrow, and type metadata only; this record does not exclude the separately held Debug path. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit::RngRetrieveResponse as core::borrow::Borrow<kmipkit_protocol::rng_retrieve::RngRetrieveResponse>>::borrow",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation of core::borrow::Borrow<kmipkit_protocol::rng_retrieve::RngRetrieveResponse> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.49, Tables 317-318. No OASIS normative clause directly applies to Rust standard-trait paths. The excluded non-Debug paths are standard identity conversion, borrow, and type metadata only; this record does not exclude the separately held Debug path. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit::RngRetrieveResponse as core::borrow::BorrowMut<kmipkit_protocol::rng_retrieve::RngRetrieveResponse>>::borrow_mut",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation of core::borrow::BorrowMut<kmipkit_protocol::rng_retrieve::RngRetrieveResponse> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.49, Tables 317-318. No OASIS normative clause directly applies to Rust standard-trait paths. The excluded non-Debug paths are standard identity conversion, borrow, and type metadata only; this record does not exclude the separately held Debug path. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit::RngRetrieveResponse as core::convert::From<kmipkit_protocol::rng_retrieve::RngRetrieveResponse>>::from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation of core::convert::From<kmipkit_protocol::rng_retrieve::RngRetrieveResponse> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.49, Tables 317-318. No OASIS normative clause directly applies to Rust standard-trait paths. The excluded non-Debug paths are standard identity conversion, borrow, and type metadata only; this record does not exclude the separately held Debug path. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit::RngRetrieveResponse as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation of core::convert::Into<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.49, Tables 317-318. No OASIS normative clause directly applies to Rust standard-trait paths. The excluded non-Debug paths are standard identity conversion, borrow, and type metadata only; this record does not exclude the separately held Debug path. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit::RngRetrieveResponse as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.49, Tables 317-318. No OASIS normative clause directly applies to Rust standard-trait paths. The excluded non-Debug paths are standard identity conversion, borrow, and type metadata only; this record does not exclude the separately held Debug path. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit::RngRetrieveResponse as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.49, Tables 317-318. No OASIS normative clause directly applies to Rust standard-trait paths. The excluded non-Debug paths are standard identity conversion, borrow, and type metadata only; this record does not exclude the separately held Debug path. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit::RngRetrieveResponse as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.49, Tables 317-318. No OASIS normative clause directly applies to Rust standard-trait paths. The excluded non-Debug paths are standard identity conversion, borrow, and type metadata only; this record does not exclude the separately held Debug path. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit::RngRetrieveResponse as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.50, Tables 321-322. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits result metadata and redacted TTLV metadata; all other excluded paths are standard identity conversion, borrow, or type metadata. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit::RngSeedResponse as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation of core::any::Any is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.50, Tables 321-322. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits result metadata and redacted TTLV metadata; all other excluded paths are standard identity conversion, borrow, or type metadata. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit::RngSeedResponse as core::borrow::Borrow<kmipkit_protocol::rng_seed::RngSeedResponse>>::borrow",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation of core::borrow::Borrow<kmipkit_protocol::rng_seed::RngSeedResponse> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.50, Tables 321-322. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits result metadata and redacted TTLV metadata; all other excluded paths are standard identity conversion, borrow, or type metadata. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit::RngSeedResponse as core::borrow::BorrowMut<kmipkit_protocol::rng_seed::RngSeedResponse>>::borrow_mut",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation of core::borrow::BorrowMut<kmipkit_protocol::rng_seed::RngSeedResponse> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.50, Tables 321-322. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits result metadata and redacted TTLV metadata; all other excluded paths are standard identity conversion, borrow, or type metadata. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit::RngSeedResponse as core::convert::From<kmipkit_protocol::rng_seed::RngSeedResponse>>::from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation of core::convert::From<kmipkit_protocol::rng_seed::RngSeedResponse> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.50, Tables 321-322. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits result metadata and redacted TTLV metadata; all other excluded paths are standard identity conversion, borrow, or type metadata. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit::RngSeedResponse as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation of core::fmt::Debug is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.50, Tables 321-322. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits result metadata and redacted TTLV metadata; all other excluded paths are standard identity conversion, borrow, or type metadata. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit::RngSeedResponse as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation of core::convert::Into<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.50, Tables 321-322. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits result metadata and redacted TTLV metadata; all other excluded paths are standard identity conversion, borrow, or type metadata. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit::RngSeedResponse as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.50, Tables 321-322. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits result metadata and redacted TTLV metadata; all other excluded paths are standard identity conversion, borrow, or type metadata. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit::RngSeedResponse as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.50, Tables 321-322. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits result metadata and redacted TTLV metadata; all other excluded paths are standard identity conversion, borrow, or type metadata. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit::RngSeedResponse as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.50, Tables 321-322. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits result metadata and redacted TTLV metadata; all other excluded paths are standard identity conversion, borrow, or type metadata. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit::RngSeedResponse as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-005, KMIPKIT-0039-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.23, Tables 232-234. No OASIS normative clause directly applies to Rust standard-trait paths. Debug redacts an explicit Unique Identifier and emits only the permitted numeric count; a focused sentinel test verifies the identifier does not appear. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit::GetUsageAllocationRequest as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation of core::fmt::Debug is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. The TDD regression test asserts that this Debug path emits only the operation label for an RNG Retrieve response view; it cannot delegate to or expose any response payload. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit_client::ClientResponseView<'a> as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation of core::fmt::Debug::fmt formats only reviewed, redacted diagnostic information and is not a separate KMIPKit product capability; the owning typed operation remains inventoried separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.49, Tables 317-318. No OASIS normative clause directly applies to Rust standard-trait paths. The focused response Debug test includes `KMIP_RNG_RETRIEVE_RESPONSE_SECRET_SENTINEL` and `KMIP_RNG_RETRIEVE_UNKNOWN_TTLV_SENTINEL` and verifies neither value is formatted; secret-owned bytes remain zeroizing and the retained TTLV Debug reports metadata only. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim.",
+      "exportName": "<kmipkit::RngRetrieveResponse as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust standard-trait implementation of core::fmt::Debug::fmt formats only reviewed, redacted diagnostic information and is not a separate KMIPKit product capability; the owning typed operation remains inventoried separately."
     }
   ],
   "capabilities": [

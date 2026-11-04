@@ -68152,7 +68152,7 @@
         }
       }
     },
-        {
+    {
       "declarationId": "python-observed-1038030129beba16d1ff",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -68232,7 +68232,7 @@
       },
       "mappingSemantics": "native-handle-release"
     },
-        {
+    {
       "declarationId": "python-observed-610fa773b2b0328e90dc",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -68314,7 +68314,7 @@
       },
       "mappingSemantics": "native-handle-release"
     },
-        {
+    {
       "declarationId": "python-observed-6c612853b05cdf7836e7",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -68396,7 +68396,7 @@
       },
       "mappingSemantics": "native-handle-release"
     },
-        {
+    {
       "declarationId": "python-observed-d362a2351406bb99d86f",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -68481,7 +68481,7 @@
       },
       "mappingSemantics": "native-handle-release"
     },
-        {
+    {
       "declarationId": "python-observed-f19f9d07b0a696f4c6a1",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -68566,7 +68566,7 @@
       },
       "mappingSemantics": "native-handle-release"
     },
-        {
+    {
       "declarationId": "python-observed-fee2946a4465ec0e9fb3",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -68651,7 +68651,7 @@
       },
       "mappingSemantics": "native-handle-release"
     },
-        {
+    {
       "declarationId": "python-observed-285d5cbc6785190e6bac",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -68736,7 +68736,7 @@
       },
       "mappingSemantics": "native-handle-release"
     },
-        {
+    {
       "declarationId": "python-observed-ab3938fcbbb530710497",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -68821,7 +68821,7 @@
       },
       "mappingSemantics": "native-handle-release"
     },
-        {
+    {
       "declarationId": "python-observed-ec6f895060a20839e4e2",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -68906,7 +68906,7 @@
       },
       "mappingSemantics": "native-handle-release"
     },
-        {
+    {
       "declarationId": "python-observed-1d52c71ad0aa431592e4",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -68991,7 +68991,7 @@
       },
       "mappingSemantics": "native-handle-release"
     },
-        {
+    {
       "declarationId": "python-observed-d26f684858f1574da170",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -69076,7 +69076,7 @@
       },
       "mappingSemantics": "native-handle-release"
     },
-        {
+    {
       "declarationId": "python-observed-3d1d87841ed2dfd69948",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -69629,7 +69629,7 @@
         }
       }
     },
-        {
+    {
       "declarationId": "python-observed-60ec2c23ae9fea4d93d9",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -69714,7 +69714,7 @@
       },
       "mappingSemantics": "native-handle-release"
     },
-        {
+    {
       "declarationId": "python-observed-e7bee82a8e7c83227d42",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -69799,7 +69799,7 @@
       },
       "mappingSemantics": "native-handle-release"
     },
-        {
+    {
       "declarationId": "python-observed-b6589f8e66ad54ac660b",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -69884,7 +69884,7 @@
       },
       "mappingSemantics": "native-handle-release"
     },
-        {
+    {
       "declarationId": "python-observed-be990b76adb129ce4d0c",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -69969,7 +69969,7 @@
       },
       "mappingSemantics": "native-handle-release"
     },
-        {
+    {
       "declarationId": "python-observed-fd80c50fa695d32c86bb",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -70492,7 +70492,7 @@
         }
       }
     },
-        {
+    {
       "declarationId": "python-observed-a1e65007565c4d5d60ab",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -70577,7 +70577,7 @@
       },
       "mappingSemantics": "native-handle-release"
     },
-        {
+    {
       "declarationId": "python-observed-64c52a0d955645489d08",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -70661,7 +70661,7 @@
       },
       "mappingSemantics": "native-handle-release"
     },
-        {
+    {
       "declarationId": "python-observed-f513ef00aab19449d7a4",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -70752,7 +70752,7 @@
       },
       "mappingSemantics": "native-handle-release"
     },
-        {
+    {
       "declarationId": "python-observed-cb671b6441b24621e6ca",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -70837,7 +70837,7 @@
       },
       "mappingSemantics": "native-handle-release"
     },
-        {
+    {
       "declarationId": "python-observed-d05eaf78e62f1aeecee6",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -70928,7 +70928,7 @@
       },
       "mappingSemantics": "native-handle-release"
     },
-        {
+    {
       "declarationId": "python-observed-a60d00dc7c87e95bb98c",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -71006,7 +71006,7 @@
         }
       }
     },
-        {
+    {
       "declarationId": "python-observed-29d1280133270b5abda4",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -71097,7 +71097,7 @@
       },
       "mappingSemantics": "native-handle-release"
     },
-        {
+    {
       "declarationId": "python-observed-1c5cbdd0f06337a06cac",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -127843,20 +127843,6 @@
       }
     },
     {
-      "declarationId": "rust-observed-b3136ba27c8673f01ceb",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::GetUsageAllocationRequest as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
       "declarationId": "rust-observed-402da4ce974b9ad99b17",
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
@@ -127892,466 +127878,6 @@
           "name": "kmipkit.client.RequestOptions.__init__"
         }
       }
-    },
-    {
-      "declarationId": "rust-observed-b16c3942314d7f5bea9a",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RngRetrieveResponse as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-297337f5834ebe044e7e",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RngRetrieveResponse as core::borrow::Borrow<kmipkit_protocol::rng_retrieve::RngRetrieveResponse>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-9a80abe092757815ed55",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RngRetrieveResponse as core::borrow::BorrowMut<kmipkit_protocol::rng_retrieve::RngRetrieveResponse>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-9385f8accca9f68299eb",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RngRetrieveResponse as core::convert::From<kmipkit_protocol::rng_retrieve::RngRetrieveResponse>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-add4fb10783c51860a25",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RngRetrieveResponse as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::rng_retrieve::RngRetrieveResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-430c867122a5f7997999",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RngRetrieveResponse as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::rng_retrieve::RngRetrieveResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-11b4a5d02595ff225a40",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RngRetrieveResponse as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::rng_retrieve::RngRetrieveResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-13d873f6094204edc80c",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RngRetrieveResponse as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::rng_retrieve::RngRetrieveResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-d87ae9826e97b1ec26c5",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RngRetrieveResponse as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::rng_retrieve::RngRetrieveResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-f0aa7f026c417cb10a02",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RngRetrieveResponse as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-33d365c887957b2bafc6",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RngSeedResponse as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-134f77cf8ecb1256787f",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RngSeedResponse as core::borrow::Borrow<kmipkit_protocol::rng_seed::RngSeedResponse>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-414cade06a4d1dd0d4e1",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RngSeedResponse as core::borrow::BorrowMut<kmipkit_protocol::rng_seed::RngSeedResponse>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-0452c993230eeab02d57",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RngSeedResponse as core::convert::From<kmipkit_protocol::rng_seed::RngSeedResponse>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-87804cb71a5af00f3e74",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RngSeedResponse as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::rng_seed::RngSeedResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-f9b85010c0e1a1954859",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RngSeedResponse as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::rng_seed::RngSeedResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-2de5841940bf8da77925",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RngSeedResponse as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::rng_seed::RngSeedResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-a98db1b1f7e97664610f",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RngSeedResponse as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::rng_seed::RngSeedResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-da01020bc4eb7029c8c4",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RngSeedResponse as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::rng_seed::RngSeedResponse"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-93bdd5214dd8b145351e",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "<kmipkit::RngSeedResponse as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
       "declarationId": "rust-observed-846905211e050ca46bd1",
@@ -152520,343 +152046,6 @@
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
-      "declarationId": "rust-observed-05960f11155e2eb84522",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::ClientResponseView<'a> as alloc::borrow::ToOwned>::Owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-0d6ff5111b779388419b",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::ClientResponseView<'a> as alloc::borrow::ToOwned>::clone_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-32d923657d0e45cf7db7",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::ClientResponseView<'a> as alloc::borrow::ToOwned>::to_owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-5a5be116796420a5fc83",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::ClientResponseView<'a> as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "kind": "outlives",
-            "lifetime": "'static",
-            "subject": "T"
-          },
-          {
-            "arguments": [],
-            "kind": "traitBound",
-            "modifier": "maybe",
-            "subject": "T",
-            "traitPath": [
-              "core",
-              "marker",
-              "Sized"
-            ]
-          }
-        ],
-        "subjectBindings": {
-          "T": "kmipkit_client::ClientResponseView<'a>"
-        }
-      }
-    },
-    {
-      "declarationId": "rust-observed-1db226e0db1b236d71f9",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::ClientResponseView<'a> as core::borrow::Borrow<kmipkit_client::execute::ClientResponseView<'a>>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-e317ac7a829be35a65e7",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::ClientResponseView<'a> as core::borrow::BorrowMut<kmipkit_client::execute::ClientResponseView<'a>>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-350f975d9fd4d3d7ed09",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::ClientResponseView<'a> as core::clone::Clone>::clone",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-d25c318a54e5dd16871e",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::ClientResponseView<'a> as core::clone::Clone>::clone_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-ba69fd4038272f910124",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::ClientResponseView<'a> as core::clone::CloneToUninit>::clone_to_uninit",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-78b62a52621914db65ec",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::ClientResponseView<'a> as core::convert::From<kmipkit_client::execute::ClientResponseView<'a>>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-01595afb935368690402",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::ClientResponseView<'a> as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_client::execute::ClientResponseView<'a>"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-a85c62cf096ef6a72e87",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::ClientResponseView<'a> as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_client::execute::ClientResponseView<'a>"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-74c00edae0c7c7d597ae",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::ClientResponseView<'a> as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_client::execute::ClientResponseView<'a>"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-a15406be3f9777a331aa",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::ClientResponseView<'a> as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_client::execute::ClientResponseView<'a>"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-405cf697bae39903165f",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::ClientResponseView<'a> as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_client::execute::ClientResponseView<'a>"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-dc1e3a2aa770e24039ff",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_client::ClientResponseView<'a> as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
       "declarationId": "rust-observed-d1197da70a234b98ce0e",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
@@ -176249,480 +175438,6 @@
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0018",
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-447c2a42b30835b4eb5a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DerivationParameters as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-278f7aca3fd5f557bf30",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DerivationParameters as core::borrow::Borrow<kmipkit_protocol::derive_key::DerivationParameters>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-b896bbacea31e0f5e18e",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DerivationParameters as core::borrow::BorrowMut<kmipkit_protocol::derive_key::DerivationParameters>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-57e449041ce7df7adaf8",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DerivationParameters as core::convert::From<kmipkit_protocol::derive_key::DerivationParameters>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-3a7f97f92faa36e52ab7",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DerivationParameters as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::derive_key::DerivationParameters"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-4e63ed3fef3de345b000",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DerivationParameters as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::derive_key::DerivationParameters"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-2615ac87e3c49c5c3d92",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DerivationParameters as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::derive_key::DerivationParameters"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-3a859d713e97d89349e5",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DerivationParameters as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::derive_key::DerivationParameters"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-3b9fc5d7798397980028",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DerivationParameters as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::derive_key::DerivationParameters"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-857a4806838d12dd27cc",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DerivationParameters as core::default::Default>::default",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-0142a2528d53273cc9d2",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DerivationParameters as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-c640baff95fcdec76432",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-5c38605533dcee926dad",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::borrow::Borrow<kmipkit_protocol::derive_key::DeriveKeyRequest>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-0582727a5c711d333ea3",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::borrow::BorrowMut<kmipkit_protocol::derive_key::DeriveKeyRequest>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-4690ff04b82c95328a2b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::convert::From<kmipkit_protocol::derive_key::DeriveKeyRequest>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-a48a824d4261a25c2748",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::derive_key::DeriveKeyRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-665b1954d22e456711ef",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::derive_key::DeriveKeyRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-fa0dbf7ef72c34ff4af3",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::derive_key::DeriveKeyRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-d5fa466837de7821ab21",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::derive_key::DeriveKeyRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-aa37bb77e0f712c05c29",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::derive_key::DeriveKeyRequest"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-383c0fddc333af20f437",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
     },
     {
       "declarationId": "rust-observed-1a981b566ea3c8508bfe",
@@ -207225,7 +205940,7 @@
       "candidateSpecId": "KMIPKIT-0043",
       "blockedReason": "This Java lifecycle or JNI bridge declaration is inventoried but has no reviewed public four-language mapping."
     },
-        {
+    {
       "declarationId": "KMIPKIT-0043-observed-python-register-lifecycle-02",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -342103,8 +340818,7 @@
           "name": "kmipkit.profile_readiness.ProfileReadiness"
         }
       }
-    }
-  ,
+    },
     {
       "declarationId": "T102:java:org_kmipkit_extensions_ProfileCatalog_ClientProfile",
       "packageId": "java-kmipkit",
@@ -452852,7 +451566,703 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed under KMIPKIT-0010-FR-010/017 and KMIPKIT-0043-FR-021. The four-language profile catalog/readiness model and functional members remain inventoried individually; this exact dataclass artifact adds no separate KMIP behavior or facade capability."
-    }
+    },
+    {
+  "packageId": "rust-kmipkit-client",
+  "exportName": "<kmipkit_client::ClientResponseView<'a> as alloc::borrow::ToOwned>::Owned",
+  "reason": "This exact Rust standard-trait implementation of alloc::borrow::ToOwned is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/007-client-execution/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-client",
+  "exportName": "<kmipkit_client::ClientResponseView<'a> as alloc::borrow::ToOwned>::clone_into",
+  "reason": "This exact Rust standard-trait implementation of alloc::borrow::ToOwned is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/007-client-execution/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-client",
+  "exportName": "<kmipkit_client::ClientResponseView<'a> as alloc::borrow::ToOwned>::to_owned",
+  "reason": "This exact Rust standard-trait implementation of alloc::borrow::ToOwned is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/007-client-execution/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-client",
+  "exportName": "<kmipkit_client::ClientResponseView<'a> as core::borrow::Borrow<kmipkit_client::execute::ClientResponseView<'a>>>::borrow",
+  "reason": "This exact Rust standard-trait implementation of core::borrow::Borrow<kmipkit_client::execute::ClientResponseView<'a>> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/007-client-execution/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-client",
+  "exportName": "<kmipkit_client::ClientResponseView<'a> as core::borrow::BorrowMut<kmipkit_client::execute::ClientResponseView<'a>>>::borrow_mut",
+  "reason": "This exact Rust standard-trait implementation of core::borrow::BorrowMut<kmipkit_client::execute::ClientResponseView<'a>> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/007-client-execution/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-client",
+  "exportName": "<kmipkit_client::ClientResponseView<'a> as core::clone::Clone>::clone",
+  "reason": "This exact Rust standard-trait implementation of core::clone::Clone is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/007-client-execution/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-client",
+  "exportName": "<kmipkit_client::ClientResponseView<'a> as core::clone::Clone>::clone_from",
+  "reason": "This exact Rust standard-trait implementation of core::clone::Clone is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/007-client-execution/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-client",
+  "exportName": "<kmipkit_client::ClientResponseView<'a> as core::clone::CloneToUninit>::clone_to_uninit",
+  "reason": "This exact Rust standard-trait implementation of core::clone::CloneToUninit is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/007-client-execution/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-client",
+  "exportName": "<kmipkit_client::ClientResponseView<'a> as core::convert::From<kmipkit_client::execute::ClientResponseView<'a>>>::from",
+  "reason": "This exact Rust standard-trait implementation of core::convert::From<kmipkit_client::execute::ClientResponseView<'a>> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/007-client-execution/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-client",
+  "exportName": "<kmipkit_client::ClientResponseView<'a> as core::any::Any>::type_id",
+  "reason": "This exact Rust standard-trait implementation of core::any::Any is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/007-client-execution/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-client",
+  "exportName": "<kmipkit_client::ClientResponseView<'a> as core::convert::Into<U>>::into",
+  "reason": "This exact Rust standard-trait implementation of core::convert::Into<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/007-client-execution/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-client",
+  "exportName": "<kmipkit_client::ClientResponseView<'a> as core::convert::TryFrom<U>>::Error",
+  "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/007-client-execution/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-client",
+  "exportName": "<kmipkit_client::ClientResponseView<'a> as core::convert::TryFrom<U>>::try_from",
+  "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/007-client-execution/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-client",
+  "exportName": "<kmipkit_client::ClientResponseView<'a> as core::convert::TryInto<U>>::Error",
+  "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/007-client-execution/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-client",
+  "exportName": "<kmipkit_client::ClientResponseView<'a> as core::convert::TryInto<U>>::try_into",
+  "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/007-client-execution/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. Debug output for this view now emits only the operation label. ToOwned, Clone, Copy, Borrow, and conversion paths copy or move only a lifetime-bound borrowed view. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-protocol",
+  "exportName": "<kmipkit_protocol::DerivationParameters as core::any::Any>::type_id",
+  "reason": "This exact Rust standard-trait implementation of core::any::Any is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/023-key-material-transfer/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.12 and Section 6.1.14, Table 205. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits presence and count metadata only. Default is the empty `new()` value, not an implicit cryptographic selection. No Clone or secret-copy path is included. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-protocol",
+  "exportName": "<kmipkit_protocol::DerivationParameters as core::borrow::Borrow<kmipkit_protocol::derive_key::DerivationParameters>>::borrow",
+  "reason": "This exact Rust standard-trait implementation of core::borrow::Borrow<kmipkit_protocol::derive_key::DerivationParameters> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/023-key-material-transfer/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.12 and Section 6.1.14, Table 205. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits presence and count metadata only. Default is the empty `new()` value, not an implicit cryptographic selection. No Clone or secret-copy path is included. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-protocol",
+  "exportName": "<kmipkit_protocol::DerivationParameters as core::borrow::BorrowMut<kmipkit_protocol::derive_key::DerivationParameters>>::borrow_mut",
+  "reason": "This exact Rust standard-trait implementation of core::borrow::BorrowMut<kmipkit_protocol::derive_key::DerivationParameters> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/023-key-material-transfer/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.12 and Section 6.1.14, Table 205. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits presence and count metadata only. Default is the empty `new()` value, not an implicit cryptographic selection. No Clone or secret-copy path is included. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-protocol",
+  "exportName": "<kmipkit_protocol::DerivationParameters as core::convert::From<kmipkit_protocol::derive_key::DerivationParameters>>::from",
+  "reason": "This exact Rust standard-trait implementation of core::convert::From<kmipkit_protocol::derive_key::DerivationParameters> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/023-key-material-transfer/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.12 and Section 6.1.14, Table 205. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits presence and count metadata only. Default is the empty `new()` value, not an implicit cryptographic selection. No Clone or secret-copy path is included. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-protocol",
+  "exportName": "<kmipkit_protocol::DerivationParameters as core::default::Default>::default",
+  "reason": "This exact Rust standard-trait implementation of core::default::Default is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/023-key-material-transfer/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.12 and Section 6.1.14, Table 205. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits presence and count metadata only. Default is the empty `new()` value, not an implicit cryptographic selection. No Clone or secret-copy path is included. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-protocol",
+  "exportName": "<kmipkit_protocol::DerivationParameters as core::fmt::Debug>::fmt",
+  "reason": "This exact Rust standard-trait implementation of core::fmt::Debug is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/023-key-material-transfer/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.12 and Section 6.1.14, Table 205. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits presence and count metadata only. Default is the empty `new()` value, not an implicit cryptographic selection. No Clone or secret-copy path is included. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-protocol",
+  "exportName": "<kmipkit_protocol::DerivationParameters as core::convert::Into<U>>::into",
+  "reason": "This exact Rust standard-trait implementation of core::convert::Into<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/023-key-material-transfer/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.12 and Section 6.1.14, Table 205. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits presence and count metadata only. Default is the empty `new()` value, not an implicit cryptographic selection. No Clone or secret-copy path is included. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-protocol",
+  "exportName": "<kmipkit_protocol::DerivationParameters as core::convert::TryFrom<U>>::Error",
+  "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/023-key-material-transfer/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.12 and Section 6.1.14, Table 205. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits presence and count metadata only. Default is the empty `new()` value, not an implicit cryptographic selection. No Clone or secret-copy path is included. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-protocol",
+  "exportName": "<kmipkit_protocol::DerivationParameters as core::convert::TryFrom<U>>::try_from",
+  "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/023-key-material-transfer/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.12 and Section 6.1.14, Table 205. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits presence and count metadata only. Default is the empty `new()` value, not an implicit cryptographic selection. No Clone or secret-copy path is included. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-protocol",
+  "exportName": "<kmipkit_protocol::DerivationParameters as core::convert::TryInto<U>>::Error",
+  "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/023-key-material-transfer/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.12 and Section 6.1.14, Table 205. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits presence and count metadata only. Default is the empty `new()` value, not an implicit cryptographic selection. No Clone or secret-copy path is included. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-protocol",
+  "exportName": "<kmipkit_protocol::DerivationParameters as core::convert::TryInto<U>>::try_into",
+  "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/023-key-material-transfer/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.12 and Section 6.1.14, Table 205. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits presence and count metadata only. Default is the empty `new()` value, not an implicit cryptographic selection. No Clone or secret-copy path is included. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-protocol",
+  "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::any::Any>::type_id",
+  "reason": "This exact Rust standard-trait implementation of core::any::Any is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/023-key-material-transfer/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.14, Table 205, and Section 7.12. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits only type codes and collection counts, with nested secret parameters redacted. Identity conversions and borrow paths add no separate KMIP operation capability. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-protocol",
+  "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::borrow::Borrow<kmipkit_protocol::derive_key::DeriveKeyRequest>>::borrow",
+  "reason": "This exact Rust standard-trait implementation of core::borrow::Borrow<kmipkit_protocol::derive_key::DeriveKeyRequest> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/023-key-material-transfer/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.14, Table 205, and Section 7.12. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits only type codes and collection counts, with nested secret parameters redacted. Identity conversions and borrow paths add no separate KMIP operation capability. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-protocol",
+  "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::borrow::BorrowMut<kmipkit_protocol::derive_key::DeriveKeyRequest>>::borrow_mut",
+  "reason": "This exact Rust standard-trait implementation of core::borrow::BorrowMut<kmipkit_protocol::derive_key::DeriveKeyRequest> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/023-key-material-transfer/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.14, Table 205, and Section 7.12. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits only type codes and collection counts, with nested secret parameters redacted. Identity conversions and borrow paths add no separate KMIP operation capability. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-protocol",
+  "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::convert::From<kmipkit_protocol::derive_key::DeriveKeyRequest>>::from",
+  "reason": "This exact Rust standard-trait implementation of core::convert::From<kmipkit_protocol::derive_key::DeriveKeyRequest> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/023-key-material-transfer/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.14, Table 205, and Section 7.12. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits only type codes and collection counts, with nested secret parameters redacted. Identity conversions and borrow paths add no separate KMIP operation capability. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-protocol",
+  "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::fmt::Debug>::fmt",
+  "reason": "This exact Rust standard-trait implementation of core::fmt::Debug is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/023-key-material-transfer/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.14, Table 205, and Section 7.12. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits only type codes and collection counts, with nested secret parameters redacted. Identity conversions and borrow paths add no separate KMIP operation capability. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-protocol",
+  "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::convert::Into<U>>::into",
+  "reason": "This exact Rust standard-trait implementation of core::convert::Into<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/023-key-material-transfer/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.14, Table 205, and Section 7.12. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits only type codes and collection counts, with nested secret parameters redacted. Identity conversions and borrow paths add no separate KMIP operation capability. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-protocol",
+  "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::convert::TryFrom<U>>::Error",
+  "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/023-key-material-transfer/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.14, Table 205, and Section 7.12. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits only type codes and collection counts, with nested secret parameters redacted. Identity conversions and borrow paths add no separate KMIP operation capability. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-protocol",
+  "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::convert::TryFrom<U>>::try_from",
+  "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/023-key-material-transfer/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.14, Table 205, and Section 7.12. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits only type codes and collection counts, with nested secret parameters redacted. Identity conversions and borrow paths add no separate KMIP operation capability. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-protocol",
+  "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::convert::TryInto<U>>::Error",
+  "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/023-key-material-transfer/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.14, Table 205, and Section 7.12. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits only type codes and collection counts, with nested secret parameters redacted. Identity conversions and borrow paths add no separate KMIP operation capability. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-protocol",
+  "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::convert::TryInto<U>>::try_into",
+  "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/023-key-material-transfer/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.14, Table 205, and Section 7.12. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits only type codes and collection counts, with nested secret parameters redacted. Identity conversions and borrow paths add no separate KMIP operation capability. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit",
+  "exportName": "<kmipkit::RngRetrieveResponse as core::any::Any>::type_id",
+  "reason": "This exact Rust standard-trait implementation of core::any::Any is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/027-rng-operations/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.49, Tables 317-318. No OASIS normative clause directly applies to Rust standard-trait paths. The excluded non-Debug paths are standard identity conversion, borrow, and type metadata only; this record does not exclude the separately held Debug path. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit",
+  "exportName": "<kmipkit::RngRetrieveResponse as core::borrow::Borrow<kmipkit_protocol::rng_retrieve::RngRetrieveResponse>>::borrow",
+  "reason": "This exact Rust standard-trait implementation of core::borrow::Borrow<kmipkit_protocol::rng_retrieve::RngRetrieveResponse> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/027-rng-operations/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.49, Tables 317-318. No OASIS normative clause directly applies to Rust standard-trait paths. The excluded non-Debug paths are standard identity conversion, borrow, and type metadata only; this record does not exclude the separately held Debug path. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit",
+  "exportName": "<kmipkit::RngRetrieveResponse as core::borrow::BorrowMut<kmipkit_protocol::rng_retrieve::RngRetrieveResponse>>::borrow_mut",
+  "reason": "This exact Rust standard-trait implementation of core::borrow::BorrowMut<kmipkit_protocol::rng_retrieve::RngRetrieveResponse> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/027-rng-operations/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.49, Tables 317-318. No OASIS normative clause directly applies to Rust standard-trait paths. The excluded non-Debug paths are standard identity conversion, borrow, and type metadata only; this record does not exclude the separately held Debug path. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit",
+  "exportName": "<kmipkit::RngRetrieveResponse as core::convert::From<kmipkit_protocol::rng_retrieve::RngRetrieveResponse>>::from",
+  "reason": "This exact Rust standard-trait implementation of core::convert::From<kmipkit_protocol::rng_retrieve::RngRetrieveResponse> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/027-rng-operations/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.49, Tables 317-318. No OASIS normative clause directly applies to Rust standard-trait paths. The excluded non-Debug paths are standard identity conversion, borrow, and type metadata only; this record does not exclude the separately held Debug path. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit",
+  "exportName": "<kmipkit::RngRetrieveResponse as core::convert::Into<U>>::into",
+  "reason": "This exact Rust standard-trait implementation of core::convert::Into<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/027-rng-operations/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.49, Tables 317-318. No OASIS normative clause directly applies to Rust standard-trait paths. The excluded non-Debug paths are standard identity conversion, borrow, and type metadata only; this record does not exclude the separately held Debug path. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit",
+  "exportName": "<kmipkit::RngRetrieveResponse as core::convert::TryFrom<U>>::Error",
+  "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/027-rng-operations/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.49, Tables 317-318. No OASIS normative clause directly applies to Rust standard-trait paths. The excluded non-Debug paths are standard identity conversion, borrow, and type metadata only; this record does not exclude the separately held Debug path. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit",
+  "exportName": "<kmipkit::RngRetrieveResponse as core::convert::TryFrom<U>>::try_from",
+  "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/027-rng-operations/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.49, Tables 317-318. No OASIS normative clause directly applies to Rust standard-trait paths. The excluded non-Debug paths are standard identity conversion, borrow, and type metadata only; this record does not exclude the separately held Debug path. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit",
+  "exportName": "<kmipkit::RngRetrieveResponse as core::convert::TryInto<U>>::Error",
+  "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/027-rng-operations/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.49, Tables 317-318. No OASIS normative clause directly applies to Rust standard-trait paths. The excluded non-Debug paths are standard identity conversion, borrow, and type metadata only; this record does not exclude the separately held Debug path. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit",
+  "exportName": "<kmipkit::RngRetrieveResponse as core::convert::TryInto<U>>::try_into",
+  "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/027-rng-operations/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.49, Tables 317-318. No OASIS normative clause directly applies to Rust standard-trait paths. The excluded non-Debug paths are standard identity conversion, borrow, and type metadata only; this record does not exclude the separately held Debug path. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit",
+  "exportName": "<kmipkit::RngSeedResponse as core::any::Any>::type_id",
+  "reason": "This exact Rust standard-trait implementation of core::any::Any is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/027-rng-operations/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.50, Tables 321-322. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits result metadata and redacted TTLV metadata; all other excluded paths are standard identity conversion, borrow, or type metadata. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit",
+  "exportName": "<kmipkit::RngSeedResponse as core::borrow::Borrow<kmipkit_protocol::rng_seed::RngSeedResponse>>::borrow",
+  "reason": "This exact Rust standard-trait implementation of core::borrow::Borrow<kmipkit_protocol::rng_seed::RngSeedResponse> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/027-rng-operations/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.50, Tables 321-322. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits result metadata and redacted TTLV metadata; all other excluded paths are standard identity conversion, borrow, or type metadata. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit",
+  "exportName": "<kmipkit::RngSeedResponse as core::borrow::BorrowMut<kmipkit_protocol::rng_seed::RngSeedResponse>>::borrow_mut",
+  "reason": "This exact Rust standard-trait implementation of core::borrow::BorrowMut<kmipkit_protocol::rng_seed::RngSeedResponse> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/027-rng-operations/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.50, Tables 321-322. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits result metadata and redacted TTLV metadata; all other excluded paths are standard identity conversion, borrow, or type metadata. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit",
+  "exportName": "<kmipkit::RngSeedResponse as core::convert::From<kmipkit_protocol::rng_seed::RngSeedResponse>>::from",
+  "reason": "This exact Rust standard-trait implementation of core::convert::From<kmipkit_protocol::rng_seed::RngSeedResponse> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/027-rng-operations/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.50, Tables 321-322. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits result metadata and redacted TTLV metadata; all other excluded paths are standard identity conversion, borrow, or type metadata. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit",
+  "exportName": "<kmipkit::RngSeedResponse as core::fmt::Debug>::fmt",
+  "reason": "This exact Rust standard-trait implementation of core::fmt::Debug is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/027-rng-operations/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.50, Tables 321-322. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits result metadata and redacted TTLV metadata; all other excluded paths are standard identity conversion, borrow, or type metadata. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit",
+  "exportName": "<kmipkit::RngSeedResponse as core::convert::Into<U>>::into",
+  "reason": "This exact Rust standard-trait implementation of core::convert::Into<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/027-rng-operations/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.50, Tables 321-322. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits result metadata and redacted TTLV metadata; all other excluded paths are standard identity conversion, borrow, or type metadata. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit",
+  "exportName": "<kmipkit::RngSeedResponse as core::convert::TryFrom<U>>::Error",
+  "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/027-rng-operations/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.50, Tables 321-322. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits result metadata and redacted TTLV metadata; all other excluded paths are standard identity conversion, borrow, or type metadata. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit",
+  "exportName": "<kmipkit::RngSeedResponse as core::convert::TryFrom<U>>::try_from",
+  "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/027-rng-operations/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.50, Tables 321-322. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits result metadata and redacted TTLV metadata; all other excluded paths are standard identity conversion, borrow, or type metadata. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit",
+  "exportName": "<kmipkit::RngSeedResponse as core::convert::TryInto<U>>::Error",
+  "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/027-rng-operations/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.50, Tables 321-322. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits result metadata and redacted TTLV metadata; all other excluded paths are standard identity conversion, borrow, or type metadata. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit",
+  "exportName": "<kmipkit::RngSeedResponse as core::convert::TryInto<U>>::try_into",
+  "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/027-rng-operations/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.50, Tables 321-322. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits result metadata and redacted TTLV metadata; all other excluded paths are standard identity conversion, borrow, or type metadata. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit",
+  "exportName": "<kmipkit::GetUsageAllocationRequest as core::fmt::Debug>::fmt",
+  "reason": "This exact Rust standard-trait implementation of core::fmt::Debug is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/025-policy-controls/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-005, KMIPKIT-0039-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.23, Tables 232-234. No OASIS normative clause directly applies to Rust standard-trait paths. Debug redacts an explicit Unique Identifier and emits only the permitted numeric count; a focused sentinel test verifies the identifier does not appear. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit-client",
+  "exportName": "<kmipkit_client::ClientResponseView<'a> as core::fmt::Debug>::fmt",
+  "reason": "This exact Rust standard-trait implementation of core::fmt::Debug::fmt formats only reviewed, redacted diagnostic information and is not a separate KMIPKit product capability; the owning typed operation remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/007-client-execution/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. The TDD regression test asserts that this Debug path emits only the operation label for an RNG Retrieve response view; it cannot delegate to or expose any response payload. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+},
+    {
+  "packageId": "rust-kmipkit",
+  "exportName": "<kmipkit::RngRetrieveResponse as core::fmt::Debug>::fmt",
+  "reason": "This exact Rust standard-trait implementation of core::fmt::Debug::fmt formats only reviewed, redacted diagnostic information and is not a separate KMIPKit product capability; the owning typed operation remains inventoried separately.",
+  "approvalSource": {
+    "kind": "feature-specification",
+    "path": "specs/027-rng-operations/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation — 2026-10-11"
+  },
+  "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.49, Tables 317-318. No OASIS normative clause directly applies to Rust standard-trait paths. The focused response Debug test includes `KMIP_RNG_RETRIEVE_RESPONSE_SECRET_SENTINEL` and `KMIP_RNG_RETRIEVE_UNKNOWN_TTLV_SENTINEL` and verifies neither value is formatted; secret-owned bytes remain zeroizing and the retained TTLV Debug reports metadata only. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+}
   ],
   "apiLevels": [
     {
