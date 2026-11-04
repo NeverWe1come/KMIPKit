@@ -248,7 +248,7 @@ class T102LifecycleErrorTraitExclusionTests(unittest.TestCase):
                 "::MissingResultStatus",
                 "::UnexpectedOperation",
             }
-            expected = {f"{protocol_name}{suffix}": "blocked" for suffix in suffixes}
+            expected = {f"{protocol_name}{suffix}": "declared" for suffix in suffixes}
             actual = {
                 row["exportName"]: row["declarationState"]
                 for row in self.manifest["publicDeclarations"]

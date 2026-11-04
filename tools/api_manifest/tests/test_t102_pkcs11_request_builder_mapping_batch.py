@@ -13,9 +13,11 @@ import json
 import unittest
 from pathlib import Path
 
+from tools.api_manifest.tests.t102_manifest_totals import T102_BLOCKED_CANDIDATES
+
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
-T102_CANDIDATES_AFTER_BATCH = 648
+T102_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 OWNER = "specs/026-pkcs11/spec.md"
 CAPABILITY = "KMIPKIT-ELEM-OP-C2S-PKCS-11"
 EVIDENCE = {

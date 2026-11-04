@@ -9,6 +9,8 @@ from tools.api_manifest.tests.t102_manifest_totals import (
     T102_APPROVED_EXCLUSIONS,
     T102_BLOCKED_CANDIDATES,
     T102_PUBLIC_DECLARATIONS,
+    T102_RUST_AUDIT_EXCLUDED,
+    T102_RUST_AUDIT_MANIFEST,
 )
 from pathlib import Path
 
@@ -200,14 +202,21 @@ class T102UsageAllocationContextTraitExclusionTests(unittest.TestCase):
 
     def test_error_sibling_traits_are_exactly_excluded_from_client_inventory(self) -> None:
         error_public_type = CLIENT_ERROR_PUBLIC_TYPE
-        error_parent = next(
+        self.assertFalse(
+            any(
+                row.get("packageId") == CLIENT_PACKAGE
+                and row.get("exportName") == error_public_type
+                for row in self.manifest["publicDeclarations"]
+            )
+        )
+        error_parent_exclusions = [
             row
-            for row in self.manifest["publicDeclarations"]
+            for row in self.manifest["approvedExclusions"]
             if row.get("packageId") == CLIENT_PACKAGE
             and row.get("exportName") == error_public_type
-        )
-        self.assertEqual(error_parent["declarationState"], "blocked")
-        self.assertEqual(error_parent.get("candidateSpecId"), "KMIPKIT-0043")
+        ]
+        self.assertEqual(len(error_parent_exclusions), 1)
+        self.assertEqual(error_parent_exclusions[0].get("candidateSpecId"), "KMIPKIT-0043")
         error_trait_declarations = [
             row
             for row in self.manifest["publicDeclarations"]
@@ -237,9 +246,9 @@ class T102UsageAllocationContextTraitExclusionTests(unittest.TestCase):
         self.assertEqual(candidates, T102_BLOCKED_CANDIDATES)
         self.assertEqual(len(self.manifest["publicDeclarations"]), T102_PUBLIC_DECLARATIONS)
         self.assertEqual(len(self.manifest["approvedExclusions"]), T102_APPROVED_EXCLUSIONS)
-        self.assertEqual(self.report["counts"]["manifest"], 3381)
-        self.assertEqual(self.report["counts"]["matched"], 3381)
-        self.assertEqual(self.report["counts"]["excluded"], 7082)
+        self.assertEqual(self.report["counts"]["manifest"], T102_RUST_AUDIT_MANIFEST)
+        self.assertEqual(self.report["counts"]["matched"], T102_RUST_AUDIT_MANIFEST)
+        self.assertEqual(self.report["counts"]["excluded"], T102_RUST_AUDIT_EXCLUDED)
 
 
 if __name__ == "__main__":

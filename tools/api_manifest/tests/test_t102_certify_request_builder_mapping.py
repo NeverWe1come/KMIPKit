@@ -9,6 +9,12 @@ import re
 import unittest
 from pathlib import Path
 
+from tools.api_manifest.tests.t102_manifest_totals import (
+    T102_APPROVED_EXCLUSIONS,
+    T102_BLOCKED_CANDIDATES,
+    T102_PUBLIC_DECLARATIONS,
+)
+
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 CATALOG = ROOT / "specification" / "catalog" / "kmip-2.1.json"
@@ -102,7 +108,7 @@ BLOCKED_NEIGHBORS = {
 }
 BLOCKED_BEFORE = 663
 BLOCKED_AFTER = 659
-DECLARATIONS_SHA256 = "8e003e145a03c1a585e3bd49bb6dd7599ed19342ce762fd185007e623babdcda"
+DECLARATIONS_SHA256 = "dcf3d5592f246c11f362e79ee3d78ee9088cfa800fe65d357bbc0684f376e4e2"
 OPERATIONS_SHA256 = "8ee7f0c367d2125be38c05d42159b515900b868ec1a898206492bc3c2fad969a"
 
 
@@ -164,19 +170,13 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
         )
         self.assertEqual(BLOCKED_BEFORE - len(target_ids), BLOCKED_AFTER)
         self.assertEqual(4, len(WRAPPING_REQUEST_BUILDER_IDS))
-        self.assertEqual(
-            BLOCKED_AFTER
-            - 1
-            - len(WRAPPING_REQUEST_BUILDER_IDS)
-            - len(PKCS11_REQUEST_SETTER_IDS),
-            blocked,
-        )
+        self.assertEqual(T102_BLOCKED_CANDIDATES, blocked)
         self.assertEqual(
             "verified",
             self.declarations[RECERTIFY_TYPE_ID]["declarationState"],
         )
-        self.assertEqual(6_470, len(self.manifest["publicDeclarations"]))
-        self.assertEqual(8_554, len(self.manifest["approvedExclusions"]))
+        self.assertEqual(T102_PUBLIC_DECLARATIONS, len(self.manifest["publicDeclarations"]))
+        self.assertEqual(T102_APPROVED_EXCLUSIONS, len(self.manifest["approvedExclusions"]))
 
     def test_oasis_table_179_fields_and_child_mask_tag_are_pinned(self) -> None:
         raw_html = OASIS_HTML.read_bytes()

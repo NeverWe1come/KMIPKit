@@ -1001,7 +1001,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
         self.assertEqual(expected_ids, projected_ids)
         self.assertNotIn("internal", projected_ids)
-        self.assertNotIn("compatibility_mismatch", projected_ids)
+        self.assertIn("compatibility_mismatch", projected_ids)
         self.assertIn("resource_limit", projected_ids)
         self.assertIn("protocol", projected_ids)
         self.assertIn("transport", projected_ids)
@@ -1087,10 +1087,20 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
     def test_readiness_rejects_declaration_and_exclusion_overlap(self) -> None:
         manifest = json.loads(json.dumps(self.checked_in_manifest))
         exclusion = manifest["approvedExclusions"][0]
-        declaration = next(
-            item for item in manifest["publicDeclarations"]
-            if item["packageId"] == exclusion["packageId"]
-            and item["declarationState"] == "blocked"
+        blocked_declarations = [
+            item
+            for item in manifest["publicDeclarations"]
+            if item["declarationState"] == "blocked"
+            and any(
+                candidate["packageId"] == item["packageId"]
+                for candidate in manifest["approvedExclusions"]
+            )
+        ]
+        declaration = blocked_declarations[0]
+        exclusion = next(
+            item
+            for item in manifest["approvedExclusions"]
+            if item["packageId"] == declaration["packageId"]
         )
         overlapping = json.loads(json.dumps(declaration))
         overlapping["declarationId"] += ":overlap"
@@ -1139,16 +1149,20 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             ttlv_namespace["approvalSource"]["path"],
             "specs/004-generic-ttlv-model/spec.md",
         )
-        generic_python_error = declarations["kmipkit.errors.KmipKitError"]
-        self.assertEqual(generic_python_error["declarationState"], "blocked")
-        self.assertEqual(generic_python_error["capabilityId"], "ffi_runtime_metadata")
-        self.assertEqual(generic_python_error["candidateSpecId"], "KMIPKIT-0043")
-        self.assertNotIn("languageMappings", generic_python_error)
-        generic_java_error = declarations["org.kmipkit.KmipException"]
-        self.assertEqual(generic_java_error["declarationState"], "blocked")
-        self.assertEqual(generic_java_error["capabilityId"], "ffi_runtime_metadata")
-        self.assertEqual(generic_java_error["candidateSpecId"], "KMIPKIT-0043")
-        self.assertNotIn("languageMappings", generic_java_error)
+        exclusions = self._approved_exclusions_by_key()
+        for package_id, export_name in (
+            ("python-kmipkit", "kmipkit.errors.KmipKitError"),
+            ("python-kmipkit", "kmipkit.errors.KmipKitError.category"),
+            ("java-kmipkit", "org.kmipkit.KmipException"),
+        ):
+            with self.subTest(generic_error=export_name):
+                self.assertNotIn(export_name, declarations)
+                exclusion = exclusions[(package_id, export_name)]
+                self.assertEqual(
+                    exclusion["approvalSource"]["path"],
+                    "specs/043-public-api-bindings/spec.md",
+                )
+                self.assertNotIn("languageMappings", exclusion)
         batch_item = declarations["kmipkit.extensions.ClientBatchItem"]
         self.assertEqual(batch_item["declarationState"], "declared")
         self.assertIn("languageMappings", batch_item)
@@ -1295,13 +1309,16 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             f"{exclusion['packageId']}\0{exclusion['exportName']}"
             for exclusion in owner_exclusions
         )
-        self.assertEqual(len(owner_keys), 434)
+        self.assertEqual(len(owner_keys), 426)
         self.assertEqual(
             hashlib.sha256(("\n".join(owner_keys) + "\n").encode()).hexdigest(),
-            "0ab680a0592918b88cc098f7bd424ae6db4a6f94728078c51c9007c019c696cf",
+            "58150ca9fccbd2db84f26158fa3eb633a92334e0bf8b0b23feceace4dd00a530",
         )
         for exclusion in owner_exclusions:
-            self.assertRegex(exclusion["evidence"], r"KMIPKIT-0003-FR-00[1-8]")
+            if exclusion["exportName"].endswith("::ProtocolErrorKind"):
+                self.assertRegex(exclusion["evidence"], r"KMIPKIT-0012-FR-01[01]")
+            else:
+                self.assertRegex(exclusion["evidence"], r"KMIPKIT-0003-FR-00[1-8]")
             self.assertEqual(exclusion["approvalSource"]["status"], "Approved")
 
         model_error_exclusions = [
@@ -1735,7 +1752,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "KMIPKIT-0007 standard traits require exact exclusions while direct types "
             f"stay inventoried; unresolved={unresolved[:5]}",
         )
-        self.assertEqual(466, len(exclusions))
+        self.assertEqual(482, len(exclusions))
         missing = sorted(exclusions.keys() - observed_traits)
         self.assertFalse(
             missing,
@@ -1760,7 +1777,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             type_name = key[1].split(" as ", 1)[0][1:].rsplit("::", 1)[-1]
             with self.subTest(export=key[1]):
                 self.assertIn("standard-trait implementation", exclusion["reason"])
-                self.assertIn("concrete declaration remains separately inventoried", exclusion["reason"])
+                self.assertRegex(
+                    exclusion["reason"],
+                    r"(?:separately inventoried|inventoried separately)",
+                )
                 self.assertEqual(
                     {
                         "kind": "feature-specification",
@@ -1775,7 +1795,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
                 if type_name in {"RequestDeliveryState", "TransportCauseCategory", "TransportError"}:
                     self.assertIn("KMIPKIT-0007-FR-005", exclusion["evidence"])
-                elif type_name in {"ClientError", "ClientErrorResponseTtlv"}:
+                elif type_name.startswith("ClientResponseView"):
+                    self.assertIn("KMIPKIT-0007-FR-013", exclusion["evidence"])
+                elif type_name in {
+                    "ClientError",
+                    "ClientErrorResponseTtlv",
+                }:
                     self.assertIn("KMIPKIT-0007-FR-013", exclusion["evidence"])
                 else:
                     self.assertIn("KMIPKIT-0007-FR-001", exclusion["evidence"])
@@ -5270,29 +5295,32 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     self.assertTrue(exclusion["evidence"].strip())
 
     def test_t091_generic_ffi_errors_do_not_map_to_client_cause_other(self) -> None:
-        declaration_ids = {
-            "KMIPKIT_ERROR_INTERNAL:c",
-            "java-observed-d645cd79e0aaa7fea0bb",
-            "python-kmipkit-error",
-        }
         declarations = {
-            row["declarationId"]: row
+            (row["packageId"], row["exportName"]): row
             for row in self.checked_in_manifest["publicDeclarations"]
         }
+        exclusions = self._approved_exclusions_by_key()
         capability = next(
             row
             for row in self.checked_in_manifest["capabilities"]
             if row["capabilityId"] == "ffi_runtime_metadata"
         )
 
-        for declaration_id in declaration_ids:
-            with self.subTest(declaration=declaration_id):
-                declaration = declarations[declaration_id]
-                self.assertEqual("blocked", declaration["declarationState"])
-                self.assertEqual("KMIPKIT-0043", declaration["candidateSpecId"])
-                self.assertIn("ClientCauseCategory::Other", declaration["blockedReason"])
-                self.assertNotIn("languageMappings", declaration)
-                self.assertNotIn("approvalSource", declaration)
+        excluded_fallback_paths = {
+            ("c-kmipkit", "KMIPKIT_ERROR_INTERNAL"),
+            ("java-kmipkit", "org.kmipkit.KmipException"),
+            ("python-kmipkit", "kmipkit.errors.KmipKitError"),
+            ("python-kmipkit", "kmipkit.errors.KmipKitError.category"),
+        }
+        for key in excluded_fallback_paths:
+            with self.subTest(excluded_fallback=key):
+                self.assertNotIn(key, declarations)
+                exclusion = exclusions[key]
+                self.assertEqual(
+                    exclusion["approvalSource"]["path"],
+                    "specs/043-public-api-bindings/spec.md",
+                )
+                self.assertTrue(exclusion["reason"].strip())
 
         self.assertNotIn(
             "kmipkit::ClientCauseCategory::Other", capability["mappings"]["rust"]
@@ -5589,27 +5617,11 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for item in self.checked_in_manifest["publicDeclarations"]
         }
         blocked_exports = {
-            ("c-kmipkit", f"KMIPKIT_ERROR_{name}")
-            for name in (
-                "COMPATIBILITY_MISMATCH",
-                "DUPLICATE_KEY",
-                "INVALID_IDENTITY",
-                "INVALID_SCHEMA",
-            )
-        }
-        blocked_exports.update({
             ("java-kmipkit", "org.kmipkit.generated.PublicApi"),
             ("java-kmipkit", "org.kmipkit.generated.PublicApi.DECLARATIONS_JSON"),
             ("java-kmipkit", "org.kmipkit.generated.PublicApi.FORMAT_VERSION"),
             ("python-kmipkit", "kmipkit"),
-            ("python-kmipkit", "kmipkit.errors.CompatibilityMismatchError.category"),
-            ("python-kmipkit", "kmipkit.errors.DuplicateKeyError.category"),
-            ("python-kmipkit", "kmipkit.errors.InvalidExtensionSchemaError.category"),
-            ("python-kmipkit", "kmipkit.errors.InvalidIdentityError.category"),
-            ("python-kmipkit", "kmipkit.errors.InvalidInputError.category"),
-            ("python-kmipkit", "kmipkit.errors.KmipKitError.category"),
-            ("python-kmipkit", "kmipkit.errors.ResourceLimitError.category"),
-        })
+        }
         for key in blocked_exports:
             with self.subTest(export=key):
                 declaration = declarations[key]
@@ -5618,6 +5630,41 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual(declaration["capabilityId"], "public_binding_surface")
                 self.assertEqual(declaration["requirementIds"], ["KMIPKIT-0043-FR-021"])
                 self.assertNotIn("languageMappings", declaration)
+
+        mapped_error_exports = {
+            ("c-kmipkit", f"KMIPKIT_ERROR_{name}")
+            for name in (
+                "COMPATIBILITY_MISMATCH",
+                "DUPLICATE_KEY",
+                "INVALID_IDENTITY",
+                "INVALID_SCHEMA",
+            )
+        }
+        mapped_error_exports.update({
+            ("python-kmipkit", f"kmipkit.errors.{name}.category")
+            for name in (
+                "CompatibilityMismatchError",
+                "DuplicateKeyError",
+                "InvalidExtensionSchemaError",
+                "InvalidIdentityError",
+                "InvalidInputError",
+                "ResourceLimitError",
+            )
+        })
+        for key in mapped_error_exports:
+            with self.subTest(mapped_error_export=key):
+                declaration = declarations[key]
+                self.assertEqual(declaration["declarationState"], "declared")
+                self.assertNotIn("candidateSpecId", declaration)
+                self.assertEqual(
+                    set(declaration["languageMappings"]),
+                    {"rust", "c", "java", "python"},
+                )
+
+        generic_error_category = self._approved_exclusions_by_key()[
+            ("python-kmipkit", "kmipkit.errors.KmipKitError.category")
+        ]
+        self.assertIn("no equivalent public Rust error category", generic_error_category["reason"])
 
         transport_invalid_input = declarations[("c-kmipkit", "KMIPKIT_ERROR_INVALID_INPUT")]
         self.assertEqual(transport_invalid_input["declarationState"], "declared")
@@ -6262,7 +6309,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             item for item in rust_exclusions
             if item["approvalSource"]["path"] == "specs/016-attribute-operations/spec.md"
         ]
-        self.assertEqual(len(t087_exclusions), 217)
+        self.assertEqual(len(t087_exclusions), 213)
         self.assertEqual(len(t091_exclusions), 142)
         self.assertEqual(len(t094_exclusions), 230)
         self.assertEqual(len(t096_exclusions), 265)
@@ -6345,7 +6392,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for item in self.checked_in_manifest["approvedExclusions"]
             if item["packageId"] == "rust-kmipkit-protocol"
         ]
-        self.assertEqual(len(rust_exclusions), 4721)
+        self.assertEqual(len(rust_exclusions), 4750)
 
     def test_ttlv_declarations_use_their_approved_shared_spec_owners(self) -> None:
         capabilities = {

@@ -217,7 +217,7 @@ class T102KeyValueTraitExclusionTests(unittest.TestCase):
             with self.subTest(context=context):
                 self.assertIn(context, traceability)
 
-    def test_parent_raw_paths_and_secret_bearing_models_remain_blocked(self) -> None:
+    def test_parent_raw_paths_remain_blocked_and_secret_traits_are_redacted_exclusions(self) -> None:
         expected_blocked = {
             f"kmipkit_protocol::{type_name}{suffix}": "blocked"
             for type_name in KEY_VALUE_TYPES
@@ -241,31 +241,38 @@ class T102KeyValueTraitExclusionTests(unittest.TestCase):
             expected_blocked,
         )
 
-        sensitive_prefixes = (
-            "<kmipkit_protocol::DerivationParameters as ",
-            "<kmipkit_protocol::DeriveKeyRequest as ",
-        )
-        sensitive_declarations = [
-            row
-            for row in self.manifest["publicDeclarations"]
-            if row.get("packageId") == "rust-kmipkit-protocol"
-            and row.get("exportName", "").startswith(sensitive_prefixes)
-        ]
-        self.assertTrue(sensitive_declarations)
-        self.assertTrue(
-            all(
-                row["declarationState"] == "blocked"
-                and row.get("candidateSpecId") == "KMIPKIT-0043"
-                for row in sensitive_declarations
-            )
-        )
-        self.assertFalse(
-            any(
-                row.get("packageId") == "rust-kmipkit-protocol"
-                and row.get("exportName", "").startswith(sensitive_prefixes)
-                for row in self.manifest.get("approvedExclusions", [])
-            )
-        )
+        expected_trait_counts = {"DerivationParameters": 11, "DeriveKeyRequest": 10}
+        for type_name, expected_count in expected_trait_counts.items():
+            prefix = f"<kmipkit_protocol::{type_name} as "
+            declarations = [
+                row
+                for row in self.manifest["publicDeclarations"]
+                if row.get("packageId") == "rust-kmipkit-protocol"
+                and row.get("exportName", "").startswith(prefix)
+            ]
+            exclusions = [
+                row
+                for row in self.manifest["approvedExclusions"]
+                if row.get("packageId") == "rust-kmipkit-protocol"
+                and row.get("exportName", "").startswith(prefix)
+            ]
+            with self.subTest(type_name=type_name):
+                self.assertEqual(declarations, [])
+                self.assertEqual(len(exclusions), expected_count)
+                self.assertTrue(
+                    all(
+                        row.get("candidateSpecId") == "KMIPKIT-0037"
+                        and row["approvalSource"]["path"]
+                        == "specs/023-key-material-transfer/spec.md"
+                        for row in exclusions
+                    )
+                )
+                redaction_evidence = (
+                    "Debug emits presence and count metadata only"
+                    if type_name == "DerivationParameters"
+                    else "Debug emits only type codes and collection counts, with nested secret parameters redacted"
+                )
+                self.assertTrue(all(redaction_evidence in row["evidence"] for row in exclusions))
 
 
 if __name__ == "__main__":

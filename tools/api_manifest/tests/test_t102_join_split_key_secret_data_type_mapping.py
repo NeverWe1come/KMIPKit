@@ -7,6 +7,12 @@ import re
 import unittest
 from pathlib import Path
 
+from tools.api_manifest.tests.t102_manifest_totals import (
+    T102_APPROVED_EXCLUSIONS,
+    T102_BLOCKED_CANDIDATES,
+    T102_PUBLIC_DECLARATIONS,
+)
+
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 OASIS_HTML = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
@@ -174,9 +180,9 @@ class T102JoinSplitKeySecretDataTypeMappingTests(unittest.TestCase):
             row.get("candidateSpecId") == "KMIPKIT-0043" and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(648, blocked)
-        self.assertEqual(6_470, len(self.manifest["publicDeclarations"]))
-        self.assertEqual(8_554, len(self.manifest["approvedExclusions"]))
+        self.assertEqual(T102_BLOCKED_CANDIDATES, blocked)
+        self.assertEqual(T102_PUBLIC_DECLARATIONS, len(self.manifest["publicDeclarations"]))
+        self.assertEqual(T102_APPROVED_EXCLUSIONS, len(self.manifest["approvedExclusions"]))
 
 
 if __name__ == "__main__":

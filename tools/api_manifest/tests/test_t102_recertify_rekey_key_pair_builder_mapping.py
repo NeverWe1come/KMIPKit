@@ -7,6 +7,12 @@ import re
 import unittest
 from pathlib import Path
 
+from tools.api_manifest.tests.t102_manifest_totals import (
+    T102_APPROVED_EXCLUSIONS,
+    T102_BLOCKED_CANDIDATES,
+    T102_PUBLIC_DECLARATIONS,
+)
+
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 CATALOG = ROOT / "specification" / "catalog" / "kmip-2.1.json"
@@ -160,9 +166,9 @@ class T102RecertifyRekeyKeyPairBuilderMappingTests(unittest.TestCase):
             and row.get("candidateSpecId") == "KMIPKIT-0043"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(648, blocked)
-        self.assertEqual(6_470, len(self.manifest["publicDeclarations"]))
-        self.assertEqual(8_554, len(self.manifest["approvedExclusions"]))
+        self.assertEqual(T102_BLOCKED_CANDIDATES, blocked)
+        self.assertEqual(T102_PUBLIC_DECLARATIONS, len(self.manifest["publicDeclarations"]))
+        self.assertEqual(T102_APPROVED_EXCLUSIONS, len(self.manifest["approvedExclusions"]))
 
     def test_recertify_type_is_a_seventh_exact_mapping_with_value_absent(self) -> None:
         declaration = self.declarations[RECERTIFY_TYPE_ID]
@@ -182,9 +188,9 @@ class T102RecertifyRekeyKeyPairBuilderMappingTests(unittest.TestCase):
             and row.get("candidateSpecId") == "KMIPKIT-0043"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(648, blocked)
-        self.assertEqual(6_470, len(self.manifest["publicDeclarations"]))
-        self.assertEqual(8_554, len(self.manifest["approvedExclusions"]))
+        self.assertEqual(T102_BLOCKED_CANDIDATES, blocked)
+        self.assertEqual(T102_PUBLIC_DECLARATIONS, len(self.manifest["publicDeclarations"]))
+        self.assertEqual(T102_APPROVED_EXCLUSIONS, len(self.manifest["approvedExclusions"]))
         self.assertEqual(
             "verified",
             self.declarations["rust-observed-e98ebdedfd3bd6dc5178"]["declarationState"],

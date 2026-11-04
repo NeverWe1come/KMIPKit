@@ -9,12 +9,14 @@ import re
 import unittest
 from pathlib import Path
 
+from tools.api_manifest.tests.t102_manifest_totals import T102_BLOCKED_CANDIDATES
+
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 CATALOG = ROOT / "specification" / "catalog" / "kmip-2.1.json"
 OASIS = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
 BASE_BLOCKED = 658
-EXPECTED_BLOCKED = 648
+EXPECTED_BLOCKED_AFTER_BATCH = 648
 PKCS11_MAPPED_CANDIDATES = 6
 COMMON_EVIDENCE = {
     "c": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
@@ -128,9 +130,11 @@ class T102WrappingRequestBuilderMappingTests(unittest.TestCase):
             and row.get("candidateSpecId") == "KMIPKIT-0043"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(EXPECTED_BLOCKED, blocked)
-        before = blocked + len(TARGETS) + PKCS11_MAPPED_CANDIDATES
-        self.assertEqual(BASE_BLOCKED, before)
+        self.assertEqual(T102_BLOCKED_CANDIDATES, blocked)
+        self.assertEqual(
+            EXPECTED_BLOCKED_AFTER_BATCH,
+            BASE_BLOCKED - len(TARGETS) - PKCS11_MAPPED_CANDIDATES,
+        )
 
     def test_client_and_server_requirement_scope_is_exact(self) -> None:
         self.assertTrue(

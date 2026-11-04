@@ -278,7 +278,7 @@ class T102ProtocolRequestTraitExclusionTests(unittest.TestCase):
                     )
                 }
                 uid_debug = f"<{root_type} as core::fmt::Debug>::fmt"
-                expected_root_traits.remove(uid_debug)
+                expected_root_traits.add(uid_debug)
                 actual_root_traits = {
                     row["exportName"]
                     for row in self.manifest["approvedExclusions"]
@@ -286,13 +286,6 @@ class T102ProtocolRequestTraitExclusionTests(unittest.TestCase):
                     and row.get("exportName", "").startswith(root_trait_prefix)
                 }
                 self.assertEqual(actual_root_traits, expected_root_traits)
-                debug_row = next(
-                    row
-                    for row in self.manifest["publicDeclarations"]
-                    if row.get("packageId") == "rust-kmipkit"
-                    and row.get("exportName") == uid_debug
-                )
-                self.assertEqual(debug_row.get("candidateSpecId"), "KMIPKIT-0043")
 
     def test_candidate_count_reflects_only_the_exact_forty_exclusions(self) -> None:
         self.assertEqual(

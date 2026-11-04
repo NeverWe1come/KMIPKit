@@ -9,6 +9,9 @@ from tools.api_manifest.tests.t102_manifest_totals import (
     T102_APPROVED_EXCLUSIONS,
     T102_BLOCKED_CANDIDATES,
     T102_PUBLIC_DECLARATIONS,
+    T102_RUST_AUDIT_EXCLUDED,
+    T102_RUST_AUDIT_MANIFEST,
+    T102_RUST_AUDIT_OBSERVED,
 )
 from pathlib import Path
 
@@ -290,9 +293,9 @@ class T102Pkcs11RequestTraitExclusionTests(unittest.TestCase):
         )
         self.assertEqual(len(self.manifest["publicDeclarations"]), T102_PUBLIC_DECLARATIONS)
         self.assertEqual(len(self.manifest["approvedExclusions"]), T102_APPROVED_EXCLUSIONS)
-        self.assertEqual(self.rust_report["counts"]["manifest"], 3381)
-        self.assertEqual(self.rust_report["counts"]["excluded"], 7082)
-        self.assertEqual(self.rust_report["counts"]["observed"], 10463)
+        self.assertEqual(self.rust_report["counts"]["manifest"], T102_RUST_AUDIT_MANIFEST)
+        self.assertEqual(self.rust_report["counts"]["excluded"], T102_RUST_AUDIT_EXCLUDED)
+        self.assertEqual(self.rust_report["counts"]["observed"], T102_RUST_AUDIT_OBSERVED)
 
 
 if __name__ == "__main__":

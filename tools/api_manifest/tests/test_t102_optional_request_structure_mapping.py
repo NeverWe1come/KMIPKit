@@ -14,6 +14,11 @@ from tools.api_manifest.tests.test_t102_certify_request_builder_mapping import (
     OPERATION_ADDED_EVIDENCE as CERTIFY_OPERATION_ADDED_EVIDENCE,
     TARGETS as CERTIFY_TARGETS,
 )
+from tools.api_manifest.tests.t102_manifest_totals import (
+    T102_APPROVED_EXCLUSIONS,
+    T102_BLOCKED_CANDIDATES,
+    T102_PUBLIC_DECLARATIONS,
+)
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
@@ -182,7 +187,7 @@ PKCS11_REQUEST_SETTER_IDS = {
     "rust-observed-cc71aab290dc65b5928f",
     "rust-observed-573ae1d0de80ffa2884b",
 }
-OTHER_DECLARATIONS_SHA256 = "160f02f1f8feedc737fbb24570c134ff3d6855ec0812a6e7e3ffacb4de5e152b"
+OTHER_DECLARATIONS_SHA256 = "c4840bd9d6df8567ed4a89702788791a9ee99a70fcae386fde4a4332d73781b2"
 OTHER_OPERATIONS_SHA256 = "17ecaeb860c429b0f92509ccf4fd6a8a9b83f0cefd2ed9a358f099fe0463c8d5"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(
@@ -308,9 +313,9 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
             "verified",
             self.declarations[RECERTIFY_TYPE_ID]["declarationState"],
         )
-        self.assertEqual(BLOCKED_CANDIDATES_AFTER_BATCH, blocked)
-        self.assertEqual(6_470, len(self.manifest["publicDeclarations"]))
-        self.assertEqual(8_554, len(self.manifest["approvedExclusions"]))
+        self.assertEqual(T102_BLOCKED_CANDIDATES, blocked)
+        self.assertEqual(T102_PUBLIC_DECLARATIONS, len(self.manifest["publicDeclarations"]))
+        self.assertEqual(T102_APPROVED_EXCLUSIONS, len(self.manifest["approvedExclusions"]))
 
     def test_all_non_target_declarations_and_operations_match_the_pinned_snapshot(self) -> None:
         target_ids = {target["id"] for target in TARGETS}

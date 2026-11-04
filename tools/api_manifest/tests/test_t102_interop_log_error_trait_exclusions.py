@@ -38,9 +38,9 @@ OPERATIONS = {
     "LogError": {"module":"log", "element":"KMIPKIT-ELEM-OP-C2S-LOG", "reference":"OASIS KMIP v2.1 Section 6.1.29, Table 252", "caption":"Table 252: Log Errors", "request":"LogRequest", "response":"LogResponse", "method":"log", "title":"Log"},
 }
 ERROR_SUFFIXES = {
-    "":"blocked", "::InvalidOperationResult":"blocked", "::InvalidOperationResult::0":"blocked",
-    "::MalformedResponseItem":"blocked", "::MalformedResponsePayload":"blocked", "::MissingResponsePayload":"blocked",
-    "::MissingResultStatus":"blocked", "::UnexpectedOperation":"blocked",
+    "":"declared", "::InvalidOperationResult":"declared", "::InvalidOperationResult::0":"declared",
+    "::MalformedResponseItem":"declared", "::MalformedResponsePayload":"declared", "::MissingResponsePayload":"declared",
+    "::MissingResultStatus":"declared", "::UnexpectedOperation":"declared",
 }
 RELATED_STATES = {
     "InteropRequest":{"":"verified", "::interop_function":"blocked", "::into_ttlv_payload":"blocked", "::new":"verified", "::with_extension":"blocked", "::with_interop_identifier":"blocked"},

@@ -8,6 +8,12 @@ import re
 import unittest
 from pathlib import Path
 
+from tools.api_manifest.tests.t102_manifest_totals import (
+    T102_APPROVED_EXCLUSIONS,
+    T102_BLOCKED_CANDIDATES,
+    T102_PUBLIC_DECLARATIONS,
+)
+
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 OASIS_HTML = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
@@ -25,7 +31,7 @@ FORBIDDEN_REQUEST_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-6.1.47-004-001",
     "KMIPKIT-REQ-SPEC-6.1.47-004-002",
 }
-T102_BLOCKED_CANDIDATES_AFTER_BATCH = 648
+T102_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 EVIDENCE = {
     "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs",
     "crates/kmipkit-ffi/tests/c_api_coverage.rs",
@@ -179,8 +185,8 @@ class T102RekeyKeyPairStructureMappingTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
         )
         self.assertEqual(T102_BLOCKED_CANDIDATES_AFTER_BATCH, blocked)
-        self.assertEqual(6_470, len(self.manifest["publicDeclarations"]))
-        self.assertEqual(8_554, len(self.manifest["approvedExclusions"]))
+        self.assertEqual(T102_PUBLIC_DECLARATIONS, len(self.manifest["publicDeclarations"]))
+        self.assertEqual(T102_APPROVED_EXCLUSIONS, len(self.manifest["approvedExclusions"]))
 
 
 if __name__ == "__main__":

@@ -204,9 +204,9 @@ class T102GetLocateErrorTraitExclusionTests(unittest.TestCase):
         for type_name in OPERATIONS:
             protocol_name = f"kmipkit_protocol::{type_name}"
             expected_errors = {
-                protocol_name: "blocked",
+                protocol_name: "declared",
                 **{
-                    f"{protocol_name}::{suffix}": "blocked"
+                    f"{protocol_name}::{suffix}": "declared"
                     for suffix in ERROR_VARIANTS
                 },
             }

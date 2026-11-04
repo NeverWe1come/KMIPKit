@@ -190,7 +190,7 @@ class T102MixedTraitBatchTests(unittest.TestCase):
                 reason_type="Pkcs11Error",
                 extra_evidence=(
                     "formalAcceptance remains false",
-                    "The Pkcs11Error type, variants, and fields remain blocked",
+                    "The Pkcs11Error type and variants map through the shared normalized four-language client outcome",
                     "Pkcs11Request and Pkcs11Response declarations retain their existing states",
                 ),
             )
@@ -214,7 +214,7 @@ class T102MixedTraitBatchTests(unittest.TestCase):
                 {
                     f"{module}::Pkcs11Request": "verified",
                     f"{module}::Pkcs11Response": "verified",
-                    f"{module}::Pkcs11Error": "blocked",
+                    f"{module}::Pkcs11Error": "declared",
                 },
             )
 

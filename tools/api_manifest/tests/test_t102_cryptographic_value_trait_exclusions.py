@@ -334,8 +334,9 @@ class T102CryptographicValueTraitExclusionTests(unittest.TestCase):
         self.assertEqual(set(error_rows), set(error_type_names))
         self.assertTrue(
             all(
-                row["declarationState"] == "blocked"
-                and row.get("candidateSpecId") == "KMIPKIT-0043"
+                row["declarationState"] == "declared"
+                and "candidateSpecId" not in row
+                and row.get("capabilityId") == "client_execution"
                 for row in error_rows.values()
             )
         )

@@ -6,6 +6,8 @@ import json
 import unittest
 from pathlib import Path
 
+from tools.api_manifest.tests.t102_manifest_totals import T102_BLOCKED_CANDIDATES
+
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 EXPECTED_ALIAS_PAIRS = (
@@ -84,7 +86,7 @@ EXPECTED_ALIAS_PAIRS = (
     ('rust-kmipkit-client', 'kmipkit_client::Pkcs11Response::with_return_code', 'rust-kmipkit-protocol', 'kmipkit_protocol::Pkcs11Response::with_return_code'),
     ('rust-kmipkit-protocol', 'kmipkit_protocol::ProfileValidationSelection::validate', 'rust-kmipkit-client', 'kmipkit_client::ProfileValidationSelection::validate'),
 )
-EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = 648
+EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 
 
 class T102ApprovedAliasMappingTests(unittest.TestCase):

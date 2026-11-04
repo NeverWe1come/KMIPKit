@@ -69,9 +69,9 @@ OPERATIONS = {
     },
 }
 ERROR_SUFFIXES = {
-    "": "blocked", "::InvalidOperationResult": "blocked", "::InvalidOperationResult::0": "blocked",
-    "::MalformedResponseItem": "blocked", "::MalformedSuccessPayload": "blocked",
-    "::MissingResultStatus": "blocked", "::MissingSuccessPayload": "blocked", "::UnexpectedOperation": "blocked",
+    "": "declared", "::InvalidOperationResult": "declared", "::InvalidOperationResult::0": "declared",
+    "::MalformedResponseItem": "declared", "::MalformedSuccessPayload": "declared",
+    "::MissingResultStatus": "declared", "::MissingSuccessPayload": "declared", "::UnexpectedOperation": "declared",
 }
 RELATED_STATES = {
     "DeriveKeyRequest": {"": "blocked", "::into_ttlv_payload": "blocked", "::new": "blocked"},

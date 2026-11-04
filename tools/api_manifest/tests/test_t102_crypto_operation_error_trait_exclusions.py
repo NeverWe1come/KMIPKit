@@ -163,7 +163,7 @@ class T102CryptoOperationErrorTraitExclusionTests(unittest.TestCase):
 
         self.assertEqual(len(expected_total), 45)
 
-    def test_error_type_declarations_remain_blocked_and_unmapped(self) -> None:
+    def test_error_type_declarations_are_mapped_to_shared_client_outcomes(self) -> None:
         for type_name in DIRECT_SUFFIXES:
             row = next(
                 declaration
@@ -171,8 +171,9 @@ class T102CryptoOperationErrorTraitExclusionTests(unittest.TestCase):
                 if declaration.get("packageId") == PACKAGE
                 and declaration.get("exportName") == f"{CRATE}::{type_name}"
             )
-            self.assertEqual(row["declarationState"], "blocked")
-            self.assertEqual(row.get("candidateSpecId"), "KMIPKIT-0043")
+            self.assertEqual(row["declarationState"], "declared")
+            self.assertNotIn("candidateSpecId", row)
+            self.assertEqual(row.get("capabilityId"), "client_execution")
 
     def test_manifest_totals_reflect_the_exact_error_trait_batch(self) -> None:
         candidates = sum(

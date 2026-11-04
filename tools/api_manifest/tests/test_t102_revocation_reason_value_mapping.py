@@ -20,6 +20,7 @@ from tools.api_manifest.tests.test_revoke_parity_manifest import (
     OWNER_REQUIREMENTS,
     PARITY_EVIDENCE,
 )
+from tools.api_manifest.tests.t102_manifest_totals import T102_BLOCKED_CANDIDATES
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
@@ -172,7 +173,7 @@ class T102RevocationReasonValueMappingTests(unittest.TestCase):
             and row.get("candidateSpecId") == "KMIPKIT-0043"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(648, blocked)
+        self.assertEqual(T102_BLOCKED_CANDIDATES, blocked)
 
     def test_open_reason_constructors_keep_unknown_raw_values(self) -> None:
         checks = {
