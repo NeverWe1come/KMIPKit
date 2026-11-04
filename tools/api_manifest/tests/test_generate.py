@@ -219,7 +219,7 @@ def _apply_input_array_contract(manifest: dict[str, object]) -> None:
 
 class ManifestGeneratorCliTests(unittest.TestCase):
     def test_manifest_input_limit_reserves_bounded_room_for_the_full_inventory(self) -> None:
-        self.assertEqual(generate.MAX_MANIFEST_BYTES, 21 * 1024 * 1024)
+        self.assertEqual(generate.MAX_MANIFEST_BYTES, 23 * 1024 * 1024)
 
     def test_manifest_input_limit_rejects_oversized_files_before_json_decode(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
