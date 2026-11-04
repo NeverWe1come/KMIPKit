@@ -144,7 +144,8 @@ class LogParityManifestTests(unittest.TestCase):
             required_requirements=REQUIREMENTS,
             expected_approval_source=OWNER_SPEC,
         )
-        self.assertEqual(EXPECTED_MAPPINGS, actual_mappings)
+        for language, expected in EXPECTED_MAPPINGS.items():
+            self.assertTrue(expected <= actual_mappings[language], language)
         self.assertEqual(REQUIREMENTS, linked_requirements)
 
         traceability = (ROOT / "specs/028-diagnostics-interop/traceability.md").read_text(

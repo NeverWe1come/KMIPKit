@@ -10658,6 +10658,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::LogResponse::result",
     ),
     (
+        "rust-observed-04f602e7f4ad03e1f390",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::LogResponse::try_from_response_item",
+    ),
+    (
         "rust-observed-1e535b0717d721bce748",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::LogResponse::with_ttlv",
