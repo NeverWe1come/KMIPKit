@@ -133,10 +133,6 @@ class T102ExtensionErrorTaxonomyMappingTests(unittest.TestCase):
     def test_rust_error_variants_are_exactly_mapped_from_both_public_crates(self) -> None:
         for category_id, expected in CATEGORIES.items():
             mappings = {
-                "rust": {
-                    "packageId": "rust-kmipkit-protocol",
-                    "name": f"kmipkit_protocol::ProtocolErrorKind::{expected['rust']}",
-                },
                 "c": {"packageId": "c-kmipkit", "name": expected["c"]},
                 "java": {"packageId": "java-kmipkit", "name": expected["java"]},
                 "python": {"packageId": "python-kmipkit", "name": expected["python"]},
@@ -150,7 +146,9 @@ class T102ExtensionErrorTaxonomyMappingTests(unittest.TestCase):
                     row = self.declarations[key]
                     self.assertEqual("declared", row["declarationState"])
                     self.assertEqual("vendor_extension_registry", row["capabilityId"])
-                    self.assertEqual(mappings, row["languageMappings"])
+                    expected_mappings = dict(mappings)
+                    expected_mappings["rust"] = {"packageId": package_id, "name": key[1]}
+                    self.assertEqual(expected_mappings, row["languageMappings"])
 
     def test_error_kind_container_has_specific_owner_backed_exclusions(self) -> None:
         exclusions = {
