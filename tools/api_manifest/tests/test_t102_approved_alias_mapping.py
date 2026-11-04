@@ -98,36 +98,50 @@ class T102ApprovedAliasMappingTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
         }
 
+    def _assert_alias_matches_approved_source(
+        self,
+        target_package: str,
+        target_name: str,
+        source_package: str,
+        source_name: str,
+    ) -> None:
+        with self.subTest(target=target_name):
+            target = self.declarations[(target_package, target_name)]
+            source = self.declarations[(source_package, source_name)]
+            self.assertIn(target_package, {"rust-kmipkit", "rust-kmipkit-client", "rust-kmipkit-protocol"})
+            self.assertEqual(source["kind"], target["kind"])
+            self.assertIn(source["declarationState"], {"verified", "declared"})
+            self.assertEqual(source["capabilityId"], target["capabilityId"])
+            self.assertEqual(source["requirementIds"], target["requirementIds"])
+            self.assertEqual(source["approvalSource"], target["approvalSource"])
+            if "parityEvidenceIds" in source:
+                self.assertEqual(source["parityEvidenceIds"], target["parityEvidenceIds"])
+            else:
+                self.assertNotIn("parityEvidenceIds", target)
+            self.assertEqual(source["declarationState"], target["declarationState"])
+            self.assertEqual("four-language", target["parityScope"])
+            expected_mappings = copy.deepcopy(source["languageMappings"])
+            expected_mappings["rust"] = {"packageId": target_package, "name": target_name}
+            self.assertEqual(expected_mappings, target["languageMappings"])
+            self.assertNotIn("candidateSpecId", target)
+            self.assertNotIn("blockedReason", target)
+            capability_id = target["capabilityId"]
+            operation = next(
+                (item for item in self.manifest["operations"] if item["operationId"] == capability_id),
+                None,
+            )
+            if operation is not None:
+                self.assertIn(target["declarationId"], operation["declarations"]["rust"])
+            else:
+                capability = next(item for item in self.manifest["capabilities"] if item["capabilityId"] == capability_id)
+                self.assertIn(target_name, capability["mappings"]["rust"])
+
     def test_exact_aliases_reuse_only_their_approved_four_language_owner_mapping(self) -> None:
         self.assertEqual(75, len(EXPECTED_ALIAS_PAIRS))
         for target_package, target_name, source_package, source_name in EXPECTED_ALIAS_PAIRS:
-            with self.subTest(target=target_name):
-                target = self.declarations[(target_package, target_name)]
-                source = self.declarations[(source_package, source_name)]
-                self.assertIn(target_package, {"rust-kmipkit", "rust-kmipkit-client", "rust-kmipkit-protocol"})
-                self.assertEqual(source["kind"], target["kind"])
-                self.assertIn(source["declarationState"], {"verified", "declared"})
-                self.assertEqual(source["capabilityId"], target["capabilityId"])
-                self.assertEqual(source["requirementIds"], target["requirementIds"])
-                self.assertEqual(source["approvalSource"], target["approvalSource"])
-                if "parityEvidenceIds" in source:
-                    self.assertEqual(source["parityEvidenceIds"], target["parityEvidenceIds"])
-                else:
-                    self.assertNotIn("parityEvidenceIds", target)
-                self.assertEqual(source["declarationState"], target["declarationState"])
-                self.assertEqual("four-language", target["parityScope"])
-                expected_mappings = copy.deepcopy(source["languageMappings"])
-                expected_mappings["rust"] = {"packageId": target_package, "name": target_name}
-                self.assertEqual(expected_mappings, target["languageMappings"])
-                self.assertNotIn("candidateSpecId", target)
-                self.assertNotIn("blockedReason", target)
-                capability_id = target["capabilityId"]
-                operation = next((item for item in self.manifest["operations"] if item["operationId"] == capability_id), None)
-                if operation is not None:
-                    self.assertIn(target["declarationId"], operation["declarations"]["rust"])
-                else:
-                    capability = next(item for item in self.manifest["capabilities"] if item["capabilityId"] == capability_id)
-                    self.assertIn(target_name, capability["mappings"]["rust"])
+            self._assert_alias_matches_approved_source(
+                target_package, target_name, source_package, source_name
+            )
 
     def test_t102_candidate_total_excludes_only_this_exact_batch(self) -> None:
         remaining = sum(
