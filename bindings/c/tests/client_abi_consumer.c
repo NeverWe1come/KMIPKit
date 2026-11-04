@@ -3824,7 +3824,7 @@ static int execute_request_builders_wire_from_c(
             limits, &rekey_attributes, UINT32_C(0x4200fd), &rekey_attribute_value) ||
         kmipkit_ttlv_value_integer(3, &rekey_mask_value) != 0 ||
         !append_derive_key_parameter(
-            limits, &rekey_masks, UINT32_C(0x420160), &rekey_mask_value)) {
+            limits, &rekey_masks, UINT32_C(0x42015E), &rekey_mask_value)) {
         goto cleanup;
     }
     if (kmipkit_ttlv_structure_create(&recertify_attributes) != 0 ||

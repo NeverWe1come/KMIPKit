@@ -2618,7 +2618,7 @@ const REKEY_VALUES: &[RequestBuilderWireField] = &[
     RequestBuilderWireField {
         tag: 0x0042_015f,
         value: V::StructureInteger {
-            child_tag: 0x0042_0160,
+            child_tag: 0x0042_015e,
             integer: 3,
         },
     },
@@ -2660,7 +2660,7 @@ const RECERTIFY_VALUES: &[RequestBuilderWireField] = &[
     RequestBuilderWireField {
         tag: 0x0042_015f,
         value: V::StructureInteger {
-            child_tag: 0x0042_0160,
+            child_tag: 0x0042_015e,
             integer: 3,
         },
     },
@@ -2706,7 +2706,7 @@ const JOIN_SPLIT_KEY_SECRET_DATA_TYPE: &[RequestBuilderWireField] = &[
     RequestBuilderWireField {
         tag: 0x0042_015f,
         value: V::StructureInteger {
-            child_tag: 0x0042_0160,
+            child_tag: 0x0042_015e,
             integer: 3,
         },
     },

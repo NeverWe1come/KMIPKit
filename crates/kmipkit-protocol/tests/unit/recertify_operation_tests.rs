@@ -77,7 +77,7 @@ fn request_emits_table_300_fields_once_in_order_and_preserves_values() {
     let request_identifier = UniqueIdentifier::Integer(17);
     let request_value = b"opaque-certificate-request";
     let attributes = structure([item(CERTIFICATE_TYPE, Value::enumeration(1))]);
-    let masks = structure([item(0x0042_0160, Value::integer(3))]);
+    let masks = structure([item(0x0042_015e, Value::integer(3))]);
     let request = RecertifyRequest::new()
         .with_unique_identifier(identifier.clone())
         .with_certificate_request_unique_identifier(request_identifier.clone())

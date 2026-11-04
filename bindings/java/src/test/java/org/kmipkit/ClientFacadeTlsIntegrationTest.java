@@ -151,7 +151,7 @@ final class ClientFacadeTlsIntegrationTest {
                                 "join-split-attributes".getBytes(StandardCharsets.UTF_8), requestLimits),
                         requestLimits);
                 TtlvStructure rekeyMasks = rekeyRequestStructure(
-                        0x420160, TtlvValue.Integer(3), requestLimits);
+                        0x42015e, TtlvValue.Integer(3), requestLimits);
                 SplitKeyReference splitReference = new SplitKeyReference(
                         UniqueIdentifier.textString("join-split-id"), 1)) {
             batch.add(ClientBatchItem.create(2L, createAttributes, null)
@@ -285,7 +285,7 @@ final class ClientFacadeTlsIntegrationTest {
                                 item(0x4200fd, TtlvItemType.TextString.code(),
                                         "rekey-attributes".getBytes(StandardCharsets.UTF_8))),
                         structure(0x42015f,
-                                item(0x420160, TtlvItemType.Integer.code(), integer(3))))));
+                                item(0x42015e, TtlvItemType.Integer.code(), integer(3))))));
         expectedBatchItems.write(structure(0x42000f,
                 enumeration(0x42005c, 4),
                 item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(8)),
@@ -316,7 +316,7 @@ final class ClientFacadeTlsIntegrationTest {
                                 item(0x4200fd, TtlvItemType.TextString.code(),
                                         "recertify-attributes".getBytes(StandardCharsets.UTF_8))),
                         structure(0x42015f,
-                                item(0x420160, TtlvItemType.Integer.code(), integer(3))))));
+                                item(0x42015e, TtlvItemType.Integer.code(), integer(3))))));
         expectedBatchItems.write(structure(0x42000f,
                 enumeration(0x42005c, 7),
                 item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(12)),
@@ -351,7 +351,7 @@ final class ClientFacadeTlsIntegrationTest {
                                 item(0x4200fd, TtlvItemType.TextString.code(),
                                         "join-split-attributes".getBytes(StandardCharsets.UTF_8))),
                         structure(0x42015f,
-                                item(0x420160, TtlvItemType.Integer.code(), integer(3))))));
+                                item(0x42015e, TtlvItemType.Integer.code(), integer(3))))));
         expectedBatchItems.write(structure(0x42000f,
                 enumeration(0x42005c, 0x29),
                 item(0x420093, TtlvItemType.ByteString.code(), uniqueBatchItemId(17)),

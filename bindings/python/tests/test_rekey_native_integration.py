@@ -163,7 +163,7 @@ def test_rekey_success_ttlv_outlives_source_and_failures_expose_no_success_resul
                         limits,
                     ) as attributes,
                     _single_child_structure(
-                        0x420160, ttlv.ttlv_value_integer(3), limits
+                        0x42015E, ttlv.ttlv_value_integer(3), limits
                     ) as masks,
                 ):
                     batch = client.Batch.create()
@@ -195,7 +195,7 @@ def test_rekey_success_ttlv_outlives_source_and_failures_expose_no_success_resul
         )
         expected_masks = _ttlv_structure(
             0x42015F,
-            _ttlv_item(0x420160, 2, struct.pack(">i", 3)),
+            _ttlv_item(0x42015E, 2, struct.pack(">i", 3)),
         )
         expected_rekey_payload = _ttlv_structure(
             0x420079,

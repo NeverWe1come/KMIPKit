@@ -152,7 +152,7 @@ def _capture_join_split_request(secret_data_type: int | None) -> bytes:
                     limits,
                 ) as attributes,
                 _single_child_structure(
-                    0x420160, ttlv.ttlv_value_integer(3), limits
+                    0x42015E, ttlv.ttlv_value_integer(3), limits
                 ) as masks,
             ):
                 item = extensions.client_batch_item_join_split_key(
@@ -195,7 +195,7 @@ def test_join_split_secret_data_type_and_omission_are_encoded_over_mtls() -> Non
         0x420125, 1, ttlv_item(0x4200FD, 7, b"join-split-attributes")
     )
     encoded_masks = ttlv_item(
-        0x42015F, 1, ttlv_item(0x420160, 2, struct.pack(">i", 3))
+        0x42015F, 1, ttlv_item(0x42015E, 2, struct.pack(">i", 3))
     )
     assert encoded_secret_data_type in typed_request
     assert encoded_attributes in typed_request

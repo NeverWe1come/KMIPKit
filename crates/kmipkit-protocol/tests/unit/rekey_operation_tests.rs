@@ -75,7 +75,7 @@ fn typed_response(
 fn request_emits_table_305_fields_once_in_order_and_preserves_values() {
     let identifier = UniqueIdentifier::TextString("existing-key".to_owned());
     let attributes = structure([item(0x0042_001D, Value::enumeration(1))]);
-    let masks = structure([item(0x0042_0160, Value::integer(3))]);
+    let masks = structure([item(0x0042_015e, Value::integer(3))]);
     let request = RekeyRequest::new()
         .with_unique_identifier(identifier.clone())
         .with_offset(86_400)
@@ -228,7 +228,7 @@ fn failure_and_pending_do_not_expose_response_ttlv() {
 fn request_debug_does_not_expose_mask_structure_values() {
     let sentinel = b"REKEY_MASK_SECRET_SENTINEL";
     let masks = structure([item(
-        0x0042_0160,
+        0x0042_015e,
         Value::text_string(String::from_utf8_lossy(sentinel).into_owned()),
     )]);
     let request = RekeyRequest::new().with_protection_storage_masks(masks);

@@ -668,7 +668,7 @@ fn request_emits_table_291_fields_in_order_and_preserves_object_item() {
         ]),
         item(SYMMETRIC_KEY, Value::structure(object_body)),
     )
-    .with_protection_storage_masks(structure([item(0x0042_0160, Value::integer(1))]));
+    .with_protection_storage_masks(structure([item(0x0042_015e, Value::integer(1))]));
     let payload = request
         .into_ttlv_payload()
         .expect("required Table 291 fields and Table 293 attributes are valid");

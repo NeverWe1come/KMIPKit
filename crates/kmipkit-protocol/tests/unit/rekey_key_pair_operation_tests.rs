@@ -96,9 +96,9 @@ fn request_emits_table_310_fields_once_in_order_and_preserves_groups() {
         .with_common_attributes(crate::AttributeSet::new())
         .with_private_key_attributes(crate::AttributeSet::new())
         .with_public_key_attributes(crate::AttributeSet::new())
-        .with_common_protection_storage_masks(structure([item(0x0042_0160, Value::integer(1))]))
-        .with_private_protection_storage_masks(structure([item(0x0042_0160, Value::integer(2))]))
-        .with_public_protection_storage_masks(structure([item(0x0042_0160, Value::integer(3))]));
+        .with_common_protection_storage_masks(structure([item(0x0042_015e, Value::integer(1))]))
+        .with_private_protection_storage_masks(structure([item(0x0042_015e, Value::integer(2))]))
+        .with_public_protection_storage_masks(structure([item(0x0042_015e, Value::integer(3))]));
 
     assert_eq!(request.private_key_unique_identifier(), Some(&identifier));
     let payload = request
@@ -362,7 +362,7 @@ fn request_debug_redacts_identifier_and_mask_contents() {
             "PRIVATE_KEY_IDENTIFIER_SENTINEL".to_owned(),
         ))
         .with_common_protection_storage_masks(structure([item(
-            0x0042_0160,
+            0x0042_015e,
             Value::text_string("PROTECTION_MASK_SECRET_SENTINEL".to_owned()),
         )]));
     let debug = format!("{request:?}");

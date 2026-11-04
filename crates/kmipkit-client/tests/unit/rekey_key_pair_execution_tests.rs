@@ -57,15 +57,15 @@ fn rekey_key_pair_request() -> RekeyKeyPairRequest {
         .with_private_key_attributes(AttributeSet::new())
         .with_public_key_attributes(AttributeSet::new())
         .with_common_protection_storage_masks(test_structure([test_item(
-            0x0042_0160,
+            0x0042_015e,
             Value::integer(1),
         )]))
         .with_private_protection_storage_masks(test_structure([test_item(
-            0x0042_0160,
+            0x0042_015e,
             Value::integer(2),
         )]))
         .with_public_protection_storage_masks(test_structure([test_item(
-            0x0042_0160,
+            0x0042_015e,
             Value::integer(3),
         )]))
 }

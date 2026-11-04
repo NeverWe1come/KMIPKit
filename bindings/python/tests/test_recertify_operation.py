@@ -109,7 +109,7 @@ def _capture_recertify_structure_request(with_structures: bool) -> bytes:
                             limits,
                         ) as attributes,
                         _single_child_structure(
-                            0x420160, ttlv.ttlv_value_integer(3), limits
+                            0x42015E, ttlv.ttlv_value_integer(3), limits
                         ) as masks,
                     ):
                         item = extensions.client_batch_item_recertify(
@@ -419,7 +419,7 @@ def test_recertify_optional_structures_are_captured_in_order_and_can_be_omitted(
     )
     expected_masks = _ttlv_structure(
         0x42015F,
-        _ttlv_item(0x420160, 2, struct.pack(">i", 3)),
+        _ttlv_item(0x42015E, 2, struct.pack(">i", 3)),
     )
     assert expected_attributes in present
     assert expected_masks in present

@@ -51,7 +51,7 @@ fn rekey_request() -> RekeyRequest {
             0x0042_001D,
             Value::enumeration(1),
         )]))
-        .with_protection_storage_masks(test_structure([test_item(0x0042_0160, Value::integer(3))]))
+        .with_protection_storage_masks(test_structure([test_item(0x0042_015e, Value::integer(3))]))
 }
 
 fn assert_one_exchange(fake: &Rc<RefCell<ScriptedTransport>>) {
