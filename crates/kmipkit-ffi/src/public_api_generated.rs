@@ -7928,9 +7928,24 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::Ticket",
     ),
     (
+        "rust-observed-3aea4d793e81b69de4c1",
+        "rust-kmipkit",
+        "kmipkit::Ticket::into_ttlv",
+    ),
+    (
+        "rust-observed-90e17cd1f37c1b13ee4e",
+        "rust-kmipkit",
+        "kmipkit::Ticket::new",
+    ),
+    (
         "rust-observed-a78fe6bcff5bf4233511",
         "rust-kmipkit",
         "kmipkit::Ticket::ticket_type",
+    ),
+    (
+        "rust-observed-ecb07fb359ca3c15dc52",
+        "rust-kmipkit",
+        "kmipkit::Ticket::try_from_ttlv",
     ),
     (
         "rust-observed-b644f757a8a9656c68be",
@@ -7946,6 +7961,21 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-4bd8e2cba3cb8caded4f",
         "rust-kmipkit",
         "kmipkit::TicketType",
+    ),
+    (
+        "rust-observed-217734a91c391cce3c90",
+        "rust-kmipkit",
+        "kmipkit::TicketType::LOGIN",
+    ),
+    (
+        "rust-observed-4381db95e713c012fc3b",
+        "rust-kmipkit",
+        "kmipkit::TicketType::from_raw",
+    ),
+    (
+        "rust-observed-fa0a474eca458bb09446",
+        "rust-kmipkit",
+        "kmipkit::TicketType::known_name",
     ),
     (
         "rust-observed-ac85c058a6096cb54b9f",
@@ -12448,9 +12478,24 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::Ticket",
     ),
     (
+        "rust-observed-1905a67e3c9d0194df4c",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Ticket::into_ttlv",
+    ),
+    (
+        "rust-observed-c90435b97b41feb3b186",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Ticket::new",
+    ),
+    (
         "rust-observed-1023588285a89c1a691f",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::Ticket::ticket_type",
+    ),
+    (
+        "rust-observed-6ba9278cc880d5ad6d62",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Ticket::try_from_ttlv",
     ),
     (
         "rust-observed-2908f7da1d4d181f08f3",
@@ -12466,6 +12511,21 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-9b6877a984c591dab2a0",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::TicketType",
+    ),
+    (
+        "rust-observed-fe30c871f85e00feff91",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::TicketType::LOGIN",
+    ),
+    (
+        "rust-observed-0b9e5262cf1e637d14d5",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::TicketType::from_raw",
+    ),
+    (
+        "rust-observed-38e4871cc0f7451554da",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::TicketType::known_name",
     ),
     (
         "rust-observed-fa2e16229a0c5c65a5f1",

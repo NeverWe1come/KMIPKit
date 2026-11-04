@@ -97,12 +97,12 @@ NORMATIVE = {
 }
 PROTOCOL_STATES = {
     "TicketType": {
-        "": "verified", "::LOGIN": "blocked", "::from_raw": "blocked",
-        "::known_name": "blocked", "::raw": "verified",
+        "": "verified", "::LOGIN": "verified", "::from_raw": "verified",
+        "::known_name": "verified", "::raw": "verified",
     },
     "Ticket": {
-        "": "verified", "::into_ttlv": "blocked", "::new": "blocked",
-        "::ticket_type": "verified", "::try_from_ttlv": "blocked",
+        "": "verified", "::into_ttlv": "verified", "::new": "verified",
+        "::ticket_type": "verified", "::try_from_ttlv": "verified",
         "::with_ticket_value": "verified", "::with_ttlv": "verified",
     },
     "LoginRequest": {
@@ -113,12 +113,12 @@ PROTOCOL_STATES = {
 }
 ROOT_STATES = {
     "TicketType": {
-        "": "verified", "::LOGIN": "blocked", "::from_raw": "blocked",
-        "::known_name": "blocked", "::raw": "verified",
+        "": "verified", "::LOGIN": "verified", "::from_raw": "verified",
+        "::known_name": "verified", "::raw": "verified",
     },
     "Ticket": {
-        "": "verified", "::into_ttlv": "blocked", "::new": "blocked",
-        "::ticket_type": "verified", "::try_from_ttlv": "blocked",
+        "": "verified", "::into_ttlv": "verified", "::new": "verified",
+        "::ticket_type": "verified", "::try_from_ttlv": "verified",
         "::with_ticket_value": "verified", "::with_ttlv": "verified",
     },
     "LoginRequest": {

@@ -155226,28 +155226,130 @@
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "kmipkit::Ticket::into_ttlv",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::Ticket::into_ttlv"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_delegated_login"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.DelegatedLoginResponse"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_ticket_model_members_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-90e17cd1f37c1b13ee4e",
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "kmipkit::Ticket::new",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::Ticket::new"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_delegated_login"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.DelegatedLoginResponse"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_ticket_model_members_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-a78fe6bcff5bf4233511",
@@ -155317,14 +155419,65 @@
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "kmipkit::Ticket::try_from_ttlv",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::Ticket::try_from_ttlv"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_delegated_login"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.DelegatedLoginResponse"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_ticket_model_members_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-b644f757a8a9656c68be",
@@ -155520,42 +155673,195 @@
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "kmipkit::TicketType::LOGIN",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::TicketType::LOGIN"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_delegated_login"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse.ticketTypeRaw"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.DelegatedLoginResponse.ticket_type_raw"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_ticket_model_members_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-4381db95e713c012fc3b",
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "kmipkit::TicketType::from_raw",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::TicketType::from_raw"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_delegated_login"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse.ticketTypeRaw"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.DelegatedLoginResponse.ticket_type_raw"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_ticket_model_members_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-fa0a474eca458bb09446",
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "kmipkit::TicketType::known_name",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::TicketType::known_name"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_delegated_login"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse.ticketTypeRaw"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.DelegatedLoginResponse.ticket_type_raw"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_ticket_model_members_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-ac85c058a6096cb54b9f",
@@ -217891,28 +218197,130 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::Ticket::into_ttlv",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::Ticket::into_ttlv"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_delegated_login"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.DelegatedLoginResponse"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_ticket_model_members_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-c90435b97b41feb3b186",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::Ticket::new",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::Ticket::new"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_delegated_login"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.DelegatedLoginResponse"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_ticket_model_members_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-1023588285a89c1a691f",
@@ -217982,14 +218390,65 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::Ticket::try_from_ttlv",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::Ticket::try_from_ttlv"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_delegated_login"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.DelegatedLoginResponse"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_ticket_model_members_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-2908f7da1d4d181f08f3",
@@ -218185,42 +218644,195 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::TicketType::LOGIN",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::TicketType::LOGIN"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_delegated_login"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse.ticketTypeRaw"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.DelegatedLoginResponse.ticket_type_raw"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_ticket_model_members_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-0b9e5262cf1e637d14d5",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::TicketType::from_raw",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::TicketType::from_raw"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_delegated_login"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse.ticketTypeRaw"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.DelegatedLoginResponse.ticket_type_raw"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_ticket_model_members_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-38e4871cc0f7451554da",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::TicketType::known_name",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::TicketType::known_name"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_delegated_login"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse.ticketTypeRaw"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.DelegatedLoginResponse.ticket_type_raw"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_ticket_model_members_mapping.py"
+      ]
     },
     {
       "declarationId": "rust-observed-fa2e16229a0c5c65a5f1",
@@ -476850,108 +477462,121 @@
       ]
     },
         {
-      "operationId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
-      "name": "Delegated Login",
-      "section": "6.1.12",
-      "scope": "client_1_0",
-      "apiState": "verified",
-      "ownerDependency": {
-        "state": "approved",
-        "specId": "KMIPKIT-0038"
-      },
-      "featureSpecId": "KMIPKIT-0038",
-      "approvalEvidence": {
-        "kind": "feature-specification",
-        "path": "specs/024-credential-sessions/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation — 2026-10-11"
-      },
-      "declarations": {
-        "rust": [
-          "rust-observed-01507e1636559abf40b6",
-          "rust-observed-03f79bf27d27b02c63ba",
-          "rust-observed-0fb01a6aea7bb491c891",
-          "rust-observed-1023588285a89c1a691f",
-          "rust-observed-18fef3ba5d53e9ad4e11",
-          "rust-observed-1b8cb0a8d56246ab66e9",
-          "rust-observed-1f0bbb35a2f33506acb8",
-          "rust-observed-20e3cdcae0d30c3da56a",
-          "rust-observed-2908f7da1d4d181f08f3",
-          "rust-observed-352f80883b2591ba151d",
-          "rust-observed-3a4bfd7477699815b169",
-          "rust-observed-411be8442423a0ff7a0b",
-          "rust-observed-4812c1bbb95571e37e86",
-          "rust-observed-4b0fffb6442e5fbea308",
-          "rust-observed-4bd8e2cba3cb8caded4f",
-          "rust-observed-50203a3a59fc28e02585",
-          "rust-observed-5e16823c8408ac29bae2",
-          "rust-observed-6058f94568d4e15fa53e",
-          "rust-observed-6475c8b6a2292b0db9df",
-          "rust-observed-6c22355eeb4346fbb678",
-          "rust-observed-6c77073ae26ca3380301",
-          "rust-observed-6e234e6ce5c01318e250",
-          "rust-observed-732fcdddcf0c2a58f06a",
-          "rust-observed-7651b5a1102f8eeac46d",
-          "rust-observed-8539a6fd04ac7debc581",
-          "rust-observed-8681e7bb9662a819b3b7",
-          "rust-observed-8e1602cc07394e6ace5e",
-          "rust-observed-923757de0192b8de546c",
-          "rust-observed-979521e14f2461810182",
-          "rust-observed-9b6877a984c591dab2a0",
-          "rust-observed-9bbedec79bf9b6bec442",
-          "rust-observed-9c0bcc84540414b422a8",
-          "rust-observed-a2cbba1f79c2557a10e3",
-          "rust-observed-a40c51b3bd1698599d9b",
-          "rust-observed-a78fe6bcff5bf4233511",
-          "rust-observed-ab0a12f30db53d59f250",
-          "rust-observed-ac85c058a6096cb54b9f",
-          "rust-observed-b05376a6ad799d51e200",
-          "rust-observed-b644f757a8a9656c68be",
-          "rust-observed-bcda3c15a47990f6a3b4",
-          "rust-observed-be1bd6b12265801ef8c5",
-          "rust-observed-ca27d9b0d5e438f52bd0",
-          "rust-observed-d00c2fb8fb5d6f908579",
-          "rust-observed-d3fbadef39a0f156cbb6",
-          "rust-observed-d7878fed979ca373ed5c",
-          "rust-observed-e255abe3ee88fe1eb051",
-          "rust-observed-eb4f45cc4810e1a04624",
-          "rust-observed-f97841166e089be852b3",
-          "rust-observed-fa2e16229a0c5c65a5f1"
-        ],
-        "c": [
-          "T045:delegated-login:constructor:c",
-          "T045:delegated-login:response-ttlv:c",
-          "T045:delegated-login:response:c"
-        ],
-        "java": [
-          "T045:delegated-login:constructor:java",
-          "T045:delegated-login:outcome:java",
-          "T045:delegated-login:response-close:java",
-          "T045:delegated-login:response-type:java",
-          "T045:delegated-login:ticket-ttlv:java",
-          "T045:delegated-login:ticket-type:java",
-          "T045:delegated-login:ticket-value:java"
-        ],
-        "python": [
-          "T045:delegated-login:constructor:python",
-          "T045:delegated-login:outcome:python",
-          "T045:delegated-login:response-close:python",
-          "T045:delegated-login:response-type:python",
-          "T045:delegated-login:ticket-ttlv:python",
-          "T045:delegated-login:ticket-type:python",
-          "T045:delegated-login:ticket-value:python"
-        ]
-      },
-      "parityEvidenceIds": [
-        "bindings/c/tests/client_abi_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
-        "bindings/python/tests/test_delegated_login.py",
-        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
-        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
-        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs",
-        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py"
-      ]
-    },
+          "operationId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+          "name": "Delegated Login",
+          "section": "6.1.12",
+          "scope": "client_1_0",
+          "apiState": "verified",
+          "ownerDependency": {
+            "state": "approved",
+            "specId": "KMIPKIT-0038"
+          },
+          "featureSpecId": "KMIPKIT-0038",
+          "approvalEvidence": {
+            "kind": "feature-specification",
+            "path": "specs/024-credential-sessions/spec.md",
+            "status": "Approved",
+            "evidence": "**Status**: Approved for implementation — 2026-10-11"
+          },
+          "declarations": {
+            "rust": [
+              "rust-observed-01507e1636559abf40b6",
+              "rust-observed-03f79bf27d27b02c63ba",
+              "rust-observed-0fb01a6aea7bb491c891",
+              "rust-observed-1023588285a89c1a691f",
+              "rust-observed-18fef3ba5d53e9ad4e11",
+              "rust-observed-1b8cb0a8d56246ab66e9",
+              "rust-observed-1f0bbb35a2f33506acb8",
+              "rust-observed-20e3cdcae0d30c3da56a",
+              "rust-observed-2908f7da1d4d181f08f3",
+              "rust-observed-352f80883b2591ba151d",
+              "rust-observed-3a4bfd7477699815b169",
+              "rust-observed-411be8442423a0ff7a0b",
+              "rust-observed-4812c1bbb95571e37e86",
+              "rust-observed-4b0fffb6442e5fbea308",
+              "rust-observed-4bd8e2cba3cb8caded4f",
+              "rust-observed-50203a3a59fc28e02585",
+              "rust-observed-5e16823c8408ac29bae2",
+              "rust-observed-6058f94568d4e15fa53e",
+              "rust-observed-6475c8b6a2292b0db9df",
+              "rust-observed-6c22355eeb4346fbb678",
+              "rust-observed-6c77073ae26ca3380301",
+              "rust-observed-6e234e6ce5c01318e250",
+              "rust-observed-732fcdddcf0c2a58f06a",
+              "rust-observed-7651b5a1102f8eeac46d",
+              "rust-observed-8539a6fd04ac7debc581",
+              "rust-observed-8681e7bb9662a819b3b7",
+              "rust-observed-8e1602cc07394e6ace5e",
+              "rust-observed-923757de0192b8de546c",
+              "rust-observed-979521e14f2461810182",
+              "rust-observed-9b6877a984c591dab2a0",
+              "rust-observed-9bbedec79bf9b6bec442",
+              "rust-observed-9c0bcc84540414b422a8",
+              "rust-observed-a2cbba1f79c2557a10e3",
+              "rust-observed-a40c51b3bd1698599d9b",
+              "rust-observed-a78fe6bcff5bf4233511",
+              "rust-observed-ab0a12f30db53d59f250",
+              "rust-observed-ac85c058a6096cb54b9f",
+              "rust-observed-b05376a6ad799d51e200",
+              "rust-observed-b644f757a8a9656c68be",
+              "rust-observed-bcda3c15a47990f6a3b4",
+              "rust-observed-be1bd6b12265801ef8c5",
+              "rust-observed-ca27d9b0d5e438f52bd0",
+              "rust-observed-d00c2fb8fb5d6f908579",
+              "rust-observed-d3fbadef39a0f156cbb6",
+              "rust-observed-d7878fed979ca373ed5c",
+              "rust-observed-e255abe3ee88fe1eb051",
+              "rust-observed-eb4f45cc4810e1a04624",
+              "rust-observed-f97841166e089be852b3",
+              "rust-observed-fa2e16229a0c5c65a5f1",
+              "rust-observed-3aea4d793e81b69de4c1",
+              "rust-observed-90e17cd1f37c1b13ee4e",
+              "rust-observed-ecb07fb359ca3c15dc52",
+              "rust-observed-217734a91c391cce3c90",
+              "rust-observed-4381db95e713c012fc3b",
+              "rust-observed-fa0a474eca458bb09446",
+              "rust-observed-1905a67e3c9d0194df4c",
+              "rust-observed-c90435b97b41feb3b186",
+              "rust-observed-6ba9278cc880d5ad6d62",
+              "rust-observed-fe30c871f85e00feff91",
+              "rust-observed-0b9e5262cf1e637d14d5",
+              "rust-observed-38e4871cc0f7451554da"
+            ],
+            "c": [
+              "T045:delegated-login:constructor:c",
+              "T045:delegated-login:response-ttlv:c",
+              "T045:delegated-login:response:c"
+            ],
+            "java": [
+              "T045:delegated-login:constructor:java",
+              "T045:delegated-login:outcome:java",
+              "T045:delegated-login:response-close:java",
+              "T045:delegated-login:response-type:java",
+              "T045:delegated-login:ticket-ttlv:java",
+              "T045:delegated-login:ticket-type:java",
+              "T045:delegated-login:ticket-value:java"
+            ],
+            "python": [
+              "T045:delegated-login:constructor:python",
+              "T045:delegated-login:outcome:python",
+              "T045:delegated-login:response-close:python",
+              "T045:delegated-login:response-type:python",
+              "T045:delegated-login:ticket-ttlv:python",
+              "T045:delegated-login:ticket-type:python",
+              "T045:delegated-login:ticket-value:python"
+            ]
+          },
+          "parityEvidenceIds": [
+            "bindings/c/tests/client_abi_consumer.c",
+            "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+            "bindings/python/tests/test_delegated_login.py",
+            "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+            "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+            "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs",
+            "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py",
+            "tools/api_manifest/tests/test_t102_ticket_model_members_mapping.py"
+          ]
+        },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE",
       "name": "Delete Attribute",
