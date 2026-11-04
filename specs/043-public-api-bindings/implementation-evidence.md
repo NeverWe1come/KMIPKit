@@ -10779,3 +10779,9 @@ Red commands: `python -B -m unittest tools.api_manifest.tests.test_t102_profile_
 ### T102 CI assertion correction — Recertify request state (2026-11-04)
 
 Hosted Script Contracts run `41847106325` failed `test_functional_states_and_root_facades_are_unchanged` for `RecertifyRequest`; local command `python -B -m unittest tools.api_manifest.tests.test_t102_lifecycle_request_trait_exclusions -v` reproduced the same failure. The contract expected `kmipkit_protocol::RecertifyRequest::with_certificate_request_value` to remain blocked, but the manifest already marks it verified from the scalar request-builder batch. Updated the exact state expectation only. No manifest, runtime, or generated output changed.
+
+### T102 ProfileValidationResult Java JNI bridge inventory — Red (2026-11-04)
+
+The Java facade adds 11 public `NativeExtensionRegistry` native methods to reach the mapped C ABI. These are implementation-only bridge members under the existing minimal JNI boundary, not additional product facade capabilities. Red commit `be35ec9b8` adds an exact exclusion contract for all 11 names; `python -B -m unittest tools.api_manifest.tests.test_t102_java_ttlv_bridge_exclusions.JavaTtlvBridgeExclusionTests.test_profile_validation_native_bridge_exports_are_exactly_excluded -v` fails once because none of the required exclusions are yet in the manifest. The exclusion owner is KMIPKIT-0043-FR-008/021; no generated output or manifest row was edited.
+
+The follow-up Red contract also pins the protocol-owned `ProfileValidationResult` type record and the exact Rust-to-C/Java/Python result facade inventory. Its focused run reports 5 failing tests and 1 passing test: missing foreign declarations/type record, stale `ProfileValidationSelection::validate` mappings, and missing JNI exclusions. These failures precede manifest reconciliation; no production manifest or generated output was edited.

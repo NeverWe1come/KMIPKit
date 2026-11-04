@@ -152,6 +152,7 @@ class T102ProfileModelReexportMappingTests(unittest.TestCase):
             "kmipkit_profile_validation_result_validate_response_with_context_v1",
         }
         java_exports = {
+            "org.kmipkit.extensions.ProfileValidationSelection.validate",
             "org.kmipkit.extensions.ProfileValidationResult",
             "org.kmipkit.extensions.ProfileValidationResult.profileIds",
             "org.kmipkit.extensions.ProfileValidationResult.requirementIds",
@@ -161,10 +162,15 @@ class T102ProfileModelReexportMappingTests(unittest.TestCase):
             "org.kmipkit.extensions.ProfileValidationResult.validateResponse",
             "org.kmipkit.extensions.ProfileValidationResult.validateResponseWithContext",
             "org.kmipkit.extensions.ProfileValidationResult.close",
+            "org.kmipkit.extensions.ProfileValidationResult.toString",
             "org.kmipkit.ProfileValidationException",
+            "org.kmipkit.ProfileValidationException.<init>",
+            "org.kmipkit.ProfileValidationException.profileValidation",
         }
         python_exports = {
+            "kmipkit.client.ProfileValidationSelection.validate",
             "kmipkit.client.ProfileValidationResult",
+            "kmipkit.client.ProfileValidationResult.__init__",
             "kmipkit.client.ProfileValidationResult.profile_ids",
             "kmipkit.client.ProfileValidationResult.requirement_ids",
             "kmipkit.client.ProfileValidationResult.validate_transport",
@@ -176,6 +182,9 @@ class T102ProfileModelReexportMappingTests(unittest.TestCase):
             "kmipkit.client.ProfileValidationResult.__enter__",
             "kmipkit.client.ProfileValidationResult.__exit__",
             "kmipkit.errors.ProfileValidationError",
+            "kmipkit.errors.ProfileValidationError.__init__",
+            "kmipkit.errors.ProfileValidationError.profile_validation",
+            "kmipkit.errors.ProfileValidationError.details",
         }
         declarations = {
             (row["packageId"], row["exportName"]): row
@@ -231,6 +240,12 @@ class T102ProfileModelReexportMappingTests(unittest.TestCase):
             if row["capabilityId"] == "client_profile_validation"
         )
         self.assertEqual("declared", capability["capabilityState"])
+        expected_model_exports = {
+            f"{crate}::{type_name}{suffix}"
+            for crate in ("kmipkit", "kmipkit_protocol")
+            for type_name, suffixes in MODEL_SUFFIXES.items()
+            for suffix in suffixes
+        }
         for package, crate in REEXPORT_PACKAGES.items():
             for suffix in RESULT_SUFFIXES:
                 name = f"{crate}::ProfileValidationResult{suffix}"
@@ -239,7 +254,7 @@ class T102ProfileModelReexportMappingTests(unittest.TestCase):
                 self.assertEqual("client_profile_validation", declaration["capabilityId"])
                 self.assertIn(name, capability["mappings"]["rust"])
         self.assertEqual(
-            {name for _, name in expected},
+            expected_model_exports,
             {
                 name
                 for name in capability["mappings"]["rust"]
@@ -306,6 +321,54 @@ class T102ProfileModelReexportMappingTests(unittest.TestCase):
                 self.assertTrue(row["approvalSource"].get("evidence"))
                 self.assertNotIn("candidateSpecId", row)
                 self.assertNotIn("blockedReason", row)
+
+    def test_profile_validation_result_type_records_the_four_language_owner(self) -> None:
+        result_types = [
+            row
+            for row in self.manifest["types"]
+            if row["id"] == "ProfileValidationResult"
+        ]
+        self.assertEqual(1, len(result_types))
+        if result_types:
+            result_type = result_types[0]
+            self.assertEqual("struct", result_type["kind"])
+            self.assertEqual(
+                {
+                    "KMIPKIT-0010-FR-005",
+                    "KMIPKIT-0010-FR-012",
+                    "KMIPKIT-0010-FR-013",
+                    "KMIPKIT-0010-FR-014",
+                    "KMIPKIT-0010-FR-019",
+                    "KMIPKIT-0043-FR-021",
+                },
+                set(result_type["requirementIds"]),
+            )
+            self.assertEqual(
+                {
+                    "module": "kmipkit_protocol",
+                    "name": "ProfileValidationResult",
+                    "owner": "protocol",
+                },
+                result_type["rust"],
+            )
+            self.assertEqual(
+                {
+                    "name": "kmipkit_profile_validation_result_t",
+                    "kind": "opaque-handle",
+                    "handleKind": "profile_validation_result",
+                    "ownership": "library-owned",
+                    "releaseFunction": "kmipkit_profile_validation_result_release",
+                },
+                result_type["c"],
+            )
+            self.assertEqual(
+                {"package": "org.kmipkit.extensions", "name": "ProfileValidationResult"},
+                result_type["java"],
+            )
+            self.assertEqual(
+                {"module": "kmipkit.client", "name": "ProfileValidationResult"},
+                result_type["python"],
+            )
 
     def test_selection_validate_maps_to_the_resolver_not_the_selection_type(self) -> None:
         declarations = {
