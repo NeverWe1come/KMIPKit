@@ -54,10 +54,17 @@ existing `KMIPKIT_ERROR_*` codes and are independent from category/cause
 values. `KMIPKIT_ERROR_INTERNAL` (`7`) is the fixed fallback when a Rust panic
 is caught at an exported boundary; its snapshot uses category `5` (other),
 cause `10` (other), and delivery `0` (none). Bindings map it to their generic
-base exception types. The returned status and snapshot do not contain the panic
-payload. KMIPKit does not change Rust’s process-wide panic hook; an embedder’s
-hook may observe panic details, so KMIPKit panic messages must never include
-secrets. Snapshots contain no source strings or request payloads.
+base exception types. This generic fallback is an FFI boundary behavior, not a
+Rust client `Result` category. The Java and Python base exception classes remain
+public binding types and runtime superclasses; the API manifest records their
+exact declarations, the Python base `category` property, and the C fallback
+constant as exclusions from product-error parity. The `internal` error-category
+mapping remains blocked, while status `7` remains in the stable C ABI. Typed
+client error categories continue to map through the shared status, category,
+cause, and delivery metadata. The returned status and snapshot do not contain
+the panic payload. KMIPKit does not change Rust’s process-wide panic hook; an
+embedder’s hook may observe panic details, so KMIPKit panic messages must never
+include secrets. Snapshots contain no source strings or request payloads.
 
 ## Memory ownership
 
@@ -208,7 +215,7 @@ compiled C and JNI export checks require their manifest-backed symbols.
 - Hand-written idiomatic facade and resource management.
 - Generated repetitive models and JNI declarations.
 - Minimal JNI bridge into the stable C ABI.
-- Unchecked exception hierarchy rooted at `KmipKitException`.
+- Unchecked exception hierarchy rooted at `KmipException`.
 - JSpecify nullness annotations.
 - `AutoCloseable` wrappers for library-owned native handles; repeated close calls are safe.
 - JSpecify annotations are exposed as an API dependency so Java consumers compile against the documented nullness contract.
