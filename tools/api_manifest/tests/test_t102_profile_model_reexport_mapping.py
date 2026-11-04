@@ -45,6 +45,48 @@ RESULT_SUFFIXES = (
     "::validate_response_with_context",
     "::validate_transport",
 )
+RESULT_LANGUAGE_NAMES = {
+    "": (
+        "kmipkit_profile_validation_result_t",
+        "org.kmipkit.extensions.ProfileValidationResult",
+        "kmipkit.client.ProfileValidationResult",
+    ),
+    "::profile_ids": (
+        "kmipkit_profile_validation_result_profile_id_count_v1",
+        "org.kmipkit.extensions.ProfileValidationResult.profileIds",
+        "kmipkit.client.ProfileValidationResult.profile_ids",
+    ),
+    "::requirement_ids": (
+        "kmipkit_profile_validation_result_requirement_id_count_v1",
+        "org.kmipkit.extensions.ProfileValidationResult.requirementIds",
+        "kmipkit.client.ProfileValidationResult.requirement_ids",
+    ),
+    "::validate_request": (
+        "kmipkit_profile_validation_result_validate_request_v1",
+        "org.kmipkit.extensions.ProfileValidationResult.validateRequest",
+        "kmipkit.client.ProfileValidationResult.validate_request",
+    ),
+    "::validate_request_with_context": (
+        "kmipkit_profile_validation_result_validate_request_with_context_v1",
+        "org.kmipkit.extensions.ProfileValidationResult.validateRequestWithContext",
+        "kmipkit.client.ProfileValidationResult.validate_request_with_context",
+    ),
+    "::validate_response": (
+        "kmipkit_profile_validation_result_validate_response_v1",
+        "org.kmipkit.extensions.ProfileValidationResult.validateResponse",
+        "kmipkit.client.ProfileValidationResult.validate_response",
+    ),
+    "::validate_response_with_context": (
+        "kmipkit_profile_validation_result_validate_response_with_context_v1",
+        "org.kmipkit.extensions.ProfileValidationResult.validateResponseWithContext",
+        "kmipkit.client.ProfileValidationResult.validate_response_with_context",
+    ),
+    "::validate_transport": (
+        "kmipkit_profile_validation_result_validate_transport_v1",
+        "org.kmipkit.extensions.ProfileValidationResult.validateTransport",
+        "kmipkit.client.ProfileValidationResult.validate_transport",
+    ),
+}
 
 
 class T102ProfileModelReexportMappingTests(unittest.TestCase):
@@ -148,6 +190,18 @@ class T102ProfileModelReexportMappingTests(unittest.TestCase):
                 self.assertEqual(
                     {"rust", "c", "java", "python"},
                     set(row["languageMappings"]),
+                )
+                c_name, java_name, python_name = RESULT_LANGUAGE_NAMES[
+                    export_name.removeprefix(f"{REEXPORT_PACKAGES[package]}::ProfileValidationResult")
+                ]
+                self.assertEqual(
+                    {
+                        "rust": {"packageId": package, "name": export_name},
+                        "c": {"packageId": "c-kmipkit", "name": c_name},
+                        "java": {"packageId": "java-kmipkit", "name": java_name},
+                        "python": {"packageId": "python-kmipkit", "name": python_name},
+                    },
+                    row["languageMappings"],
                 )
                 self.assertEqual(
                     {
