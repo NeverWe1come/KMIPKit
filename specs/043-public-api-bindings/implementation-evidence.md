@@ -10787,3 +10787,5 @@ The Java facade adds 11 public `NativeExtensionRegistry` native methods to reach
 The follow-up Red contract also pins the protocol-owned `ProfileValidationResult` type record and the exact Rust-to-C/Java/Python result facade inventory. Its focused run reports 5 failing tests and 1 passing test: missing foreign declarations/type record, stale `ProfileValidationSelection::validate` mappings, and missing JNI exclusions. These failures precede manifest reconciliation; no production manifest or generated output was edited.
 
 The first live Python adapter check adds an explicit CFFI symbol inventory contract. Red commit `27dfa799f` exposed that `_client_ffi.py` had no `kmipkit_profile_validation_result_t` declaration, so CFFI could not even parse the result pointer type. The focused test fails before calling any native validator; this is a private binding declaration gap, separate from the generated public manifest.
+
+The focused CI job did not yet run the result inventory contract. Its Red check fails on the missing `test_t102_profile_model_reexport_mapping` invocation; the module will be added to the existing targeted Script Contracts command.

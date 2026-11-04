@@ -404,6 +404,16 @@ class T102ProfileModelReexportMappingTests(unittest.TestCase):
                     row["languageMappings"],
                 )
 
+    def test_focused_ci_runs_the_result_inventory_contract(self) -> None:
+        workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn(
+            "$python -B -m unittest "
+            "tools.api_manifest.tests.test_t102_profile_model_reexport_mapping",
+            workflow,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -517,3 +517,5 @@ T102 ProfileValidationResult Java JNI bridge inventory Red (2026-11-04): commit 
 T102 `ProfileValidationResult` Red contract expansion (2026-11-04): adds the exact protocol-owned result type record and closes a test assertion that referred to another test's local variable. The focused result-mapping plus JNI-exclusion run reports 5 expected failing tests and 1 pass before manifest reconciliation. No manifest or generated output was edited.
 
 T102 Python CFFI Red (2026-11-04): the live adapter contract fails because `_client_ffi.py` cannot parse the missing `kmipkit_profile_validation_result_t` CFFI declaration. Add the handle type and all result/resolver symbols before testing native-backed Python calls.
+
+T102 focused CI Red (2026-11-04): the result inventory contract is absent from the Script Contracts job's targeted manifest-test list. Add it to the existing focused unittest invocation with its exit-code guard.
