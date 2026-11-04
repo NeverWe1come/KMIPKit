@@ -2440,12 +2440,8 @@ impl<'a> ClientResponseView<'a> {
     }
 }
 
-fn debug_response<T: fmt::Debug>(
-    formatter: &mut fmt::Formatter<'_>,
-    name: &str,
-    response: &T,
-) -> fmt::Result {
-    formatter.debug_tuple(name).field(response).finish()
+fn debug_response<T>(formatter: &mut fmt::Formatter<'_>, name: &str, _response: &T) -> fmt::Result {
+    formatter.write_str(name)
 }
 
 fn debug_ticket_response(
