@@ -52,6 +52,15 @@ class T102Pkcs11RequestExtensionMappingTests(unittest.TestCase):
         }
 
     def test_opaque_extension_methods_map_to_the_approved_four_language_capability(self) -> None:
+        native_function = next(
+            row
+            for row in self.manifest["functions"]
+            if row["id"] == "client_batch_item_pkcs11_with_extensions_v1"
+        )
+        self.assertEqual(
+            "kmipkit_client_batch_item_pkcs11_with_extensions_v1",
+            native_function["c"]["symbol"],
+        )
         operation = next(
             row
             for row in self.manifest["operations"]
@@ -77,11 +86,16 @@ class T102Pkcs11RequestExtensionMappingTests(unittest.TestCase):
                 )
                 self.assertEqual("four-language", declaration["parityScope"])
                 self.assertEqual(
-                    sibling["languageMappings"],
-                    {
-                        **declaration["languageMappings"],
-                        "rust": sibling["languageMappings"]["rust"],
-                    },
+                    sibling["languageMappings"]["java"],
+                    declaration["languageMappings"]["java"],
+                )
+                self.assertEqual(
+                    sibling["languageMappings"]["python"],
+                    declaration["languageMappings"]["python"],
+                )
+                self.assertEqual(
+                    "kmipkit_client_batch_item_pkcs11_with_extensions_v1",
+                    declaration["languageMappings"]["c"]["name"],
                 )
                 self.assertTrue(
                     PARITY_EVIDENCE.issubset(set(declaration["parityEvidenceIds"]))

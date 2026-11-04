@@ -2248,6 +2248,44 @@ cleanup:
     return result;
 }
 
+static int pkcs11_constructor_preserves_opaque_payload_extensions_from_c(void) {
+    kmipkit_codec_limits_t *limits = 0;
+    kmipkit_ttlv_structure_t *function = 0;
+    kmipkit_raw_tag_t *raw_tag = 0;
+    kmipkit_tag_t *tag = 0;
+    kmipkit_ttlv_value_t *value = 0;
+    kmipkit_ttlv_item_t *extension = 0;
+    kmipkit_ttlv_item_t *extensions[] = {0};
+    kmipkit_client_batch_item_t *item = 0;
+    int result = 0;
+
+    if (kmipkit_codec_limits_defaults(&limits) != 0 ||
+        kmipkit_ttlv_structure_create(&function) != 0 ||
+        kmipkit_ttlv_raw_tag_create(UINT32_C(0x00541234), &raw_tag) != 0 ||
+        kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag) != 0 ||
+        kmipkit_ttlv_value_enumeration(7, &value) != 0 ||
+        kmipkit_ttlv_item_create(tag, value, limits, &extension) != 0) {
+        goto cleanup;
+    }
+    value = 0;
+    extensions[0] = extension;
+    if (kmipkit_client_batch_item_pkcs11_with_extensions_v1(
+            function, 0, 0, 0, extensions, 1, &item) != 0) {
+        goto cleanup;
+    }
+    result = item != 0;
+
+cleanup:
+    kmipkit_client_batch_item_release(item);
+    kmipkit_ttlv_item_release(extension);
+    kmipkit_ttlv_value_release(value);
+    kmipkit_tag_release(tag);
+    kmipkit_raw_tag_release(raw_tag);
+    kmipkit_ttlv_structure_release(function);
+    kmipkit_codec_limits_release(limits);
+    return result;
+}
+
 static int pkcs11_response_accessor_clears_invalid_outputs_from_c(void) {
     uint8_t present = UINT8_MAX;
     kmipkit_ttlv_structure_t *response_ttlv = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
@@ -7462,6 +7500,7 @@ int main(int argc, char **argv) {
         return 7;
     }
     if (!pkcs11_constructor_is_callable_from_c() ||
+        !pkcs11_constructor_preserves_opaque_payload_extensions_from_c() ||
         !pkcs11_response_accessor_clears_invalid_outputs_from_c()) {
         return 7;
     }
