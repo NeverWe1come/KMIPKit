@@ -973,3 +973,13 @@ The eight existing protocol serializer declarations inherit the exact `requireme
 | Re-key Key Pair | `rust-observed-92442b7d3422ffe465c3` `RekeyKeyPairRequest::into_ttlv_payload` | `rust-observed-87194cce123787c123e6` | §6.1.47, Tables 310–312 |
 | Re-Provision | `rust-observed-d1446684e4f2641b3c96` `ReProvisionRequest::into_ttlv_payload` | `rust-observed-6a7230e68170a1e256ae` | §6.1.48, Tables 313–315 |
 | Revoke | `rust-observed-3110caf46cc1e36cbcc9` `RevokeRequest::into_ttlv_payload` | `rust-observed-e132783701cd4df7cbc2` | §6.1.44, Tables 295–297 |
+
+## T102 — KMIPKIT-0037 transfer request serializer mappings
+
+Each existing protocol serializer below inherits the exact requirement IDs and approved owner from its verified same-package constructor and maps to the existing C, Java, and Python operation builders. The executable mapping and source-citation contract is `tools/api_manifest/tests/test_t102_transfer_request_serializer_mapping.py`.
+
+| KMIP operation | Serializer declaration | Constructor anchor | OASIS KMIP v2.1 source |
+|---|---|---|---|
+| Export | `rust-observed-5af367e03728bdd7b565` `ExportRequest::into_ttlv_payload` | `rust-observed-e4656d1822c4f833d1ba` | §6.1.18, Tables 217–219 |
+| Import | `rust-observed-eef9d3b1dc43a901bd90` `ImportRequest::into_ttlv_payload` | `rust-observed-3fb008956f4e09aff689` | §6.1.25, Tables 238–240 |
+| Join Split Key | `rust-observed-1864399564d3d70f4bbb` `JoinSplitKeyRequest::into_ttlv_payload` | `rust-observed-8dd0bcdb27c8ae91a5aa` | §6.1.27, Tables 244–246 |
