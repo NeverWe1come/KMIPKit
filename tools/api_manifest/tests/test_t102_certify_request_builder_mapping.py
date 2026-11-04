@@ -31,6 +31,15 @@ OPERATION_ADDED_EVIDENCE = {
     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
     "tools/api_manifest/tests/test_t102_certify_request_builder_mapping.py",
 }
+RAW_CERTIFY_DECLARATIONS = {
+    "rust-observed-e0a06a71290bee987cc7",
+    "rust-observed-5722377217051635233d",
+}
+RAW_CERTIFY_EVIDENCE = {
+    "bindings/c/tests/client_abi_consumer.c",
+    "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+    "bindings/python/tests/test_certify_operation.py",
+}
 TARGETS = (
     {
         "id": "rust-observed-ff892d7f1e1585911b9c",
@@ -149,13 +158,56 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
         caption = text.index("Table 179: Certify Request Payload")
         header = text.rfind("Request Payload Item REQUIRED Description", 0, caption)
         payload = text[header:caption]
-        for field in ("Unique Identifier", "Certificate Request Type", "Attributes", "Protection Storage Masks"):
+        for field in (
+            "Unique Identifier", "Certificate Request Type", "Certificate Request Value",
+            "Attributes", "Protection Storage Masks",
+        ):
             with self.subTest(field=field):
                 self.assertRegex(payload, rf"{re.escape(field)}\s+No\b")
+        self.assertIn(
+            "It is REQUIRED if the Certificate Request is present.",
+            payload,
+        )
+        self.assertNotRegex(
+            payload,
+            r"Certificate Request Type[^.]*REQUIRED if the Certificate Request Value is absent",
+        )
         self.assertIn("Table 117: Protection Storage Mask", text)
         self.assertIn("Protection Storage Mask Integer", text)
         self.assertEqual("Protection Storage Masks", self.elements["KMIPKIT-ELEM-TAG-42015F"]["name"])
         self.assertEqual("Protection Storage Mask", self.elements["KMIPKIT-ELEM-TAG-42015E"]["name"])
+
+    def test_raw_certify_discriminators_have_direct_three_language_metadata_evidence(self) -> None:
+        self.assertEqual(2, len(RAW_CERTIFY_DECLARATIONS))
+        for declaration_id in RAW_CERTIFY_DECLARATIONS:
+            declaration = self.declarations[declaration_id]
+            self.assertIn("ClientOperation::Certify", declaration["exportName"])
+            self.assertTrue(RAW_CERTIFY_EVIDENCE <= set(declaration["parityEvidenceIds"]))
+
+        manifest_v2 = (ROOT / "tools/api_manifest/tests/test_manifest_v2.py").read_text(encoding="utf-8")
+        certify_builder_block = manifest_v2.split('"Certify": {', 1)[1].split("},", 1)[0]
+        self.assertNotIn("bindings/c/tests/client_abi_consumer.c", certify_builder_block)
+        self.assertNotIn("ClientFacadeTlsIntegrationTest.java", certify_builder_block)
+        self.assertNotIn("bindings/python/tests/test_certify_operation.py", certify_builder_block)
+        for builder_only_path in (
+            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs",
+            "tools/api_manifest/tests/test_t102_certify_request_builder_mapping.py",
+        ):
+            self.assertIn(builder_only_path, certify_builder_block)
+
+    def test_type_without_value_is_exercised_as_an_exact_wire_case_in_all_bindings(self) -> None:
+        sources = {
+            "c": ROOT / "bindings/c/tests/client_abi_consumer.c",
+            "java": ROOT / "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+            "python": ROOT / "bindings/python/tests/test_certify_operation.py",
+        }
+        for language, path in sources.items():
+            text = path.read_text(encoding="utf-8")
+            with self.subTest(language=language):
+                self.assertIn("certify-type-only", text)
+                self.assertIn("420019", text)
+                self.assertIn("420140", text)
 
     def test_non_target_declarations_and_operation_rows_match_snapshot(self) -> None:
         target_ids = {target["id"] for target in TARGETS}
