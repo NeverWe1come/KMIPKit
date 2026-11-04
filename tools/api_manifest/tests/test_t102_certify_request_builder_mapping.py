@@ -103,7 +103,7 @@ TARGETS = (
         "name": "kmipkit_protocol::CertifyRequest::with_certificate_request_value",
         "field": "Certificate Request Value",
         "tag": 0x420140,
-        "fr": {"KMIPKIT-0036-FR-001", "KMIPKIT-0036-FR-002", "KMIPKIT-0036-FR-004", "KMIPKIT-0036-FR-006", "KMIPKIT-0036-FR-008"},
+        "fr": {"KMIPKIT-0036-FR-001", "KMIPKIT-0036-FR-002", "KMIPKIT-0036-FR-004", "KMIPKIT-0036-FR-005", "KMIPKIT-0036-FR-006", "KMIPKIT-0036-FR-008"},
         "requirements": {"KMIPKIT-REQ-SPEC-6.1.6-007"},
     },
 )
