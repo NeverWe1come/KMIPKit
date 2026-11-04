@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import json
 import unittest
 from pathlib import Path
@@ -94,6 +95,26 @@ class T102RngErrorMappingTests(unittest.TestCase):
             parser = self.declarations[("rust-kmipkit-protocol", f"{response_name}::try_from_response_item")]
             self.assertEqual(parser["declarationState"], "blocked")
             self.assertEqual(parser["candidateSpecId"], "KMIPKIT-0043")
+
+    def test_normalized_error_allowlist_rejects_rng_kind_and_missing_owner_requirement(self) -> None:
+        row = copy.deepcopy(
+            self.declarations[("rust-kmipkit-protocol", "kmipkit_protocol::RngRetrieveError")]
+        )
+        row["declarationState"] = "declared"
+        row["mappingSemantics"] = MAPPING_SEMANTICS
+        row["requirementIds"] = sorted(OWNER_REQUIREMENTS | SHARED_REQUIREMENTS)
+        generate._validate_normalized_client_protocol_error_source(row)
+
+        kind = copy.deepcopy(row)
+        kind["exportName"] = "kmipkit_protocol::RngRetrieveError::kind"
+        kind["kind"] = "associated-item"
+        with self.assertRaisesRegex(generate.ManifestError, "approved response error family"):
+            generate._validate_normalized_client_protocol_error_source(kind)
+
+        missing_owner = copy.deepcopy(row)
+        missing_owner["requirementIds"].remove("KMIPKIT-0041-FR-001")
+        with self.assertRaisesRegex(generate.ManifestError, "response owner requirements"):
+            generate._validate_normalized_client_protocol_error_source(missing_owner)
 
 if __name__ == "__main__":
     unittest.main()
