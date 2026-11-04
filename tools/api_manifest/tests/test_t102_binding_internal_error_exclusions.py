@@ -77,7 +77,7 @@ class T102BindingInternalErrorExclusionTests(unittest.TestCase):
                 self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
 
         helper = self.exclusions[("python-kmipkit", "kmipkit.errors.raise_for_status")]
-        self.assertIn("binding-only status helper", helper["reason"])
+        self.assertIn("binding-only adapter plumbing", helper["reason"])
         self.assertIn("test_internal_status_raises_redacted_generic_error", helper["evidence"])
         for requirement_id in (
             "KMIPKIT-0043-FR-009",

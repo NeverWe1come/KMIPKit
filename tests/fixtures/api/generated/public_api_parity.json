@@ -106676,6 +106676,32 @@
       "exportName": "kmipkit.metadata",
       "packageId": "python-kmipkit",
       "reason": "This Python module is a runtime metadata namespace; its callable functions and Version type are inventoried as separate capabilities."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "The observed Java signature is a public String constructor and has no equivalent constructor in the other adapters. This constructor is language-specific construction syntax, not a separate resource-limit capability; library-generated exceptions use their stable mapped category. KMIPKIT-0043-FR-007; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-013; KMIPKIT-0043-FR-021.",
+      "exportName": "org.kmipkit.ResourceLimitException.<init>",
+      "packageId": "java-kmipkit",
+      "reason": "This exact Java exception constructor accepts a caller-supplied String message, while Rust exposes a fieldless RuntimeMetadataError::ResourceLimit, C returns a stable numeric status, and Python exposes a fixed category message; the exception type itself remains mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "Exact export `kmipkit.errors.raise_for_status` is exercised by `bindings/python/tests/test_metadata.py::test_internal_status_raises_redacted_generic_error`; it raises the fixed generic category for internal status and is called by the adapter implementation. The exception categories remain independently mapped. KMIPKIT-0043-FR-009; KMIPKIT-0043-FR-013; KMIPKIT-0043-FR-021.",
+      "exportName": "kmipkit.errors.raise_for_status",
+      "packageId": "python-kmipkit",
+      "reason": "This Python helper translates stable C ABI status values into the mapped Python exception categories; it is binding-only adapter plumbing, not a separate user-facing KMIP capability."
     }
   ],
   "capabilities": [

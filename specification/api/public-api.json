@@ -60042,20 +60042,6 @@
       }
     },
     {
-      "declarationId": "python-raise-for-status",
-      "packageId": "python-kmipkit",
-      "kind": "function",
-      "exportName": "kmipkit.errors.raise_for_status",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This public helper has no explicit approved owner mapping in the current API inventory."
-    },
-    {
       "declarationId": "python-with-extension-qualified",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -66390,20 +66376,6 @@
           "name": "kmipkit.errors.ResourceLimitError"
         }
       }
-    },
-    {
-      "declarationId": "java-observed-9bf448034b1ac2d81933",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.ResourceLimitException.<init>",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
     },
     {
       "declarationId": "java-observed-412494d8a6b28a86f44a",
@@ -465380,6 +465352,32 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "The exact Python module contains independently mapped `get_version`, `capability_is_available`, and `get_api_levels` declarations and the mapped `Version` type. This exclusion does not remove or narrow any callable capability. KMIPKIT-0043-FR-007; KMIPKIT-0043-FR-021."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "candidateSpecId": "KMIPKIT-0043",
+      "exportName": "org.kmipkit.ResourceLimitException.<init>",
+      "reason": "This exact Java exception constructor accepts a caller-supplied String message, while Rust exposes a fieldless RuntimeMetadataError::ResourceLimit, C returns a stable numeric status, and Python exposes a fixed category message; the exception type itself remains mapped.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "The observed Java signature is a public String constructor and has no equivalent constructor in the other adapters. This constructor is language-specific construction syntax, not a separate resource-limit capability; library-generated exceptions use their stable mapped category. KMIPKIT-0043-FR-007; KMIPKIT-0043-FR-010; KMIPKIT-0043-FR-013; KMIPKIT-0043-FR-021."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "candidateSpecId": "KMIPKIT-0043",
+      "exportName": "kmipkit.errors.raise_for_status",
+      "reason": "This Python helper translates stable C ABI status values into the mapped Python exception categories; it is binding-only adapter plumbing, not a separate user-facing KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Exact export `kmipkit.errors.raise_for_status` is exercised by `bindings/python/tests/test_metadata.py::test_internal_status_raises_redacted_generic_error`; it raises the fixed generic category for internal status and is called by the adapter implementation. The exception categories remain independently mapped. KMIPKIT-0043-FR-009; KMIPKIT-0043-FR-013; KMIPKIT-0043-FR-021."
     }
   ],
   "apiLevels": [
