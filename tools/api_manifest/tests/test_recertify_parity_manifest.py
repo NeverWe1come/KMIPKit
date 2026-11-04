@@ -18,11 +18,31 @@ LANGUAGES = {"rust", "c", "java", "python"}
 OWNER_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-6.1.45-001",
     "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-    "KMIPKIT-REQ-SPEC-6.1.45-002-002",
+    "KMIPKIT-REQ-SPEC-6.1.45-002-003",
     "KMIPKIT-REQ-SPEC-6.1.45-004",
     "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-    "KMIPKIT-REQ-SPEC-6.1.45-006-002",
     "KMIPKIT-REQ-SPEC-6.1.45-008",
+}
+RETIRED_REQUIREMENTS = {
+    "KMIPKIT-REQ-SPEC-6.1.45-002-002",
+    "KMIPKIT-REQ-SPEC-6.1.45-006-002",
+}
+REQUEST_REQUIREMENT_DECLARATIONS = {
+    "rust-observed-d229a05b8f66624a27fb",  # kmipkit::Client::recertify
+    "rust-observed-2e966e0f7d4d9d9debcd",  # kmipkit::Client::recertify_with_options
+    "rust-observed-2e85d64836128fdd1bb6",  # kmipkit::ClientRequest::Recertify
+    "rust-observed-d5527a5f01b746b4daa2",  # kmipkit::ClientRequest::Recertify payload
+    "rust-observed-f12ee8b89c80c88461c7",  # kmipkit::ClientRequest::recertify
+    "rust-observed-06ead91548184c12fd56",  # kmipkit_client::Client::recertify
+    "rust-observed-96cbaa2e43262aca95ac",  # kmipkit_client::Client::recertify_with_options
+    "rust-observed-0d0bac2451886e74583a",  # kmipkit_client::ClientRequest::Recertify
+    "rust-observed-5dd12d4ecfe06212aa42",  # kmipkit_client::ClientRequest::Recertify payload
+    "rust-observed-ef05c2a46dbe1a74a5c5",  # kmipkit_client::ClientRequest::recertify
+    "rust-observed-12bf8df7cd387813c576",  # RecertifyRequest
+    "rust-observed-3b7ec1d8b422ce2f856a",  # RecertifyRequest::with_unique_identifier
+    "T058:recertify:constructor:c",
+    "T058:recertify:constructor:java",
+    "T058:recertify:constructor:python",
 }
 API_REQUIREMENTS = {
     f"KMIPKIT-0043-FR-{index:03}"
@@ -120,6 +140,37 @@ class RecertifyParityManifestTests(unittest.TestCase):
         }
         self.assertEqual({}, missing)
         self.assertTrue(OWNER_REQUIREMENTS | API_REQUIREMENTS <= linked_requirements)
+        self.assertFalse(RETIRED_REQUIREMENTS & linked_requirements)
+
+    def test_conditional_identifier_requirement_is_request_only_and_retired_ids_are_unassigned(self) -> None:
+        active = "KMIPKIT-REQ-SPEC-6.1.45-002-003"
+        self.assertIn(active, self.manifest["requirementIds"])
+        self.assertTrue(RETIRED_REQUIREMENTS <= set(self.manifest["requirementIds"]))
+
+        operation_declarations = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("capabilityId") == OPERATION_ID
+        ]
+        active_declarations = {
+            row["declarationId"] for row in operation_declarations
+            if active in row.get("requirementIds", [])
+        }
+        self.assertEqual(REQUEST_REQUIREMENT_DECLARATIONS, active_declarations)
+        self.assertFalse(any(RETIRED_REQUIREMENTS & set(row.get("requirementIds", []))
+                             for row in operation_declarations))
+
+        functions = {
+            row["id"]: row for row in self.manifest["functions"]
+            if row["id"].startswith("client_batch_item_")
+            and "recertify" in row["id"]
+        }
+        self.assertEqual(
+            {"client_batch_item_recertify"},
+            {function_id for function_id, row in functions.items()
+             if active in row.get("requirementIds", [])},
+        )
+        self.assertFalse(any(RETIRED_REQUIREMENTS & set(row.get("requirementIds", []))
+                             for row in functions.values()))
 
     def test_recertify_jni_bridge_is_an_exact_approved_exclusion(self) -> None:
         bridge_names = {
