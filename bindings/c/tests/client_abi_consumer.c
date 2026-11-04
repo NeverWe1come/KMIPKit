@@ -2132,7 +2132,7 @@ cleanup:
     kmipkit_ttlv_item_release(object);
     kmipkit_ttlv_value_release(object_value);
     kmipkit_tag_release(tag);
-    kmipkit_ttlv_raw_tag_release(raw_tag);
+    kmipkit_raw_tag_release(raw_tag);
     kmipkit_ttlv_structure_release(object_fields);
     kmipkit_ttlv_structure_release(masks);
     kmipkit_ttlv_structure_release(attributes);
