@@ -307,6 +307,40 @@ class T102ProfileModelReexportMappingTests(unittest.TestCase):
                 self.assertNotIn("candidateSpecId", row)
                 self.assertNotIn("blockedReason", row)
 
+    def test_selection_validate_maps_to_the_resolver_not_the_selection_type(self) -> None:
+        declarations = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.manifest["publicDeclarations"]
+        }
+        packages = {
+            **REEXPORT_PACKAGES,
+            "rust-kmipkit-client": CLIENT_CRATE,
+        }
+        for package, crate in packages.items():
+            export_name = f"{crate}::ProfileValidationSelection::validate"
+            row = declarations[(package, export_name)]
+            with self.subTest(package=package):
+                self.assertEqual("client_profile_validation", row["capabilityId"])
+                self.assertEqual("declared", row["declarationState"])
+                self.assertEqual(
+                    {
+                        "rust": {"packageId": package, "name": export_name},
+                        "c": {
+                            "packageId": "c-kmipkit",
+                            "name": "kmipkit_profile_validation_selection_validate_v1",
+                        },
+                        "java": {
+                            "packageId": "java-kmipkit",
+                            "name": "org.kmipkit.extensions.ProfileValidationSelection.validate",
+                        },
+                        "python": {
+                            "packageId": "python-kmipkit",
+                            "name": "kmipkit.client.ProfileValidationSelection.validate",
+                        },
+                    },
+                    row["languageMappings"],
+                )
+
 
 if __name__ == "__main__":
     unittest.main()
