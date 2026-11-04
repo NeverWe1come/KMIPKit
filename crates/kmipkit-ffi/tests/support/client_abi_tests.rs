@@ -1043,7 +1043,7 @@ fn ffi_rng_response_c_consumer_rejects_overlapping_output_regions() {
 }
 
 #[test]
-fn ffi_rng_response_c_consumer_hides_failure_and_pending_success_fields() {
+fn ffi_rng_response_c_consumer_hides_failures_and_exposes_pending_typed_responses() {
     let failure_retrieve = failed_cryptographic_item(
         ClientRequest::RngRetrieve(RngRetrieveRequest::new(-17)),
         0x25,
@@ -1073,16 +1073,20 @@ fn ffi_rng_response_c_consumer_hides_failure_and_pending_success_fields() {
     let pending_retrieve = client_batch_item_response_from(pending_retrieve_response);
     let pending_seed = client_batch_item_response_from(pending_seed_response);
 
-    for item in [
-        failure_retrieve,
-        pending_retrieve,
-        failure_seed,
-        pending_seed,
-    ] {
-        // SAFETY: the compiled C consumer receives a live response handle and only checks that
-        // failure/Pending calls return empty success-only output records.
+    for item in [failure_retrieve, failure_seed] {
+        // SAFETY: the compiled C consumer receives a live response handle and checks that failed
+        // operation results do not expose success response fields or a typed response body.
         assert_eq!(1, unsafe {
             kmipkit_client_abi_c_consumer_validates_absent_rng_success_fields(item)
+        });
+        kmipkit_client_batch_item_response_release(item);
+    }
+
+    for (item, operation) in [(pending_retrieve, 0x25), (pending_seed, 0x26)] {
+        // SAFETY: the compiled C consumer receives a live Pending response handle and verifies
+        // the typed response is present while success-only fields stay absent.
+        assert_eq!(1, unsafe {
+            kmipkit_client_abi_c_consumer_validates_pending_rng_response(item, operation)
         });
         kmipkit_client_batch_item_response_release(item);
     }
@@ -6276,6 +6280,10 @@ unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_validate_rng_seed_response(
         item: *mut kmipkit_client_batch_item_response_t,
         expected_data_length: i32,
+    ) -> i32;
+    fn kmipkit_client_abi_c_consumer_validates_pending_rng_response(
+        item: *mut kmipkit_client_batch_item_response_t,
+        operation: u32,
     ) -> i32;
     fn kmipkit_client_abi_c_consumer_rejects_rng_output_aliases(
         item: *mut kmipkit_client_batch_item_response_t,

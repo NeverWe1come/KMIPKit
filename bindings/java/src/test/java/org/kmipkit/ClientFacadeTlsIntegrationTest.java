@@ -3973,7 +3973,7 @@ final class ClientFacadeTlsIntegrationTest {
     }
 
     @Test
-    void rngFailureAndPendingResponsesCrossNativeJniBridgeWithoutTypedValues() throws Exception {
+    void rngFailureAndPendingResponsesCrossNativeJniBridgeWithPendingTypedValues() throws Exception {
         byte[] serverCertificatePem = testFixture("server-cert.pem");
         byte[] serverPrivateKeyPem = testFixture("server-key.pem");
         byte[] clientCertificatePem = testFixture("client-cert.pem");
@@ -4036,7 +4036,10 @@ final class ClientFacadeTlsIntegrationTest {
                 assertTrue(retrievePending.outcomeKind().isPending());
                 assertArrayEquals(CORRELATION,
                         retrievePending.pendingCorrelationValue().orElseThrow());
-                assertTrue(retrievePending.rngRetrieveResponse().isEmpty());
+                try (var typed = retrievePending.rngRetrieveResponse().orElseThrow()) {
+                    assertTrue(typed.data().isEmpty());
+                    assertTrue(typed.responseTtlv().isPresent());
+                }
 
                 assertEquals(0x26, seedFailure.operation());
                 assertEquals(1, seedFailure.resultStatus());
@@ -4048,7 +4051,10 @@ final class ClientFacadeTlsIntegrationTest {
                 assertEquals(2, seedPending.resultStatus());
                 assertTrue(seedPending.outcomeKind().isPending());
                 assertArrayEquals(CORRELATION, seedPending.pendingCorrelationValue().orElseThrow());
-                assertTrue(seedPending.rngSeedResponse().isEmpty());
+                try (var typed = seedPending.rngSeedResponse().orElseThrow()) {
+                    assertTrue(typed.dataLength().isEmpty());
+                    assertTrue(typed.responseTtlv().isPresent());
+                }
             }
             assertTrue(peer.get(12, TimeUnit.SECONDS).length > 0);
         } finally {

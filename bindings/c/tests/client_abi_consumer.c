@@ -824,6 +824,43 @@ int kmipkit_client_abi_c_consumer_validates_absent_rng_success_fields(
     return 1;
 }
 
+int kmipkit_client_abi_c_consumer_validates_pending_rng_response(
+    kmipkit_client_batch_item_response_t *item,
+    uint32_t operation) {
+    uint8_t present = 0;
+    uint8_t field_present = 0;
+    uint8_t ttlv_present = 0;
+    int32_t data_length = 0;
+    kmipkit_byte_span_v1_t data = {0};
+    kmipkit_ttlv_structure_t *response_ttlv = 0;
+    int status = 0;
+
+    if (item == 0) return 0;
+    if (operation == UINT32_C(0x25)) {
+        status = kmipkit_client_batch_item_response_rng_retrieve(
+            item, &present, &field_present, &data);
+        if (status != 0 || present != 1 || field_present != 0 ||
+            data.data != 0 || data.length != 0) return 0;
+        status = kmipkit_client_batch_item_response_rng_retrieve_ttlv(
+            item, &ttlv_present, &response_ttlv);
+    } else if (operation == UINT32_C(0x26)) {
+        status = kmipkit_client_batch_item_response_rng_seed(
+            item, &present, &field_present, &data_length);
+        if (status != 0 || present != 1 || field_present != 0 || data_length != 0) return 0;
+        status = kmipkit_client_batch_item_response_rng_seed_ttlv(
+            item, &ttlv_present, &response_ttlv);
+    } else {
+        return 0;
+    }
+
+    if (status != 0 || ttlv_present != 1 || response_ttlv == 0) {
+        kmipkit_ttlv_structure_release(response_ttlv);
+        return 0;
+    }
+    kmipkit_ttlv_structure_release(response_ttlv);
+    return 1;
+}
+
 static int rekey_key_pair_constructor_is_callable_from_c(void) {
     static const uint8_t identifier_bytes[] = "existing-private-key";
     kmipkit_unique_identifier_v1_t identifier = {0};

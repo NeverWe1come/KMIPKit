@@ -9,12 +9,14 @@ import struct
 import threading
 from pathlib import Path
 
+import pytest
+
 from _test_support import (
     mtls_transport_config,
     read_ttlv_frame,
     require_tls13_mtls_peer,
 )
-from kmipkit import client, extensions, ttlv
+from kmipkit import client, errors, extensions, ttlv
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
 _BATCH_IDS = (b"item-0", b"item-1")
@@ -255,7 +257,7 @@ def test_rng_operations_cross_native_cffi_over_mutual_tls() -> None:
             raise peer_failures.get()
 
 
-def test_rng_failure_and_pending_cross_native_cffi_without_success_values() -> None:
+def test_rng_failure_and_pending_cross_native_cffi_with_pending_typed_responses() -> None:
     port, received_requests, peer_failures, peer, listener = _start_mtls_peer(
         _rng_failure_pending_response_message()
     )
@@ -264,6 +266,8 @@ def test_rng_failure_and_pending_cross_native_cffi_without_success_values() -> N
     )
     configuration = extensions.create_client_configuration(registry)
     batch_result: client.BatchResult | None = None
+    retrieve_pending_response: client.RngRetrieveResponse | None = None
+    seed_pending_response: client.RngSeedResponse | None = None
     try:
         with configuration, client.Client.create(configuration, _transport(port)) as kmip_client:
             batch = client.Batch.create()
@@ -292,14 +296,25 @@ def test_rng_failure_and_pending_cross_native_cffi_without_success_values() -> N
         assert retrieve_failure.rng_retrieve_response() is None
         assert retrieve_pending.operation == 0x25 and retrieve_pending.result_status == 2
         assert retrieve_pending.pending_correlation_value == _CORRELATION
-        assert retrieve_pending.rng_retrieve_response() is None
+        retrieve_pending_response = retrieve_pending.rng_retrieve_response()
+        assert retrieve_pending_response is not None
+        with pytest.raises(errors.InvalidInputError):
+            _ = retrieve_pending_response.data
+        assert not retrieve_pending_response.response_ttlv.closed
         assert seed_failure.operation == 0x26 and seed_failure.result_status == 1
         assert seed_failure.result_reason == 5
         assert seed_failure.rng_seed_response() is None
         assert seed_pending.operation == 0x26 and seed_pending.result_status == 2
         assert seed_pending.pending_correlation_value == _CORRELATION
-        assert seed_pending.rng_seed_response() is None
+        seed_pending_response = seed_pending.rng_seed_response()
+        assert seed_pending_response is not None
+        assert seed_pending_response.data_length is None
+        assert not seed_pending_response.response_ttlv.closed
     finally:
+        if retrieve_pending_response is not None:
+            retrieve_pending_response.close()
+        if seed_pending_response is not None:
+            seed_pending_response.close()
         if batch_result is not None:
             batch_result.close()
         listener.close()
