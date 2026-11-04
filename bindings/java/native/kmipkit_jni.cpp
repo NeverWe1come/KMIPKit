@@ -2753,6 +2753,41 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemPkcs11WithExtensions(
+        JNIEnv* env, jclass, jlong raw_function, jlong raw_interface,
+        jbyteArray raw_correlation_value, jlong raw_input_parameters,
+        jlongArray raw_payload_extensions) {
+    return guarded<jlong>(env, 0, [&] {
+        if (raw_payload_extensions == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        std::vector<uint8_t> correlation_value;
+        kmipkit::secure::VectorWiper correlation_value_wiper(correlation_value);
+        bool correlation_present = false;
+        if (!read_optional_java_bytes(
+                    env, raw_correlation_value, correlation_value, &correlation_present)) {
+            return static_cast<jlong>(0);
+        }
+        std::vector<kmipkit_ttlv_item_t*> payload_extensions;
+        if (!read_handle_array(env, raw_payload_extensions, payload_extensions)) {
+            return static_cast<jlong>(0);
+        }
+        const kmipkit_byte_span_v1_t correlation_span = byte_span(correlation_value);
+        const kmipkit_byte_span_v1_t* correlation_pointer =
+                correlation_present ? &correlation_span : nullptr;
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_pkcs11_with_extensions_v1(
+                    from_java_handle<kmipkit_ttlv_structure_t>(raw_function),
+                    from_java_handle<kmipkit_ttlv_structure_t>(raw_interface),
+                    correlation_pointer,
+                    from_java_handle<kmipkit_ttlv_structure_t>(raw_input_parameters),
+                    payload_extensions.empty() ? nullptr : payload_extensions.data(),
+                    static_cast<uint64_t>(payload_extensions.size()), output);
+        });
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemQuery(
         JNIEnv* env, jclass, jintArray raw_functions, jobjectArray raw_object_groups) {
     return guarded<jlong>(env, 0, [&] {

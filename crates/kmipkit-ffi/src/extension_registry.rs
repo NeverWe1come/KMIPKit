@@ -4338,11 +4338,7 @@ pub unsafe extern "C" fn kmipkit_client_batch_item_pkcs11_with_extensions_v1(
 ) -> i32 {
     ffi_entrypoint(|| {
         if out_item.is_null()
-            || validate_input_overlaps_output(
-                out_item,
-                payload_extensions,
-                payload_extension_count,
-            )
+            || validate_input_overlaps_output(out_item, payload_extensions, payload_extension_count)
         {
             return record_ffi_error(ERROR_INVALID_INPUT);
         }

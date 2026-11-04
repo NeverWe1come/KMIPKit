@@ -332,6 +332,9 @@ public final class NativeExtensionRegistry {
     public static native long clientBatchItemInterop(long interopFunction, byte[] interopIdentifier);
     public static native long clientBatchItemPkcs11(
             long function, long interfaceStructure, byte[] correlationValue, long inputParameters);
+    public static native long clientBatchItemPkcs11WithExtensions(
+            long function, long interfaceStructure, byte[] correlationValue, long inputParameters,
+            long[] payloadExtensions);
     public static native long clientBatchItemLog(byte[] logMessage);
     public static native long clientBatchItemValidate(long[] certificates,
             int[] identifierKinds, byte[][] identifierTexts, long[] identifierNumbers,

@@ -106895,6 +106895,239 @@
       "exportName": "kmipkit.errors.ProfileValidationError.category",
       "packageId": "python-kmipkit",
       "reason": "This exact string identifies the exception subclass within the local Python error taxonomy. It is not an independent KMIP capability; the typed profile error and safe detail fields define the cross-language data."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "Reviewed against KMIPKIT-0010-FR-001, KMIPKIT-0010-FR-002, KMIPKIT-0010-FR-008, KMIPKIT-0043-FR-010, and KMIPKIT-0043-FR-021. The 44 child declarations under this module remain individually inventoried and mapped in all four languages under client_profile_readiness. The generated Rust module name is a namespace boundary only; the foreign bindings expose the profile catalog and readiness APIs without a corresponding module container. This exclusion removes only the Rust namespace container.",
+      "exportName": "kmipkit_protocol::profiles_generated",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust module is a namespace container rather than an independent callable or data capability. Its 44 generated profile declarations remain inventoried individually under the client_profile_readiness capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (PR #70 merged into `release/1.0.0` on 2026-10-09; merge commit `be5c73c2198daab4b6877dc319f728f927399feb`)",
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "T102 reviewed exact declaration rust-observed-105154cf933c88d0097a (kmipkit_protocol::CryptographicOperationResponseContext). OASIS KMIP 2.1 Section 6.1.24, Tables 235-237; Section 6.1.32, Tables 259-261; Section 6.1.33, Tables 262-264; Section 6.1.55, Tables 334-336; and Section 6.1.56, Tables 337-339. The client derives this local framing context from each typed request; foreign callers receive the corresponding typed operation results and shared batch metadata. This exclusion does not resolve KMIPKIT-DISC-048; final multipart Validity Indicator handling remains open. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022. Evidence test: tools/api_manifest/tests/test_t102_response_context_exclusions.py.",
+      "exportName": "kmipkit_protocol::CryptographicOperationResponseContext",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This Rust response-framing context type or variant is an internal adapter value. The five cryptographic operation results and shared correlation/framing behavior are represented by equivalent typed results and batch metadata in Rust, C, Java, and Python."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (PR #70 merged into `release/1.0.0` on 2026-10-09; merge commit `be5c73c2198daab4b6877dc319f728f927399feb`)",
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "T102 reviewed exact declaration rust-observed-d61e7db174296bffc941 (kmipkit_protocol::CryptographicOperationResponseContext::SinglePart). OASIS KMIP 2.1 Section 6.1.24, Tables 235-237; Section 6.1.32, Tables 259-261; Section 6.1.33, Tables 262-264; Section 6.1.55, Tables 334-336; and Section 6.1.56, Tables 337-339. The client derives this local framing context from each typed request; foreign callers receive the corresponding typed operation results and shared batch metadata. This exclusion does not resolve KMIPKIT-DISC-048; final multipart Validity Indicator handling remains open. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022. Evidence test: tools/api_manifest/tests/test_t102_response_context_exclusions.py.",
+      "exportName": "kmipkit_protocol::CryptographicOperationResponseContext::SinglePart",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This Rust response-framing context type or variant is an internal adapter value. The five cryptographic operation results and shared correlation/framing behavior are represented by equivalent typed results and batch metadata in Rust, C, Java, and Python."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (PR #70 merged into `release/1.0.0` on 2026-10-09; merge commit `be5c73c2198daab4b6877dc319f728f927399feb`)",
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "T102 reviewed exact declaration rust-observed-c7f9909f0622669a2532 (kmipkit_protocol::CryptographicOperationResponseContext::MultipartNonFinal). OASIS KMIP 2.1 Section 6.1.24, Tables 235-237; Section 6.1.32, Tables 259-261; Section 6.1.33, Tables 262-264; Section 6.1.55, Tables 334-336; and Section 6.1.56, Tables 337-339. The client derives this local framing context from each typed request; foreign callers receive the corresponding typed operation results and shared batch metadata. This exclusion does not resolve KMIPKIT-DISC-048; final multipart Validity Indicator handling remains open. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022. Evidence test: tools/api_manifest/tests/test_t102_response_context_exclusions.py.",
+      "exportName": "kmipkit_protocol::CryptographicOperationResponseContext::MultipartNonFinal",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This Rust response-framing context type or variant is an internal adapter value. The five cryptographic operation results and shared correlation/framing behavior are represented by equivalent typed results and batch metadata in Rust, C, Java, and Python."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (PR #70 merged into `release/1.0.0` on 2026-10-09; merge commit `be5c73c2198daab4b6877dc319f728f927399feb`)",
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "T102 reviewed exact declaration rust-observed-4733cafd49358dd11b06 (kmipkit_protocol::CryptographicOperationResponseContext::MultipartFinal). OASIS KMIP 2.1 Section 6.1.24, Tables 235-237; Section 6.1.32, Tables 259-261; Section 6.1.33, Tables 262-264; Section 6.1.55, Tables 334-336; and Section 6.1.56, Tables 337-339. The client derives this local framing context from each typed request; foreign callers receive the corresponding typed operation results and shared batch metadata. This exclusion does not resolve KMIPKIT-DISC-048; final multipart Validity Indicator handling remains open. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022. Evidence test: tools/api_manifest/tests/test_t102_response_context_exclusions.py.",
+      "exportName": "kmipkit_protocol::CryptographicOperationResponseContext::MultipartFinal",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This Rust response-framing context type or variant is an internal adapter value. The five cryptographic operation results and shared correlation/framing behavior are represented by equivalent typed results and batch metadata in Rust, C, Java, and Python."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (PR #70 merged into `release/1.0.0` on 2026-10-09; merge commit `be5c73c2198daab4b6877dc319f728f927399feb`)",
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "T102 reviewed exact declaration rust-observed-cea44457a95c424fbf76 (kmipkit_protocol::VerificationResponseContext). OASIS KMIP 2.1 Section 6.1.24, Tables 235-237; Section 6.1.32, Tables 259-261; Section 6.1.33, Tables 262-264; Section 6.1.55, Tables 334-336; and Section 6.1.56, Tables 337-339. The client derives this local framing context from each typed request; foreign callers receive the corresponding typed operation results and shared batch metadata. This exclusion does not resolve KMIPKIT-DISC-048; final multipart Validity Indicator handling remains open. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022. Evidence test: tools/api_manifest/tests/test_t102_response_context_exclusions.py.",
+      "exportName": "kmipkit_protocol::VerificationResponseContext",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This Rust response-framing context type or variant is an internal adapter value. The five cryptographic operation results and shared correlation/framing behavior are represented by equivalent typed results and batch metadata in Rust, C, Java, and Python."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (PR #70 merged into `release/1.0.0` on 2026-10-09; merge commit `be5c73c2198daab4b6877dc319f728f927399feb`)",
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "T102 reviewed exact declaration rust-observed-4978456989659fff3b83 (kmipkit_protocol::VerificationResponseContext::MultipartFinal). OASIS KMIP 2.1 Section 6.1.24, Tables 235-237; Section 6.1.32, Tables 259-261; Section 6.1.33, Tables 262-264; Section 6.1.55, Tables 334-336; and Section 6.1.56, Tables 337-339. The client derives this local framing context from each typed request; foreign callers receive the corresponding typed operation results and shared batch metadata. This exclusion does not resolve KMIPKIT-DISC-048; final multipart Validity Indicator handling remains open. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022. Evidence test: tools/api_manifest/tests/test_t102_response_context_exclusions.py.",
+      "exportName": "kmipkit_protocol::VerificationResponseContext::MultipartFinal",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This Rust response-framing context type or variant is an internal adapter value. The five cryptographic operation results and shared correlation/framing behavior are represented by equivalent typed results and batch metadata in Rust, C, Java, and Python."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (PR #70 merged into `release/1.0.0` on 2026-10-09; merge commit `be5c73c2198daab4b6877dc319f728f927399feb`)",
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "T102 reviewed exact declaration rust-observed-523db7d4167b1d768b5b (kmipkit_protocol::VerificationResponseContext::MultipartNonFinal). OASIS KMIP 2.1 Section 6.1.24, Tables 235-237; Section 6.1.32, Tables 259-261; Section 6.1.33, Tables 262-264; Section 6.1.55, Tables 334-336; and Section 6.1.56, Tables 337-339. The client derives this local framing context from each typed request; foreign callers receive the corresponding typed operation results and shared batch metadata. This exclusion does not resolve KMIPKIT-DISC-048; final multipart Validity Indicator handling remains open. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022. Evidence test: tools/api_manifest/tests/test_t102_response_context_exclusions.py.",
+      "exportName": "kmipkit_protocol::VerificationResponseContext::MultipartNonFinal",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This Rust response-framing context type or variant is an internal adapter value. The five cryptographic operation results and shared correlation/framing behavior are represented by equivalent typed results and batch metadata in Rust, C, Java, and Python."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (PR #70 merged into `release/1.0.0` on 2026-10-09; merge commit `be5c73c2198daab4b6877dc319f728f927399feb`)",
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "T102 reviewed exact declaration rust-observed-fea788ac7ff4e43be1be (kmipkit_protocol::VerificationResponseContext::SinglePart). OASIS KMIP 2.1 Section 6.1.24, Tables 235-237; Section 6.1.32, Tables 259-261; Section 6.1.33, Tables 262-264; Section 6.1.55, Tables 334-336; and Section 6.1.56, Tables 337-339. The client derives this local framing context from each typed request; foreign callers receive the corresponding typed operation results and shared batch metadata. This exclusion does not resolve KMIPKIT-DISC-048; final multipart Validity Indicator handling remains open. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0021-FR-008, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022. Evidence test: tools/api_manifest/tests/test_t102_response_context_exclusions.py.",
+      "exportName": "kmipkit_protocol::VerificationResponseContext::SinglePart",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This Rust response-framing context type or variant is an internal adapter value. The five cryptographic operation results and shared correlation/framing behavior are represented by equivalent typed results and batch metadata in Rust, C, Java, and Python."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Status: Accepted",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0006-public-api-and-bindings.md",
+        "status": "Accepted"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "T102 reviewed exact declaration rust-observed-5c3085bfc5d5023a37fa (kmipkit_client::ClientBatchItem::request) against specs/006-message-batch-model/spec.md and ADR-0006. The accessor reads the typed request already held by the batch item; foreign clients create and submit that request through typed constructors. ADR-0006 defines opaque handles as the C facade boundary, so request internals do not become a separate facade capability. OASIS KMIP 2.1 Sections 8.1-8.3, Tables 394-396, specify message and batch-item structure; this accessor adds no wire behavior. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Evidence test: tools/api_manifest/tests/test_t102_opaque_request_helper_exclusions.py.",
+      "exportName": "kmipkit_client::ClientBatchItem::request",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust-only helper falls within the accepted opaque-handle boundary. The accessor reads the typed request already held by the batch item; foreign clients create and submit that request through typed constructors. ADR-0006 defines opaque handles as the C facade boundary, so request internals do not become a separate facade capability. OASIS KMIP 2.1 Sections 8.1-8.3, Tables 394-396, specify message and batch-item structure; this accessor adds no wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Status: Accepted",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0006-public-api-and-bindings.md",
+        "status": "Accepted"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "T102 reviewed exact declaration rust-observed-ba435cff9cb4abd90525 (kmipkit::ClientBatchItem::request) against specs/006-message-batch-model/spec.md and ADR-0006. The root-crate accessor aliases the same typed request readback helper. Foreign clients create and submit requests through typed constructors; ADR-0006 defines opaque handles as the C facade boundary. OASIS KMIP 2.1 Sections 8.1-8.3, Tables 394-396, specify message and batch-item structure; this accessor adds no wire behavior. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Evidence test: tools/api_manifest/tests/test_t102_opaque_request_helper_exclusions.py.",
+      "exportName": "kmipkit::ClientBatchItem::request",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust-only helper falls within the accepted opaque-handle boundary. The root-crate accessor aliases the same typed request readback helper. Foreign clients create and submit requests through typed constructors; ADR-0006 defines opaque handles as the C facade boundary. OASIS KMIP 2.1 Sections 8.1-8.3, Tables 394-396, specify message and batch-item structure; this accessor adds no wire behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Status: Accepted",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0006-public-api-and-bindings.md",
+        "status": "Accepted"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "T102 reviewed exact declaration rust-observed-92db6c972143c59934bc (kmipkit_protocol::RegisterRequest::attributes) against specs/022-object-lifecycle/spec.md and ADR-0006. This getter reads the ordered Attributes supplied to RegisterRequest::new. Foreign wrappers consume caller-owned TTLV inputs through RegisterRequest.create, and the opaque handle remains the accepted boundary. OASIS KMIP 2.1 Section 6.1.43, Tables 291-293, defines Register request fields; no getter changes the request capability. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Evidence test: tools/api_manifest/tests/test_t102_opaque_request_helper_exclusions.py.",
+      "exportName": "kmipkit_protocol::RegisterRequest::attributes",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust-only helper falls within the accepted opaque-handle boundary. This getter reads the ordered Attributes supplied to RegisterRequest::new. Foreign wrappers consume caller-owned TTLV inputs through RegisterRequest.create, and the opaque handle remains the accepted boundary. OASIS KMIP 2.1 Section 6.1.43, Tables 291-293, defines Register request fields; no getter changes the request capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Status: Accepted",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0006-public-api-and-bindings.md",
+        "status": "Accepted"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "T102 reviewed exact declaration rust-observed-7be9f190a261dc18fcc6 (kmipkit_protocol::RegisterRequest::into_ttlv_payload) against specs/022-object-lifecycle/spec.md and ADR-0006. This helper serializes a typed Register payload for direct inspection. Foreign wrappers submit the same typed request through client_batch_item_register and retain generic TTLV construction; the opaque handle does not expose an independent payload serializer. OASIS KMIP 2.1 Section 6.1.43, Table 291, defines the wire payload represented by the existing operation. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Evidence test: tools/api_manifest/tests/test_t102_opaque_request_helper_exclusions.py.",
+      "exportName": "kmipkit_protocol::RegisterRequest::into_ttlv_payload",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust-only helper falls within the accepted opaque-handle boundary. This helper serializes a typed Register payload for direct inspection. Foreign wrappers submit the same typed request through client_batch_item_register and retain generic TTLV construction; the opaque handle does not expose an independent payload serializer. OASIS KMIP 2.1 Section 6.1.43, Table 291, defines the wire payload represented by the existing operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Status: Accepted",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0006-public-api-and-bindings.md",
+        "status": "Accepted"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "T102 reviewed exact declaration rust-observed-aa4bae39527938a24e12 (kmipkit_protocol::RegisterRequest::object) against specs/022-object-lifecycle/spec.md and ADR-0006. This getter reads the Any Object item supplied to RegisterRequest::new. Foreign wrappers consume caller-owned TTLV inputs through RegisterRequest.create, and the opaque handle remains the accepted boundary. OASIS KMIP 2.1 Section 6.1.43, Tables 291-293, defines Register request fields; no getter changes the request capability. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Evidence test: tools/api_manifest/tests/test_t102_opaque_request_helper_exclusions.py.",
+      "exportName": "kmipkit_protocol::RegisterRequest::object",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust-only helper falls within the accepted opaque-handle boundary. This getter reads the Any Object item supplied to RegisterRequest::new. Foreign wrappers consume caller-owned TTLV inputs through RegisterRequest.create, and the opaque handle remains the accepted boundary. OASIS KMIP 2.1 Section 6.1.43, Tables 291-293, defines Register request fields; no getter changes the request capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Status: Accepted",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0006-public-api-and-bindings.md",
+        "status": "Accepted"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "T102 reviewed exact declaration rust-observed-f92cf0fe6010d7112b8c (kmipkit_protocol::RegisterRequest::object_type) against specs/022-object-lifecycle/spec.md and ADR-0006. This getter reads the Object Type supplied to RegisterRequest::new. Foreign wrappers consume caller-supplied values through RegisterRequest.create, and the opaque handle remains the accepted boundary. OASIS KMIP 2.1 Section 6.1.43, Tables 291-293, defines Register request fields; no getter changes the request capability. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Evidence test: tools/api_manifest/tests/test_t102_opaque_request_helper_exclusions.py.",
+      "exportName": "kmipkit_protocol::RegisterRequest::object_type",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust-only helper falls within the accepted opaque-handle boundary. This getter reads the Object Type supplied to RegisterRequest::new. Foreign wrappers consume caller-supplied values through RegisterRequest.create, and the opaque handle remains the accepted boundary. OASIS KMIP 2.1 Section 6.1.43, Tables 291-293, defines Register request fields; no getter changes the request capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Status: Accepted",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0006-public-api-and-bindings.md",
+        "status": "Accepted"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "T102 reviewed exact declaration rust-observed-7d893b054d3545a78661 (kmipkit_protocol::SplitKeyReference::split_key_threshold) against specs/023-key-material-transfer/spec.md and ADR-0006. This getter reads caller-supplied local validation context already passed to SplitKeyReference::new. The threshold is not serialized; foreign Join Split Key constructors accept the same identifier and threshold inputs. The C facade keeps the reference as an opaque handle under ADR-0006. OASIS KMIP 2.1 Section 6.1.27, Table 244, defines the request identifier; the threshold is local context. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Evidence test: tools/api_manifest/tests/test_t102_opaque_request_helper_exclusions.py.",
+      "exportName": "kmipkit_protocol::SplitKeyReference::split_key_threshold",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust-only helper falls within the accepted opaque-handle boundary. This getter reads caller-supplied local validation context already passed to SplitKeyReference::new. The threshold is not serialized; foreign Join Split Key constructors accept the same identifier and threshold inputs. The C facade keeps the reference as an opaque handle under ADR-0006. OASIS KMIP 2.1 Section 6.1.27, Table 244, defines the request identifier; the threshold is local context."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Status: Accepted",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0006-public-api-and-bindings.md",
+        "status": "Accepted"
+      },
+      "candidateSpecId": "KMIPKIT-0043",
+      "evidence": "T102 reviewed exact declaration rust-observed-debf26c2f328bc05efb6 (kmipkit_protocol::SplitKeyReference::unique_identifier) against specs/023-key-material-transfer/spec.md and ADR-0006. This getter reads caller-supplied local reference context already passed to SplitKeyReference::new. Foreign Join Split Key constructors accept the same identifier and threshold inputs; the C facade keeps the reference as an opaque handle under ADR-0006. OASIS KMIP 2.1 Section 6.1.27, Table 244, defines the request identifier. Mapping policy: specs/043-public-api-bindings/spec.md. Requirements: KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Evidence test: tools/api_manifest/tests/test_t102_opaque_request_helper_exclusions.py.",
+      "exportName": "kmipkit_protocol::SplitKeyReference::unique_identifier",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust-only helper falls within the accepted opaque-handle boundary. This getter reads caller-supplied local reference context already passed to SplitKeyReference::new. Foreign Join Split Key constructors accept the same identifier and threshold inputs; the C facade keeps the reference as an opaque handle under ADR-0006. OASIS KMIP 2.1 Section 6.1.27, Table 244, defines the request identifier."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0040-FR-002/004, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-021, and docs/architecture/ffi-and-bindings.md. The typed PKCS#11 facade owns the product capability; this exact NativeExtensionRegistry member only passes raw handles to JNI.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemPkcs11WithExtensions",
+      "packageId": "java-kmipkit",
+      "reason": "This raw JNI handle entry point is bridge plumbing for the typed PKCS#11 facade and has no independent Java product API."
     }
   ],
   "capabilities": [
@@ -108385,6 +108618,32 @@
           "kmipkit.ttlv.ttlv_value_view_type"
         ],
         "rust": [
+          "kmipkit_protocol::CryptographicAlgorithm",
+          "kmipkit_protocol::CryptographicAlgorithm::from_raw",
+          "kmipkit_protocol::CryptographicAlgorithm::raw",
+          "kmipkit_protocol::DigitalSignatureAlgorithm",
+          "kmipkit_protocol::DigitalSignatureAlgorithm::from_raw",
+          "kmipkit_protocol::DigitalSignatureAlgorithm::raw",
+          "kmipkit_protocol::HashingAlgorithm",
+          "kmipkit_protocol::HashingAlgorithm::from_raw",
+          "kmipkit_protocol::HashingAlgorithm::raw",
+          "kmipkit_protocol::KeyCompressionType",
+          "kmipkit_protocol::KeyCompressionType::from_raw",
+          "kmipkit_protocol::KeyCompressionType::raw",
+          "kmipkit_protocol::KeyFormatType",
+          "kmipkit_protocol::KeyFormatType::from_raw",
+          "kmipkit_protocol::KeyFormatType::raw",
+          "kmipkit_protocol::KeyWrapType",
+          "kmipkit_protocol::KeyWrapType::from_raw",
+          "kmipkit_protocol::KeyWrapType::raw",
+          "kmipkit_protocol::OperationData",
+          "kmipkit_protocol::OperationData::ByteString",
+          "kmipkit_protocol::OperationData::ByteString::0",
+          "kmipkit_protocol::OperationData::Enumeration",
+          "kmipkit_protocol::OperationData::Enumeration::0",
+          "kmipkit_protocol::OperationData::Integer",
+          "kmipkit_protocol::OperationData::Integer::0",
+          "kmipkit_protocol::OperationData::into_ttlv_value",
           "kmipkit_ttlv::Item",
           "kmipkit_ttlv::Item::item_type",
           "kmipkit_ttlv::Item::new",
@@ -120839,6 +121098,106 @@
         ],
         "requestBoundary": "not-applicable",
         "returnType": "RegisterRequest"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Returns a Register request with caller-supplied Protection Storage Masks, defined by KMIP v2.1 Section 6.1.43 and Section 4.44 Table 117.",
+          "The request handle is consumed; the structure is borrowed and copied. An empty structure preserves present-empty separately from omission."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "request",
+            "ownership": "consumed",
+            "type": "kmipkit_register_request_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "masks",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_structure_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_request",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_register_request_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_register_request_with_protection_storage_masks"
+      },
+      "id": "register_request_with_protection_storage_masks",
+      "java": {
+        "class": "RegisterRequest",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_registerRequestWithProtectionStorageMasks",
+        "method": "withProtectionStorageMasks",
+        "package": "org.kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "masks",
+            "type": "TtlvStructure"
+          }
+        ],
+        "returnType": "RegisterRequest"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_register_request_with_protection_storage_masks",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "RegisterRequest.with_protection_storage_masks",
+        "module": "kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "masks",
+            "type": "ttlv.Structure"
+          }
+        ],
+        "returnType": "RegisterRequest"
+      },
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-006"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry",
+        "name": "kmipkit_register_request_with_protection_storage_masks",
+        "owner": "ffi",
+        "parameters": [
+          {
+            "name": "request",
+            "type": "*mut kmipkit_register_request_t"
+          },
+          {
+            "name": "masks",
+            "type": "*mut kmipkit_ttlv_structure_t"
+          },
+          {
+            "name": "out_request",
+            "type": "*mut *mut kmipkit_register_request_t"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "i32"
       }
     },
     {
@@ -133943,6 +134302,201 @@
           {
             "name": "input_parameters",
             "type": "*mut kmipkit_ttlv_structure_t"
+          },
+          {
+            "name": "out_item",
+            "type": "*mut *mut kmipkit_client_batch_item_t"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "i32"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Creates a PKCS#11 request with caller-ordered opaque payload extensions. KMIP v2.1 Section 6.1.37 Table 273 defines no generic extension field; use these only when a server or profile documents the vendor-specific fields.",
+          "Input handles are borrowed and copied, and extension order is preserved. A NULL array is accepted only with a zero count. The extension array must not overlap out_item."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "function",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_structure_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "interface",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_structure_t *"
+          },
+          {
+            "kind": "input-value-pointer",
+            "name": "correlation_value",
+            "ownership": "borrowed",
+            "type": "const kmipkit_byte_span_v1_t *",
+            "valueType": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "kind": "handle",
+            "name": "input_parameters",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_structure_t *"
+          },
+          {
+            "countParameter": "payload_extension_count",
+            "handleType": "kmipkit_ttlv_item_t",
+            "kind": "handle-array",
+            "name": "payload_extensions",
+            "nullable": true,
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_item_t **"
+          },
+          {
+            "kind": "scalar",
+            "name": "payload_extension_count",
+            "type": "uint64_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_client_batch_item_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_pkcs11_with_extensions_v1"
+      },
+      "id": "client_batch_item_pkcs11_with_extensions_v1",
+      "java": {
+        "class": "ClientBatchItem",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemPkcs11WithExtensions",
+        "method": "pkcs11",
+        "package": "org.kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "function",
+            "type": "TtlvStructure"
+          },
+          {
+            "name": "interfaceStructure",
+            "nullable": true,
+            "type": "TtlvStructure"
+          },
+          {
+            "name": "correlationValue",
+            "nullable": true,
+            "type": "byte[]"
+          },
+          {
+            "name": "inputParameters",
+            "nullable": true,
+            "type": "TtlvStructure"
+          },
+          {
+            "name": "payloadExtensions",
+            "type": "List<TtlvItem>"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_pkcs11_with_extensions_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "kmipkit.extensions.client_batch_item_pkcs11",
+        "module": "kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "function",
+            "type": "ttlv.Structure"
+          },
+          {
+            "name": "interface",
+            "type": "ttlv.Structure | None"
+          },
+          {
+            "name": "correlation_value",
+            "type": "bytes | bytearray | memoryview | None"
+          },
+          {
+            "name": "input_parameters",
+            "type": "ttlv.Structure | None"
+          },
+          {
+            "name": "payload_extensions",
+            "type": "Iterable[ttlv.TtlvItem]"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "requirementIds": [
+        "KMIPKIT-0040-FR-001",
+        "KMIPKIT-0040-FR-002",
+        "KMIPKIT-0040-FR-003",
+        "KMIPKIT-0040-FR-004",
+        "KMIPKIT-0040-FR-005",
+        "KMIPKIT-0040-FR-006",
+        "KMIPKIT-0040-FR-007",
+        "KMIPKIT-0040-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry",
+        "name": "kmipkit_client_batch_item_pkcs11_with_extensions_v1",
+        "owner": "ffi",
+        "parameters": [
+          {
+            "name": "function",
+            "type": "*mut kmipkit_ttlv_structure_t"
+          },
+          {
+            "name": "interface",
+            "type": "*mut kmipkit_ttlv_structure_t"
+          },
+          {
+            "name": "correlation_value",
+            "type": "*const kmipkit_byte_span_v1_t"
+          },
+          {
+            "name": "input_parameters",
+            "type": "*mut kmipkit_ttlv_structure_t"
+          },
+          {
+            "name": "payload_extensions",
+            "type": "*mut *mut kmipkit_ttlv_item_t"
+          },
+          {
+            "name": "payload_extension_count",
+            "type": "u64"
           },
           {
             "name": "out_item",
@@ -155341,7 +155895,8 @@
           "T057:response:function:c",
           "T057:response:interface:c",
           "T057:response:output_parameters:c",
-          "T057:response:return_code:c"
+          "T057:response:return_code:c",
+          "T102:pkcs11-request-extensions:c"
         ],
         "java": [
           "T057:request:java",
@@ -155416,7 +155971,9 @@
           "rust-observed-95ba49335064e09db4b6",
           "rust-observed-d9a8a9909feb4901b637",
           "rust-observed-dc0d9f8db2cc819081a5",
-          "rust-observed-0ca4edbce90ed942c680"
+          "rust-observed-0ca4edbce90ed942c680",
+          "rust-observed-ad5c5204337d486b06bb",
+          "rust-observed-358ceac77d04d65b6238"
         ]
       },
       "featureSpecId": "KMIPKIT-0040",
@@ -155685,7 +156242,8 @@
           "KMIPKIT-0044-register-request-release:c",
           "KMIPKIT-0044-register-request-type:c",
           "T062:register:response-ttlv:c",
-          "T062:register:response:c"
+          "T062:register:response:c",
+          "T102:register:protection-storage-masks:c"
         ],
         "java": [
           "KMIPKIT-0044-register-batch-item-root:java",
@@ -155697,7 +156255,8 @@
           "T062:register:response-ttlv:java",
           "T062:register:response:java",
           "T062:register:result:type:java",
-          "T062:register:result:uniqueIdentifier:java"
+          "T062:register:result:uniqueIdentifier:java",
+          "T102:register:protection-storage-masks:java"
         ],
         "python": [
           "KMIPKIT-0044-register-batch-item-root:python",
@@ -155709,7 +156268,8 @@
           "T062:register:response-ttlv:python",
           "T062:register:response:python",
           "T062:register:result:type:python",
-          "T062:register:result:uniqueIdentifier:python"
+          "T062:register:result:uniqueIdentifier:python",
+          "T102:register:protection-storage-masks:python"
         ],
         "rust": [
           "KMIPKIT-0044-register-batch-item-root:rust",
@@ -155747,7 +156307,8 @@
           "rust-observed-6e3391953972c4548640",
           "rust-observed-0e423c1d2c8da37b44e3",
           "rust-observed-180183b70604b127e90d",
-          "rust-observed-479c345f536d32cba703"
+          "rust-observed-479c345f536d32cba703",
+          "rust-observed-cd5e9a9afb29cd4dc1f4"
         ]
       },
       "featureSpecId": "KMIPKIT-0036",
@@ -157004,7 +157565,10 @@
           "rust-observed-af7186f60be6f39e3618",
           "rust-observed-89f5e516e11c2177996c",
           "rust-observed-3079089f7a9edd2ba61b",
-          "rust-observed-a0692c89fb668b47105f"
+          "rust-observed-a0692c89fb668b47105f",
+          "rust-observed-1939f403026259009750",
+          "rust-observed-8a9d02e961f7463a4535",
+          "rust-observed-db7335d99b9fed1a5a7f"
         ]
       },
       "featureSpecId": "KMIPKIT-0042",
@@ -157023,6 +157587,7 @@
         "crates/kmipkit-ffi/tests/support/validate_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs",
         "specs/028-diagnostics-interop/traceability.md",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
         "tools/api_manifest/tests/test_validate_parity_manifest.py"
       ],
       "scope": "client_1_0",
@@ -195710,6 +196275,173 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-dc0032050f0305079631",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::CryptographicAlgorithm",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.Value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicAlgorithm",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-dec84f7b6a69ff689d70",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::CryptographicAlgorithm::from_raw",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_enumeration",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValue.Enumeration",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_enumeration",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicAlgorithm::from_raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-6fc3fe5988e26eeb65b5",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::CryptographicAlgorithm::raw",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_view_enumeration",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValueView.enumeration",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_view_enumeration",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicAlgorithm::raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0021-FR-009",
+        "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
         "kind": "feature-specification",
         "path": "specs/007-client-execution/spec.md",
@@ -196534,6 +197266,562 @@
         "KMIPKIT-REQ-SPEC-6.1.55-001",
         "KMIPKIT-REQ-SPEC-6.1.56-001-001",
         "KMIPKIT-REQ-SPEC-6.1.56-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-a3ec2f8705724f6d8611",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::DigitalSignatureAlgorithm",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.Value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DigitalSignatureAlgorithm",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-9953f80901da4e75a82c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::DigitalSignatureAlgorithm::from_raw",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_enumeration",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValue.Enumeration",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_enumeration",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DigitalSignatureAlgorithm::from_raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-5ccd360172fa4fd026a7",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::DigitalSignatureAlgorithm::raw",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_view_enumeration",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValueView.enumeration",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_view_enumeration",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DigitalSignatureAlgorithm::raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0021-FR-009",
+        "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-0ed998cd345aaf8d76e7",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::HashingAlgorithm",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.Value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashingAlgorithm",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-41b8b82d29e8a60e71f1",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::HashingAlgorithm::from_raw",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_enumeration",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValue.Enumeration",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_enumeration",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashingAlgorithm::from_raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-d54f99b7a6decc829c8c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::HashingAlgorithm::raw",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_view_enumeration",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValueView.enumeration",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_view_enumeration",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::HashingAlgorithm::raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0021-FR-009",
+        "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-VALIDATE",
+      "declarationId": "rust-observed-1939f403026259009750",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::ValidityIndicator",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_validate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.ValidateResponse.validityIndicatorRaw",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ValidateResponse.validity_indicator_raw",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::ValidityIndicator",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ValidateResponseMappingTest.java",
+        "bindings/python/tests/test_validate_operation.py",
+        "crates/kmipkit-ffi/tests/support/validate_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs",
+        "specs/028-diagnostics-interop/traceability.md",
+        "tools/api_manifest/tests/test_validate_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0042-FR-001",
+        "KMIPKIT-0042-FR-002",
+        "KMIPKIT-0042-FR-003",
+        "KMIPKIT-0042-FR-004",
+        "KMIPKIT-0042-FR-005",
+        "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
+        "KMIPKIT-0042-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.57-001",
+        "KMIPKIT-REQ-SPEC-6.1.57-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.57-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.57-004",
+        "KMIPKIT-REQ-SPEC-6.1.57-005",
+        "KMIPKIT-REQ-SPEC-6.1.57-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-VALIDATE",
+      "declarationId": "rust-observed-8a9d02e961f7463a4535",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::ValidityIndicator::from_raw",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_validate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.ValidateResponse.validityIndicatorRaw",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ValidateResponse.validity_indicator_raw",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::ValidityIndicator::from_raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ValidateResponseMappingTest.java",
+        "bindings/python/tests/test_validate_operation.py",
+        "crates/kmipkit-ffi/tests/support/validate_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs",
+        "specs/028-diagnostics-interop/traceability.md",
+        "tools/api_manifest/tests/test_validate_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0042-FR-001",
+        "KMIPKIT-0042-FR-002",
+        "KMIPKIT-0042-FR-003",
+        "KMIPKIT-0042-FR-004",
+        "KMIPKIT-0042-FR-005",
+        "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
+        "KMIPKIT-0042-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.57-001",
+        "KMIPKIT-REQ-SPEC-6.1.57-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.57-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.57-004",
+        "KMIPKIT-REQ-SPEC-6.1.57-005",
+        "KMIPKIT-REQ-SPEC-6.1.57-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-VALIDATE",
+      "declarationId": "rust-observed-db7335d99b9fed1a5a7f",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::ValidityIndicator::raw",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_validate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.ValidateResponse.validityIndicatorRaw",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ValidateResponse.validity_indicator_raw",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::ValidityIndicator::raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ValidateResponseMappingTest.java",
+        "bindings/python/tests/test_validate_operation.py",
+        "crates/kmipkit-ffi/tests/support/validate_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs",
+        "specs/028-diagnostics-interop/traceability.md",
+        "tools/api_manifest/tests/test_validate_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0042-FR-001",
+        "KMIPKIT-0042-FR-002",
+        "KMIPKIT-0042-FR-003",
+        "KMIPKIT-0042-FR-004",
+        "KMIPKIT-0042-FR-005",
+        "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
+        "KMIPKIT-0042-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.57-001",
+        "KMIPKIT-REQ-SPEC-6.1.57-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.57-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.57-004",
+        "KMIPKIT-REQ-SPEC-6.1.57-005",
+        "KMIPKIT-REQ-SPEC-6.1.57-006"
       ]
     },
     {
@@ -206105,6 +207393,304 @@
         "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-eb292fa06230faab20f1",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::OperationData",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.Value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::OperationData",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/crypto_robustness_property_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/operation_data_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-688bd2525df810f7cd9e",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::OperationData::ByteString",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_byte_string",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValue.ByteString",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_byte_string",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::OperationData::ByteString",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/crypto_robustness_property_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/operation_data_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-f69d67f312bdc180f244",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::OperationData::Enumeration",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_enumeration",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValue.Enumeration",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_enumeration",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::OperationData::Enumeration",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/crypto_robustness_property_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/operation_data_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-401464420590f6dacfdb",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::OperationData::Integer",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_integer",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValue.Integer",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_integer",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::OperationData::Integer",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/crypto_robustness_property_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/operation_data_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-e2a52bdd069792196013",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::OperationData::into_ttlv_value",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.Value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::OperationData::into_ttlv_value",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/crypto_robustness_property_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/operation_data_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-021"
       ]
     },
@@ -285339,6 +286925,66 @@
         "status": "Approved"
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-PKCS-11",
+      "declarationId": "rust-observed-ad5c5204337d486b06bb",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Pkcs11Request::with_extension",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_pkcs11_with_extensions_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.pkcs11",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_pkcs11",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Pkcs11Request::with_extension",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "tests/fixtures/api/pkcs11-parity.json",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/pkcs11_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/Pkcs11MappingTest.java",
+        "bindings/python/tests/test_pkcs11_operation.py",
+        "tools/api_manifest/tests/test_t102_pkcs11_request_extension_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0040-FR-002",
+        "KMIPKIT-0040-FR-004",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-PKCS-11",
       "declarationId": "rust-observed-37ff26bed9cff3029512",
       "declarationState": "verified",
       "exportName": "kmipkit_client::Pkcs11Request::with_input_parameters",
@@ -302474,6 +304120,507 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-42106f2192556b6bc3a0",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::KeyCompressionType",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.Value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::KeyCompressionType",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-273ada782f3046b109d9",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::KeyCompressionType::from_raw",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_enumeration",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValue.Enumeration",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_enumeration",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::KeyCompressionType::from_raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-4341ca30af106f8c7c0c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::KeyCompressionType::raw",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_view_enumeration",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValueView.enumeration",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_view_enumeration",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::KeyCompressionType::raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0021-FR-009",
+        "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-00a9ce145d9c795d04b9",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::KeyFormatType",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.Value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::KeyFormatType",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-4f6c801493055987f59c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::KeyFormatType::from_raw",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_enumeration",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValue.Enumeration",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_enumeration",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::KeyFormatType::from_raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-428078fd5721e475f493",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::KeyFormatType::raw",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_view_enumeration",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValueView.enumeration",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_view_enumeration",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::KeyFormatType::raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0021-FR-009",
+        "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-a502d9b4b8e3fddc9b77",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::KeyWrapType",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.Value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::KeyWrapType",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-5db066e451c1609f6c05",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::KeyWrapType::from_raw",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_enumeration",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValue.Enumeration",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_enumeration",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::KeyWrapType::from_raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-ceda5910bc2cfd294b0a",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::KeyWrapType::raw",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_view_enumeration",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValueView.enumeration",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_view_enumeration",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::KeyWrapType::raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0021-FR-009",
+        "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
         "kind": "feature-specification",
         "path": "specs/007-client-execution/spec.md",
@@ -308611,6 +310758,184 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-84b43744a1e852d5f6e9",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::OperationData::ByteString::0",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_byte_string",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValue.ByteString",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_byte_string",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::OperationData::ByteString::0",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/crypto_robustness_property_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/operation_data_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-6a7f5a7d884b58e351fc",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::OperationData::Enumeration::0",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_enumeration",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValue.Enumeration",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_enumeration",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::OperationData::Enumeration::0",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/crypto_robustness_property_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/operation_data_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-a824df1a7c6587a7b97f",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::OperationData::Integer::0",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_integer",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValue.Integer",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_integer",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::OperationData::Integer::0",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValue.java",
+        "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java",
+        "bindings/java/src/test/java/org/kmipkit/AdapterApiCoverageTest.java",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/python/src/kmipkit/ttlv.py",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/crypto_robustness_property_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/operation_data_tests.rs",
+        "tools/api_manifest/tests/test_t102_open_value_model_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-007",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
         "kind": "feature-specification",
         "path": "specs/007-client-execution/spec.md",
@@ -309265,6 +311590,66 @@
         "KMIPKIT-0040-FR-004",
         "KMIPKIT-0040-FR-005",
         "KMIPKIT-0040-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-PKCS-11",
+      "declarationId": "rust-observed-358ceac77d04d65b6238",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::Pkcs11Request::with_extension",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_pkcs11_with_extensions_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.pkcs11",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_pkcs11",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::Pkcs11Request::with_extension",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "tests/fixtures/api/pkcs11-parity.json",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/pkcs11_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/Pkcs11MappingTest.java",
+        "bindings/python/tests/test_pkcs11_operation.py",
+        "tools/api_manifest/tests/test_t102_pkcs11_request_extension_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0040-FR-002",
+        "KMIPKIT-0040-FR-004",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
@@ -313139,6 +315524,78 @@
         "KMIPKIT-0044-FR-002",
         "KMIPKIT-0044-FR-006",
         "KMIPKIT-0044-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-REGISTER",
+      "declarationId": "rust-observed-cd5e9a9afb29cd4dc1f4",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::RegisterRequest::with_protection_storage_masks",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_register_request_with_protection_storage_masks",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.RegisterRequest.withProtectionStorageMasks",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.RegisterRequest.with_protection_storage_masks",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RegisterRequest::with_protection_storage_masks",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RegisterMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RegisterOpaqueContextParityTest.java",
+        "bindings/python/tests/test_register_operation.py",
+        "bindings/python/tests/test_register_opaque_context.py",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+        "tools/api_manifest/tests/test_register_parity_manifest.py",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.43-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-005",
+        "KMIPKIT-REQ-SPEC-6.1.43-007",
+        "KMIPKIT-REQ-SPEC-6.1.43-009-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-009-002",
+        "KMIPKIT-REQ-SPEC-6.1.43-010-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-010-002",
+        "KMIPKIT-REQ-SPEC-6.1.43-011"
       ]
     },
     {
@@ -473757,6 +476214,288 @@
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-REGISTER",
+      "declarationId": "T102:register:protection-storage-masks:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_register_request_with_protection_storage_masks",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_register_request_with_protection_storage_masks",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.RegisterRequest.withProtectionStorageMasks",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.RegisterRequest.with_protection_storage_masks",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RegisterRequest::with_protection_storage_masks",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RegisterMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RegisterOpaqueContextParityTest.java",
+        "bindings/python/tests/test_register_operation.py",
+        "bindings/python/tests/test_register_opaque_context.py",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+        "tools/api_manifest/tests/test_register_parity_manifest.py",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.43-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-005",
+        "KMIPKIT-REQ-SPEC-6.1.43-007",
+        "KMIPKIT-REQ-SPEC-6.1.43-009-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-009-002",
+        "KMIPKIT-REQ-SPEC-6.1.43-010-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-010-002",
+        "KMIPKIT-REQ-SPEC-6.1.43-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-REGISTER",
+      "declarationId": "T102:register:protection-storage-masks:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.RegisterRequest.withProtectionStorageMasks",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_register_request_with_protection_storage_masks",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.RegisterRequest.withProtectionStorageMasks",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.RegisterRequest.with_protection_storage_masks",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RegisterRequest::with_protection_storage_masks",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RegisterMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RegisterOpaqueContextParityTest.java",
+        "bindings/python/tests/test_register_operation.py",
+        "bindings/python/tests/test_register_opaque_context.py",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+        "tools/api_manifest/tests/test_register_parity_manifest.py",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.43-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-005",
+        "KMIPKIT-REQ-SPEC-6.1.43-007",
+        "KMIPKIT-REQ-SPEC-6.1.43-009-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-009-002",
+        "KMIPKIT-REQ-SPEC-6.1.43-010-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-010-002",
+        "KMIPKIT-REQ-SPEC-6.1.43-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-REGISTER",
+      "declarationId": "T102:register:protection-storage-masks:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.extensions.RegisterRequest.with_protection_storage_masks",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_register_request_with_protection_storage_masks",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.RegisterRequest.withProtectionStorageMasks",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.RegisterRequest.with_protection_storage_masks",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RegisterRequest::with_protection_storage_masks",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RegisterMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RegisterOpaqueContextParityTest.java",
+        "bindings/python/tests/test_register_operation.py",
+        "bindings/python/tests/test_register_opaque_context.py",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+        "tools/api_manifest/tests/test_register_parity_manifest.py",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.43-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-005",
+        "KMIPKIT-REQ-SPEC-6.1.43-007",
+        "KMIPKIT-REQ-SPEC-6.1.43-009-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-009-002",
+        "KMIPKIT-REQ-SPEC-6.1.43-010-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-010-002",
+        "KMIPKIT-REQ-SPEC-6.1.43-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/026-pkcs11/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-PKCS-11",
+      "declarationId": "T102:pkcs11-request-extensions:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client_batch_item_pkcs11_with_extensions_v1",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_pkcs11_with_extensions_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.pkcs11",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_pkcs11",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Pkcs11Request::with_extension",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "tests/fixtures/api/pkcs11-parity.json",
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/pkcs11_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/Pkcs11MappingTest.java",
+        "bindings/python/tests/test_pkcs11_operation.py",
+        "tools/api_manifest/tests/test_t102_pkcs11_request_extension_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0040-FR-001",
+        "KMIPKIT-0040-FR-002",
+        "KMIPKIT-0040-FR-003",
+        "KMIPKIT-0040-FR-004",
+        "KMIPKIT-0040-FR-005",
+        "KMIPKIT-0040-FR-006",
+        "KMIPKIT-0040-FR-007",
+        "KMIPKIT-0040-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ]
     }
   ],

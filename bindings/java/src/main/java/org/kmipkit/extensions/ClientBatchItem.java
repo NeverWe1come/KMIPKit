@@ -1045,15 +1045,45 @@ public final class ClientBatchItem implements AutoCloseable {
             @Nullable TtlvStructure interfaceStructure,
             @Nullable byte[] correlationValue,
             @Nullable TtlvStructure inputParameters) {
+        return pkcs11(function, interfaceStructure, correlationValue, inputParameters, List.of());
+    }
+
+    /**
+     * Creates a PKCS#11 item with caller-ordered opaque payload extensions. KMIP v2.1 §6.1.37
+     * Table 273 defines no generic extension field; use these only for documented
+     * vendor-specific or profile-specific fields. The request copies each supplied item.
+     */
+    public static ClientBatchItem pkcs11(
+            TtlvStructure function,
+            @Nullable TtlvStructure interfaceStructure,
+            @Nullable byte[] correlationValue,
+            @Nullable TtlvStructure inputParameters,
+            List<TtlvItem> payloadExtensions) {
         requireStructure(function, "PKCS#11 Function");
+        if (payloadExtensions == null) {
+            throw new InvalidInputException("PKCS#11 payload extensions are required");
+        }
+        List<TtlvItem> extensionSnapshot = boundedSnapshot(
+                payloadExtensions, MAX_VALIDATE_INPUT_ITEMS);
+        for (TtlvItem extension : extensionSnapshot) {
+            if (extension == null) {
+                throw new InvalidInputException("PKCS#11 payload extension is invalid");
+            }
+        }
         byte[] correlationCopy = correlationValue == null ? null : correlationValue.clone();
         if (correlationCopy != null) requireOperationInputWithinLimit(correlationCopy);
         try {
             NativeExtensionRegistry.ensureLoaded();
-            long value = NativeHandle.withNativeHandles(() ->
-                    NativeExtensionRegistry.clientBatchItemPkcs11(
-                            function.handle(), handleOrNull(interfaceStructure), correlationCopy,
-                            handleOrNull(inputParameters)));
+            long[] extensionHandles = new long[extensionSnapshot.size()];
+            long value = NativeHandle.withNativeHandles(() -> {
+                for (int index = 0; index < extensionSnapshot.size(); index++) {
+                    extensionHandles[index] = extensionSnapshot.get(index)
+                            .nativeHandleOwner().get();
+                }
+                return NativeExtensionRegistry.clientBatchItemPkcs11WithExtensions(
+                        function.handle(), handleOrNull(interfaceStructure), correlationCopy,
+                        handleOrNull(inputParameters), extensionHandles);
+            });
             return new ClientBatchItem(value, List.of());
         } finally {
             clearNativeCopies(correlationCopy);

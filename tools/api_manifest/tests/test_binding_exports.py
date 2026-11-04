@@ -993,6 +993,7 @@ class BindingExportAuditTests(unittest.TestCase):
                 "hashedPasswordTimestampSequenceLastTimestamp",
                 "ttlvPathCreate",
                 "ttlvPathWithChildTag",
+                "clientBatchItemPkcs11WithExtensions",
             }
         )
         native_members.update(EXPECTED_VENDOR_EXTENSION_BRIDGE_MEMBERS)
@@ -1058,7 +1059,12 @@ class BindingExportAuditTests(unittest.TestCase):
                 "org.kmipkit.NativeExtensionRegistry.withPollRequestCorrelationValue": "T093",
             }.get(key[1])
             if bridge_owner is None:
-                if key[1] == "org.kmipkit.NativeExtensionRegistry.clientBatchItemDiscoverVersions":
+                if key[1] == "org.kmipkit.NativeExtensionRegistry.clientBatchItemPkcs11WithExtensions":
+                    self.assertIn("KMIPKIT-0040-FR-002/004", evidence)
+                    self.assertIn("KMIPKIT-0043-FR-008", evidence)
+                    self.assertIn("KMIPKIT-0043-FR-021", evidence)
+                    self.assertIn("typed PKCS#11 facade", evidence)
+                elif key[1] == "org.kmipkit.NativeExtensionRegistry.clientBatchItemDiscoverVersions":
                     self.assertIn("KMIPKIT-0007-FR-001", evidence)
                     self.assertIn("KMIPKIT-0043-FR-021", evidence)
                     self.assertIn("typed Discover Versions API remains separately mapped", evidence)

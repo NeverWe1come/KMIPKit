@@ -90,6 +90,7 @@ _MAX_ATTRIBUTE_REFERENCES = 100_000
 _CLIENT_ABI_HANDLE_FUNCTIONS = frozenset(
     {
         "kmipkit_client_batch_item_pkcs11",
+        "kmipkit_client_batch_item_pkcs11_with_extensions_v1",
         "kmipkit_client_batch_item_ping",
         "kmipkit_client_batch_item_query",
         "kmipkit_client_batch_item_query_with_limits",
@@ -2721,27 +2722,55 @@ def client_batch_item_pkcs11(
     interface: ttlv.Structure | None = None,
     correlation_value: bytes | bytearray | memoryview | None = None,
     input_parameters: ttlv.Structure | None = None,
+    *,
+    payload_extensions: Iterable[ttlv.TtlvItem] = (),
 ) -> ClientBatchItem:
-    """Create a KMIP 2.1 §6.1.37 PKCS#11 item, preserving optional field presence."""
-    native_function = _native_structure(function, required=True)
+    """Create a §6.1.37 PKCS#11 item with optional opaque payload extensions.
+
+    KMIP v2.1 Table 273 defines no generic extension field. Supply extensions only
+    for vendor-specific or profile-specific fields documented by the server.
+    """
+    function_values, interface_values, correlation_values, input_values, extension_values = (
+        _bounded_iterable_snapshots(
+            ((function,), (interface,), (correlation_value,), (input_parameters,), payload_extensions),
+            100_000,
+        )
+    )
+    function_value = function_values[0]
+    if not isinstance(function_value, ttlv.Structure):
+        errors.raise_for_status(4)
+    interface_value = interface_values[0]
+    if interface_value is not None and not isinstance(interface_value, ttlv.Structure):
+        errors.raise_for_status(4)
+    input_parameters_value = input_values[0]
+    if input_parameters_value is not None and not isinstance(input_parameters_value, ttlv.Structure):
+        errors.raise_for_status(4)
+    correlation = correlation_values[0]
+    if correlation is not None and not isinstance(
+        correlation, (bytes, bytearray, memoryview)
+    ):
+        errors.raise_for_status(4)
+    if any(not isinstance(extension, ttlv.TtlvItem) for extension in extension_values):
+        errors.raise_for_status(4)
+    native_function = _native_structure(function_value, required=True)
     native_interface = _client_ffi.cast(
         "kmipkit_ttlv_structure_t *",
-        int(ffi.cast("uintptr_t", _native_structure(interface)))
-        if interface is not None
+        int(ffi.cast("uintptr_t", _native_structure(interface_value)))
+        if interface_value is not None
         else 0,
     )
     native_input = _client_ffi.cast(
         "kmipkit_ttlv_structure_t *",
-        int(ffi.cast("uintptr_t", _native_structure(input_parameters)))
-        if input_parameters is not None
+        int(ffi.cast("uintptr_t", _native_structure(input_parameters_value)))
+        if input_parameters_value is not None
         else 0,
     )
     with _staging_buffer_scope() as staging_buffers:
-        if correlation_value is None:
+        if correlation is None:
             correlation_span = _client_ffi.NULL
         else:
             raw_correlation, staged_correlation = _owned_bytes(
-                correlation_value, _MAX_OPERATION_INPUT_BYTES
+                correlation, _MAX_OPERATION_INPUT_BYTES
             )
             staging_buffers.append(staged_correlation)
             correlation_span = _client_ffi.new("kmipkit_byte_span_v1_t *")
@@ -2758,10 +2787,25 @@ def client_batch_item_pkcs11(
             "kmipkit_ttlv_structure_t *",
             int(ffi.cast("uintptr_t", native_function)),
         )
+        native_extensions = _client_ffi.new(
+            "kmipkit_ttlv_item_t *[]", len(extension_values)
+        )
+        for index, extension in enumerate(extension_values):
+            pointer = extension._pointer()
+            native_extensions[index] = _client_ffi.cast(
+                "kmipkit_ttlv_item_t *", int(ffi.cast("uintptr_t", pointer))
+            )
         handle = _make_handle(
             "kmipkit_client_batch_item_t",
-            "kmipkit_client_batch_item_pkcs11",
-            (function_pointer, native_interface, correlation_span, native_input),
+            "kmipkit_client_batch_item_pkcs11_with_extensions_v1",
+            (
+                function_pointer,
+                native_interface,
+                correlation_span,
+                native_input,
+                native_extensions,
+                len(extension_values),
+            ),
         )
     return _wrap_owned_handle(ClientBatchItem, handle)
 

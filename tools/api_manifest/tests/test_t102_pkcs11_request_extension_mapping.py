@@ -66,6 +66,19 @@ class T102Pkcs11RequestExtensionMappingTests(unittest.TestCase):
             for row in self.manifest["operations"]
             if row["operationId"] == CAPABILITY
         )
+        c_declaration = next(
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("exportName")
+            == "kmipkit_client_batch_item_pkcs11_with_extensions_v1"
+        )
+        self.assertEqual("verified", c_declaration["declarationState"])
+        self.assertEqual(CAPABILITY, c_declaration["capabilityId"])
+        self.assertEqual(
+            "kmipkit_client_batch_item_pkcs11_with_extensions_v1",
+            c_declaration["languageMappings"]["c"]["name"],
+        )
+        self.assertIn(c_declaration["declarationId"], operation["declarations"]["c"])
         for declaration_id, package_id, export_name, sibling_name in TARGETS:
             with self.subTest(declaration=export_name):
                 declaration = self.declarations[declaration_id]
@@ -103,6 +116,29 @@ class T102Pkcs11RequestExtensionMappingTests(unittest.TestCase):
                 self.assertNotIn("candidateSpecId", declaration)
                 self.assertNotIn("blockedReason", declaration)
                 self.assertIn(declaration_id, operation["declarations"]["rust"])
+
+    def test_java_raw_handle_bridge_is_excluded_behind_the_typed_facade(self) -> None:
+        export_name = (
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemPkcs11WithExtensions"
+        )
+        exclusion = next(
+            row
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "java-kmipkit" and row["exportName"] == export_name
+        )
+        self.assertEqual("specs/043-public-api-bindings/spec.md", exclusion["approvalSource"]["path"])
+        self.assertEqual("Approved", exclusion["approvalSource"]["status"])
+        self.assertIn("typed PKCS#11 facade", exclusion["reason"])
+        self.assertIn("KMIPKIT-0040-FR-002/004", exclusion["evidence"])
+        self.assertIn("KMIPKIT-0043-FR-008", exclusion["evidence"])
+        self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+        self.assertNotIn(
+            ("java-kmipkit", export_name),
+            {
+                (row["packageId"], row["exportName"])
+                for row in self.manifest["publicDeclarations"]
+            },
+        )
 
 
 if __name__ == "__main__":

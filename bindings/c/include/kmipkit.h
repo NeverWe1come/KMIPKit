@@ -790,6 +790,11 @@ int32_t kmipkit_extension_registry_limits_v1_validate(const kmipkit_extension_re
 int32_t kmipkit_register_request_create(uint32_t object_type, kmipkit_ttlv_structure_t * attributes, kmipkit_ttlv_item_t * object, kmipkit_register_request_t ** out_request);
 /* KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-002, KMIPKIT-0044-FR-003, KMIPKIT-0044-FR-004, KMIPKIT-0044-FR-005, KMIPKIT-0044-FR-007 */
 int32_t kmipkit_register_request_with_opaque_object_context(kmipkit_register_request_t * request, uint32_t context, kmipkit_register_request_t ** out_request);
+/* Returns a Register request with caller-supplied Protection Storage Masks, defined by KMIP v2.1 Section 6.1.43 and Section 4.44 Table 117.
+ * The request handle is consumed; the structure is borrowed and copied. An empty structure preserves present-empty separately from omission.
+ */
+/* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-006 */
+int32_t kmipkit_register_request_with_protection_storage_masks(kmipkit_register_request_t * request, kmipkit_ttlv_structure_t * masks, kmipkit_register_request_t ** out_request);
 /* KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-003, KMIPKIT-0044-FR-004, KMIPKIT-0044-FR-005, KMIPKIT-0044-FR-006, KMIPKIT-0044-FR-007 */
 int32_t kmipkit_client_batch_item_register(kmipkit_register_request_t * request, kmipkit_client_batch_item_t ** out_item);
 /* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
@@ -1275,6 +1280,14 @@ int32_t kmipkit_client_batch_item_response_pkcs11_ttlv(kmipkit_client_batch_item
  */
 /* KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-003, KMIPKIT-0040-FR-004, KMIPKIT-0040-FR-005, KMIPKIT-0040-FR-006, KMIPKIT-0040-FR-007, KMIPKIT-0040-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_client_batch_item_pkcs11(kmipkit_ttlv_structure_t * function, kmipkit_ttlv_structure_t * interface, const kmipkit_byte_span_v1_t * correlation_value, kmipkit_ttlv_structure_t * input_parameters, kmipkit_client_batch_item_t ** out_item);
+/* Creates a PKCS#11 request with caller-ordered opaque payload extensions. KMIP v2.1 Section 6.1.37 Table 273 defines no generic extension field; use these only when a server or profile documents the vendor-specific fields.
+ * Input handles are borrowed and copied, and extension order is preserved. A NULL array is accepted only with a zero count. The extension array must not overlap out_item.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-003, KMIPKIT-0040-FR-004, KMIPKIT-0040-FR-005, KMIPKIT-0040-FR-006, KMIPKIT-0040-FR-007, KMIPKIT-0040-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_pkcs11_with_extensions_v1(kmipkit_ttlv_structure_t * function, kmipkit_ttlv_structure_t * interface, const kmipkit_byte_span_v1_t * correlation_value, kmipkit_ttlv_structure_t * input_parameters, kmipkit_ttlv_item_t ** payload_extensions, uint64_t payload_extension_count, kmipkit_client_batch_item_t ** out_item);
 /* Returns a caller-owned copy of the optional PKCS#11 Interface Structure. For absence, sets present to 0 and the output handle to NULL. A returned handle owns independent TTLV storage and must be released with kmipkit_ttlv_structure_release.
  */
 /* KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-003, KMIPKIT-0040-FR-004, KMIPKIT-0040-FR-005, KMIPKIT-0040-FR-006, KMIPKIT-0040-FR-007, KMIPKIT-0040-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
