@@ -15,12 +15,27 @@ OWNER = "specs/028-diagnostics-interop/spec.md"
 OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-INTEROP"
 MAPPING_EVIDENCE = "tools/api_manifest/tests/test_t102_interop_request_members_mapping.py"
 DECLARATIONS = (
-    ("rust-observed-d951003e9b0d9ac3e25d", "kmipkit_protocol::InteropRequest::with_extension"),
-    ("rust-observed-f73036fa2665b58c313c", "kmipkit_protocol::InteropRequest::with_interop_identifier"),
+    (
+        "rust-observed-d951003e9b0d9ac3e25d",
+        "kmipkit_protocol::InteropRequest::with_extension",
+    ),
+    (
+        "rust-observed-f73036fa2665b58c313c",
+        "kmipkit_protocol::InteropRequest::with_interop_identifier",
+    ),
 )
 
 
 class T102InteropRequestMemberMappingTests(unittest.TestCase):
+    def read_source(self, *parts: str) -> str:
+        return ROOT.joinpath(*parts).read_text(encoding="utf-8")
+
+    def assert_source_contains(self, parts: tuple[str, ...], *fragments: str) -> None:
+        source = self.read_source(*parts)
+        for fragment in fragments:
+            with self.subTest(path="/".join(parts), fragment=fragment):
+                self.assertIn(fragment, source)
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
@@ -69,28 +84,38 @@ class T102InteropRequestMemberMappingTests(unittest.TestCase):
                 self.assertIn(MAPPING_EVIDENCE, self.operation["parityEvidenceIds"])
 
     def test_mapping_is_grounded_in_oasis_tables_and_existing_binding_builders(self) -> None:
-        owner = (ROOT / OWNER).read_text(encoding="utf-8")
-        self.assertIn(
+        self.assert_source_contains(
+            tuple(OWNER.split("/")),
             "| Interop | KMIPKIT-ELEM-OP-C2S-INTEROP | §6.1.26 | 241 | 242 | 243 |",
-            owner,
+            "OASIS Specification v2.1 §6.1.26",
         )
-
-        protocol_tests = (
-            ROOT / "crates/kmipkit-protocol/tests/unit/interop_operation_tests.rs"
-        ).read_text(encoding="utf-8")
-        self.assertIn("with_interop_identifier(|value|", protocol_tests)
-        self.assertIn("unknown_request_extensions_preserve_order_without_overriding_table_fields", protocol_tests)
-
-        c_header = (ROOT / "bindings/c/include/kmipkit.h").read_text(encoding="utf-8")
-        self.assertIn("kmipkit_client_batch_item_interop", c_header)
-        java_source = (
-            ROOT / "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java"
-        ).read_text(encoding="utf-8")
-        self.assertIn("interop(long interopFunction, byte[] interopIdentifier)", java_source)
-        python_source = (ROOT / "bindings/python/src/kmipkit/extensions.py").read_text(
-            encoding="utf-8"
+        self.assert_source_contains(
+            ("crates", "kmipkit-protocol", "tests", "unit", "interop_operation_tests.rs"),
+            "with_interop_identifier(|value|",
+            "unknown_request_extensions_preserve_order_without_overriding_table_fields",
         )
-        self.assertIn("def client_batch_item_interop(", python_source)
+        self.assert_source_contains(
+            ("bindings", "c", "include", "kmipkit.h"),
+            "kmipkit_client_batch_item_interop",
+        )
+        self.assert_source_contains(
+            (
+                "bindings",
+                "java",
+                "src",
+                "main",
+                "java",
+                "org",
+                "kmipkit",
+                "extensions",
+                "ClientBatchItem.java",
+            ),
+            "interop(long interopFunction, byte[] interopIdentifier)",
+        )
+        self.assert_source_contains(
+            ("bindings", "python", "src", "kmipkit", "extensions.py"),
+            "def client_batch_item_interop(",
+        )
 
         self.assertEqual(
             T102_BLOCKED_CANDIDATES,
