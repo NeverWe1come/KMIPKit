@@ -27,6 +27,106 @@ RETIRED_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-6.1.45-002-002",
     "KMIPKIT-REQ-SPEC-6.1.45-006-002",
 }
+RETIRED_REQUIREMENT_DECLARATIONS = {
+    'T058:recertify:constructor:c',
+    'T058:recertify:constructor:java',
+    'T058:recertify:constructor:python',
+    'T058:recertify:response-close:java',
+    'T058:recertify:response-close:python',
+    'T058:recertify:response-ttlv:c',
+    'T058:recertify:response-ttlv:java',
+    'T058:recertify:response-ttlv:python',
+    'T058:recertify:response:c',
+    'T058:recertify:response:java',
+    'T058:recertify:response:python',
+    'T058:recertify:result:type:java',
+    'T058:recertify:result:type:python',
+    'T058:recertify:result:uniqueIdentifier:java',
+    'T058:recertify:result:uniqueIdentifier:python',
+    'rust-observed-03b7476ae491e5a6e8d3',
+    'rust-observed-06ead91548184c12fd56',
+    'rust-observed-0d0bac2451886e74583a',
+    'rust-observed-12bf8df7cd387813c576',
+    'rust-observed-1f59cf7cfe8fbb9bfe63',
+    'rust-observed-2e85d64836128fdd1bb6',
+    'rust-observed-2e966e0f7d4d9d9debcd',
+    'rust-observed-362f5fb1bf041c2d4e03',
+    'rust-observed-3e27eacc084fbb531e78',
+    'rust-observed-3f429f5ae2d84d55badf',
+    'rust-observed-406cce712597bf6d0f2f',
+    'rust-observed-4c37b205dc5bee05df9a',
+    'rust-observed-5dd12d4ecfe06212aa42',
+    'rust-observed-65ae22056bd47722dca2',
+    'rust-observed-6d846e7c70fe25fc18e5',
+    'rust-observed-7701b4c5b2bb60b96c7c',
+    'rust-observed-96cbaa2e43262aca95ac',
+    'rust-observed-bd90b6e53d6c05c1a6b0',
+    'rust-observed-c12b6edc157fdc7037b1',
+    'rust-observed-d229a05b8f66624a27fb',
+    'rust-observed-d5527a5f01b746b4daa2',
+    'rust-observed-d771ff20731cba0fe337',
+    'rust-observed-ef05c2a46dbe1a74a5c5',
+    'rust-observed-f12ee8b89c80c88461c7',
+}
+REQUEST_DECLARATIONS = {
+    "rust-observed-d229a05b8f66624a27fb",
+    "rust-observed-2e966e0f7d4d9d9debcd",
+    "rust-observed-2e85d64836128fdd1bb6",
+    "rust-observed-d5527a5f01b746b4daa2",
+    "rust-observed-f12ee8b89c80c88461c7",
+    "rust-observed-06ead91548184c12fd56",
+    "rust-observed-96cbaa2e43262aca95ac",
+    "rust-observed-0d0bac2451886e74583a",
+    "rust-observed-5dd12d4ecfe06212aa42",
+    "rust-observed-ef05c2a46dbe1a74a5c5",
+    "rust-observed-e98ebdedfd3bd6dc5178",
+    "rust-observed-3b7ec1d8b422ce2f856a",
+    "rust-observed-a305050686931a657f67",
+    "rust-observed-18147c6b3bc743f37b88",
+    "T058:recertify:constructor:c",
+    "T058:recertify:constructor:java",
+    "T058:recertify:constructor:python",
+}
+NON_REQUEST_DECLARATIONS = {
+    "rust-observed-03b7476ae491e5a6e8d3",
+    "rust-observed-7701b4c5b2bb60b96c7c",
+    "rust-observed-6d846e7c70fe25fc18e5",
+    "rust-observed-bd90b6e53d6c05c1a6b0",
+    "rust-observed-362f5fb1bf041c2d4e03",
+    "rust-observed-65ae22056bd47722dca2",
+    "rust-observed-406cce712597bf6d0f2f",
+    "rust-observed-4c37b205dc5bee05df9a",
+    "rust-observed-d771ff20731cba0fe337",
+    "rust-observed-12bf8df7cd387813c576",  # foreign mappings resolve to response classes
+    "rust-observed-c12b6edc157fdc7037b1",
+    "rust-observed-1f59cf7cfe8fbb9bfe63",
+    "rust-observed-3f429f5ae2d84d55badf",
+    "rust-observed-3e27eacc084fbb531e78",
+    "T058:recertify:response:c",
+    "T058:recertify:response-ttlv:c",
+    "T058:recertify:response:java",
+    "T058:recertify:result:type:java",
+    "T058:recertify:result:uniqueIdentifier:java",
+    "T058:recertify:response-ttlv:java",
+    "T058:recertify:response-close:java",
+    "T058:recertify:response:python",
+    "T058:recertify:result:type:python",
+    "T058:recertify:result:uniqueIdentifier:python",
+    "T058:recertify:response-ttlv:python",
+    "T058:recertify:response-close:python",
+}
+ACTIVE_REQUEST_REQUIREMENTS = {
+    "KMIPKIT-REQ-SPEC-6.1.45-001",
+    "KMIPKIT-REQ-SPEC-6.1.45-002-001",
+    "KMIPKIT-REQ-SPEC-6.1.45-002-003",
+    "KMIPKIT-REQ-SPEC-6.1.45-004",
+    "KMIPKIT-REQ-SPEC-6.1.45-006-001",
+    "KMIPKIT-REQ-SPEC-6.1.45-008",
+}
+RESPONSE_FUNCTIONS = {
+    "client_batch_item_response_recertify",
+    "client_batch_item_response_recertify_ttlv",
+}
 REQUEST_REQUIREMENT_DECLARATIONS = {
     "rust-observed-d229a05b8f66624a27fb",  # kmipkit::Client::recertify
     "rust-observed-2e966e0f7d4d9d9debcd",  # kmipkit::Client::recertify_with_options
@@ -38,7 +138,6 @@ REQUEST_REQUIREMENT_DECLARATIONS = {
     "rust-observed-0d0bac2451886e74583a",  # kmipkit_client::ClientRequest::Recertify
     "rust-observed-5dd12d4ecfe06212aa42",  # kmipkit_client::ClientRequest::Recertify payload
     "rust-observed-ef05c2a46dbe1a74a5c5",  # kmipkit_client::ClientRequest::recertify
-    "rust-observed-12bf8df7cd387813c576",  # RecertifyRequest
     "rust-observed-3b7ec1d8b422ce2f856a",  # RecertifyRequest::with_unique_identifier
     "T058:recertify:constructor:c",
     "T058:recertify:constructor:java",
@@ -141,6 +240,7 @@ class RecertifyParityManifestTests(unittest.TestCase):
         self.assertEqual({}, missing)
         self.assertTrue(OWNER_REQUIREMENTS | API_REQUIREMENTS <= linked_requirements)
         self.assertFalse(RETIRED_REQUIREMENTS & linked_requirements)
+        self.assertTrue(ACTIVE_REQUEST_REQUIREMENTS <= linked_requirements)
 
     def test_conditional_identifier_requirement_is_request_only_and_retired_ids_are_unassigned(self) -> None:
         active = "KMIPKIT-REQ-SPEC-6.1.45-002-003"
@@ -151,13 +251,21 @@ class RecertifyParityManifestTests(unittest.TestCase):
             row for row in self.manifest["publicDeclarations"]
             if row.get("capabilityId") == OPERATION_ID
         ]
+        declarations_by_id = {row["declarationId"]: row for row in operation_declarations}
+        self.assertEqual(43, len(operation_declarations))
+        self.assertEqual(set(declarations_by_id), REQUEST_DECLARATIONS | NON_REQUEST_DECLARATIONS)
         active_declarations = {
             row["declarationId"] for row in operation_declarations
             if active in row.get("requirementIds", [])
         }
         self.assertEqual(REQUEST_REQUIREMENT_DECLARATIONS, active_declarations)
+        self.assertFalse(any(ACTIVE_REQUEST_REQUIREMENTS & set(declarations_by_id[i].get("requirementIds", []))
+                             for i in NON_REQUEST_DECLARATIONS))
         self.assertFalse(any(RETIRED_REQUIREMENTS & set(row.get("requirementIds", []))
                              for row in operation_declarations))
+        self.assertTrue(RETIRED_REQUIREMENT_DECLARATIONS <= {
+            row["declarationId"] for row in operation_declarations
+        })
 
         functions = {
             row["id"]: row for row in self.manifest["functions"]
@@ -169,6 +277,8 @@ class RecertifyParityManifestTests(unittest.TestCase):
             {function_id for function_id, row in functions.items()
              if active in row.get("requirementIds", [])},
         )
+        for function_id in RESPONSE_FUNCTIONS:
+            self.assertFalse(ACTIVE_REQUEST_REQUIREMENTS & set(functions[function_id]["requirementIds"]))
         self.assertFalse(any(RETIRED_REQUIREMENTS & set(row.get("requirementIds", []))
                              for row in functions.values()))
 
@@ -198,6 +308,7 @@ class RecertifyParityManifestTests(unittest.TestCase):
             rows[0],
         ))
         self.assertTrue(OWNER_REQUIREMENTS | API_REQUIREMENTS <= linked_ids)
+        self.assertFalse(RETIRED_REQUIREMENTS & linked_ids)
 
     def test_generated_parity_inventory_contains_recertify_mapping(self) -> None:
         generated = json.loads(GENERATED_PARITY.read_text(encoding="utf-8"))
