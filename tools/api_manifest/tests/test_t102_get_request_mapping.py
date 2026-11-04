@@ -11,6 +11,15 @@ MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 GET_BUILDER = ("c-kmipkit", "kmipkit_client_batch_item_get")
 GET_CAPABILITY = "KMIPKIT-ELEM-OP-C2S-GET"
 GET_OWNER = "specs/017-managed-object-retrieval/spec.md"
+GET_NORMATIVE_REQUIREMENTS = {
+    "KMIPKIT-REQ-SPEC-6.1.19-001",
+    "KMIPKIT-REQ-SPEC-6.1.19-002",
+}
+WRAPPING_REQUIREMENTS = {
+    "KMIPKIT-REQ-SPEC-7.18-001-001",
+    "KMIPKIT-REQ-SPEC-7.18-004",
+}
+PARITY_TEST_EVIDENCE_ID = "tools/api_manifest/tests/test_t102_get_request_mapping.py"
 REQUIRED_EVIDENCE = {
     "bindings/c/tests/client_abi_consumer.c",
     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
@@ -21,6 +30,7 @@ REQUIRED_EVIDENCE = {
     "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
     "crates/kmipkit-protocol/tests/unit/get_tests.rs",
     "tools/api_manifest/tests/test_get_locate_parity_manifest.py",
+    PARITY_TEST_EVIDENCE_ID,
 }
 TARGETS = {
     "rust-observed-f6bec1eb3ed6ee5dd803": (
@@ -91,19 +101,13 @@ class T102GetRequestMappingTests(unittest.TestCase):
                 self.assertEqual(expected_mappings, declaration["languageMappings"])
                 self.assertEqual("four-language", declaration["parityScope"])
                 self.assertTrue(REQUIRED_EVIDENCE <= set(declaration["parityEvidenceIds"]))
-                self.assertIn(
-                    "tools/api_manifest/tests/test_t102_get_request_mapping.py",
-                    declaration["parityEvidenceIds"],
-                )
                 self.assertIn(declaration_id, operation["declarations"]["rust"])
 
     def test_get_request_mapping_cites_its_oasis_tables_and_approved_requirements(self) -> None:
         self.assertTrue(
             {
-                "KMIPKIT-REQ-SPEC-6.1.19-001",
-                "KMIPKIT-REQ-SPEC-6.1.19-002",
-                "KMIPKIT-REQ-SPEC-7.18-001-001",
-                "KMIPKIT-REQ-SPEC-7.18-004",
+                *GET_NORMATIVE_REQUIREMENTS,
+                *WRAPPING_REQUIREMENTS,
             }
             <= set(self.manifest["requirementIds"])
         )
