@@ -12,7 +12,8 @@ FOCUSED_COMMAND = (
     "tools.api_manifest.tests.test_t102_certify_request_builder_mapping "
     "tools.api_manifest.tests.test_t102_client_extension_registry_namespace "
     "tools.api_manifest.tests.test_t102_recertify_rekey_key_pair_builder_mapping "
-    "tools.api_manifest.tests.test_log_parity_manifest -v"
+    "tools.api_manifest.tests.test_log_parity_manifest "
+    "tools.api_manifest.tests.test_t102_response_parser_mapping -v"
 )
 
 
