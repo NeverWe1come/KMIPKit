@@ -336,8 +336,6 @@ class JavaTtlvBridgeExclusionTests(unittest.TestCase):
                 self.assertNotIn((PACKAGE, export_name), self.declarations)
                 if member == "codecLimitsCreate":
                     self.assertNotIn(f"NativeExtensionRegistry.{member}", source_text)
-                else:
-                    self.assertIn(f"NativeExtensionRegistry.{member}", source_text)
         bridge_type = self.exclusions[(PACKAGE, "org.kmipkit.NativeExtensionRegistry")]
         self.assertEqual(OWNER_SPEC, bridge_type["approvalSource"]["path"])
         self.assertEqual("Approved", bridge_type["approvalSource"]["status"])

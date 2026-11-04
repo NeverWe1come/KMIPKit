@@ -1116,7 +1116,6 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for declaration in self.checked_in_manifest["publicDeclarations"]
         }
         for export_name in (
-            "org.kmipkit.NativeExtensionRegistry",
             "org.kmipkit.generated.ExtensionRegistryApi",
             "kmipkit.errors.raise_for_status",
         ):
