@@ -10888,3 +10888,16 @@ Reproduction commands (run from the repository root):
 - Focused Green mapping and operation checks: `python -m unittest tools.api_manifest.tests.test_t102_get_usage_allocation_request_mapping tools.api_manifest.tests.test_t102_request_builder_mapping_batch tools.api_manifest.tests.test_get_usage_allocation_parity_manifest -v`.
 - Generated API outputs: `python tools/api_manifest/generate.py --check`.
 - Whitespace: `git diff --check`.
+
+### T102 Macro-Lot 2 policy request serializer parity (2026-11-04)
+
+Red commit `289fa6097` requires six root/protocol request serializers to map to their verified four-language operation capabilities; the focused test fails on all six blocked declaration states and confirms the owner/table citations. The approved owner is `specs/025-policy-controls/spec.md`, KMIPKIT-0039; exact OASIS KMIP Specification v2.1 tables are §6.1.22 Tables 229–231 (Get Constraints), §6.1.52 Tables 325–327 (Set Constraints), and §6.1.53 Tables 328–330 (Set Defaults). Green commit `ee676a891` maps the serializers to the corresponding approved constructors and C/Java/Python operation builders, records them in each operation inventory, regenerates all public API projections, and updates the Set Constraints declaration-state contract. Refactor commit `27b9b2012` centralizes operation lookup in the mapping test without changing behavior. The mapping records the existing operation capability; it does not claim method-for-method foreign API parity or add runtime behavior.
+
+Verification: the focused serializer, Set Constraints trait-state, request-builder, and three operation parity modules pass 19/19; `python tools/api_manifest/generate.py --check` verifies 12/12 outputs; `cargo fmt --all --check` and `git diff --check` pass. T102 falls 136→130 blocked candidates; public declarations/exclusions remain 6,380/8,713. Macro-Lot 2 remains open; the full T102 and 151-test `manifest-v2` suites remain reserved for lot closure. No protocol-conformance or server-interoperability claim is made.
+
+Reproduction commands (run from the repository root):
+
+- Red, expected to fail with six blocked-state assertions plus three operation-inventory assertions: `python -m unittest tools.api_manifest.tests.test_t102_policy_request_serializer_mapping -v`.
+- Focused Green mapping, policy state, request-builder, and operation checks: `python -m unittest tools.api_manifest.tests.test_t102_policy_request_serializer_mapping tools.api_manifest.tests.test_t102_set_constraints_request_trait_exclusions tools.api_manifest.tests.test_t102_request_builder_mapping_batch tools.api_manifest.tests.test_get_constraints_parity_manifest tools.api_manifest.tests.test_set_constraints_parity_manifest tools.api_manifest.tests.test_set_defaults_parity_manifest -v`.
+- Generated API outputs: `python tools/api_manifest/generate.py --check`.
+- Formatting and whitespace: `cargo fmt --all --check` and `git diff --check`.
