@@ -55,6 +55,50 @@ fn pkcs11_constructor_requires_function_and_clears_output() {
 }
 
 #[test]
+fn pkcs11_constructor_copies_caller_ordered_payload_extensions() {
+    let function = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+    let extension = Item::new(
+        RawTag::new(0x0042_02fe)
+            .expect("fixture tag fits the KMIP tag field")
+            .try_checked()
+            .expect("fixture tag is structurally valid"),
+        Value::enumeration(7),
+    )
+    .expect("the opaque extension is a structurally valid TTLV item");
+    let extension_handle = make_handle(Kind::Item, HandleValue::Item(extension));
+    let mut extensions = [extension_handle];
+    let mut item = ptr::null_mut();
+
+    // SAFETY: both input handles and the output slot remain live and correctly aligned.
+    assert_eq!(
+        unsafe {
+            kmipkit_client_batch_item_pkcs11_with_extensions_v1(
+                function,
+                ptr::null_mut(),
+                ptr::null(),
+                ptr::null_mut(),
+                extensions.as_mut_ptr(),
+                1,
+                &raw mut item,
+            )
+        },
+        SUCCESS
+    );
+    assert!(!item.is_null());
+    let handle = reference_handle(item, Kind::BatchItem)
+        .expect("the returned PKCS#11 batch item handle is valid");
+    let HandleValue::BatchItem(batch_item) = &handle.value else {
+        panic!("the constructor returns a batch item handle");
+    };
+    assert!(matches!(batch_item.request(), ClientRequest::Pkcs11(_)));
+    assert!(reference_handle(extension_handle, Kind::Item).is_ok());
+
+    kmipkit_client_batch_item_release(item);
+    kmipkit_ttlv_item_release(extension_handle);
+    kmipkit_ttlv_structure_release(function);
+}
+
+#[test]
 fn pkcs11_response_ttlv_getter_clears_outputs_for_invalid_item() {
     let mut present = u8::MAX;
     let mut response_ttlv = ptr::dangling_mut();

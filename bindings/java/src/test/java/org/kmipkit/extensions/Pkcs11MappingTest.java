@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
+import org.kmipkit.ttlv.TtlvCodec;
+import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvStructure;
 
 final class Pkcs11MappingTest {
@@ -40,6 +42,19 @@ final class Pkcs11MappingTest {
                 assertNotNull(omitted);
                 assertNotNull(emptyCorrelation);
             }
+        }
+    }
+
+    @Test
+    void publicFactoryAcceptsCallerOrderedOpaquePayloadExtensions() {
+        try (TtlvStructure function = TtlvStructure.create();
+                TtlvItem extension = TtlvCodec.decode(new byte[] {
+                        0x42, 0x02, (byte) 0xfe, 0x05, 0, 0, 0, 4,
+                        0, 0, 0, 7, 0, 0, 0, 0
+                });
+                ClientBatchItem item = ClientBatchItem.pkcs11(
+                        function, null, null, null, java.util.List.of(extension))) {
+            assertNotNull(item);
         }
     }
 
