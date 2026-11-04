@@ -10763,6 +10763,16 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::InteropRequest::new",
     ),
     (
+        "rust-observed-d951003e9b0d9ac3e25d",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::InteropRequest::with_extension",
+    ),
+    (
+        "rust-observed-f73036fa2665b58c313c",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::InteropRequest::with_interop_identifier",
+    ),
+    (
         "rust-observed-25d0ac7d81fec9859cdb",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::InteropResponse",
