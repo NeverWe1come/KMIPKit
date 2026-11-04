@@ -10876,6 +10876,14 @@ Reproduction commands (run from the repository root unless stated otherwise):
 - Generated API outputs: `python tools/api_manifest/generate.py --check`.
 - Formatting and whitespace: `cargo fmt --all --check` and `git diff --check`.
 
+### T102 Macro-Lot 2 Revoke request-member parity (2026-11-04)
+
+Red commit `e590b0393` adds a regression for the three remaining protocol request members: `compromise_occurrence_date`, `revocation_reason`, and `unique_identifier`. It fails because each declaration remains blocked. Green commit `2fddf112d` maps the members to the existing C, Java, and Python Revoke builder, inherits the approved owner and requirement IDs from `RevokeRequest::new`, updates the operation inventory and candidate total, and regenerates public API outputs. Refactor commit `935083cd1` extracts the shared mapped-member assertions.
+
+The approved owner is `specs/022-object-lifecycle/spec.md` (KMIPKIT-0036). The normative source is OASIS KMIP Specification v2.1 §6.1.44, Tables 295–297. The exact declaration IDs, constructor anchor, and source-test references are recorded in `traceability.md`. The mapping adds no runtime code, public symbols, or wire behavior.
+
+Verification: the focused Revoke member mapping, request-trait, Revoke parity, and preceding Import/Locate mapping regressions pass 24/24. `py -3 -B tools/api_manifest/generate.py --check` verifies all 12 generated outputs; `cargo fmt --all --check` and `git diff --check` pass. T102 falls 97→94 blocked candidates; public declaration/exclusion totals remain 6,380/8,713. Macro-Lot 2 remains open; the full T102 and 151-test `manifest-v2` suites remain reserved for lot closure. No formal conformance, interoperability, profile-support, or certification claim is made.
+
 ### T102 Macro-Lot 2 Get Usage Allocation request member parity (2026-11-04)
 
 Red commit `929773f29` requires the four remaining root/protocol request declarations (`to_ttlv_payload` and `unique_identifier`) to appear in the existing four-language Get Usage Allocation capability; the focused test first fails on the four blocked-state assertions. The owner is approved `specs/025-policy-controls/spec.md`, KMIPKIT-0039-FR-001/004 and `KMIPKIT-REQ-SPEC-6.1.23-002-001`; OASIS KMIP Specification v2.1 §6.1.23, Tables 232–234, defines the request and result. Green commit `b7ed2ae20` assigns the corresponding approved constructor/Unique Identifier builder mappings, adds the exact Rust declaration IDs to the operation inventory, and regenerates the public API projections. Refactor commit `eaa1ba5f4` tightens the source assertion to the exact approved owner row and OASIS tables. This records equivalent operation capability, not method-for-method API parity or new runtime behavior.

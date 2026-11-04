@@ -974,6 +974,16 @@ The eight existing protocol serializer declarations inherit the exact `requireme
 | Re-Provision | `rust-observed-d1446684e4f2641b3c96` `ReProvisionRequest::into_ttlv_payload` | `rust-observed-6a7230e68170a1e256ae` | §6.1.48, Tables 313–315 |
 | Revoke | `rust-observed-3110caf46cc1e36cbcc9` `RevokeRequest::into_ttlv_payload` | `rust-observed-e132783701cd4df7cbc2` | §6.1.44, Tables 295–297 |
 
+## T102 — KMIPKIT-0036 Revoke request members
+
+Each remaining Revoke request member inherits the exact requirement IDs and approved owner from the verified `RevokeRequest::new` constructor. The members map to the existing C, Java, and Python Revoke request builder, which accepts the corresponding identifier, reason, and optional compromise date. `tools/api_manifest/tests/test_t102_revoke_request_member_mapping.py` pins these mappings and the OASIS source.
+
+| Request member declaration | Constructor anchor | OASIS KMIP v2.1 source |
+|---|---|---|
+| `rust-observed-12003f4a97a411611f15` `RevokeRequest::compromise_occurrence_date` | `rust-observed-e132783701cd4df7cbc2` | §6.1.44, Tables 295–297 |
+| `rust-observed-3020c4fea7458e2d97c4` `RevokeRequest::revocation_reason` | `rust-observed-e132783701cd4df7cbc2` | §6.1.44, Tables 295–297 |
+| `rust-observed-b20a90b8e34124a1006c` `RevokeRequest::unique_identifier` | `rust-observed-e132783701cd4df7cbc2` | §6.1.44, Tables 295–297 |
+
 ## T102 — KMIPKIT-0037 transfer request serializer mappings
 
 Each existing protocol serializer below inherits the exact requirement IDs and approved owner from its verified same-package constructor and maps to the existing C, Java, and Python operation builders. The executable mapping and source-citation contract is `tools/api_manifest/tests/test_t102_transfer_request_serializer_mapping.py`.
