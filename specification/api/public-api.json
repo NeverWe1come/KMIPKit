@@ -451569,6 +451569,7 @@
     },
     {
   "packageId": "rust-kmipkit-client",
+  "candidateSpecId": "KMIPKIT-0007",
   "exportName": "<kmipkit_client::ClientResponseView<'a> as alloc::borrow::ToOwned>::Owned",
   "reason": "This exact Rust standard-trait implementation of alloc::borrow::ToOwned is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451581,6 +451582,7 @@
 },
     {
   "packageId": "rust-kmipkit-client",
+  "candidateSpecId": "KMIPKIT-0007",
   "exportName": "<kmipkit_client::ClientResponseView<'a> as alloc::borrow::ToOwned>::clone_into",
   "reason": "This exact Rust standard-trait implementation of alloc::borrow::ToOwned is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451593,6 +451595,7 @@
 },
     {
   "packageId": "rust-kmipkit-client",
+  "candidateSpecId": "KMIPKIT-0007",
   "exportName": "<kmipkit_client::ClientResponseView<'a> as alloc::borrow::ToOwned>::to_owned",
   "reason": "This exact Rust standard-trait implementation of alloc::borrow::ToOwned is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451605,6 +451608,7 @@
 },
     {
   "packageId": "rust-kmipkit-client",
+  "candidateSpecId": "KMIPKIT-0007",
   "exportName": "<kmipkit_client::ClientResponseView<'a> as core::borrow::Borrow<kmipkit_client::execute::ClientResponseView<'a>>>::borrow",
   "reason": "This exact Rust standard-trait implementation of core::borrow::Borrow<kmipkit_client::execute::ClientResponseView<'a>> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451617,6 +451621,7 @@
 },
     {
   "packageId": "rust-kmipkit-client",
+  "candidateSpecId": "KMIPKIT-0007",
   "exportName": "<kmipkit_client::ClientResponseView<'a> as core::borrow::BorrowMut<kmipkit_client::execute::ClientResponseView<'a>>>::borrow_mut",
   "reason": "This exact Rust standard-trait implementation of core::borrow::BorrowMut<kmipkit_client::execute::ClientResponseView<'a>> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451629,6 +451634,7 @@
 },
     {
   "packageId": "rust-kmipkit-client",
+  "candidateSpecId": "KMIPKIT-0007",
   "exportName": "<kmipkit_client::ClientResponseView<'a> as core::clone::Clone>::clone",
   "reason": "This exact Rust standard-trait implementation of core::clone::Clone is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451641,6 +451647,7 @@
 },
     {
   "packageId": "rust-kmipkit-client",
+  "candidateSpecId": "KMIPKIT-0007",
   "exportName": "<kmipkit_client::ClientResponseView<'a> as core::clone::Clone>::clone_from",
   "reason": "This exact Rust standard-trait implementation of core::clone::Clone is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451653,6 +451660,7 @@
 },
     {
   "packageId": "rust-kmipkit-client",
+  "candidateSpecId": "KMIPKIT-0007",
   "exportName": "<kmipkit_client::ClientResponseView<'a> as core::clone::CloneToUninit>::clone_to_uninit",
   "reason": "This exact Rust standard-trait implementation of core::clone::CloneToUninit is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451665,6 +451673,7 @@
 },
     {
   "packageId": "rust-kmipkit-client",
+  "candidateSpecId": "KMIPKIT-0007",
   "exportName": "<kmipkit_client::ClientResponseView<'a> as core::convert::From<kmipkit_client::execute::ClientResponseView<'a>>>::from",
   "reason": "This exact Rust standard-trait implementation of core::convert::From<kmipkit_client::execute::ClientResponseView<'a>> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451677,6 +451686,7 @@
 },
     {
   "packageId": "rust-kmipkit-client",
+  "candidateSpecId": "KMIPKIT-0007",
   "exportName": "<kmipkit_client::ClientResponseView<'a> as core::any::Any>::type_id",
   "reason": "This exact Rust standard-trait implementation of core::any::Any is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451689,6 +451699,7 @@
 },
     {
   "packageId": "rust-kmipkit-client",
+  "candidateSpecId": "KMIPKIT-0007",
   "exportName": "<kmipkit_client::ClientResponseView<'a> as core::convert::Into<U>>::into",
   "reason": "This exact Rust standard-trait implementation of core::convert::Into<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451701,6 +451712,7 @@
 },
     {
   "packageId": "rust-kmipkit-client",
+  "candidateSpecId": "KMIPKIT-0007",
   "exportName": "<kmipkit_client::ClientResponseView<'a> as core::convert::TryFrom<U>>::Error",
   "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451713,6 +451725,7 @@
 },
     {
   "packageId": "rust-kmipkit-client",
+  "candidateSpecId": "KMIPKIT-0007",
   "exportName": "<kmipkit_client::ClientResponseView<'a> as core::convert::TryFrom<U>>::try_from",
   "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451725,6 +451738,7 @@
 },
     {
   "packageId": "rust-kmipkit-client",
+  "candidateSpecId": "KMIPKIT-0007",
   "exportName": "<kmipkit_client::ClientResponseView<'a> as core::convert::TryInto<U>>::Error",
   "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451737,6 +451751,7 @@
 },
     {
   "packageId": "rust-kmipkit-client",
+  "candidateSpecId": "KMIPKIT-0007",
   "exportName": "<kmipkit_client::ClientResponseView<'a> as core::convert::TryInto<U>>::try_into",
   "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451749,6 +451764,7 @@
 },
     {
   "packageId": "rust-kmipkit-protocol",
+  "candidateSpecId": "KMIPKIT-0037",
   "exportName": "<kmipkit_protocol::DerivationParameters as core::any::Any>::type_id",
   "reason": "This exact Rust standard-trait implementation of core::any::Any is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451761,6 +451777,7 @@
 },
     {
   "packageId": "rust-kmipkit-protocol",
+  "candidateSpecId": "KMIPKIT-0037",
   "exportName": "<kmipkit_protocol::DerivationParameters as core::borrow::Borrow<kmipkit_protocol::derive_key::DerivationParameters>>::borrow",
   "reason": "This exact Rust standard-trait implementation of core::borrow::Borrow<kmipkit_protocol::derive_key::DerivationParameters> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451773,6 +451790,7 @@
 },
     {
   "packageId": "rust-kmipkit-protocol",
+  "candidateSpecId": "KMIPKIT-0037",
   "exportName": "<kmipkit_protocol::DerivationParameters as core::borrow::BorrowMut<kmipkit_protocol::derive_key::DerivationParameters>>::borrow_mut",
   "reason": "This exact Rust standard-trait implementation of core::borrow::BorrowMut<kmipkit_protocol::derive_key::DerivationParameters> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451785,6 +451803,7 @@
 },
     {
   "packageId": "rust-kmipkit-protocol",
+  "candidateSpecId": "KMIPKIT-0037",
   "exportName": "<kmipkit_protocol::DerivationParameters as core::convert::From<kmipkit_protocol::derive_key::DerivationParameters>>::from",
   "reason": "This exact Rust standard-trait implementation of core::convert::From<kmipkit_protocol::derive_key::DerivationParameters> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451797,6 +451816,7 @@
 },
     {
   "packageId": "rust-kmipkit-protocol",
+  "candidateSpecId": "KMIPKIT-0037",
   "exportName": "<kmipkit_protocol::DerivationParameters as core::default::Default>::default",
   "reason": "This exact Rust standard-trait implementation of core::default::Default is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451809,6 +451829,7 @@
 },
     {
   "packageId": "rust-kmipkit-protocol",
+  "candidateSpecId": "KMIPKIT-0037",
   "exportName": "<kmipkit_protocol::DerivationParameters as core::fmt::Debug>::fmt",
   "reason": "This exact Rust standard-trait implementation of core::fmt::Debug is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451817,10 +451838,11 @@
     "status": "Approved",
     "evidence": "**Status**: Approved for implementation — 2026-10-11"
   },
-  "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.12 and Section 6.1.14, Table 205. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits presence and count metadata only. Default is the empty `new()` value, not an implicit cryptographic selection. No Clone or secret-copy path is included. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+  "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 7.12 and Section 6.1.14, Table 205. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits presence and count metadata only. Default is the empty `new()` value, not an implicit cryptographic selection. No Clone or secret-copy path is included. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
 },
     {
   "packageId": "rust-kmipkit-protocol",
+  "candidateSpecId": "KMIPKIT-0037",
   "exportName": "<kmipkit_protocol::DerivationParameters as core::convert::Into<U>>::into",
   "reason": "This exact Rust standard-trait implementation of core::convert::Into<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451833,6 +451855,7 @@
 },
     {
   "packageId": "rust-kmipkit-protocol",
+  "candidateSpecId": "KMIPKIT-0037",
   "exportName": "<kmipkit_protocol::DerivationParameters as core::convert::TryFrom<U>>::Error",
   "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451845,6 +451868,7 @@
 },
     {
   "packageId": "rust-kmipkit-protocol",
+  "candidateSpecId": "KMIPKIT-0037",
   "exportName": "<kmipkit_protocol::DerivationParameters as core::convert::TryFrom<U>>::try_from",
   "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451857,6 +451881,7 @@
 },
     {
   "packageId": "rust-kmipkit-protocol",
+  "candidateSpecId": "KMIPKIT-0037",
   "exportName": "<kmipkit_protocol::DerivationParameters as core::convert::TryInto<U>>::Error",
   "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451869,6 +451894,7 @@
 },
     {
   "packageId": "rust-kmipkit-protocol",
+  "candidateSpecId": "KMIPKIT-0037",
   "exportName": "<kmipkit_protocol::DerivationParameters as core::convert::TryInto<U>>::try_into",
   "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451881,6 +451907,7 @@
 },
     {
   "packageId": "rust-kmipkit-protocol",
+  "candidateSpecId": "KMIPKIT-0037",
   "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::any::Any>::type_id",
   "reason": "This exact Rust standard-trait implementation of core::any::Any is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451893,6 +451920,7 @@
 },
     {
   "packageId": "rust-kmipkit-protocol",
+  "candidateSpecId": "KMIPKIT-0037",
   "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::borrow::Borrow<kmipkit_protocol::derive_key::DeriveKeyRequest>>::borrow",
   "reason": "This exact Rust standard-trait implementation of core::borrow::Borrow<kmipkit_protocol::derive_key::DeriveKeyRequest> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451905,6 +451933,7 @@
 },
     {
   "packageId": "rust-kmipkit-protocol",
+  "candidateSpecId": "KMIPKIT-0037",
   "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::borrow::BorrowMut<kmipkit_protocol::derive_key::DeriveKeyRequest>>::borrow_mut",
   "reason": "This exact Rust standard-trait implementation of core::borrow::BorrowMut<kmipkit_protocol::derive_key::DeriveKeyRequest> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451917,6 +451946,7 @@
 },
     {
   "packageId": "rust-kmipkit-protocol",
+  "candidateSpecId": "KMIPKIT-0037",
   "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::convert::From<kmipkit_protocol::derive_key::DeriveKeyRequest>>::from",
   "reason": "This exact Rust standard-trait implementation of core::convert::From<kmipkit_protocol::derive_key::DeriveKeyRequest> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451929,6 +451959,7 @@
 },
     {
   "packageId": "rust-kmipkit-protocol",
+  "candidateSpecId": "KMIPKIT-0037",
   "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::fmt::Debug>::fmt",
   "reason": "This exact Rust standard-trait implementation of core::fmt::Debug is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451937,10 +451968,11 @@
     "status": "Approved",
     "evidence": "**Status**: Approved for implementation — 2026-10-11"
   },
-  "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.14, Table 205, and Section 7.12. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits only type codes and collection counts, with nested secret parameters redacted. Identity conversions and borrow paths add no separate KMIP operation capability. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+  "evidence": "Direct owner requirements KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.14, Table 205, and Section 7.12. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits only type codes and collection counts, with nested secret parameters redacted. Identity conversions and borrow paths add no separate KMIP operation capability. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
 },
     {
   "packageId": "rust-kmipkit-protocol",
+  "candidateSpecId": "KMIPKIT-0037",
   "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::convert::Into<U>>::into",
   "reason": "This exact Rust standard-trait implementation of core::convert::Into<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451953,6 +451985,7 @@
 },
     {
   "packageId": "rust-kmipkit-protocol",
+  "candidateSpecId": "KMIPKIT-0037",
   "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::convert::TryFrom<U>>::Error",
   "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451965,6 +451998,7 @@
 },
     {
   "packageId": "rust-kmipkit-protocol",
+  "candidateSpecId": "KMIPKIT-0037",
   "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::convert::TryFrom<U>>::try_from",
   "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451977,6 +452011,7 @@
 },
     {
   "packageId": "rust-kmipkit-protocol",
+  "candidateSpecId": "KMIPKIT-0037",
   "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::convert::TryInto<U>>::Error",
   "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -451989,6 +452024,7 @@
 },
     {
   "packageId": "rust-kmipkit-protocol",
+  "candidateSpecId": "KMIPKIT-0037",
   "exportName": "<kmipkit_protocol::DeriveKeyRequest as core::convert::TryInto<U>>::try_into",
   "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -452001,6 +452037,7 @@
 },
     {
   "packageId": "rust-kmipkit",
+  "candidateSpecId": "KMIPKIT-0041",
   "exportName": "<kmipkit::RngRetrieveResponse as core::any::Any>::type_id",
   "reason": "This exact Rust standard-trait implementation of core::any::Any is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -452013,6 +452050,7 @@
 },
     {
   "packageId": "rust-kmipkit",
+  "candidateSpecId": "KMIPKIT-0041",
   "exportName": "<kmipkit::RngRetrieveResponse as core::borrow::Borrow<kmipkit_protocol::rng_retrieve::RngRetrieveResponse>>::borrow",
   "reason": "This exact Rust standard-trait implementation of core::borrow::Borrow<kmipkit_protocol::rng_retrieve::RngRetrieveResponse> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -452025,6 +452063,7 @@
 },
     {
   "packageId": "rust-kmipkit",
+  "candidateSpecId": "KMIPKIT-0041",
   "exportName": "<kmipkit::RngRetrieveResponse as core::borrow::BorrowMut<kmipkit_protocol::rng_retrieve::RngRetrieveResponse>>::borrow_mut",
   "reason": "This exact Rust standard-trait implementation of core::borrow::BorrowMut<kmipkit_protocol::rng_retrieve::RngRetrieveResponse> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -452037,6 +452076,7 @@
 },
     {
   "packageId": "rust-kmipkit",
+  "candidateSpecId": "KMIPKIT-0041",
   "exportName": "<kmipkit::RngRetrieveResponse as core::convert::From<kmipkit_protocol::rng_retrieve::RngRetrieveResponse>>::from",
   "reason": "This exact Rust standard-trait implementation of core::convert::From<kmipkit_protocol::rng_retrieve::RngRetrieveResponse> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -452049,6 +452089,7 @@
 },
     {
   "packageId": "rust-kmipkit",
+  "candidateSpecId": "KMIPKIT-0041",
   "exportName": "<kmipkit::RngRetrieveResponse as core::convert::Into<U>>::into",
   "reason": "This exact Rust standard-trait implementation of core::convert::Into<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -452061,6 +452102,7 @@
 },
     {
   "packageId": "rust-kmipkit",
+  "candidateSpecId": "KMIPKIT-0041",
   "exportName": "<kmipkit::RngRetrieveResponse as core::convert::TryFrom<U>>::Error",
   "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -452073,6 +452115,7 @@
 },
     {
   "packageId": "rust-kmipkit",
+  "candidateSpecId": "KMIPKIT-0041",
   "exportName": "<kmipkit::RngRetrieveResponse as core::convert::TryFrom<U>>::try_from",
   "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -452085,6 +452128,7 @@
 },
     {
   "packageId": "rust-kmipkit",
+  "candidateSpecId": "KMIPKIT-0041",
   "exportName": "<kmipkit::RngRetrieveResponse as core::convert::TryInto<U>>::Error",
   "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -452097,6 +452141,7 @@
 },
     {
   "packageId": "rust-kmipkit",
+  "candidateSpecId": "KMIPKIT-0041",
   "exportName": "<kmipkit::RngRetrieveResponse as core::convert::TryInto<U>>::try_into",
   "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -452109,6 +452154,7 @@
 },
     {
   "packageId": "rust-kmipkit",
+  "candidateSpecId": "KMIPKIT-0041",
   "exportName": "<kmipkit::RngSeedResponse as core::any::Any>::type_id",
   "reason": "This exact Rust standard-trait implementation of core::any::Any is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -452121,6 +452167,7 @@
 },
     {
   "packageId": "rust-kmipkit",
+  "candidateSpecId": "KMIPKIT-0041",
   "exportName": "<kmipkit::RngSeedResponse as core::borrow::Borrow<kmipkit_protocol::rng_seed::RngSeedResponse>>::borrow",
   "reason": "This exact Rust standard-trait implementation of core::borrow::Borrow<kmipkit_protocol::rng_seed::RngSeedResponse> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -452133,6 +452180,7 @@
 },
     {
   "packageId": "rust-kmipkit",
+  "candidateSpecId": "KMIPKIT-0041",
   "exportName": "<kmipkit::RngSeedResponse as core::borrow::BorrowMut<kmipkit_protocol::rng_seed::RngSeedResponse>>::borrow_mut",
   "reason": "This exact Rust standard-trait implementation of core::borrow::BorrowMut<kmipkit_protocol::rng_seed::RngSeedResponse> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -452145,6 +452193,7 @@
 },
     {
   "packageId": "rust-kmipkit",
+  "candidateSpecId": "KMIPKIT-0041",
   "exportName": "<kmipkit::RngSeedResponse as core::convert::From<kmipkit_protocol::rng_seed::RngSeedResponse>>::from",
   "reason": "This exact Rust standard-trait implementation of core::convert::From<kmipkit_protocol::rng_seed::RngSeedResponse> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -452157,6 +452206,7 @@
 },
     {
   "packageId": "rust-kmipkit",
+  "candidateSpecId": "KMIPKIT-0041",
   "exportName": "<kmipkit::RngSeedResponse as core::fmt::Debug>::fmt",
   "reason": "This exact Rust standard-trait implementation of core::fmt::Debug is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -452165,10 +452215,11 @@
     "status": "Approved",
     "evidence": "**Status**: Approved for implementation — 2026-10-11"
   },
-  "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.50, Tables 321-322. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits result metadata and redacted TTLV metadata; all other excluded paths are standard identity conversion, borrow, or type metadata. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+  "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.50, Tables 321-322. No OASIS normative clause directly applies to Rust standard-trait paths. Debug emits result metadata and redacted TTLV metadata; all other excluded paths are standard identity conversion, borrow, or type metadata. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
 },
     {
   "packageId": "rust-kmipkit",
+  "candidateSpecId": "KMIPKIT-0041",
   "exportName": "<kmipkit::RngSeedResponse as core::convert::Into<U>>::into",
   "reason": "This exact Rust standard-trait implementation of core::convert::Into<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -452181,6 +452232,7 @@
 },
     {
   "packageId": "rust-kmipkit",
+  "candidateSpecId": "KMIPKIT-0041",
   "exportName": "<kmipkit::RngSeedResponse as core::convert::TryFrom<U>>::Error",
   "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -452193,6 +452245,7 @@
 },
     {
   "packageId": "rust-kmipkit",
+  "candidateSpecId": "KMIPKIT-0041",
   "exportName": "<kmipkit::RngSeedResponse as core::convert::TryFrom<U>>::try_from",
   "reason": "This exact Rust standard-trait implementation of core::convert::TryFrom<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -452205,6 +452258,7 @@
 },
     {
   "packageId": "rust-kmipkit",
+  "candidateSpecId": "KMIPKIT-0041",
   "exportName": "<kmipkit::RngSeedResponse as core::convert::TryInto<U>>::Error",
   "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -452217,6 +452271,7 @@
 },
     {
   "packageId": "rust-kmipkit",
+  "candidateSpecId": "KMIPKIT-0041",
   "exportName": "<kmipkit::RngSeedResponse as core::convert::TryInto<U>>::try_into",
   "reason": "This exact Rust standard-trait implementation of core::convert::TryInto<U> is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
@@ -452229,18 +452284,20 @@
 },
     {
   "packageId": "rust-kmipkit",
+  "candidateSpecId": "KMIPKIT-0039",
   "exportName": "<kmipkit::GetUsageAllocationRequest as core::fmt::Debug>::fmt",
-  "reason": "This exact Rust standard-trait implementation of core::fmt::Debug is language-level behavior of a Rust value, not a separate KMIPKit product capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
+  "reason": "This exact Rust standard-trait implementation of core::fmt::Debug is language-level behavior of a Rust value, not a separate KMIPKit product capability, and not a separate KMIPKit client capability. It adds no cross-language operation capability, and the owning typed capability remains inventoried separately.",
   "approvalSource": {
     "kind": "feature-specification",
     "path": "specs/025-policy-controls/spec.md",
     "status": "Approved",
     "evidence": "**Status**: Approved for implementation — 2026-10-11"
   },
-  "evidence": "Direct owner requirements KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-005, KMIPKIT-0039-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.23, Tables 232-234. No OASIS normative clause directly applies to Rust standard-trait paths. Debug redacts an explicit Unique Identifier and emits only the permitted numeric count; a focused sentinel test verifies the identifier does not appear. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+  "evidence": "Direct owner requirements KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-005, KMIPKIT-0039-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.23, Table 232 (Tables 232-234). No OASIS normative clause directly applies to Rust standard-trait paths. Debug redacts an explicit Unique Identifier and emits only the permitted numeric count; the focused `KMIP_USAGE_ALLOCATION_IDENTIFIER_SENTINEL` test verifies the identifier does not appear. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
 },
     {
   "packageId": "rust-kmipkit-client",
+  "candidateSpecId": "KMIPKIT-0007",
   "exportName": "<kmipkit_client::ClientResponseView<'a> as core::fmt::Debug>::fmt",
   "reason": "This exact Rust standard-trait implementation of core::fmt::Debug::fmt formats only reviewed, redacted diagnostic information and is not a separate KMIPKit product capability; the owning typed operation remains inventoried separately.",
   "approvalSource": {
@@ -452249,10 +452306,11 @@
     "status": "Approved",
     "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`"
   },
-  "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. The TDD regression test asserts that this Debug path emits only the operation label for an RNG Retrieve response view; it cannot delegate to or expose any response payload. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+  "evidence": "Direct owner requirements KMIPKIT-0007-FR-013; KMIPKit API requirements KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, and KMIPKIT-0043-FR-021. Shared typed client response view; operation-specific response payloads remain covered by their owning operation declarations. No OASIS normative clause directly applies to Rust standard-trait paths. The TDD regression test asserts that this Debug path emits only the operation label for an RNG Retrieve response view; it cannot delegate to or expose any response payload. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
 },
     {
   "packageId": "rust-kmipkit",
+  "candidateSpecId": "KMIPKIT-0041",
   "exportName": "<kmipkit::RngRetrieveResponse as core::fmt::Debug>::fmt",
   "reason": "This exact Rust standard-trait implementation of core::fmt::Debug::fmt formats only reviewed, redacted diagnostic information and is not a separate KMIPKit product capability; the owning typed operation remains inventoried separately.",
   "approvalSource": {
@@ -452261,7 +452319,7 @@
     "status": "Approved",
     "evidence": "**Status**: Approved for implementation — 2026-10-11"
   },
-  "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.49, Tables 317-318. No OASIS normative clause directly applies to Rust standard-trait paths. The focused response Debug test includes `KMIP_RNG_RETRIEVE_RESPONSE_SECRET_SENTINEL` and `KMIP_RNG_RETRIEVE_UNKNOWN_TTLV_SENTINEL` and verifies neither value is formatted; secret-owned bytes remain zeroizing and the retained TTLV Debug reports metadata only. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
+  "evidence": "Direct owner requirements KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-008; KMIPKit API requirements KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, and KMIPKIT-0043-FR-021. OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.49, Tables 317-318. No OASIS normative clause directly applies to Rust standard-trait paths. The focused response Debug test includes `KMIP_RNG_RETRIEVE_RESPONSE_SECRET_SENTINEL` and `KMIP_RNG_RETRIEVE_UNKNOWN_TTLV_SENTINEL` and verifies neither value is formatted; secret-owned bytes remain zeroizing and the retained TTLV Debug reports metadata only. This is inventory-only and makes no OASIS conformance, interoperability, profile-support, or certification claim."
 }
   ],
   "apiLevels": [
