@@ -137,6 +137,37 @@ fn derive_key_payload_recursively_validates_derivation_parameters() {
 }
 
 #[test]
+fn derive_key_schema_applies_pbkdf2_parameter_requirements_from_outer_method() {
+    let payload = structure([
+        item(OBJECT_TYPE, Value::enumeration(2)),
+        item(0x0042_0094, Value::text_string("derivation-key".to_owned())),
+        item(0x0042_0031, Value::enumeration(1)),
+        item(0x0042_0032, Value::structure(Structure::new())),
+        item(ATTRIBUTES, Value::structure(Structure::new())),
+    ]);
+
+    let report = validate_structure(
+        &payload.view(),
+        Some(ValidationSchema::RequestPayload(
+            RequestPayloadSchema::DeriveKey,
+        )),
+    );
+
+    let paths = report
+        .issues()
+        .iter()
+        .map(|issue| issue.path().to_string())
+        .collect::<Vec<_>>();
+    assert_eq!(
+        paths,
+        [
+            "Request Payload.Derivation Parameters.Salt",
+            "Request Payload.Derivation Parameters.Iteration Count",
+        ]
+    );
+}
+
+#[test]
 fn generic_structure_without_identity_does_not_guess_an_operation_schema() {
     let mut structure = Structure::new();
     structure
