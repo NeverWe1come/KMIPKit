@@ -97,6 +97,7 @@ mod signature_verify;
 mod ticket;
 mod typed_attributes;
 mod validate;
+mod validation;
 
 pub use activate::{ActivateError, ActivateRequest, ActivateResponse};
 pub use add_attribute::{AddAttributeError, AddAttributeRequest, AddAttributeResponse};
