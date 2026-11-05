@@ -19,7 +19,8 @@ use std::rc::Rc;
 use kmipkit_test_support::{ExchangeScript, ScriptedTransport};
 use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
 use kmipkit_ttlv::codec::{CodecLimits, decode};
-use kmipkit_ttlv::{Item, ValueView};
+use kmipkit_protocol::{AttributeSet, CreateRequest, ObjectType};
+use kmipkit_ttlv::{Item, RawTag, Value, ValueView};
 use serde_json::Value as JsonValue;
 
 use crate::ClientErrorCategory;
@@ -287,6 +288,27 @@ fn invalid_batch_and_option_inputs_are_rejected_before_exchange() {
         assert_eq!(fake.borrow().exchange_count(), 0);
         assert_eq!(fake.borrow().write_call_count(), 0);
     }
+}
+
+#[test]
+fn typed_request_preflight_uses_borrowed_protocol_validation() {
+    let comment = RawTag::new(0x0042_00fd)
+        .expect("Comment is a valid raw tag")
+        .try_checked()
+        .expect("Comment is an allocated KMIP tag");
+    let attributes = AttributeSet::try_new([
+        Item::new(comment, Value::text_string("first".to_owned()))
+            .expect("first Comment is valid TTLV"),
+        Item::new(comment, Value::text_string("second".to_owned()))
+            .expect("second Comment is valid TTLV"),
+    ])
+    .expect("generic AttributeSet preserves operation-level repetitions");
+    let request = ClientRequest::Create(CreateRequest::new(
+        ObjectType::from_raw(7),
+        attributes,
+    ));
+
+    assert!(request.validate_local_shape().is_err());
 }
 
 fn pending_response() -> Vec<u8> {

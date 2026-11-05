@@ -691,7 +691,7 @@ impl ClientRequest {
         }
     }
 
-    fn validate_local_shape(&self) -> Result<(), ProtocolError> {
+    pub(crate) fn validate_local_shape(&self) -> Result<(), ProtocolError> {
         match self {
             Self::Encrypt(request) => request.validate_multipart_shape(),
             Self::Decrypt(request) => request.validate_multipart_shape(),
