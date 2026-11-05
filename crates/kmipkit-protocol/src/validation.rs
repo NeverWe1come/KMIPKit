@@ -88,23 +88,27 @@ impl fmt::Display for ValidationPath {
         for segment in &self.0 {
             match segment {
                 ValidationPathSegment::Field(name) => {
-                    if has_segment {
-                        formatter.write_str(".")?;
-                    }
+                    write_child_separator(formatter, has_segment)?;
                     formatter.write_str(name)?;
                 }
                 ValidationPathSegment::Index(item_index) => {
                     write!(formatter, "[{item_index}]")?;
                 }
                 ValidationPathSegment::Tag(tag) => {
-                    if has_segment {
-                        formatter.write_str(".")?;
-                    }
+                    write_child_separator(formatter, has_segment)?;
                     write!(formatter, "tag(0x{tag:06x})")?;
                 }
             }
             has_segment = true;
         }
+        Ok(())
+    }
+}
+
+fn write_child_separator(formatter: &mut fmt::Formatter<'_>, has_parent: bool) -> fmt::Result {
+    if has_parent {
+        formatter.write_str(".")
+    } else {
         Ok(())
     }
 }
