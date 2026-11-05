@@ -107,6 +107,61 @@ def _assigned_enumeration_names(catalog: dict[str, Any]) -> list[tuple[str, int,
     return sorted(names)
 
 
+def _assigned_bitmask_names(catalog: dict[str, Any]) -> list[tuple[str, int, str]]:
+    elements = catalog.get("elements")
+    if not isinstance(elements, list):
+        raise ValueError("catalog has no element list")
+
+    bitmasks: dict[str, str] = {}
+    seen_families: set[str] = set()
+    for element in elements:
+        if not isinstance(element, dict) or element.get("kind") != "bitmask":
+            continue
+        identifier = element.get("element_id")
+        name = element.get("name")
+        if (
+            not isinstance(identifier, str)
+            or not identifier
+            or not isinstance(name, str)
+            or not name
+        ):
+            raise ValueError("catalog bitmask family name or identifier is invalid")
+        if identifier in bitmasks or name in seen_families:
+            raise ValueError("catalog contains duplicate bitmask family names or identifiers")
+        bitmasks[identifier] = name
+        seen_families.add(name)
+
+    names: list[tuple[str, int, str]] = []
+    seen_values: set[tuple[str, int]] = set()
+    seen_names: set[tuple[str, str]] = set()
+    for element in elements:
+        if not isinstance(element, dict) or element.get("kind") != "bitmask_value":
+            continue
+        if element.get("allocation") != "assigned":
+            continue
+        parents = element.get("parent_element_ids")
+        raw_value = element.get("wire_value")
+        name = element.get("name")
+        if (
+            not isinstance(parents, list)
+            or len(parents) != 1
+            or parents[0] not in bitmasks
+        ):
+            raise ValueError("catalog bitmask value has no unique bitmask family")
+        if not isinstance(raw_value, str) or not re.fullmatch(r"[0-9A-Fa-f]{8}", raw_value):
+            raise ValueError("catalog bitmask value is not an assigned 32-bit value")
+        if not isinstance(name, str) or not name:
+            raise ValueError("catalog bitmask value name is invalid")
+        family = bitmasks[parents[0]]
+        value = int(raw_value, 16)
+        if (family, value) in seen_values or (family, name) in seen_names:
+            raise ValueError("catalog contains ambiguous bitmask names or values")
+        seen_values.add((family, value))
+        seen_names.add((family, name))
+        names.append((family, value, name))
+    return sorted(names)
+
+
 def _tag_enumeration_families(catalog: dict[str, Any]) -> list[tuple[int, str]]:
     elements = catalog.get("elements")
     if not isinstance(elements, list):
@@ -143,8 +198,32 @@ def _tag_enumeration_families(catalog: dict[str, Any]) -> list[tuple[int, str]]:
     return sorted((tag, family) for tag, family in family_by_tag.items())
 
 
+def _tag_bitmask_families(catalog: dict[str, Any]) -> list[tuple[int, str]]:
+    elements = catalog.get("elements")
+    if not isinstance(elements, list):
+        raise ValueError("catalog has no element list")
+
+    bitmask_families = [
+        element.get("name")
+        for element in elements
+        if isinstance(element, dict) and element.get("kind") == "bitmask"
+    ]
+    if not all(isinstance(name, str) and name for name in bitmask_families):
+        raise ValueError("catalog bitmask family name is invalid")
+    if len(set(bitmask_families)) != len(bitmask_families):
+        raise ValueError("catalog contains ambiguous bitmask family names")
+
+    tag_by_name = {name: value for value, name in _assigned_tag_names(catalog)}
+    family_by_tag: list[tuple[int, str]] = []
+    for family in bitmask_families:
+        if family not in tag_by_name:
+            raise ValueError("catalog bitmask family has no matching assigned tag")
+        family_by_tag.append((tag_by_name[family], family))
+    return sorted(family_by_tag)
+
+
 def render_tsv(catalog: dict[str, Any]) -> str:
-    """Render deterministic assigned tag, Enumeration, and family records."""
+    """Render deterministic assigned tag, Enumeration, and Bit Mask records."""
     records: list[str] = []
     for value, name in _assigned_tag_names(catalog):
         records.append(f"T\t{value:06X}\t{_tsv_field(name)}")
@@ -152,6 +231,10 @@ def render_tsv(catalog: dict[str, Any]) -> str:
         records.append(f"F\t{tag:06X}\t{_tsv_field(family)}")
     for family, value, name in _assigned_enumeration_names(catalog):
         records.append(f"E\t{_tsv_field(family)}\t{value:08X}\t{_tsv_field(name)}")
+    for tag, family in _tag_bitmask_families(catalog):
+        records.append(f"M\t{tag:06X}\t{_tsv_field(family)}")
+    for family, value, name in _assigned_bitmask_names(catalog):
+        records.append(f"B\t{_tsv_field(family)}\t{value:08X}\t{_tsv_field(name)}")
     return "\n".join(records) + "\n"
 
 

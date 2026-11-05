@@ -1045,4 +1045,40 @@ E	Wrapping Method	00000002	MAC/sign
 E	Wrapping Method	00000003	Encrypt then MAC/sign
 E	Wrapping Method	00000004	MAC/sign then encrypt
 E	Wrapping Method	00000005	TR-31
+M	42002C	Cryptographic Usage Mask
+M	42008E	Storage Status Mask
+M	42015E	Protection Storage Mask
+B	Cryptographic Usage Mask	00000001	Sign
+B	Cryptographic Usage Mask	00000002	Verify
+B	Cryptographic Usage Mask	00000004	Encrypt
+B	Cryptographic Usage Mask	00000008	Decrypt
+B	Cryptographic Usage Mask	00000010	Wrap Key
+B	Cryptographic Usage Mask	00000020	Unwrap Key
+B	Cryptographic Usage Mask	00000080	MAC Generate
+B	Cryptographic Usage Mask	00000100	MAC Verify
+B	Cryptographic Usage Mask	00000200	Derive Key
+B	Cryptographic Usage Mask	00000800	Key Agreement
+B	Cryptographic Usage Mask	00001000	Certificate Sign
+B	Cryptographic Usage Mask	00002000	CRL Sign
+B	Cryptographic Usage Mask	00100000	Authenticate
+B	Cryptographic Usage Mask	00200000	Unrestricted
+B	Cryptographic Usage Mask	00400000	FPE Encrypt
+B	Cryptographic Usage Mask	00800000	FPE Decrypt
+B	Protection Storage Mask	00000001	Software
+B	Protection Storage Mask	00000002	Hardware
+B	Protection Storage Mask	00000004	On Processor
+B	Protection Storage Mask	00000008	On System
+B	Protection Storage Mask	00000010	Off System
+B	Protection Storage Mask	00000020	Hypervisor
+B	Protection Storage Mask	00000040	Operating System
+B	Protection Storage Mask	00000080	Container
+B	Protection Storage Mask	00000100	On Premises
+B	Protection Storage Mask	00000200	Off Premises
+B	Protection Storage Mask	00000400	Self Managed
+B	Protection Storage Mask	00000800	Outsourced
+B	Protection Storage Mask	00001000	Validated
+B	Protection Storage Mask	00002000	Same Jurisdiction
+B	Storage Status Mask	00000001	On-line storage
+B	Storage Status Mask	00000002	Archival storage
+B	Storage Status Mask	00000004	Destroyed storage
 ";
