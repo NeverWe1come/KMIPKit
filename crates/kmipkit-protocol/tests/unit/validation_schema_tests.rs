@@ -356,6 +356,58 @@ fn request_payload_schema_recurses_into_known_nested_payloads() {
 }
 
 #[test]
+fn constraints_schema_recurses_through_known_children_and_keeps_extensions() {
+    const CONSTRAINT: u32 = 0x0042_0169;
+    const OBJECT_TYPES: u32 = 0x0042_0167;
+    const OBJECT_GROUPS: u32 = 0x0042_0166;
+    const OBJECT_GROUP: u32 = 0x0042_0056;
+
+    let mut object_types = Structure::new();
+    object_types
+        .try_push(item(OBJECT_TYPE, Value::enumeration(0xF123_4567)))
+        .expect("future Object Type values remain valid Enumeration values");
+    let mut object_groups = Structure::new();
+    object_groups
+        .try_push(item(
+            OBJECT_GROUP,
+            Value::text_string(String::from("tenant-a")),
+        ))
+        .expect("Object Group is a Text String");
+    let mut attributes = Structure::new();
+    attributes
+        .try_push(item(VENDOR_EXTENSION, Value::byte_string(vec![0xCA, 0xFE])))
+        .expect("vendor attribute remains valid generic TTLV");
+    let mut constraint = Structure::new();
+    constraint
+        .try_push(item(OBJECT_TYPES, Value::structure(object_types)))
+        .expect("Object Types is a Structure");
+    constraint
+        .try_push(item(OBJECT_GROUPS, Value::structure(object_groups)))
+        .expect("Object Groups is a Structure");
+    constraint
+        .try_push(item(ATTRIBUTES, Value::structure(attributes)))
+        .expect("Attributes is a Structure");
+    constraint
+        .try_push(item(VENDOR_EXTENSION, Value::byte_string(vec![0xBA, 0xBE])))
+        .expect("unknown Constraint children are preserved");
+    let mut constraints = Structure::new();
+    constraints
+        .try_push(item(CONSTRAINT, Value::structure(constraint)))
+        .expect("Constraint is a Structure");
+
+    let report = validate_structure(
+        &constraints.view(),
+        Some(ValidationSchema::Nested(NestedStructureSchema::Constraints)),
+    );
+
+    assert!(
+        report.is_valid(),
+        "unknown tags and future values stay open"
+    );
+    assert_eq!(report.issues(), []);
+}
+
+#[test]
 fn client_initiated_set_endpoint_role_is_explicit_but_deferred() {
     let report = validate_structure(
         &Structure::new().view(),
