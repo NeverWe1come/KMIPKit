@@ -759,7 +759,7 @@ fn derive_key_validation_recurses_into_cryptographic_parameters() {
 }
 
 #[test]
-fn reprovision_validation_checks_supplied_certificate_request_shape() {
+fn reprovision_validation_checks_supplied_certificate_shapes() {
     let malformed_request = schema_structure([schema_item(0x0042_0019, Value::enumeration(1))]);
     let request = ReProvisionRequest::new().with_certificate_request(malformed_request);
 
@@ -770,5 +770,15 @@ fn reprovision_validation_checks_supplied_certificate_request_shape() {
             && issue.path().to_string()
                 == "Request Payload.Certificate Request.Certificate Request Value"
             && issue.source().to_string() == "KMIP v2.1 §2.2, Table 3"
+    }));
+
+    let malformed_certificate = schema_structure([schema_item(0x0042_001d, Value::enumeration(1))]);
+    let certificate_report = ReProvisionRequest::new()
+        .with_certificate(malformed_certificate)
+        .validate();
+    assert!(certificate_report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R250"
+            && issue.path().to_string() == "Request Payload.Certificate.Certificate Value"
+            && issue.source().to_string() == "KMIP v2.1 §2.1, Table 2"
     }));
 }
