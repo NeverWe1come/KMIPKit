@@ -16,8 +16,10 @@ from unittest.mock import patch
 from pathlib import Path
 
 from tools.normative_catalog.generate_wire_names import (
+    _assigned_bitmask_names,
     _assigned_enumeration_names,
     _assigned_tag_names,
+    _tag_bitmask_families,
     _tag_enumeration_families,
     main,
     render_tsv,
@@ -89,6 +91,163 @@ class WireNameRenderingTests(unittest.TestCase):
         )
         self.assertNotIn("Extensions", rendered)
 
+    def test_renders_mask_families_and_assigned_flags_in_stable_order(self) -> None:
+        catalog = {
+            "elements": [
+                {"kind": "tag", "allocation": "assigned", "wire_value": "42008E", "name": "Storage Status Mask"},
+                {"kind": "tag", "allocation": "assigned", "wire_value": "42002C", "name": "Cryptographic Usage Mask"},
+                {"kind": "bitmask", "element_id": "MASK-STORAGE", "name": "Storage Status Mask"},
+                {"kind": "bitmask", "element_id": "MASK-CRYPTO", "name": "Cryptographic Usage Mask"},
+                {
+                    "kind": "bitmask_value",
+                    "allocation": "assigned",
+                    "parent_element_ids": ["MASK-CRYPTO"],
+                    "wire_value": "00000008",
+                    "name": "Decrypt",
+                },
+                {
+                    "kind": "bitmask_value",
+                    "allocation": "assigned",
+                    "parent_element_ids": ["MASK-CRYPTO"],
+                    "wire_value": "00000004",
+                    "name": "Encrypt",
+                },
+                {
+                    "kind": "bitmask_value",
+                    "allocation": "extension",
+                    "parent_element_ids": ["MASK-CRYPTO"],
+                    "wire_value": "XXX00000",
+                    "name": "Extensions",
+                },
+                {
+                    "kind": "bitmask_value",
+                    "allocation": "reserved",
+                    "parent_element_ids": ["MASK-STORAGE"],
+                    "wire_value": "00000004",
+                    "name": "Reserved Flag",
+                },
+            ]
+        }
+
+        rendered = render_tsv(catalog)
+
+        self.assertEqual(
+            rendered.splitlines(),
+            [
+                "T\t42002C\tCryptographic Usage Mask",
+                "T\t42008E\tStorage Status Mask",
+                "M\t42002C\tCryptographic Usage Mask",
+                "M\t42008E\tStorage Status Mask",
+                "B\tCryptographic Usage Mask\t00000004\tEncrypt",
+                "B\tCryptographic Usage Mask\t00000008\tDecrypt",
+            ],
+        )
+
+    def test_resolves_mask_families_from_the_matching_assigned_tag(self) -> None:
+        catalog = {
+            "elements": [
+                {"kind": "tag", "allocation": "assigned", "wire_value": "42002C", "name": "Cryptographic Usage Mask"},
+                {"kind": "bitmask", "element_id": "MASK-CRYPTO", "name": "Cryptographic Usage Mask"},
+            ]
+        }
+
+        self.assertEqual(
+            _tag_bitmask_families(catalog), [(0x42002C, "Cryptographic Usage Mask")]
+        )
+
+    def test_rejects_bitmask_values_without_unique_families_or_valid_values(self) -> None:
+        invalid_catalogs = (
+            {
+                "elements": [
+                    {"kind": "bitmask", "element_id": "MASK", "name": "Usage Mask"},
+                    {
+                        "kind": "bitmask_value",
+                        "allocation": "assigned",
+                        "parent_element_ids": ["MISSING"],
+                        "wire_value": "00000001",
+                        "name": "Encrypt",
+                    },
+                ]
+            },
+            {
+                "elements": [
+                    {"kind": "bitmask", "element_id": "MASK", "name": "Usage Mask"},
+                    {
+                        "kind": "bitmask_value",
+                        "allocation": "assigned",
+                        "parent_element_ids": ["MASK"],
+                        "wire_value": "XXXXXXXX",
+                        "name": "Encrypt",
+                    },
+                ]
+            },
+        )
+
+        for catalog in invalid_catalogs:
+            with self.subTest(catalog=catalog), self.assertRaises(ValueError):
+                _assigned_bitmask_names(catalog)
+
+    def test_rejects_ambiguous_bitmask_families_components_and_tag_mappings(self) -> None:
+        duplicate_families = {"elements": [
+            {"kind": "bitmask", "element_id": "MASK-1", "name": "Usage Mask"},
+            {"kind": "bitmask", "element_id": "MASK-2", "name": "Usage Mask"},
+        ]}
+        duplicate_values = {"elements": [
+            {"kind": "bitmask", "element_id": "MASK", "name": "Usage Mask"},
+            {"kind": "bitmask_value", "allocation": "assigned", "parent_element_ids": ["MASK"], "wire_value": "00000001", "name": "Encrypt"},
+            {"kind": "bitmask_value", "allocation": "assigned", "parent_element_ids": ["MASK"], "wire_value": "00000001", "name": "Decrypt"},
+        ]}
+        duplicate_names = {"elements": [
+            {"kind": "bitmask", "element_id": "MASK", "name": "Usage Mask"},
+            {"kind": "bitmask_value", "allocation": "assigned", "parent_element_ids": ["MASK"], "wire_value": "00000001", "name": "Encrypt"},
+            {"kind": "bitmask_value", "allocation": "assigned", "parent_element_ids": ["MASK"], "wire_value": "00000002", "name": "Encrypt"},
+        ]}
+        invalid_family = {"elements": [{"kind": "bitmask", "element_id": "MASK", "name": ""}]}
+        invalid_component = {"elements": [
+            {"kind": "bitmask", "element_id": "MASK", "name": "Usage Mask"},
+            {"kind": "bitmask_value", "allocation": "assigned", "parent_element_ids": ["MASK"], "wire_value": "00000001", "name": ""},
+        ]}
+        missing_tag = {"elements": [
+            {"kind": "tag", "allocation": "assigned", "wire_value": "420001", "name": "Other Tag"},
+            {"kind": "bitmask", "element_id": "MASK", "name": "Usage Mask"},
+        ]}
+
+        for catalog, helper in (
+            (duplicate_families, _assigned_bitmask_names),
+            (duplicate_values, _assigned_bitmask_names),
+            (duplicate_names, _assigned_bitmask_names),
+            (invalid_family, _assigned_bitmask_names),
+            (invalid_component, _assigned_bitmask_names),
+            (missing_tag, _tag_bitmask_families),
+            ({"elements": [{"kind": "bitmask", "element_id": "MASK", "name": None}]}, _tag_bitmask_families),
+            ({"elements": [{"kind": "bitmask", "element_id": "MASK-1", "name": "Usage Mask"}, {"kind": "bitmask", "element_id": "MASK-2", "name": "Usage Mask"}]}, _tag_bitmask_families),
+        ):
+            with self.subTest(catalog=catalog), self.assertRaises(ValueError):
+                helper(catalog)
+
+    def test_bitmask_helpers_reject_a_missing_element_list(self) -> None:
+        for helper in (_assigned_bitmask_names, _tag_bitmask_families):
+            with self.subTest(helper=helper.__name__), self.assertRaises(ValueError):
+                helper({})
+
+    def test_catalog_bitmask_inventory_exposes_only_assigned_flags(self) -> None:
+        import json
+
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        bitmask_families = [
+            element for element in catalog["elements"] if element.get("kind") == "bitmask"
+        ]
+        assigned_flags = _assigned_bitmask_names(catalog)
+        rendered = render_tsv(catalog).splitlines()
+
+        self.assertEqual(len(bitmask_families), 3)
+        self.assertEqual(len(assigned_flags), 33)
+        self.assertEqual(sum(line.startswith("M\t") for line in rendered), 3)
+        self.assertEqual(sum(line.startswith("B\t") for line in rendered), 33)
+        self.assertFalse(any("\tExtensions" in line for line in rendered))
+
     def test_renders_catalog_metadata_inside_a_raw_rust_literal(self) -> None:
         catalog = {"elements": [{"kind": "tag", "allocation": "assigned", "wire_value": "420001", "name": "Activation Date"}]}
         rendered = render_rust(catalog)
@@ -110,6 +269,16 @@ class WireNameRenderingTests(unittest.TestCase):
 
         self.assertIn('r##"T\t420001\tName "# in title\n"##', rendered)
         self.assertNotIn('title\n"#;', rendered)
+
+    def test_rejects_catalog_names_that_exhaust_rust_raw_string_delimiters(self) -> None:
+        catalog = {
+            "elements": [
+                {"kind": "tag", "allocation": "assigned", "wire_value": "420001", "name": 'Name "' + ("#" * 256)},
+            ]
+        }
+
+        with self.assertRaises(ValueError):
+            render_rust(catalog)
 
     def test_rejects_tsv_delimiters_in_catalog_names(self) -> None:
         catalog = {
@@ -133,6 +302,8 @@ class WireNameRenderingTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             _assigned_tag_names({"elements": [{"kind": "tag", "allocation": "assigned", "wire_value": "420001", "name": ""}]})
         with self.assertRaises(ValueError):
+            _assigned_tag_names({"elements": [{"kind": "tag", "allocation": "assigned", "wire_value": "not-hex", "name": "Tag"}]})
+        with self.assertRaises(ValueError):
             _assigned_enumeration_names({"elements": [{"kind": "enumeration", "element_id": "", "name": "Invalid"}]})
         with self.assertRaises(ValueError):
             _assigned_enumeration_names({"elements": [
@@ -148,6 +319,11 @@ class WireNameRenderingTests(unittest.TestCase):
             _assigned_enumeration_names({"elements": [
                 {"kind": "enumeration", "element_id": "E", "name": "Family"},
                 {"kind": "enumeration_value", "allocation": "assigned", "parent_element_ids": ["E"], "wire_value": "not-hex!", "name": "Value"},
+            ]})
+        with self.assertRaises(ValueError):
+            _assigned_enumeration_names({"elements": [
+                {"kind": "enumeration", "element_id": "E", "name": "Family"},
+                {"kind": "enumeration_value", "allocation": "assigned", "parent_element_ids": ["E"], "wire_value": "00000001", "name": ""},
             ]})
 
     def test_rejects_enumeration_name_or_value_collisions_and_ambiguous_tag_mapping(self) -> None:
@@ -173,6 +349,10 @@ class WireNameRenderingTests(unittest.TestCase):
             _tag_enumeration_families({"elements": [tag, {"kind": "structure_member", "name": "Result Status", "source_encoding": "Enumeration"}]})
         with self.assertRaises(ValueError):
             _tag_enumeration_families({"elements": [tag, {"kind": "enumeration", "name": "Result Status"}, {"kind": "enumeration", "name": "Result Status"}]})
+        with self.assertRaises(ValueError):
+            _tag_enumeration_families({"elements": [tag, {"kind": "enumeration", "element_id": "E", "name": "Result Status"}, {"kind": "structure_member", "name": "Missing Tag", "source_encoding": "Enumeration"}]})
+        with self.assertRaises(ValueError):
+            _tag_enumeration_families({"elements": [{"kind": "enumeration", "element_id": "E", "name": ""}]})
 
     def test_rejects_ambiguous_names_and_values(self) -> None:
         catalog = {
@@ -232,6 +412,14 @@ class WireNameGeneratorCliTests(unittest.TestCase):
         with patch("sys.path", [str(SCRIPT.parent), *sys.path]):
             namespace = runpy.run_path(str(SCRIPT), run_name="wire_names_standalone")
         self.assertIn("render_rust", namespace)
+
+    def test_script_main_entrypoint_checks_the_generated_metadata(self) -> None:
+        arguments = [str(SCRIPT), "--check", "--repo-root", str(ROOT)]
+        with patch("sys.path", [str(SCRIPT.parent), *sys.path]), patch("sys.argv", arguments):
+            with redirect_stdout(StringIO()), self.assertRaises(SystemExit) as exit_code:
+                runpy.run_path(str(SCRIPT), run_name="__main__")
+
+        self.assertEqual(exit_code.exception.code, 0)
 
     def test_write_check_stale_and_missing_output(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
