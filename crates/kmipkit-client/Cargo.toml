@@ -12,6 +12,7 @@ kmipkit-protocol.workspace = true
 kmipkit-transport.workspace = true
 kmipkit-ttlv.workspace = true
 zeroize.workspace = true
+quick-xml = { version = "=0.42.0", default-features = false }
 
 [dev-dependencies]
 roxmltree.workspace = true
