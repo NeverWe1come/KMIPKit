@@ -107,6 +107,10 @@ mod validation_report_tests;
 #[path = "../tests/unit/validation_schema_tests.rs"]
 mod validation_schema_tests;
 
+#[cfg(test)]
+#[path = "../tests/unit/typed_request_validation_tests.rs"]
+mod typed_request_validation_tests;
+
 pub use activate::{ActivateError, ActivateRequest, ActivateResponse};
 pub use add_attribute::{AddAttributeError, AddAttributeRequest, AddAttributeResponse};
 pub use adjust_attribute::{
