@@ -4,6 +4,7 @@
 use std::fmt;
 
 use kmipkit_ttlv::{Item, ItemType, Structure, Value};
+use zeroize::Zeroizing;
 
 use crate::ManagedObjectError;
 use crate::managed_object::{make_item, make_structure_item, validate_structure};
@@ -46,11 +47,15 @@ impl KeyMaterial {
     /// Creates octet material for the Raw, Opaque, PKCS, X.509, or EC private formats.
     /// Unknown formats remain open and accept either TTLV form.
     pub fn byte_string(format_raw: u32, bytes: Vec<u8>) -> Result<Self, ManagedObjectError> {
+        let mut bytes = Zeroizing::new(bytes);
         if !format_accepts_type(format_raw, ItemType::ByteString) {
             return Err(ManagedObjectError::IncorrectFieldType);
         }
         Ok(Self {
-            item: make_item(KEY_MATERIAL, Value::byte_string(bytes))?,
+            item: make_item(
+                KEY_MATERIAL,
+                Value::byte_string(std::mem::take(&mut *bytes)),
+            )?,
             format_raw,
         })
     }
@@ -61,10 +66,9 @@ impl KeyMaterial {
         if !format_accepts_type(format_raw, ItemType::Structure) {
             return Err(ManagedObjectError::IncorrectFieldType);
         }
-        Ok(Self {
-            item: make_item(KEY_MATERIAL, Value::structure(structure))?,
-            format_raw,
-        })
+        let item = make_item(KEY_MATERIAL, Value::structure(structure))?;
+        validate_transparent_key_material(&item, format_raw)?;
+        Ok(Self { item, format_raw })
     }
 
     /// Consumes the Key Material into its TTLV Item.
@@ -82,6 +86,7 @@ impl KeyMaterial {
         {
             return Err(ManagedObjectError::IncorrectFieldType);
         }
+        validate_transparent_key_material(&item, format.raw())?;
         Ok(Self {
             item,
             format_raw: format.raw(),
@@ -119,6 +124,21 @@ fn format_accepts_type(format: u32, item_type: ItemType) -> bool {
     }
 }
 
+fn validate_transparent_key_material(item: &Item, format: u32) -> Result<(), ManagedObjectError> {
+    match format {
+        7 => TransparentSymmetricKey::validate_item(item),
+        8 => TransparentDsaPrivateKey::validate_item(item),
+        9 => TransparentDsaPublicKey::validate_item(item),
+        10 => TransparentRsaPrivateKey::validate_item(item),
+        11 => TransparentRsaPublicKey::validate_item(item),
+        12 => TransparentDhPrivateKey::validate_item(item),
+        13 => TransparentDhPublicKey::validate_item(item),
+        14 => TransparentEcPrivateKey::validate_item(item),
+        15 => TransparentEcPublicKey::validate_item(item),
+        _ => Ok(()),
+    }
+}
+
 fn big(raw: u32, value: Vec<u8>) -> Result<Item, ManagedObjectError> {
     make_item(raw, Value::big_integer(value))
 }
@@ -135,6 +155,9 @@ fn key_material_structure(
 
 macro_rules! transparent_key {
     ($name:ident, $schema:expr) => {
+        transparent_key!($name, $schema, |_item: &Item| Ok(()));
+    };
+    ($name:ident, $schema:expr, $additional_validation:expr) => {
         /// A typed transparent KMIP Key Material structure.
         pub struct $name {
             item: Item,
@@ -150,9 +173,14 @@ macro_rules! transparent_key {
         }
 
         impl $name {
+            fn validate_item(item: &Item) -> Result<(), ManagedObjectError> {
+                validate_structure(item, KEY_MATERIAL, $schema)?;
+                $additional_validation(item)
+            }
+
             /// Reads a transparent Key Material Item and retains vendor fields.
             pub fn try_from_item(item: Item) -> Result<Self, ManagedObjectError> {
-                validate_structure(&item, KEY_MATERIAL, $schema)?;
+                Self::validate_item(&item)?;
                 Ok(Self { item })
             }
 
@@ -198,7 +226,8 @@ transparent_key!(
         (PRIME_EXPONENT_P, ItemType::BigInteger, false),
         (PRIME_EXPONENT_Q, ItemType::BigInteger, false),
         (CRT_COEFFICIENT, ItemType::BigInteger, false)
-    ]
+    ],
+    validate_rsa_private_alternatives
 );
 transparent_key!(
     TransparentRsaPublicKey,
@@ -299,6 +328,14 @@ impl TransparentRsaPrivateKey {
         prime_exponent_q: Option<Vec<u8>>,
         crt_coefficient: Option<Vec<u8>>,
     ) -> Result<Self, ManagedObjectError> {
+        let mut modulus = Zeroizing::new(modulus);
+        let mut public_exponent = public_exponent.map(Zeroizing::new);
+        let mut private_exponent = private_exponent.map(Zeroizing::new);
+        let mut p = p.map(Zeroizing::new);
+        let mut q = q.map(Zeroizing::new);
+        let mut prime_exponent_p = prime_exponent_p.map(Zeroizing::new);
+        let mut prime_exponent_q = prime_exponent_q.map(Zeroizing::new);
+        let mut crt_coefficient = crt_coefficient.map(Zeroizing::new);
         let exponent = private_exponent.is_some();
         let factors = p.is_some() && q.is_some();
         let crt = prime_exponent_p.is_some() && prime_exponent_q.is_some();
@@ -308,29 +345,44 @@ impl TransparentRsaPrivateKey {
         {
             return Err(ManagedObjectError::InvalidFieldCombination);
         }
-        let mut fields = vec![big(MODULUS, modulus)?];
-        if let Some(value) = public_exponent {
-            fields.push(big(PUBLIC_EXPONENT, value)?);
+        let mut fields = vec![big(MODULUS, std::mem::take(&mut *modulus))?];
+        if let Some(mut value) = public_exponent.take() {
+            fields.push(big(PUBLIC_EXPONENT, std::mem::take(&mut *value))?);
         }
-        if let Some(value) = private_exponent {
-            fields.push(big(PRIVATE_EXPONENT, value)?);
+        if let Some(mut value) = private_exponent.take() {
+            fields.push(big(PRIVATE_EXPONENT, std::mem::take(&mut *value))?);
         }
-        if let Some(value) = p {
-            fields.push(big(P, value)?);
+        if let Some(mut value) = p.take() {
+            fields.push(big(P, std::mem::take(&mut *value))?);
         }
-        if let Some(value) = q {
-            fields.push(big(Q, value)?);
+        if let Some(mut value) = q.take() {
+            fields.push(big(Q, std::mem::take(&mut *value))?);
         }
-        if let Some(value) = prime_exponent_p {
-            fields.push(big(PRIME_EXPONENT_P, value)?);
+        if let Some(mut value) = prime_exponent_p.take() {
+            fields.push(big(PRIME_EXPONENT_P, std::mem::take(&mut *value))?);
         }
-        if let Some(value) = prime_exponent_q {
-            fields.push(big(PRIME_EXPONENT_Q, value)?);
+        if let Some(mut value) = prime_exponent_q.take() {
+            fields.push(big(PRIME_EXPONENT_Q, std::mem::take(&mut *value))?);
         }
-        if let Some(value) = crt_coefficient {
-            fields.push(big(CRT_COEFFICIENT, value)?);
+        if let Some(mut value) = crt_coefficient.take() {
+            fields.push(big(CRT_COEFFICIENT, std::mem::take(&mut *value))?);
         }
         Self::try_from_item(key_material_structure(fields)?)
+    }
+}
+
+fn validate_rsa_private_alternatives(item: &Item) -> Result<(), ManagedObjectError> {
+    let has_private_exponent =
+        crate::managed_object::with_field(item, PRIVATE_EXPONENT, |_| ()).is_some();
+    let has_prime_factors = crate::managed_object::with_field(item, P, |_| ()).is_some()
+        && crate::managed_object::with_field(item, Q, |_| ()).is_some();
+    let has_prime_exponents = crate::managed_object::with_field(item, PRIME_EXPONENT_P, |_| ())
+        .is_some()
+        && crate::managed_object::with_field(item, PRIME_EXPONENT_Q, |_| ()).is_some();
+    if has_private_exponent || has_prime_factors || has_prime_exponents {
+        Ok(())
+    } else {
+        Err(ManagedObjectError::InvalidFieldCombination)
     }
 }
 

@@ -4,6 +4,7 @@
 use std::fmt;
 
 use kmipkit_ttlv::{Item, ItemType, StructureView, Value, ValueView};
+use zeroize::Zeroizing;
 
 use crate::{AttributeSet, KeyCompressionType, KeyFormatType, ManagedObjectError};
 
@@ -28,11 +29,16 @@ pub enum KeyBlockValue {
     Wrapped(Vec<u8>),
 }
 
+enum StoredKeyBlockValue {
+    Plaintext(KeyValue),
+    Wrapped(Zeroizing<Vec<u8>>),
+}
+
 /// A typed Key Block builder that emits members in Table 12 order.
 pub struct KeyBlock {
     key_format_type: KeyFormatType,
     key_compression_type: Option<KeyCompressionType>,
-    key_value: Option<KeyBlockValue>,
+    key_value: Option<StoredKeyBlockValue>,
     cryptographic_algorithm: Option<u32>,
     cryptographic_length: Option<i32>,
     key_wrapping_data: Option<KeyWrappingData>,
@@ -207,8 +213,8 @@ impl KeyBlock {
             });
         }
         self.key_value.as_ref().map(|value| match value {
-            KeyBlockValue::Plaintext(_) => ItemType::Structure,
-            KeyBlockValue::Wrapped(_) => ItemType::ByteString,
+            StoredKeyBlockValue::Plaintext(_) => ItemType::Structure,
+            StoredKeyBlockValue::Wrapped(_) => ItemType::ByteString,
         })
     }
 
@@ -237,7 +243,10 @@ impl KeyBlock {
     /// Sets the optional plaintext or wrapped Key Value.
     #[must_use]
     pub fn with_key_value(mut self, value: KeyBlockValue) -> Self {
-        self.key_value = Some(value);
+        self.key_value = Some(match value {
+            KeyBlockValue::Plaintext(value) => StoredKeyBlockValue::Plaintext(value),
+            KeyBlockValue::Wrapped(bytes) => StoredKeyBlockValue::Wrapped(Zeroizing::new(bytes)),
+        });
         self
     }
 
@@ -277,7 +286,10 @@ impl KeyBlock {
         if self.cryptographic_algorithm.is_some() != self.cryptographic_length.is_some() {
             return Err(ManagedObjectError::InvalidFieldCombination);
         }
-        let wrapped = matches!(self.key_value.as_ref(), Some(KeyBlockValue::Wrapped(_)));
+        let wrapped = matches!(
+            self.key_value.as_ref(),
+            Some(StoredKeyBlockValue::Wrapped(_))
+        );
         if wrapped != self.key_wrapping_data.is_some() {
             return Err(ManagedObjectError::InvalidFieldCombination);
         }
@@ -294,7 +306,7 @@ impl KeyBlock {
         }
         if let Some(value) = self.key_value {
             fields.push(match value {
-                KeyBlockValue::Plaintext(value) => {
+                StoredKeyBlockValue::Plaintext(value) => {
                     if !key_format_accepts_material(
                         self.key_format_type.raw(),
                         value.key_format_type(),
@@ -304,7 +316,9 @@ impl KeyBlock {
                     }
                     value.into_item()
                 }
-                KeyBlockValue::Wrapped(bytes) => make_item(KEY_VALUE, Value::byte_string(bytes))?,
+                StoredKeyBlockValue::Wrapped(mut bytes) => {
+                    make_item(KEY_VALUE, Value::byte_string(std::mem::take(&mut *bytes)))?
+                }
             });
         }
         if let Some(algorithm) = self.cryptographic_algorithm {
