@@ -9839,88 +9839,101 @@ fn versioned_transport_config_rejects_invalid_headers_limits_and_timeout_fields(
         timeout(0, 0, 0),
     );
 
+    assert_invalid_transport_config_header_fields(&mut config);
+    assert_invalid_transport_config_limits(&mut config, &certificates);
+    assert_invalid_transport_config_pointer_relationships(&mut config, &certificates, &pki);
+}
+
+fn assert_invalid_transport_config_header_fields(config: &mut kmipkit_transport_config_v1_t) {
     config.abi_version = 2;
-    assert_config_rejected(&config, ERROR_INVALID_INPUT);
+    assert_config_rejected(config, ERROR_INVALID_INPUT);
     config.abi_version = 1;
 
     config.struct_size -= 1;
-    assert_config_rejected(&config, ERROR_INVALID_INPUT);
+    assert_config_rejected(config, ERROR_INVALID_INPUT);
     config.struct_size += 1;
 
     config.reserved = 1;
-    assert_config_rejected(&config, ERROR_INVALID_INPUT);
+    assert_config_rejected(config, ERROR_INVALID_INPUT);
     config.reserved = 0;
 
     config.reserved2 = 1;
-    assert_config_rejected(&config, ERROR_INVALID_INPUT);
+    assert_config_rejected(config, ERROR_INVALID_INPUT);
     config.reserved2 = 0;
 
     config.flags = u32::MAX;
-    assert_config_rejected(&config, ERROR_INVALID_INPUT);
+    assert_config_rejected(config, ERROR_INVALID_INPUT);
     config.flags = 0;
 
     config.endpoint_kind = u32::MAX;
-    assert_config_rejected(&config, ERROR_INVALID_INPUT);
+    assert_config_rejected(config, ERROR_INVALID_INPUT);
     config.endpoint_kind = TRANSPORT_ENDPOINT_RAW_TLS;
 
     config.trust_kind = TRANSPORT_TRUST_PLATFORM;
-    assert_config_rejected(&config, ERROR_INVALID_INPUT);
+    assert_config_rejected(config, ERROR_INVALID_INPUT);
     config.trust_kind = TRANSPORT_TRUST_CERTIFICATES;
+    let trust_certificate_count = config.trust_certificate_count;
     config.trust_certificate_count = 0;
-    assert_config_rejected(&config, ERROR_INVALID_INPUT);
-    config.trust_certificate_count = u64::try_from(roots.len()).expect("root count fits ABI");
+    assert_config_rejected(config, ERROR_INVALID_INPUT);
+    config.trust_certificate_count = trust_certificate_count;
 
     config.tls_server_name = byte_span(b"server.kmipkit.test");
-    assert_config_rejected(&config, ERROR_INVALID_INPUT);
+    assert_config_rejected(config, ERROR_INVALID_INPUT);
     config.tls_server_name = byte_span(&[]);
+
     config.target_uri = byte_span(b"/kms/kmip");
-    assert_config_rejected(&config, ERROR_INVALID_INPUT);
+    assert_config_rejected(config, ERROR_INVALID_INPUT);
     config.target_uri = byte_span(&[]);
 
     config.connect_timeout = timeout(TRANSPORT_TIMEOUT_BOUNDED, 0, 1_000_000_000);
-    assert_config_rejected(&config, ERROR_INVALID_INPUT);
+    assert_config_rejected(config, ERROR_INVALID_INPUT);
     config.connect_timeout = timeout(0, 0, 0);
+}
 
+fn assert_invalid_transport_config_limits(
+    config: &mut kmipkit_transport_config_v1_t,
+    certificates: &[kmipkit_transport_input_v1_t],
+) {
     config.client_certificate_count = MAX_TRANSPORT_CONFIG_ITEMS + 1;
-    assert_config_rejected(&config, ERROR_RESOURCE_LIMIT);
+    assert_config_rejected(config, ERROR_RESOURCE_LIMIT);
     config.client_certificate_count =
         u64::try_from(certificates.len()).expect("test certificate count fits the ABI");
 
     config.endpoint.data = ptr::null();
     config.endpoint.length = MAX_TRANSPORT_TEXT_BYTES + 1;
-    assert_config_rejected(&config, ERROR_RESOURCE_LIMIT);
+    assert_config_rejected(config, ERROR_RESOURCE_LIMIT);
     config.endpoint = byte_span(b"127.0.0.1");
 
     config.max_request_bytes = 0;
-    assert_config_rejected(&config, ERROR_INVALID_INPUT);
-
+    assert_config_rejected(config, ERROR_INVALID_INPUT);
     config.max_request_bytes = 1_048_576;
+}
+
+fn assert_invalid_transport_config_pointer_relationships(
+    config: &mut kmipkit_transport_config_v1_t,
+    certificates: &[kmipkit_transport_input_v1_t],
+    pki: &EphemeralPki,
+) {
     config.client_certificates = ptr::null();
     config.client_certificate_count = 0;
-    let mut output = std::ptr::NonNull::<kmipkit_transport_config_t>::dangling().as_ptr();
-    assert_eq!(
-        kmipkit_transport_config_create_v1(&config, &mut output),
-        ERROR_INVALID_INPUT
-    );
-    assert!(output.is_null());
+    assert_transport_config_creation_rejected(config);
 
     config.client_certificates = certificates.as_ptr();
     config.client_certificate_count =
         u64::try_from(certificates.len()).expect("test certificate count fits the ABI");
     let invalid_root = input(INPUT_MEMORY, 99, pki.authority_certificate_der());
     config.trust_certificates = &raw const invalid_root;
-    let mut output = std::ptr::NonNull::<kmipkit_transport_config_t>::dangling().as_ptr();
-    assert_eq!(
-        kmipkit_transport_config_create_v1(&config, &mut output),
-        ERROR_INVALID_INPUT
-    );
-    assert!(output.is_null());
+    assert_transport_config_creation_rejected(config);
 
     config.trust_certificates = ptr::null();
     config.trust_certificate_count = 0;
+    assert_transport_config_creation_rejected(config);
+}
+
+fn assert_transport_config_creation_rejected(config: &kmipkit_transport_config_v1_t) {
     let mut output = std::ptr::NonNull::<kmipkit_transport_config_t>::dangling().as_ptr();
     assert_eq!(
-        kmipkit_transport_config_create_v1(&config, &mut output),
+        kmipkit_transport_config_create_v1(config, &mut output),
         ERROR_INVALID_INPUT
     );
     assert!(output.is_null());
