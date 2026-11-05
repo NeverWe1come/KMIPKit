@@ -718,6 +718,13 @@ fn hash_validation_checks_cryptographic_parameter_requirements() {
                 .ends_with("Cryptographic Parameters.Tag Length")
     }));
     assert!(!format!("{report:?}").contains("synthetic-input"));
+
+    let missing_algorithm = HashRequest::new(Structure::new()).validate();
+    assert!(missing_algorithm.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-P005"
+            && issue.path().to_string() == "Request Payload.Cryptographic Parameters"
+            && issue.source().to_string() == "KMIP v2.1 §6.1.24, Table 235"
+    }));
 }
 
 #[test]
