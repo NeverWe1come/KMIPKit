@@ -95,6 +95,10 @@ pub enum NestedStructureSchema {
     CurrentAttribute,
     /// The §5.7 New Attribute wrapper around one attribute Item.
     NewAttribute,
+    /// The §2.1 Certificate object structure.
+    Certificate,
+    /// The §2.2 Certificate Request object structure.
+    CertificateRequest,
 }
 
 #[derive(Clone, Copy)]

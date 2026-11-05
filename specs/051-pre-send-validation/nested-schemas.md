@@ -23,6 +23,8 @@ remain in the caller's TTLV tree and are not rejected solely for being unknown.
 | `Operations` | §7.25, Table 377 | Zero or more Operation Enumeration values; future and vendor values are retained. | R246 | `validation_schema_tests::rights_schema_preserves_empty_and_repeated_rights_and_unknown_extensions` |
 | `Current Attribute` | §5.6, Table 162 | Exactly one attribute Item with any attribute tag and value type; do not infer attribute-specific multiplicity or reject unknown/vendor tags. | R248 | `validation_schema_tests::current_attribute_wrapper_rejects_multiple_attribute_items` |
 | `New Attribute` | §5.7, Table 163 | Exactly one attribute Item with any attribute tag and value type; do not infer attribute-specific multiplicity or reject unknown/vendor tags. | R247 | `validation_schema_tests::attribute_wrappers_require_exactly_one_attribute_item` |
+| `Certificate` | §2.1, Table 2 | Exactly one Certificate Type Enumeration followed by one Certificate Value Byte String; leave DER/X.509 semantic parsing outside pre-send structural validation. | R249–R250 | `validation_schema_tests::validate_request_recursively_checks_certificate_structure_without_parsing_der` |
+| `Certificate Request` | §2.2, Table 3 | Exactly one Certificate Request Type Enumeration followed by one Certificate Request Value Byte String; leave CSR semantic parsing outside pre-send structural validation. | R251–R252 | `validation_schema_tests::reprovision_request_checks_certificate_request_members` |
 
 ## Boundaries
 
@@ -54,3 +56,6 @@ families have been reconciled and covered by the operation-family tasks.
 - Attribute wrappers validate only their one-item shape. The child tag selects
   an attribute, so this generic schema does not infer that attribute's value
   type or cardinality and preserves future/vendor attributes.
+- Certificate and Certificate Request schemas validate only their KMIP
+  Structure members. They do not parse certificate or CSR bytes or infer
+  certificate authority, trust, identity, or validation policy.

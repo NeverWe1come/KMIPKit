@@ -449,6 +449,48 @@ const OPERATIONS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
     nested_schema: None,
 }];
 
+const CERTIFICATE_FIELDS: &[FieldDescriptor] = &[
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R249",
+        name: "Certificate Type",
+        tag: FieldTag::Exact(0x0042_001D),
+        types: TYPE_ENUMERATION,
+        min_count: 1,
+        max_count: Some(1),
+        nested_schema: None,
+    },
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R250",
+        name: "Certificate Value",
+        tag: FieldTag::Exact(0x0042_001E),
+        types: TYPE_BYTE_STRING,
+        min_count: 1,
+        max_count: Some(1),
+        nested_schema: None,
+    },
+];
+
+const CERTIFICATE_REQUEST_FIELDS: &[FieldDescriptor] = &[
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R251",
+        name: "Certificate Request Type",
+        tag: FieldTag::Exact(0x0042_0019),
+        types: TYPE_ENUMERATION,
+        min_count: 1,
+        max_count: Some(1),
+        nested_schema: None,
+    },
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R252",
+        name: "Certificate Request Value",
+        tag: FieldTag::Exact(0x0042_0140),
+        types: TYPE_BYTE_STRING,
+        min_count: 1,
+        max_count: Some(1),
+        nested_schema: None,
+    },
+];
+
 const BLOCK_CIPHER_MODE: u32 = 0x0042_0011;
 const IV_LENGTH: u32 = 0x0042_00CD;
 const TAG_LENGTH: u32 = 0x0042_00CE;
@@ -629,6 +671,8 @@ fn descriptor(schema: NestedStructureSchema) -> RequestSchemaDescriptor {
         NestedStructureSchema::Operations => ("§7.25, Table 377", OPERATIONS_FIELDS),
         NestedStructureSchema::CurrentAttribute => ("§5.6, Table 162", &[] as &[FieldDescriptor]),
         NestedStructureSchema::NewAttribute => ("§5.7, Table 163", &[] as &[FieldDescriptor]),
+        NestedStructureSchema::Certificate => ("§2.1, Table 2", CERTIFICATE_FIELDS),
+        NestedStructureSchema::CertificateRequest => ("§2.2, Table 3", CERTIFICATE_REQUEST_FIELDS),
     };
     RequestSchemaDescriptor { source, fields }
 }

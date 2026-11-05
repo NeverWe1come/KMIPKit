@@ -472,16 +472,17 @@ fn validate_request_recursively_checks_certificate_structure_without_parsing_der
 
     assert!(report.issues().iter().any(|issue| {
         issue.code().as_str() == "KMIPKIT-0051-R249"
-            && issue.path().to_string()
-                == "Request Payload.Certificate[0].Certificate Type"
+            && issue.path().to_string() == "Request Payload.Certificate[0].Certificate Type"
             && issue.source().to_string() == "KMIP v2.1 §2.1, Table 2"
     }));
 }
 
 #[test]
 fn reprovision_request_checks_certificate_request_members() {
-    let certificate_request =
-        structure([item(CERTIFICATE_REQUEST_VALUE, Value::byte_string(vec![0x30, 0x00]))]);
+    let certificate_request = structure([item(
+        CERTIFICATE_REQUEST_VALUE,
+        Value::byte_string(vec![0x30, 0x00]),
+    )]);
     let payload = structure([item(
         CERTIFICATE_REQUEST,
         Value::structure(certificate_request),

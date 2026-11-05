@@ -1785,7 +1785,7 @@ static REPROVISION_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::CertificateRequest),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R165",
@@ -1794,7 +1794,7 @@ static REPROVISION_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::Certificate),
     },
 ];
 
@@ -2267,7 +2267,7 @@ static VALIDATE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: None,
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::Certificate),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R188",
