@@ -2,6 +2,10 @@
 
 use std::fmt;
 
+mod schema;
+
+pub use schema::{RequestPayloadSchema, ValidationSchema, validate_structure};
+
 /// Severity of one locally detected validation finding.
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -19,7 +23,6 @@ pub enum ValidationSeverity {
 pub struct ValidationCode(&'static str);
 
 impl ValidationCode {
-    #[cfg(test)]
     pub(crate) const fn new(value: &'static str) -> Self {
         Self(value)
     }
@@ -122,7 +125,7 @@ impl fmt::Debug for ValidationPath {
     }
 }
 
-/// Identifies the normative OASIS source or a KMIPKit project decision for an issue.
+/// Identifies the normative OASIS source or a `KMIPKit` project decision for an issue.
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ValidationSourceRef {
@@ -133,7 +136,7 @@ pub enum ValidationSourceRef {
         /// The exact section and optional table citation.
         reference: &'static str,
     },
-    /// A KMIPKit decision not prescribed by OASIS.
+    /// A `KMIPKit` decision not prescribed by OASIS.
     ProjectRule(&'static str),
 }
 
@@ -178,7 +181,6 @@ pub struct ValidationIssue {
 }
 
 impl ValidationIssue {
-    #[cfg(test)]
     pub(crate) const fn new(
         code: ValidationCode,
         path: ValidationPath,
@@ -228,6 +230,10 @@ impl ValidationReport {
     #[cfg(test)]
     pub(crate) fn from_issues(issues: Vec<ValidationIssue>) -> Self {
         Self { issues }
+    }
+
+    pub(crate) fn push(&mut self, issue: ValidationIssue) {
+        self.issues.push(issue);
     }
 
     /// Returns the ordered findings; each issue contains only safe metadata.
