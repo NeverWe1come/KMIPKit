@@ -146,6 +146,17 @@ fn table_273_request_validation_reports_invalid_optional_structure_and_collision
         "KMIP v2.1 §6.1.37, Table 273; §7.28, Table 380"
     );
 
+    let input =
+        Pkcs11Request::new(function(Value::enumeration(1))).with_input_parameters(structure([
+            item(INPUT, Value::text_string("opaque input".into())),
+        ]));
+    let report = input.validate();
+    assert!(!report.is_valid());
+    assert_eq!(
+        report.issues()[0].source().to_string(),
+        "KMIP v2.1 §6.1.37, Table 273; §7.27, Table 379"
+    );
+
     let collision = Pkcs11Request::new(function(Value::enumeration(1))).with_extension(item(
         FUNCTION,
         Value::structure(function(Value::enumeration(2))),
