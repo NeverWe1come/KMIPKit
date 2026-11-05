@@ -66,6 +66,40 @@ class WireEncodingPublicApiTests(unittest.TestCase):
         self.assertEqual(capability["parityScope"], "four-language")
         self.assertIn("KMIPKIT-0057-FR-005", capability["requirementIds"])
 
+    def test_public_c_encoding_override_has_a_constructible_client_path(self) -> None:
+        manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+        functions = {record["c"]["symbol"] for record in manifest["functions"]}
+        declarations = {
+            (record["packageId"], record["exportName"], record["declarationState"])
+            for record in manifest["publicDeclarations"]
+        }
+        required_symbols = {
+            "kmipkit_transport_config_create_v1",
+            "kmipkit_client_create",
+            "kmipkit_client_batch_create",
+            "kmipkit_client_batch_add_item",
+            "kmipkit_client_batch_item_discover_versions",
+            "kmipkit_client_execute_with_options",
+        }
+        self.assertTrue(required_symbols <= functions)
+        for symbol in required_symbols:
+            self.assertIn(("c-kmipkit", symbol, "declared"), declarations)
+
+        type_ids = {record["id"] for record in manifest["types"]}
+        self.assertTrue(
+            {
+                "Client",
+                "ClientBatch",
+                "ClientBatchItem",
+                "ClientBatchResponse",
+                "TransportConfigV1",
+                "ByteSpanV1",
+                "TransportInputV1",
+                "TimeoutLimitV1",
+            }
+            <= type_ids
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
