@@ -39,7 +39,7 @@ use kmipkit_protocol::{
     RngRetrieveRequest, RngRetrieveResponse, RngSeedRequest, RngSeedResponse, SetAttributeRequest,
     SetAttributeResponse, SetConstraintsRequest, SetConstraintsResponse, SetDefaultsRequest,
     SetDefaultsResponse, SignRequest, SignResponse, SignatureVerifyRequest,
-    SignatureVerifyResponse, UniqueIdentifier,
+    SignatureVerifyResponse, UniqueIdentifier, ValidateKmipRequest, ValidationReport,
 };
 use kmipkit_protocol::{InteropRequest, InteropResponse, LogRequest, LogResponse};
 use kmipkit_protocol::{ValidateRequest, ValidateResponse};
@@ -692,16 +692,69 @@ impl ClientRequest {
     }
 
     pub(crate) fn validate_local_shape(&self) -> Result<(), ProtocolError> {
+        if self.validation_report().is_valid() {
+            Ok(())
+        } else {
+            Err(protocol_error(ProtocolErrorKind::InvalidInput))
+        }
+    }
+
+    /// Validates this typed request without consuming or encoding it.
+    #[must_use]
+    pub fn validation_report(&self) -> ValidationReport {
         match self {
-            Self::Encrypt(request) => request.validate_multipart_shape(),
-            Self::Decrypt(request) => request.validate_multipart_shape(),
-            Self::Hash(request) => request.validate_multipart_shape(),
-            Self::Mac(request) => request.validate_multipart_shape(),
-            Self::MacVerify(request) => request.validate_multipart_shape(),
-            Self::Sign(request) => request.validate_multipart_shape(),
-            Self::SignatureVerify(request) => request.validate_multipart_shape(),
-            Self::Register(request) => request.validate_local_shape(),
-            _ => Ok(()),
+            Self::DiscoverVersions(request) => request.validate(),
+            Self::Activate(request) => request.validate(),
+            Self::Archive(request) => request.validate(),
+            Self::Certify(request) => request.validate(),
+            Self::Check(request) => request.validate(),
+            Self::DelegatedLogin(request) => request.validate(),
+            Self::Login(request) => request.validate(),
+            Self::Logout(request) => request.validate(),
+            Self::ObtainLease(request) => request.validate(),
+            Self::Recertify(request) => request.validate(),
+            Self::Rekey(request) => request.validate(),
+            Self::RekeyKeyPair(request) => request.validate(),
+            Self::ReProvision(request) => request.validate(),
+            Self::Register(request) => request.validate(),
+            Self::Revoke(request) => request.validate(),
+            Self::Destroy(request) => request.validate(),
+            Self::Recover(request) => request.validate(),
+            Self::Get(request) => request.validate(),
+            Self::Locate(request) => request.validate(),
+            Self::Create(request) => request.validate(),
+            Self::CreateKeyPair(request) => request.validate(),
+            Self::CreateSplitKey(request) => request.validate(),
+            Self::AddAttribute(request) => request.validate(),
+            Self::AdjustAttribute(request) => request.validate(),
+            Self::DeleteAttribute(request) => request.validate(),
+            Self::ModifyAttribute(request) => request.validate(),
+            Self::SetAttribute(request) => request.validate(),
+            Self::GetAttributes(request) => request.validate(),
+            Self::GetAttributeList(request) => request.validate(),
+            Self::Ping(request) => request.validate(),
+            Self::Interop(request) => request.validate(),
+            Self::Log(request) => request.validate(),
+            Self::Validate(request) => request.validate(),
+            Self::Pkcs11(request) => request.validate(),
+            Self::GetConstraints(request) => request.validate(),
+            Self::SetConstraints(request) => request.validate(),
+            Self::SetDefaults(request) => request.validate(),
+            Self::GetUsageAllocation(request) => request.validate(),
+            Self::Query(request) => request.validate(),
+            Self::Encrypt(request) => request.validate(),
+            Self::Decrypt(request) => request.validate(),
+            Self::DeriveKey(request) => request.validate(),
+            Self::Export(request) => request.validate(),
+            Self::Import(request) => request.validate(),
+            Self::JoinSplitKey(request) => request.validate(),
+            Self::Hash(request) => request.validate(),
+            Self::Mac(request) => request.validate(),
+            Self::MacVerify(request) => request.validate(),
+            Self::Sign(request) => request.validate(),
+            Self::SignatureVerify(request) => request.validate(),
+            Self::RngRetrieve(request) => request.validate(),
+            Self::RngSeed(request) => request.validate(),
         }
     }
 

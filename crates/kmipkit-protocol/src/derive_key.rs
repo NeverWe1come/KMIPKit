@@ -8,8 +8,9 @@ use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Value, Va
 use crate::cryptographic_operation::{self as common, OwnedResponseTtlv};
 use crate::{
     AttributeSet, KmipOperationResult, ObjectType, ProtocolCauseCategory, ProtocolError,
-    ProtocolErrorKind, ResponseBatchItemView, ResultMessage, ResultValidationError, SecretBytes,
-    UniqueIdentifier,
+    ProtocolErrorKind, RequestPayloadSchema, ResponseBatchItemView, ResultMessage,
+    ResultValidationError, SecretBytes, UniqueIdentifier, ValidateKmipRequest, ValidationReport,
+    ValidationSourceRef,
 };
 
 const OPERATION: u32 = 0x0000_0005;
@@ -233,19 +234,7 @@ impl DeriveKeyRequest {
     /// identifier, missing required output attributes, or invalid TTLV
     /// structure.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
-        if crate::attribute::validate_single_instance_attribute_items(
-            self.attributes.as_items(),
-            Some(self.object_type.raw()),
-            true,
-        )
-        .is_err()
-            || self.unique_identifiers.is_empty()
-            || self.unique_identifiers.iter().any(is_id_placeholder)
-            || !has_required_output_attributes(self.object_type, &self.attributes)
-            || !self
-                .derivation_parameters
-                .valid_for_method(self.derivation_method)
-        {
+        if !self.validation_report().is_valid() {
             return Err(invalid_request());
         }
 
@@ -278,6 +267,69 @@ impl DeriveKeyRequest {
         }
         push(&mut payload, ATTRIBUTES, Value::structure(attributes))?;
         Ok(payload)
+    }
+
+    fn validation_report(&self) -> ValidationReport {
+        if crate::attribute::validate_single_instance_attribute_items(
+            self.attributes.as_items(),
+            Some(self.object_type.raw()),
+            true,
+        )
+        .is_err()
+        {
+            return crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Attributes",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§4, Table 46",
+                },
+            );
+        }
+        if self.unique_identifiers.is_empty()
+            || self.unique_identifiers.iter().any(is_id_placeholder)
+        {
+            return crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Unique Identifier",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.14, Table 205",
+                },
+            );
+        }
+        if !has_required_output_attributes(self.object_type, &self.attributes) {
+            return crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Attributes",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.14, Table 205",
+                },
+            );
+        }
+        if !self
+            .derivation_parameters
+            .valid_for_method(self.derivation_method)
+        {
+            return crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Derivation Parameters",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§7.12, Table 364",
+                },
+            );
+        }
+        ValidationReport::default()
+    }
+}
+
+impl ValidateKmipRequest for DeriveKeyRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::DeriveKey;
+
+    fn validate(&self) -> ValidationReport {
+        self.validation_report()
     }
 }
 

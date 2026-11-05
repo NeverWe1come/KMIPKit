@@ -10,8 +10,9 @@ use kmipkit_ttlv::{Item, ItemType, Structure, StructureView, Value, ValueView};
 use crate::cryptographic_operation;
 
 use crate::{
-    KmipOperationResult, ProtocolError, ResponseBatchItemView, ResultMessage,
-    ResultValidationError, UniqueIdentifier, ValidityIndicator,
+    KmipOperationResult, ProtocolError, RequestPayloadSchema, ResponseBatchItemView, ResultMessage,
+    ResultValidationError, UniqueIdentifier, ValidateKmipRequest, ValidationReport,
+    ValidationSourceRef, ValidityIndicator,
 };
 
 const OPERATION: u32 = 0x0000_0017;
@@ -106,13 +107,12 @@ impl ValidateRequest {
     /// an unrepresentable TTLV structure, or when both chain-member lists are
     /// empty. It does not evaluate certificates.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
-        if self.certificates.is_empty() && self.identifiers.is_empty() {
+        if !self.validation_report().is_valid() {
             return Err(cryptographic_operation::request_error());
         }
 
         let mut payload = Structure::new();
         for certificate in self.certificates {
-            validate_certificate_shape(&certificate)?;
             cryptographic_operation::push(
                 &mut payload,
                 CERTIFICATE,
@@ -135,6 +135,42 @@ impl ValidateRequest {
             &[CERTIFICATE, UNIQUE_IDENTIFIER, VALIDITY_DATE],
         )?;
         Ok(payload)
+    }
+
+    fn validation_report(&self) -> ValidationReport {
+        if self.certificates.is_empty() && self.identifiers.is_empty() {
+            return crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Certificate",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.57, Table 340",
+                },
+            );
+        }
+        if self
+            .certificates
+            .iter()
+            .any(|certificate| validate_certificate_shape(certificate).is_err())
+        {
+            return crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Certificate",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§3.2, Table 2; §6.1.57, Table 340",
+                },
+            );
+        }
+        ValidationReport::default()
+    }
+}
+
+impl ValidateKmipRequest for ValidateRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Validate;
+
+    fn validate(&self) -> ValidationReport {
+        self.validation_report()
     }
 }
 

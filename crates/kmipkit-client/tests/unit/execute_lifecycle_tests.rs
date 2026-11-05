@@ -16,10 +16,10 @@ use std::cell::{Cell, RefCell};
 use std::error::Error;
 use std::rc::Rc;
 
+use kmipkit_protocol::{AttributeSet, CreateRequest, ObjectType};
 use kmipkit_test_support::{ExchangeScript, ScriptedTransport};
 use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
 use kmipkit_ttlv::codec::{CodecLimits, decode};
-use kmipkit_protocol::{AttributeSet, CreateRequest, ObjectType};
 use kmipkit_ttlv::{Item, RawTag, Value, ValueView};
 use serde_json::Value as JsonValue;
 
@@ -303,12 +303,44 @@ fn typed_request_preflight_uses_borrowed_protocol_validation() {
             .expect("second Comment is valid TTLV"),
     ])
     .expect("generic AttributeSet preserves operation-level repetitions");
-    let request = ClientRequest::Create(CreateRequest::new(
-        ObjectType::from_raw(7),
-        attributes,
-    ));
+    let request = ClientRequest::Create(CreateRequest::new(ObjectType::from_raw(7), attributes));
 
     assert!(request.validate_local_shape().is_err());
+}
+
+#[test]
+fn invalid_typed_request_is_not_encoded_or_written() {
+    let comment = RawTag::new(0x0042_00fd)
+        .expect("Comment is a valid raw tag")
+        .try_checked()
+        .expect("Comment is an allocated KMIP tag");
+    let attributes = AttributeSet::try_new([
+        Item::new(comment, Value::text_string("PREFLIGHT_CANARY".to_owned()))
+            .expect("first Comment is valid TTLV"),
+        Item::new(comment, Value::text_string("PREFLIGHT_CANARY".to_owned()))
+            .expect("second Comment is valid TTLV"),
+    ])
+    .expect("generic AttributeSet preserves operation-level repetitions");
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Create(
+        CreateRequest::new(ObjectType::from_raw(7), attributes),
+    )));
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::Success {
+            response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let error = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect_err("invalid typed input must fail before transport exchange");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert_eq!(fake.borrow().write_call_count(), 0);
+    assert!(!error.to_string().contains("PREFLIGHT_CANARY"));
+    assert!(!format!("{error:?}").contains("PREFLIGHT_CANARY"));
 }
 
 fn pending_response() -> Vec<u8> {

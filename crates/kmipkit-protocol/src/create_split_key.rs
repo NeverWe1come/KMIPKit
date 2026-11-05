@@ -7,8 +7,9 @@ use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Value, Va
 
 use crate::{
     AttributeSet, KmipOperationResult, ObjectType, ProtocolCauseCategory, ProtocolError,
-    ProtocolErrorKind, ResponseBatchItemView, ResultMessage, ResultValidationError,
-    UniqueIdentifier,
+    ProtocolErrorKind, RequestPayloadSchema, ResponseBatchItemView, ResultMessage,
+    ResultValidationError, UniqueIdentifier, ValidateKmipRequest, ValidationReport,
+    ValidationSourceRef,
 };
 
 const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028; // KMIP v2.1 §11.36, Table 470.
@@ -182,20 +183,9 @@ impl CreateSplitKeyRequest {
     /// violation, source-defined Attribute cardinality violation, or an
     /// invalid generic TTLV model value.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
-        crate::attribute::validate_single_instance_attribute_items(
-            self.attributes.as_items(),
-            Some(self.object_type.raw()),
-            true,
-        )
-        .map_err(|_| crate::cryptographic_operation::request_error())?;
-
-        self.validate_client_policy().map_err(|error| {
-            ProtocolError::new(
-                ProtocolErrorKind::InvalidValue,
-                ProtocolCauseCategory::InvalidValue,
-                error,
-            )
-        })?;
+        if !self.validation_report().is_valid() {
+            return Err(crate::cryptographic_operation::request_error());
+        }
 
         let mut payload = Structure::new();
         push(
@@ -256,6 +246,44 @@ impl CreateSplitKeyRequest {
         } else {
             Ok(())
         }
+    }
+
+    fn validation_report(&self) -> ValidationReport {
+        if crate::attribute::validate_single_instance_attribute_items(
+            self.attributes.as_items(),
+            Some(self.object_type.raw()),
+            true,
+        )
+        .is_err()
+        {
+            return crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Attributes",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§4, Table 46",
+                },
+            );
+        }
+        if self.validate_client_policy().is_err() {
+            return crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Prime Field Size",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§2.8, Table 9",
+                },
+            );
+        }
+        ValidationReport::default()
+    }
+}
+
+impl ValidateKmipRequest for CreateSplitKeyRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::CreateSplitKey;
+
+    fn validate(&self) -> ValidationReport {
+        self.validation_report()
     }
 }
 
