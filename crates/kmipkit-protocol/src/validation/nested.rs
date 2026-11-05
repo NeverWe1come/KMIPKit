@@ -1,6 +1,6 @@
 //! Borrowed validators for reusable, explicitly identified KMIP structures.
 
-use kmipkit_ttlv::StructureView;
+use kmipkit_ttlv::{ItemType, StructureView};
 
 use super::schema::{
     FieldDescriptor, FieldTag, NestedStructureSchema, RequestSchemaDescriptor, TYPE_BOOLEAN,
@@ -741,6 +741,7 @@ pub(super) fn validate_nested_with_prefix(
     }
     if schema == NestedStructureSchema::KeyBlock {
         report.append(validate_key_block_requirements(structure, prefix));
+        report.append(validate_key_format_material_type(structure, prefix));
     }
     if schema == NestedStructureSchema::KeyWrappingSpecification {
         validate_one_key_information_alternative(
@@ -793,6 +794,74 @@ fn validate_key_block_requirements(
     }
 
     report
+}
+
+fn validate_key_format_material_type(
+    structure: &StructureView<'_>,
+    prefix: &ValidationPath,
+) -> ValidationReport {
+    const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+    const KEY_VALUE: u32 = 0x0042_0045;
+    const KEY_MATERIAL: u32 = 0x0042_0043;
+
+    let key_format_type = structure
+        .children()
+        .iter()
+        .find(|item| item.tag().raw() == KEY_FORMAT_TYPE)
+        .and_then(|item| {
+            item.with_value(|value| match value {
+                kmipkit_ttlv::ValueView::Enumeration(raw) => Some(*raw),
+                _ => None,
+            })
+        });
+    let Some(expected_material_type) = key_format_type.and_then(key_material_type_for_format)
+    else {
+        return ValidationReport::default();
+    };
+
+    let actual_material_type = structure
+        .children()
+        .iter()
+        .find(|item| item.tag().raw() == KEY_VALUE)
+        .and_then(|key_value| {
+            key_value.with_value(|value| {
+                let kmipkit_ttlv::ValueView::Structure(key_value) = value else {
+                    return None;
+                };
+                key_value
+                    .children()
+                    .iter()
+                    .find(|item| item.tag().raw() == KEY_MATERIAL)
+                    .map(kmipkit_ttlv::Item::item_type)
+            })
+        });
+
+    let Some(actual_material_type) = actual_material_type else {
+        return ValidationReport::default();
+    };
+    if actual_material_type == expected_material_type {
+        return ValidationReport::default();
+    }
+
+    let mut report = ValidationReport::default();
+    report.push(ValidationIssue::new(
+        ValidationCode::new("KMIPKIT-0051-R280"),
+        prefix.clone().field("Key Value").field("Key Material"),
+        ValidationSeverity::Error,
+        ValidationSourceRef::Oasis {
+            document: "KMIP v2.1",
+            reference: "§3.2, Table 13; §11.25, Table 460",
+        },
+    ));
+    report
+}
+
+fn key_material_type_for_format(format: u32) -> Option<ItemType> {
+    match format {
+        1..=4 | 6 => Some(ItemType::ByteString),
+        7..=13 | 20..=21 => Some(ItemType::Structure),
+        _ => None,
+    }
 }
 
 pub(super) fn validate_managed_object(
