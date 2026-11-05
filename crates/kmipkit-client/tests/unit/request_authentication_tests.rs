@@ -4,14 +4,23 @@
 //! Type and before Batch Error Continuation Option. The current client omits
 //! Attestation Type, so Authentication follows Attestation Capable Indicator.
 
-use kmipkit_protocol::{Authentication, RequestMessage};
-use kmipkit_ttlv::codec::CodecLimits;
-use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
+use std::cell::{Cell, RefCell};
+use std::rc::Rc;
 
-use crate::execute::{ClientBatch, ClientBatchItem, ClientRequest, request_message_for_test};
+use kmipkit_protocol::{Authentication, RequestMessage};
+use kmipkit_test_support::{ExchangeScript, ScriptedTransport};
+use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
+use kmipkit_ttlv::codec::CodecLimits;
+use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView, codec::decode};
+
+use crate::execute::{
+    Client, ClientBatch, ClientBatchItem, ClientRequest, ZeroizationObserver,
+    request_message_for_test,
+};
+use crate::execute_test_support::{ResponseItemFixture, response_bytes};
 
 const REQUEST_HEADER: u32 = 0x0042_0077;
-const AUTHENTICATION: u32 = 0x0042_0001;
+const AUTHENTICATION: u32 = 0x0042_000C;
 const ATTESTATION_CAPABLE_INDICATOR: u32 = 0x0042_00D3;
 const BATCH_ERROR_CONTINUATION_OPTION: u32 = 0x0042_000E;
 const CREDENTIAL: u32 = 0x0042_0023;
@@ -80,6 +89,76 @@ fn authentication_count(request: &RequestMessage) -> usize {
         .count()
 }
 
+fn contains_text(structure: &kmipkit_ttlv::StructureView<'_>, expected: &str) -> bool {
+    structure.children().iter().any(|field| {
+        field.with_value(|value| match value {
+            ValueView::TextString(value) => value == expected,
+            ValueView::Structure(nested) => contains_text(&nested, expected),
+            _ => false,
+        })
+    })
+}
+
+struct AuthenticationObservingTransport {
+    script: Rc<RefCell<ScriptedTransport>>,
+    request_owner_observer: ZeroizationObserver,
+    owner_live_during_exchange: Rc<Cell<bool>>,
+    secret_reached_transport: Rc<Cell<bool>>,
+}
+
+impl Transport for AuthenticationObservingTransport {
+    fn exchange(
+        &mut self,
+        request: &[u8],
+        max_response_bytes: usize,
+    ) -> Result<TransportResponse, TransportError> {
+        let secret_reached_transport = decode(request).ok().is_some_and(|root| {
+            root.with_value(|value| match value {
+                ValueView::Structure(message) => contains_text(&message, SECRET_SENTINEL),
+                _ => false,
+            })
+        });
+        self.secret_reached_transport.set(secret_reached_transport);
+        self.owner_live_during_exchange
+            .set(self.request_owner_observer.result().is_none());
+        self.script
+            .borrow_mut()
+            .exchange(request, max_response_bytes)
+    }
+}
+
+fn authenticated_client(
+    script: ExchangeScript,
+    observer: ZeroizationObserver,
+) -> (
+    Client,
+    Rc<RefCell<ScriptedTransport>>,
+    Rc<Cell<bool>>,
+    Rc<Cell<bool>>,
+) {
+    let script = Rc::new(RefCell::new(ScriptedTransport::new(script)));
+    let owner_live_during_exchange = Rc::new(Cell::new(false));
+    let secret_reached_transport = Rc::new(Cell::new(false));
+    let transport = AuthenticationObservingTransport {
+        script: Rc::clone(&script),
+        request_owner_observer: observer.clone(),
+        owner_live_during_exchange: Rc::clone(&owner_live_during_exchange),
+        secret_reached_transport: Rc::clone(&secret_reached_transport),
+    };
+    let client = Client::for_test_with_request_observer(transport, observer);
+    (
+        client,
+        script,
+        owner_live_during_exchange,
+        secret_reached_transport,
+    )
+}
+
+fn authenticated_batch() -> ClientBatch {
+    ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions()))
+        .with_authentication(authentication())
+}
+
 #[test]
 fn authentication_is_emitted_once_in_request_header_order_for_one_item() {
     let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions()))
@@ -99,8 +178,8 @@ fn authentication_is_emitted_once_in_request_header_order_for_one_item() {
 #[test]
 fn authentication_is_one_message_field_for_a_multi_item_batch() {
     let batch = ClientBatch::from_items([
-        ClientBatchItem::new(ClientRequest::discover_versions()),
-        ClientBatchItem::new(ClientRequest::discover_versions()),
+        ClientBatchItem::new(ClientRequest::discover_versions()).with_unique_batch_item_id(vec![1]),
+        ClientBatchItem::new(ClientRequest::discover_versions()).with_unique_batch_item_id(vec![2]),
     ])
     .with_authentication(authentication())
     .with_batch_error_continuation_option(1);
@@ -131,4 +210,57 @@ fn authentication_is_omitted_by_default_and_batch_formatting_is_redacted() {
         .with_authentication(authentication());
     assert!(!format!("{batch:?}").contains(SECRET_SENTINEL));
     assert!(!batch.to_string().contains(SECRET_SENTINEL));
+}
+
+#[test]
+fn authentication_owner_lives_through_successful_exchange_and_is_zeroized() {
+    let observer = ZeroizationObserver::new(None);
+    let (mut client, script, owner_live, secret_reached_transport) = authenticated_client(
+        ExchangeScript::Success {
+            response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
+            request_write_chunks: vec![2, 3],
+        },
+        observer.clone(),
+    );
+
+    client
+        .execute(authenticated_batch(), &CodecLimits::defaults())
+        .expect("authenticated Discover Versions response is valid");
+
+    assert!(secret_reached_transport.get());
+    assert!(owner_live.get());
+    assert_eq!(observer.result(), Some(true));
+    assert_eq!(script.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn authentication_owner_is_zeroized_after_partial_write_without_retry() {
+    let observer = ZeroizationObserver::new(None);
+    let (mut client, script, owner_live, secret_reached_transport) = authenticated_client(
+        ExchangeScript::FailAfterPartialWrite { written_bytes: 2 },
+        observer.clone(),
+    );
+
+    let error = client
+        .execute(authenticated_batch(), &CodecLimits::defaults())
+        .expect_err("the transport fails after a partial request write");
+
+    assert_eq!(
+        error.delivery_state(),
+        Some(RequestDeliveryState::PossiblySent)
+    );
+    assert!(secret_reached_transport.get());
+    assert!(owner_live.get());
+    assert_eq!(observer.result(), Some(true));
+    assert_eq!(script.borrow().exchange_count(), 1);
+    assert_eq!(script.borrow().write_call_count(), 1);
+    assert!(!format!("{error:?}").contains(SECRET_SENTINEL));
+    assert!(!error.to_string().contains(SECRET_SENTINEL));
+    assert!(
+        script
+            .borrow()
+            .captured_logs()
+            .iter()
+            .all(|line| !line.contains(SECRET_SENTINEL))
+    );
 }
