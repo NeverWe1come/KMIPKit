@@ -856,6 +856,48 @@ fn key_value_structure_requires_key_material() {
 }
 
 #[test]
+fn key_format_type_selects_known_key_material_ttlv_type() {
+    const KEY_VALUE: u32 = 0x0042_0045;
+    const KEY_MATERIAL: u32 = 0x0042_0043;
+
+    let key_value = structure([item(KEY_MATERIAL, Value::structure(Structure::new()))]);
+    let key_block = structure([
+        item(KEY_FORMAT_TYPE, Value::enumeration(1)), // Raw
+        item(KEY_VALUE, Value::structure(key_value)),
+    ]);
+
+    let report = validate_structure(
+        &key_block.view(),
+        Some(ValidationSchema::Nested(NestedStructureSchema::KeyBlock)),
+    );
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R280"
+            && issue.path().to_string() == "Key Value.Key Material"
+            && issue.source().to_string() == "KMIP v2.1 §3.2, Table 13; §11.25, Table 460"
+    }));
+}
+
+#[test]
+fn unknown_key_format_does_not_reject_future_material_shapes() {
+    const KEY_VALUE: u32 = 0x0042_0045;
+    const KEY_MATERIAL: u32 = 0x0042_0043;
+
+    let key_value = structure([item(KEY_MATERIAL, Value::structure(Structure::new()))]);
+    let key_block = structure([
+        item(KEY_FORMAT_TYPE, Value::enumeration(0x8000_0001)),
+        item(KEY_VALUE, Value::structure(key_value)),
+    ]);
+
+    let report = validate_structure(
+        &key_block.view(),
+        Some(ValidationSchema::Nested(NestedStructureSchema::KeyBlock)),
+    );
+
+    assert!(report.is_valid());
+}
+
+#[test]
 fn generic_structure_without_identity_does_not_guess_an_operation_schema() {
     let mut structure = Structure::new();
     structure
