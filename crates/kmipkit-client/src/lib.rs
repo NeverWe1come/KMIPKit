@@ -30,6 +30,10 @@
 #![doc = include_str!("../../../docs/user-guide/es/transportes-produccion.md")]
 #![forbid(unsafe_code)]
 
+/// Private catalog-derived names shared by the JSON and XML codecs.
+#[allow(dead_code)] // KMIPKIT-0054 supplies the table before either codec lands.
+pub(crate) mod wire_names_generated;
+
 mod error;
 pub mod extension_registry;
 

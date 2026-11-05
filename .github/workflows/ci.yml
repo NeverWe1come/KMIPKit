@@ -206,6 +206,14 @@ jobs:
         id: check-formatting
         run: cargo fmt --all --check
 
+      - name: Check generated wire-name source formatting
+        id: check-generated-wire-name-formatting
+        run: rustfmt --check crates/kmipkit-client/src/wire_names_generated.rs
+
+      - name: Check generated wire-name source formatting
+        id: check-generated-wire-name-formatting
+        run: rustfmt --check crates/kmipkit-client/src/wire_names_generated.rs
+
       - name: Run Clippy
         id: run-clippy
         run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
@@ -883,6 +891,10 @@ jobs:
         id: verify-generated-ttlv-tag-allocations
         run: python3 -B tools/normative_catalog/generate_ttlv_tags.py --repo-root . --check
 
+      - name: Verify generated wire tag names
+        id: verify-generated-wire-tag-names
+        run: python3 -B tools/normative_catalog/generate_wire_names.py --repo-root . --check
+
       - name: Verify generated result mappings
         id: verify-generated-result-mappings
         run: python3 -B tools/normative_catalog/generate_result_values.py --repo-root . --check
@@ -929,6 +941,13 @@ jobs:
           else
             python -m coverage report --data-file=coverage-normative/.coverage --include=tools/normative_catalog/generate_attribute_types.py --fail-under=95
           fi
+
+      - name: Verify wire-name generator line coverage
+        id: verify-wire-name-generator-line-coverage
+        shell: bash
+        run: |
+          python -m coverage run --data-file=coverage-normative/.coverage-wire-names --source=tools.normative_catalog.generate_wire_names -m unittest tools.normative_catalog.tests.test_generate_wire_names
+          python -m coverage report --data-file=coverage-normative/.coverage-wire-names --include=tools/normative_catalog/generate_wire_names.py --fail-under=95
 
       - name: Diagnose job result
         id: ci-diagnostics
