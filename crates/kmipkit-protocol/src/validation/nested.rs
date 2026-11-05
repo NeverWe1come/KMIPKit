@@ -3,8 +3,9 @@
 use kmipkit_ttlv::StructureView;
 
 use super::schema::{
-    FieldDescriptor, FieldTag, NestedStructureSchema, RequestSchemaDescriptor, TYPE_ENUMERATION,
-    TYPE_STRUCTURE, TYPE_TEXT_STRING, validate_structure_with_descriptor_and_prefix,
+    FieldDescriptor, FieldTag, NestedStructureSchema, RequestSchemaDescriptor, TYPE_BOOLEAN,
+    TYPE_BYTE_STRING, TYPE_ENUMERATION, TYPE_INTEGER, TYPE_STRUCTURE, TYPE_TEXT_STRING,
+    validate_structure_with_descriptor_and_prefix,
 };
 use super::{
     ValidationCode, ValidationIssue, ValidationPath, ValidationReport, ValidationSeverity,
@@ -120,6 +121,123 @@ const OBJECT_DEFAULTS_FIELDS: &[FieldDescriptor] = &[
     },
 ];
 
+macro_rules! optional_crypto_field {
+    ($rule:literal, $name:literal, $tag:literal, $types:expr) => {
+        FieldDescriptor {
+            rule_id: $rule,
+            name: $name,
+            tag: FieldTag::Exact($tag),
+            types: $types,
+            min_count: 0,
+            max_count: Some(1),
+            nested_schema: None,
+        }
+    };
+}
+
+const CRYPTOGRAPHIC_PARAMETERS_FIELDS: &[FieldDescriptor] = &[
+    optional_crypto_field!(
+        "KMIPKIT-0051-R201",
+        "Block Cipher Mode",
+        0x0042_0011,
+        TYPE_ENUMERATION
+    ),
+    optional_crypto_field!(
+        "KMIPKIT-0051-R202",
+        "Padding Method",
+        0x0042_005F,
+        TYPE_ENUMERATION
+    ),
+    optional_crypto_field!(
+        "KMIPKIT-0051-R203",
+        "Hashing Algorithm",
+        0x0042_0038,
+        TYPE_ENUMERATION
+    ),
+    optional_crypto_field!(
+        "KMIPKIT-0051-R204",
+        "Key Role Type",
+        0x0042_0083,
+        TYPE_ENUMERATION
+    ),
+    optional_crypto_field!(
+        "KMIPKIT-0051-R205",
+        "Digital Signature Algorithm",
+        0x0042_00AE,
+        TYPE_ENUMERATION
+    ),
+    optional_crypto_field!(
+        "KMIPKIT-0051-R206",
+        "Cryptographic Algorithm",
+        0x0042_0028,
+        TYPE_ENUMERATION
+    ),
+    optional_crypto_field!("KMIPKIT-0051-R207", "Random IV", 0x0042_00C5, TYPE_BOOLEAN),
+    optional_crypto_field!("KMIPKIT-0051-R208", "IV Length", 0x0042_00CD, TYPE_INTEGER),
+    optional_crypto_field!("KMIPKIT-0051-R209", "Tag Length", 0x0042_00CE, TYPE_INTEGER),
+    optional_crypto_field!(
+        "KMIPKIT-0051-R210",
+        "Fixed Field Length",
+        0x0042_00CF,
+        TYPE_INTEGER
+    ),
+    optional_crypto_field!(
+        "KMIPKIT-0051-R211",
+        "Invocation Field Length",
+        0x0042_00D2,
+        TYPE_INTEGER
+    ),
+    optional_crypto_field!(
+        "KMIPKIT-0051-R212",
+        "Counter Length",
+        0x0042_00D0,
+        TYPE_INTEGER
+    ),
+    optional_crypto_field!(
+        "KMIPKIT-0051-R213",
+        "Initial Counter Value",
+        0x0042_00D1,
+        TYPE_INTEGER
+    ),
+    optional_crypto_field!(
+        "KMIPKIT-0051-R214",
+        "Salt Length",
+        0x0042_0100,
+        TYPE_INTEGER
+    ),
+    optional_crypto_field!(
+        "KMIPKIT-0051-R215",
+        "Mask Generator",
+        0x0042_0101,
+        TYPE_ENUMERATION
+    ),
+    optional_crypto_field!(
+        "KMIPKIT-0051-R216",
+        "Mask Generator Hashing Algorithm",
+        0x0042_0102,
+        TYPE_ENUMERATION
+    ),
+    optional_crypto_field!(
+        "KMIPKIT-0051-R217",
+        "P Source",
+        0x0042_0103,
+        TYPE_BYTE_STRING
+    ),
+    optional_crypto_field!(
+        "KMIPKIT-0051-R218",
+        "Trailer Field",
+        0x0042_0104,
+        TYPE_INTEGER
+    ),
+];
+
+const BLOCK_CIPHER_MODE: u32 = 0x0042_0011;
+const IV_LENGTH: u32 = 0x0042_00CD;
+const TAG_LENGTH: u32 = 0x0042_00CE;
+const CTR_MODE: u32 = 6;
+const CCM_MODE: u32 = 8;
+const GCM_MODE: u32 = 9;
+
 /// Validates a nested KMIP structure without taking ownership of its values.
 pub(super) fn validate_nested_structure(
     structure: &StructureView<'_>,
@@ -139,6 +257,9 @@ pub(super) fn validate_nested_with_prefix(
     if schema == NestedStructureSchema::ObjectDefaults {
         validate_object_defaults_alternative(structure, prefix, &mut report);
     }
+    if schema == NestedStructureSchema::CryptographicParameters {
+        validate_cryptographic_parameter_requirements(structure, prefix, &mut report);
+    }
 
     report
 }
@@ -157,8 +278,67 @@ fn descriptor(schema: NestedStructureSchema) -> RequestSchemaDescriptor {
             ("§7.11, Table 363", DEFAULTS_INFORMATION_FIELDS)
         }
         NestedStructureSchema::ObjectDefaults => ("§7.22, Table 374", OBJECT_DEFAULTS_FIELDS),
+        NestedStructureSchema::CryptographicParameters => {
+            ("§4.16, Table 59", CRYPTOGRAPHIC_PARAMETERS_FIELDS)
+        }
     };
     RequestSchemaDescriptor { source, fields }
+}
+
+fn validate_cryptographic_parameter_requirements(
+    structure: &StructureView<'_>,
+    prefix: &ValidationPath,
+    report: &mut ValidationReport,
+) {
+    let mut variable_iv_length_required = false;
+    let mut tag_length_required = false;
+    let mut has_iv_length = false;
+    let mut has_tag_length = false;
+
+    for field in structure.children() {
+        match field.tag().raw() {
+            BLOCK_CIPHER_MODE => {
+                let mode = field.with_value(|value| match value {
+                    kmipkit_ttlv::ValueView::Enumeration(raw) => Some(*raw),
+                    _ => None,
+                });
+                match mode {
+                    Some(CTR_MODE | CCM_MODE) => variable_iv_length_required = true,
+                    Some(GCM_MODE) => {
+                        variable_iv_length_required = true;
+                        tag_length_required = true;
+                    }
+                    Some(_) | None => {}
+                }
+            }
+            IV_LENGTH => has_iv_length = true,
+            TAG_LENGTH => has_tag_length = true,
+            _ => {}
+        }
+    }
+
+    if variable_iv_length_required && !has_iv_length {
+        report.push(ValidationIssue::new(
+            ValidationCode::new("KMIPKIT-0051-R219"),
+            prefix.clone().field("IV Length"),
+            ValidationSeverity::Error,
+            ValidationSourceRef::Oasis {
+                document: "KMIP v2.1",
+                reference: "§4.16, Table 59",
+            },
+        ));
+    }
+    if tag_length_required && !has_tag_length {
+        report.push(ValidationIssue::new(
+            ValidationCode::new("KMIPKIT-0051-R220"),
+            prefix.clone().field("Tag Length"),
+            ValidationSeverity::Error,
+            ValidationSourceRef::Oasis {
+                document: "KMIP v2.1",
+                reference: "§4.16, Table 59",
+            },
+        ));
+    }
 }
 
 fn validate_object_defaults_alternative(

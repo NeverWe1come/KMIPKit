@@ -13,6 +13,7 @@ remain in the caller's TTLV tree and are not rejected solely for being unknown.
 | `Attributes` | §5.1, Table 157 | Retain direct attribute items without imposing an operation-independent value schema; catalogued value types are handled by typed attribute construction where applicable. | — | `validation_schema_tests::constraints_schema_recurses_through_known_children_and_keeps_extensions`; existing `attribute_tests` |
 | `Defaults Information` | §7.11, Table 363 | Zero or more `Object Defaults` Structure children. | R197 | `typed_request_validation_tests::defaults_validation_checks_required_attribute_container_and_preserves_empty_defaults`; `validation_schema_tests::request_payload_schema_recurses_into_known_nested_payloads` |
 | `Object Defaults` | §7.22, Table 374 | Exactly one of `Object Type` Enumeration or `Object Types` Structure; one `Attributes` Structure is required; `Object Groups` is optional. | R198–R200 | `validation_schema_tests::nested_object_defaults_enforces_alternative_and_required_attributes`; `typed_request_validation_tests::defaults_validation_checks_required_attribute_container_and_preserves_empty_defaults` |
+| `Cryptographic Parameters` | §4.16, Table 59 | Eighteen known optional singleton fields in table order, with their specified TTLV types; require `IV Length` for locally recognized CTR, CCM, and GCM modes, and `Tag Length` for GCM. | R201–R220 | `validation_schema_tests::encrypt_payload_recursively_validates_known_cryptographic_parameter_fields`; `validation_schema_tests::cryptographic_parameters_require_iv_and_gcm_tag_lengths_when_mode_requires_them`; `validation_schema_tests::cryptographic_parameters_preserve_unknown_members_and_future_enumerations` |
 
 ## Boundaries
 
@@ -30,3 +31,7 @@ families have been reconciled and covered by the operation-family tasks.
   schema does not guess attribute-specific multiplicity or server policy.
 - Object Type values remain open raw Enumeration values; this schema validates
   their TTLV encoding, not whether a server implements that object type.
+- Cryptographic parameter Enumeration values and vendor fields remain open.
+  The IV/Tag Length presence rules reuse the existing KMIPKit interpretation of
+  §4.16 for locally recognized CTR, CCM, and GCM modes; unknown modes are not
+  rejected and object-derived parameters are not inferred.

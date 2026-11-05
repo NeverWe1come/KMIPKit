@@ -42,16 +42,67 @@ fn encrypt_payload_recursively_validates_known_cryptographic_parameter_fields() 
 
     let report = validate_structure(
         &payload.view(),
-        Some(ValidationSchema::RequestPayload(RequestPayloadSchema::Encrypt)),
+        Some(ValidationSchema::RequestPayload(
+            RequestPayloadSchema::Encrypt,
+        )),
     );
 
     assert!(report.issues().iter().any(|issue| {
-        issue.path().to_string()
-            == "Request Payload.Cryptographic Parameters.Hashing Algorithm"
+        issue.path().to_string() == "Request Payload.Cryptographic Parameters.Hashing Algorithm"
     }));
-    assert!(report.issues().iter().all(|issue| {
-        issue.source().to_string() == "KMIP v2.1 §4.16, Table 59"
-    }));
+    assert!(
+        report
+            .issues()
+            .iter()
+            .all(|issue| { issue.source().to_string() == "KMIP v2.1 §4.16, Table 59" })
+    );
+}
+
+#[test]
+fn cryptographic_parameters_require_iv_and_gcm_tag_lengths_when_mode_requires_them() {
+    let parameters = structure([item(0x0042_0011, Value::enumeration(9))]);
+
+    let report = validate_structure(
+        &parameters.view(),
+        Some(ValidationSchema::Nested(
+            NestedStructureSchema::CryptographicParameters,
+        )),
+    );
+
+    let paths = report
+        .issues()
+        .iter()
+        .map(|issue| issue.path().to_string())
+        .collect::<Vec<_>>();
+    assert_eq!(paths, ["IV Length", "Tag Length"]);
+    assert!(
+        report
+            .issues()
+            .iter()
+            .all(|issue| { issue.source().to_string() == "KMIP v2.1 §4.16, Table 59" })
+    );
+}
+
+#[test]
+fn cryptographic_parameters_preserve_unknown_members_and_future_enumerations() {
+    let parameters = structure([
+        item(HASHING_ALGORITHM, Value::enumeration(0x8000_0042)),
+        item(VENDOR_EXTENSION, Value::byte_string(vec![0xCA, 0xFE])),
+    ]);
+
+    let report = validate_structure(
+        &parameters.view(),
+        Some(ValidationSchema::Nested(
+            NestedStructureSchema::CryptographicParameters,
+        )),
+    );
+
+    assert!(report.is_valid());
+    let view = parameters.view();
+    let children = view.children();
+    assert_eq!(children.len(), 2);
+    assert_eq!(children[0].tag().raw(), HASHING_ALGORITHM);
+    assert_eq!(children[1].tag().raw(), VENDOR_EXTENSION);
 }
 
 #[test]

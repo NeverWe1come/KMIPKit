@@ -810,7 +810,7 @@ static DECRYPT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::CryptographicParameters),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R038",
@@ -1031,7 +1031,7 @@ static ENCRYPT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::CryptographicParameters),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R061",
@@ -1247,7 +1247,7 @@ static HASH_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 1,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::CryptographicParameters),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R083",
@@ -1528,7 +1528,7 @@ static MAC_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::CryptographicParameters),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R112",
@@ -1585,7 +1585,7 @@ static MACVERIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::CryptographicParameters),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R118",
@@ -2135,7 +2135,7 @@ static SIGN_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::CryptographicParameters),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R174",
@@ -2201,7 +2201,7 @@ static SIGNATUREVERIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::CryptographicParameters),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R181",

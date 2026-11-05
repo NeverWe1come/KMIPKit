@@ -71,6 +71,8 @@ pub enum NestedStructureSchema {
     DefaultsInformation,
     /// One §7.22 Object Defaults structure.
     ObjectDefaults,
+    /// The §4.16 Cryptographic Parameters attribute structure.
+    CryptographicParameters,
 }
 
 #[derive(Clone, Copy)]
