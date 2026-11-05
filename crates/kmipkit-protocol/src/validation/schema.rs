@@ -100,9 +100,7 @@ fn validate_structure_with_descriptor(
     descriptor: &RequestSchemaDescriptor,
 ) -> ValidationReport {
     let mut report = ValidationReport::default();
-    let mut counts = vec![0_usize; descriptor.fields.len()];
-    let mut last_known_field = 0_usize;
-    let mut has_known_field = false;
+    let mut state = FieldCounts::new(descriptor.fields.len());
 
     for (child_index, item) in structure.children().iter().enumerate() {
         let Some(field_index) = descriptor
@@ -112,44 +110,17 @@ fn validate_structure_with_descriptor(
         else {
             continue;
         };
-        let field = descriptor.fields[field_index];
-        let count = &mut counts[field_index];
-        *count = count.saturating_add(1);
-
-        if has_known_field && field_index < last_known_field {
-            push_field_issue(
-                &mut report,
-                field,
-                descriptor.source,
-                ValidationCode::new(field.rule_id),
-                field.max_count.is_none().then_some(child_index),
-            );
-        }
-        last_known_field = field_index;
-        has_known_field = true;
-
-        if field.max_count.is_some_and(|maximum| *count > maximum) {
-            push_field_issue(
-                &mut report,
-                field,
-                descriptor.source,
-                ValidationCode::new(field.rule_id),
-                Some(child_index),
-            );
-        }
-
-        if field.types & item_type_bit(item.item_type()) == 0 {
-            push_field_issue(
-                &mut report,
-                field,
-                descriptor.source,
-                ValidationCode::new(field.rule_id),
-                (field.max_count.is_none() || *count > 1).then_some(child_index),
-            );
-        }
+        validate_known_child(
+            &mut report,
+            descriptor,
+            &mut state,
+            field_index,
+            child_index,
+            item.item_type(),
+        );
     }
 
-    for (field, count) in descriptor.fields.iter().zip(counts) {
+    for (field, count) in descriptor.fields.iter().zip(state.counts) {
         if count < field.min_count {
             report.push(ValidationIssue::new(
                 ValidationCode::new(field.rule_id),
@@ -166,6 +137,67 @@ fn validate_structure_with_descriptor(
     }
 
     report
+}
+
+struct FieldCounts {
+    counts: Vec<usize>,
+    last_known_field: usize,
+    has_known_field: bool,
+}
+
+impl FieldCounts {
+    fn new(field_count: usize) -> Self {
+        Self {
+            counts: vec![0; field_count],
+            last_known_field: 0,
+            has_known_field: false,
+        }
+    }
+}
+
+fn validate_known_child(
+    report: &mut ValidationReport,
+    descriptor: &RequestSchemaDescriptor,
+    state: &mut FieldCounts,
+    field_index: usize,
+    child_index: usize,
+    item_type: ItemType,
+) {
+    let field = descriptor.fields[field_index];
+    let count = state.counts[field_index].saturating_add(1);
+    state.counts[field_index] = count;
+
+    if state.has_known_field && field_index < state.last_known_field {
+        push_field_issue(
+            report,
+            field,
+            descriptor.source,
+            ValidationCode::new(field.rule_id),
+            field.max_count.is_none().then_some(child_index),
+        );
+    }
+    state.last_known_field = field_index;
+    state.has_known_field = true;
+
+    if field.max_count.is_some_and(|maximum| count > maximum) {
+        push_field_issue(
+            report,
+            field,
+            descriptor.source,
+            ValidationCode::new(field.rule_id),
+            Some(child_index),
+        );
+    }
+
+    if field.types & item_type_bit(item_type) == 0 {
+        push_field_issue(
+            report,
+            field,
+            descriptor.source,
+            ValidationCode::new(field.rule_id),
+            (field.max_count.is_none() || count > 1).then_some(child_index),
+        );
+    }
 }
 
 fn field_matches(field: &FieldDescriptor, tag: u32) -> bool {
