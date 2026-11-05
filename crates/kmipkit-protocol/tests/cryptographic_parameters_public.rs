@@ -225,3 +225,41 @@ fn builder_preserves_unknown_extension_order_after_known_members() {
         [PADDING_METHOD, INVOCATION_FIELD_LENGTH, VENDOR_EXTENSION]
     );
 }
+
+#[test]
+fn build_reuses_locally_knowable_section_4_16_requirements() {
+    assert!(
+        CryptographicParametersBuilder::new()
+            .with_block_cipher_mode(6)
+            .build()
+            .is_err()
+    );
+    assert!(
+        CryptographicParametersBuilder::new()
+            .with_block_cipher_mode(8)
+            .build()
+            .is_err()
+    );
+    assert!(
+        CryptographicParametersBuilder::new()
+            .with_block_cipher_mode(9)
+            .with_iv_length(96)
+            .build()
+            .is_err()
+    );
+
+    CryptographicParametersBuilder::new()
+        .with_block_cipher_mode(9)
+        .with_iv_length(96)
+        .with_tag_length(128)
+        .build()
+        .expect("GCM parameters include both required lengths");
+}
+
+#[test]
+fn future_block_cipher_mode_does_not_trigger_invented_local_requirements() {
+    CryptographicParametersBuilder::new()
+        .with_block_cipher_mode(0x8FFF_1234)
+        .build()
+        .expect("unknown future values remain representable");
+}
