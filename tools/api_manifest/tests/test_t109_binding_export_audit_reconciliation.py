@@ -6,6 +6,8 @@ import json
 import unittest
 from pathlib import Path
 
+from tools.api_manifest.generate import ManifestError, _validate_unique_public_export_identities
+
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 
@@ -152,6 +154,27 @@ class T109BindingExportAuditReconciliationTests(unittest.TestCase):
         self.assertEqual(["public boolean passed()"], exclusions[0].get("javaSignatures"))
         self.assertIn("KMIPKIT-0010-FR-017", exclusions[0]["evidence"])
 
+    def test_manifest_identity_validation_allows_only_disjoint_java_signature_splits(self) -> None:
+        export_name = "org.kmipkit.extensions.ProfileEvidenceRecord.passed"
+        declaration = {
+            "packageId": "java-kmipkit",
+            "exportName": export_name,
+            "javaSignatures": [
+                "public static org.kmipkit.extensions.ProfileEvidenceRecord passed(java.lang.String)",
+            ],
+        }
+        exclusion = {
+            "packageId": "java-kmipkit",
+            "exportName": export_name,
+            "javaSignatures": ["public boolean passed()"],
+        }
+
+        _validate_unique_public_export_identities([declaration], [exclusion])
+
+        exclusion["javaSignatures"] = list(declaration["javaSignatures"])
+        with self.assertRaisesRegex(ManifestError, "overlaps an approved exclusion"):
+            _validate_unique_public_export_identities([declaration], [exclusion])
+
     def test_java_overloads_declare_all_audited_signatures(self) -> None:
         rows = {
             row["exportName"]: row
@@ -164,7 +187,6 @@ class T109BindingExportAuditReconciliationTests(unittest.TestCase):
                 "public static org.kmipkit.extensions.ClientBatchItem pkcs11(org.kmipkit.ttlv.TtlvStructure, org.kmipkit.ttlv.TtlvStructure, byte[], org.kmipkit.ttlv.TtlvStructure, java.util.List<org.kmipkit.ttlv.TtlvItem>)",
             ],
             "org.kmipkit.extensions.ProfileEvidenceRecord.passed": [
-                "public boolean passed()",
                 "public static org.kmipkit.extensions.ProfileEvidenceRecord passed(java.lang.String)",
             ],
         }
