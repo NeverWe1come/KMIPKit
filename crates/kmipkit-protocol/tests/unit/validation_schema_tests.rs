@@ -39,6 +39,11 @@ const REVOCATION_REASON_CODE: u32 = 0x0042_0082;
 const PKCS11_INTERFACE: u32 = 0x0042_0159;
 const PKCS11_FUNCTION: u32 = 0x0042_015A;
 const PKCS11_INPUT_PARAMETERS: u32 = 0x0042_015B;
+const KEY_BLOCK: u32 = 0x0042_0040;
+const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+const SYMMETRIC_KEY: u32 = 0x0042_008F;
+const OPAQUE_OBJECT: u32 = 0x0042_005B;
+const OPAQUE_DATA_TYPE: u32 = 0x0042_0059;
 
 fn item(tag: u32, value: Value) -> Item {
     let raw_tag = RawTag::new(tag).expect("fixture tag fits the TTLV tag field");
@@ -717,6 +722,55 @@ fn pkcs11_request_schema_recursively_checks_input_parameter_structure() {
             && issue.path().to_string()
                 == "Request Payload.PKCS#11 Input Parameters.PKCS#11 Input Parameters"
             && issue.source().to_string() == "KMIP v2.1 §7.27, Table 379"
+    }));
+}
+
+#[test]
+fn register_schema_recursively_checks_key_block_fields() {
+    let key_block = structure([item(
+        KEY_FORMAT_TYPE,
+        Value::text_string("invalid-key-format-ttlv-type".to_owned()),
+    )]);
+    let symmetric_key = structure([item(KEY_BLOCK, Value::structure(key_block))]);
+    let payload = structure([
+        item(OBJECT_TYPE, Value::enumeration(2)),
+        item(ATTRIBUTES, Value::structure(Structure::new())),
+        item(SYMMETRIC_KEY, Value::structure(symmetric_key)),
+    ]);
+
+    let report = validate_structure(
+        &payload.view(),
+        Some(ValidationSchema::RequestPayload(RequestPayloadSchema::Register)),
+    );
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R262"
+            && issue.path().to_string()
+                == "Request Payload.Any Object (Section 2).Key Block.Key Format Type"
+            && issue.source().to_string() == "KMIP v2.1 §3.1, Table 12"
+    }));
+    assert!(!format!("{report:?}").contains("invalid-key-format-ttlv-type"));
+}
+
+#[test]
+fn register_schema_checks_both_required_opaque_object_fields() {
+    let opaque_object = structure([item(OPAQUE_DATA_TYPE, Value::enumeration(0x8000_0001))]);
+    let payload = structure([
+        item(OBJECT_TYPE, Value::enumeration(0x8000_0001)),
+        item(ATTRIBUTES, Value::structure(Structure::new())),
+        item(OPAQUE_OBJECT, Value::structure(opaque_object)),
+    ]);
+
+    let report = validate_structure(
+        &payload.view(),
+        Some(ValidationSchema::RequestPayload(RequestPayloadSchema::Register)),
+    );
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R269"
+            && issue.path().to_string()
+                == "Request Payload.Any Object (Section 2).Opaque Data Value"
+            && issue.source().to_string() == "KMIP v2.1 §2.3, Table 4"
     }));
 }
 
