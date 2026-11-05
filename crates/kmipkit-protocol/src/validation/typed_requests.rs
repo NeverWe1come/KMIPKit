@@ -7,7 +7,7 @@ use crate::{
     GetConstraintsRequest, GetRequest, GetUsageAllocationRequest, ImportRequest, InteropRequest,
     JoinSplitKeyRequest, LocateRequest, LogRequest, LoginRequest, LogoutRequest,
     ModifyAttributeRequest, ObtainLeaseRequest, PingRequest, Pkcs11Request, PollRequest,
-    ProcessRequest, QueryAsyncRequestsRequest, QueryRequest, ReProvisionRequest, RecoverRequest,
+    ProcessRequest, QueryAsyncRequestsRequest, QueryRequest, RecoverRequest,
     RngRetrieveRequest, RngSeedRequest, SetAttributeRequest, SetConstraintsRequest,
     SetDefaultsRequest, ValidationReport,
 };
@@ -87,7 +87,6 @@ impl_typed_request_validation! {
     PollRequest => Poll,
     ProcessRequest => Process,
     QueryAsyncRequestsRequest => QueryAsyncRequests,
-    ReProvisionRequest => ReProvision,
     RecoverRequest => Recover,
     RngRetrieveRequest => RngRetrieve,
     RngSeedRequest => RngSeed,
