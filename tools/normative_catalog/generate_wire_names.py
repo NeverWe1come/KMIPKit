@@ -162,6 +162,14 @@ def _assigned_bitmask_names(catalog: dict[str, Any]) -> list[tuple[str, int, str
     return sorted(names)
 
 
+def _record_enumeration_family(
+    family_by_tag: dict[int, str], tag: int, family: str
+) -> None:
+    existing_family = family_by_tag.setdefault(tag, family)
+    if existing_family != family:
+        raise ValueError("catalog maps one Enumeration tag to multiple families")
+
+
 def _tag_enumeration_families(catalog: dict[str, Any]) -> list[tuple[int, str]]:
     elements = catalog.get("elements")
     if not isinstance(elements, list):
@@ -213,9 +221,7 @@ def _tag_enumeration_families(catalog: dict[str, Any]) -> list[tuple[int, str]]:
         if not isinstance(raw_tag, str) or not _TAG_VALUE.fullmatch(raw_tag):
             raise ValueError("catalog Enumeration tag has an invalid assigned tag value")
         tag = int(raw_tag.removeprefix("0x").removeprefix("0X"), 16)
-        existing_family = family_by_tag.setdefault(tag, tag_name)
-        if existing_family != tag_name:
-            raise ValueError("catalog maps one Enumeration tag to multiple families")
+        _record_enumeration_family(family_by_tag, tag, tag_name)
 
     for member in elements:
         if (
@@ -233,9 +239,7 @@ def _tag_enumeration_families(catalog: dict[str, Any]) -> list[tuple[int, str]]:
             raise ValueError("catalog Enumeration member has no matching family")
         family = max(matching_families, key=len)
         tag = tags_by_name[member_name]
-        existing_family = family_by_tag.setdefault(tag, family)
-        if existing_family != family:
-            raise ValueError("catalog maps one Enumeration tag to multiple families")
+        _record_enumeration_family(family_by_tag, tag, family)
     return sorted((tag, family) for tag, family in family_by_tag.items())
 
 
