@@ -164,29 +164,6 @@ fn attach(item: Item, frames: &mut [Frame], root: &mut Option<Item>) -> Result<(
     }
 }
 
-fn preflight(
-    event: &BytesStart<'_>,
-    depth: usize,
-    limits: &CodecLimits,
-) -> Result<(), WireCodecError> {
-    if depth < limits.max_structure_depth() {
-        return Ok(());
-    }
-    // Only type metadata is needed to decide whether this element adds a
-    // Structure. Never decode its payload or namespace attributes first.
-    for attr in event.attributes().with_checks(false) {
-        let attr = attr.map_err(|_| INVALID_DOCUMENT)?;
-        if attr.key.as_ref() == "type" {
-            return if attribute(&attr.value)?.as_str() == "Structure" {
-                Err(LIMIT)
-            } else {
-                Ok(())
-            };
-        }
-    }
-    Err(LIMIT)
-}
-
 fn check_declaration(text: &str) -> Result<(), WireCodecError> {
     let declaration = BytesStart::from_content(text, 3);
     let mut state = 0;
@@ -237,13 +214,11 @@ pub(crate) fn decode(bytes: &[u8], limits: &CodecLimits) -> Result<Item, WireCod
                 {
                     return Err(INVALID_DOCUMENT);
                 }
-                // Every ancestor is a Structure; preflight before attributes
-                // or model payloads are allocated for this item.
+                // Retain defensive tree checks after complete lexical preflight.
                 if frames.len() > limits.max_structure_depth() {
                     return Err(LIMIT);
                 }
                 count += 1;
-                preflight(&event, frames.len(), limits)?;
                 let frame = start(&event, &frames)?;
                 if frame.value.is_none() && frames.len() >= limits.max_structure_depth() {
                     return Err(LIMIT);

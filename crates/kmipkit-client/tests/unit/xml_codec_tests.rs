@@ -677,3 +677,48 @@ fn xml_ncname_unicode_ranges_are_accepted_for_namespace_prefixes() {
         );
     }
 }
+
+// KMIPKIT-0056-R004/R005: valid delimiters must not inflate resource counts.
+#[test]
+fn lexical_preflight_ignores_non_item_markup_and_quoted_delimiters() {
+    let input = b"<RequestPayload><!-- <BatchItem/> --><?instruction <BatchItem/>?><TTLV tag='0x540001' type='TextString' value='> / >'></TTLV><![CDATA[\n ]]></RequestPayload>";
+    let root = decode(input, &CodecLimits::new(input.len(), 1, 2).unwrap()).unwrap();
+    equal(
+        &root,
+        &parse(
+            "<RequestPayload><TTLV tag='0x540001' type='TextString' value='> / >'/></RequestPayload>",
+        ),
+    );
+    let scalar = b"<BatchCount type='&#x49;nteger' value='1'></BatchCount>";
+    equal(
+        &decode(scalar, &CodecLimits::new(scalar.len(), 0, 1).unwrap()).unwrap(),
+        &item(0x0042_000d, Value::integer(1)),
+    );
+    let structure = b"<RequestPayload type='Str&#117;cture'/>";
+    assert_eq!(
+        decode(structure, &CodecLimits::new(structure.len(), 0, 1).unwrap())
+            .unwrap_err()
+            .kind(),
+        WireCodecErrorKind::LimitExceeded
+    );
+}
+
+#[test]
+fn malformed_lexical_markup_is_rejected_without_reader_allocation() {
+    for input in [
+        "<!-- unfinished",
+        "<![CDATA[ unfinished",
+        "<?unfinished",
+        "<RequestPayload value='unfinished>",
+        "</RequestPayload",
+        "</RequestPayload>",
+        "<RequestPayload><BatchItem/></RequestPayload></RequestPayload>",
+    ] {
+        assert_eq!(
+            decode(input.as_bytes(), &CodecLimits::defaults())
+                .unwrap_err()
+                .kind(),
+            WireCodecErrorKind::InvalidDocument
+        );
+    }
+}
