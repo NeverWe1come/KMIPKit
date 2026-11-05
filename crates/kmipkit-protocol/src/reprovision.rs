@@ -9,8 +9,7 @@ use crate::cryptographic_operation::{self as common, OwnedResponseTtlv};
 use crate::{
     KmipOperationResult, NestedStructureSchema, ProtocolCauseCategory, ProtocolError,
     ProtocolErrorKind, RequestPayloadSchema, ResponseBatchItemView, ResultMessage,
-    ResultValidationError, UniqueIdentifier, ValidateKmipRequest, ValidationPath,
-    ValidationReport,
+    ResultValidationError, UniqueIdentifier, ValidateKmipRequest, ValidationPath, ValidationReport,
 };
 
 const OPERATION: u32 = 0x0000_0035;

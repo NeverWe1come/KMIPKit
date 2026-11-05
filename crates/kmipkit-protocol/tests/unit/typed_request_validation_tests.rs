@@ -699,11 +699,8 @@ fn derive_key_validation_recurses_into_cryptographic_parameters() {
 }
 
 #[test]
-fn reprovision_validation_checks_supplied_certificate_object_shapes() {
-    let malformed_request = schema_structure([schema_item(
-        0x0042_0019,
-        Value::enumeration(1),
-    )]);
+fn reprovision_validation_checks_supplied_certificate_request_shape() {
+    let malformed_request = schema_structure([schema_item(0x0042_0019, Value::enumeration(1))]);
     let request = ReProvisionRequest::new().with_certificate_request(malformed_request);
 
     let report = request.validate();
