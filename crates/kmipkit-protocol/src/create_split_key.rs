@@ -183,9 +183,16 @@ impl CreateSplitKeyRequest {
     /// violation, source-defined Attribute cardinality violation, or an
     /// invalid generic TTLV model value.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
-        if !self.validation_report().is_valid() {
+        if self.attributes_have_invalid_cardinality() {
             return Err(crate::cryptographic_operation::request_error());
         }
+        self.validate_client_policy().map_err(|error| {
+            ProtocolError::new(
+                ProtocolErrorKind::InvalidValue,
+                ProtocolCauseCategory::InvalidValue,
+                error,
+            )
+        })?;
 
         let mut payload = Structure::new();
         push(
@@ -249,13 +256,7 @@ impl CreateSplitKeyRequest {
     }
 
     fn validation_report(&self) -> ValidationReport {
-        if crate::attribute::validate_single_instance_attribute_items(
-            self.attributes.as_items(),
-            Some(self.object_type.raw()),
-            true,
-        )
-        .is_err()
-        {
+        if self.attributes_have_invalid_cardinality() {
             return crate::validation::request_issue_report(
                 "KMIPKIT-0051-P005",
                 "Attributes",
@@ -276,6 +277,15 @@ impl CreateSplitKeyRequest {
             );
         }
         ValidationReport::default()
+    }
+
+    fn attributes_have_invalid_cardinality(&self) -> bool {
+        crate::attribute::validate_single_instance_attribute_items(
+            self.attributes.as_items(),
+            Some(self.object_type.raw()),
+            true,
+        )
+        .is_err()
     }
 }
 

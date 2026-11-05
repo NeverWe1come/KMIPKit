@@ -2,15 +2,14 @@
 
 use crate::{
     ActivateRequest, AddAttributeRequest, AdjustAttributeRequest, ArchiveRequest, CancelRequest,
-    CheckRequest, CreateKeyPairRequest, DelegatedLoginRequest, DeleteAttributeRequest,
-    DestroyRequest, DiscoverVersionsRequest, ExportRequest, GetAttributeListRequest,
-    GetAttributesRequest, GetConstraintsRequest, GetRequest, GetUsageAllocationRequest,
-    ImportRequest, InteropRequest, JoinSplitKeyRequest, LocateRequest, LogRequest, LoginRequest,
-    LogoutRequest, ModifyAttributeRequest, ObtainLeaseRequest, PingRequest, Pkcs11Request,
-    PollRequest, ProcessRequest, QueryAsyncRequestsRequest, QueryRequest, ReProvisionRequest,
-    RecertifyRequest, RecoverRequest, RekeyKeyPairRequest, RekeyRequest, RngRetrieveRequest,
-    RngSeedRequest, SetAttributeRequest, SetConstraintsRequest, SetDefaultsRequest,
-    ValidationReport,
+    CheckRequest, DelegatedLoginRequest, DeleteAttributeRequest, DestroyRequest,
+    DiscoverVersionsRequest, ExportRequest, GetAttributeListRequest, GetAttributesRequest,
+    GetConstraintsRequest, GetRequest, GetUsageAllocationRequest, ImportRequest, InteropRequest,
+    JoinSplitKeyRequest, LocateRequest, LogRequest, LoginRequest, LogoutRequest,
+    ModifyAttributeRequest, ObtainLeaseRequest, PingRequest, Pkcs11Request, PollRequest,
+    ProcessRequest, QueryAsyncRequestsRequest, QueryRequest, ReProvisionRequest, RecoverRequest,
+    RngRetrieveRequest, RngSeedRequest, SetAttributeRequest, SetConstraintsRequest,
+    SetDefaultsRequest, ValidationReport,
 };
 
 use super::schema::RequestPayloadSchema;
@@ -56,7 +55,6 @@ impl_typed_request_validation! {
     ArchiveRequest => Archive,
     CancelRequest => Cancel,
     CheckRequest => Check,
-    CreateKeyPairRequest => CreateKeyPair,
     DelegatedLoginRequest => DelegatedLogin,
     DeleteAttributeRequest => DeleteAttribute,
     DestroyRequest => Destroy,
@@ -83,10 +81,7 @@ impl_typed_request_validation! {
     QueryRequest => Query,
     QueryAsyncRequestsRequest => QueryAsyncRequests,
     ReProvisionRequest => ReProvision,
-    RecertifyRequest => Recertify,
     RecoverRequest => Recover,
-    RekeyRequest => Rekey,
-    RekeyKeyPairRequest => RekeyKeyPair,
     RngRetrieveRequest => RngRetrieve,
     RngSeedRequest => RngSeed,
     SetAttributeRequest => SetAttribute,

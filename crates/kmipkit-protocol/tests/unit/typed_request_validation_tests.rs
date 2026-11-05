@@ -180,7 +180,13 @@ fn certify_validation_rejects_request_value_without_type() {
     let request = CertifyRequest::new()
         .with_certificate_request_value(SecretBytes::new(b"opaque-request".to_vec()));
 
-    assert!(!request.validate().is_valid());
+    let report = request.validate();
+    assert!(!report.is_valid());
+    assert_eq!(
+        report.issues()[0].source().to_string(),
+        "KMIP v2.1 §6.1.6, Table 179"
+    );
+    assert!(!format!("{report:?}").contains("opaque-request"));
 }
 
 #[test]
@@ -193,7 +199,12 @@ fn create_split_key_validation_rejects_missing_prime_field_size() {
         AttributeSet::new(),
     );
 
-    assert!(!request.validate().is_valid());
+    let report = request.validate();
+    assert!(!report.is_valid());
+    assert_eq!(
+        report.issues()[0].source().to_string(),
+        "KMIP v2.1 §2.8, Table 9"
+    );
 }
 
 #[test]
@@ -206,7 +217,12 @@ fn derive_key_validation_rejects_missing_required_input_identifier() {
         AttributeSet::new(),
     );
 
-    assert!(!request.validate().is_valid());
+    let report = request.validate();
+    assert!(!report.is_valid());
+    assert_eq!(
+        report.issues()[0].source().to_string(),
+        "KMIP v2.1 §6.1.14, Table 205"
+    );
 }
 
 #[test]
@@ -214,12 +230,22 @@ fn revoke_validation_rejects_compromise_date_for_unrelated_reason() {
     let request = RevokeRequest::new(RevocationReason::UNSPECIFIED)
         .with_compromise_occurrence_date(1_700_000_000);
 
-    assert!(!request.validate().is_valid());
+    let report = request.validate();
+    assert!(!report.is_valid());
+    assert_eq!(
+        report.issues()[0].source().to_string(),
+        "KMIP v2.1 §6.1.44, Table 295"
+    );
 }
 
 #[test]
 fn validate_request_validation_rejects_an_empty_chain() {
-    assert!(!ValidateRequest::new().validate().is_valid());
+    let report = ValidateRequest::new().validate();
+    assert!(!report.is_valid());
+    assert_eq!(
+        report.issues()[0].source().to_string(),
+        "KMIP v2.1 §6.1.57, Table 340"
+    );
 }
 
 #[test]
@@ -240,12 +266,22 @@ fn create_key_pair_validation_rejects_conflicting_table_191_attributes() {
         .with_private_key_attributes(attributes(256))
         .with_public_key_attributes(attributes(2048));
 
-    assert!(!request.validate().is_valid());
+    let report = request.validate();
+    assert!(!report.is_valid());
+    assert_eq!(
+        report.issues()[0].source().to_string(),
+        "KMIP v2.1 §6.1.9, Table 189 and Table 191"
+    );
 }
 
 #[test]
 fn recertify_validation_rejects_missing_request_and_existing_identifier() {
-    assert!(!RecertifyRequest::new().validate().is_valid());
+    let report = RecertifyRequest::new().validate();
+    assert!(!report.is_valid());
+    assert_eq!(
+        report.issues()[0].source().to_string(),
+        "KMIP v2.1 §6.1.45, Table 300"
+    );
 }
 
 #[test]
@@ -264,11 +300,13 @@ fn rekey_validation_rejects_repeated_single_instance_attribute() {
             .expect("both values fit the generic attribute Structure");
     }
 
+    let report = RekeyRequest::new().with_attributes(attributes).validate();
+    assert!(!report.is_valid());
     assert!(
-        !RekeyRequest::new()
-            .with_attributes(attributes)
-            .validate()
-            .is_valid()
+        report.issues()[0]
+            .source()
+            .to_string()
+            .contains("Table 305")
     );
 }
 
@@ -286,10 +324,14 @@ fn rekey_key_pair_validation_rejects_repeated_single_instance_attribute() {
     ])
     .expect("generic AttributeSet preserves operation-level repetitions");
 
+    let report = RekeyKeyPairRequest::new()
+        .with_private_key_attributes(attributes)
+        .validate();
+    assert!(!report.is_valid());
     assert!(
-        !RekeyKeyPairRequest::new()
-            .with_private_key_attributes(attributes)
-            .validate()
-            .is_valid()
+        report.issues()[0]
+            .source()
+            .to_string()
+            .contains("Table 310")
     );
 }

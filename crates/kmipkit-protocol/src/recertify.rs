@@ -8,7 +8,8 @@ use kmipkit_ttlv::{Structure, StructureView, Value};
 use crate::cryptographic_operation::{self as common, OwnedResponseTtlv};
 use crate::{
     KmipOperationResult, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
-    ResponseBatchItemView, ResultMessage, ResultValidationError, SecretBytes, UniqueIdentifier,
+    RequestPayloadSchema, ResponseBatchItemView, ResultMessage, ResultValidationError, SecretBytes,
+    UniqueIdentifier, ValidateKmipRequest, ValidationReport, ValidationSourceRef,
 };
 
 const OPERATION: u32 = 0x0000_0007;
@@ -124,28 +125,7 @@ impl RecertifyRequest {
     /// Identifier, source-defined Attribute cardinality rules are not met, or
     /// the payload cannot be represented by the generic TTLV model.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
-        if let Some(attributes) = self.attributes.as_ref() {
-            let view = attributes.view();
-            crate::attribute::validate_single_instance_attribute_items(
-                view.children(),
-                Some(CERTIFICATE_OBJECT_TYPE),
-                true,
-            )
-            .map_err(|_| common::request_error())?;
-        }
-
-        let has_request_value = self.certificate_request_value.is_some();
-        if has_request_value && self.certificate_request_type.is_none() {
-            return Err(invalid_request());
-        }
-
-        let has_explicit_identifier = self.unique_identifier.as_ref().is_some_and(|identifier| {
-            !matches!(
-                identifier,
-                UniqueIdentifier::Enumeration(ID_PLACEHOLDER_ENUMERATION_VALUE)
-            )
-        });
-        if !has_request_value && !has_explicit_identifier {
+        if !self.validation_report().is_valid() {
             return Err(invalid_request());
         }
 
@@ -192,6 +172,66 @@ impl RecertifyRequest {
             )?;
         }
         Ok(payload)
+    }
+
+    fn validation_report(&self) -> ValidationReport {
+        if let Some(attributes) = self.attributes.as_ref() {
+            let view = attributes.view();
+            if crate::attribute::validate_single_instance_attribute_items(
+                view.children(),
+                Some(CERTIFICATE_OBJECT_TYPE),
+                true,
+            )
+            .is_err()
+            {
+                return crate::validation::request_issue_report(
+                    "KMIPKIT-0051-P005",
+                    "Attributes",
+                    ValidationSourceRef::Oasis {
+                        document: "KMIP v2.1",
+                        reference: "§4, Table 46",
+                    },
+                );
+            }
+        }
+
+        let has_request_value = self.certificate_request_value.is_some();
+        if has_request_value && self.certificate_request_type.is_none() {
+            return crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Certificate Request Type",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.45, Table 300",
+                },
+            );
+        }
+
+        let has_explicit_identifier = self.unique_identifier.as_ref().is_some_and(|identifier| {
+            !matches!(
+                identifier,
+                UniqueIdentifier::Enumeration(ID_PLACEHOLDER_ENUMERATION_VALUE)
+            )
+        });
+        if !has_request_value && !has_explicit_identifier {
+            return crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Unique Identifier",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.45, Table 300",
+                },
+            );
+        }
+        ValidationReport::default()
+    }
+}
+
+impl ValidateKmipRequest for RecertifyRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Recertify;
+
+    fn validate(&self) -> ValidationReport {
+        self.validation_report()
     }
 }
 
