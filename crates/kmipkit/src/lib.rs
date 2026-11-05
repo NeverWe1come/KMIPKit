@@ -10,7 +10,7 @@
 //!     Client, ClientBatch, ClientBatchResponse, ClientError, ProfileObjectState,
 //!     ProfileValidationContext, ProfileValidationSelection,
 //! };
-//! use kmipkit_ttlv::codec::CodecLimits;
+//! use kmipkit::ttlv::codec::CodecLimits;
 //!
 //! fn execute_for_profile(
 //!     client: &mut Client,
@@ -41,9 +41,6 @@ pub mod client_config {
     pub use kmipkit_client::extension_registry::{
         ClientConfiguration, ClientExtensionRegistry, client_extension_registry,
     };
-    pub use kmipkit_protocol::extension::{ExtensionDefinition, ExtensionRegistryLimits};
-    /// Returns the default limits for a client extension registry.
-    pub use kmipkit_protocol::extension::defaults as extension_registry_defaults;
 }
 
 /// Selected configuration types for the supported TLS 1.3 mutual-TLS transports.
@@ -54,8 +51,8 @@ pub mod client_config {
 pub mod transport_config {
     pub use kmipkit_transport::{
         CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RevocationListInput,
-        TimeoutLimit, TimeoutPolicy, TransportConfig, TransportConfigBuilder,
-        TransportConfigError, TrustSource,
+        TimeoutLimit, TimeoutPolicy, TransportConfig, TransportConfigBuilder, TransportConfigError,
+        TrustSource,
     };
 }
 
@@ -164,7 +161,7 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
 
 pub use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
-    ClientBatchResponse, ClientCauseCategory, ClientError, ClientErrorCategory, ClientResponseView,
+    ClientBatchResponse, ClientCauseCategory, ClientError, ClientErrorCategory,
     ClientMessageExtension, ClientOperation, ClientOperationOutcome, ClientRequest, PendingOutcome,
     RequestOptions, UsageAllocationContext, UsageAllocationContextError,
 };

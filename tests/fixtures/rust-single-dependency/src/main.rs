@@ -5,7 +5,8 @@ use kmipkit::protocol::{
     CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest,
     DecryptRequest, DelegatedLoginRequest, DeleteAttributeRequest, DeriveKeyRequest,
     DestroyRequest, DiscoverVersionsRequest, EncryptRequest, ExportRequest,
-    GetAttributeListRequest, GetAttributesRequest, GetConstraintsRequest, GetRequest,
+    GetAttributeListRequest, GetAttributeListResponse, GetAttributesRequest, GetConstraintsRequest,
+    GetRequest, GetResponse,
     GetUsageAllocationRequest, HashRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest,
     LocateRequest, LogRequest, LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest,
     ModifyAttributeRequest, ObtainLeaseRequest, PingRequest, Pkcs11Request, PollRequest,
@@ -18,7 +19,7 @@ use kmipkit::protocol::{
 use kmipkit::ttlv::codec::{decode_with_limits, CodecLimits};
 use kmipkit::ttlv::{Item, RawTag, Value};
 use kmipkit::{Client, ClientBatch, ClientBatchResponse, ClientError, PendingOutcome};
-use kmipkit::client_config::ClientConfiguration;
+use kmipkit::client_config::{client_extension_registry, ClientConfiguration};
 use kmipkit::transport_config::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, TransportConfig, TrustSource,
 };
@@ -85,15 +86,20 @@ fn all_client_operation_request_types_are_reachable() {
 }
 
 fn one_dependency_supports_client_configuration(
-    endpoint: Endpoint,
-    certificate: CertificateInput,
-    private_key: PrivateKeyInput,
-    trust: TrustSource,
-    client_configuration: ClientConfiguration,
+    endpoint: impl Into<String>,
+    certificate_pem: Vec<u8>,
+    private_key_pem: Vec<u8>,
 ) -> Result<Client, Box<dyn std::error::Error>> {
-    let transport = TransportConfig::builder(endpoint)
-        .client_identity(ClientIdentity::new(certificate, private_key))
-        .trust_source(trust)
+    let client_configuration = ClientConfiguration::new(client_extension_registry(
+        Vec::new(),
+        kmipkit::protocol::extension::defaults(),
+    )?);
+    let transport = TransportConfig::builder(Endpoint::raw_tls(endpoint, 5696))
+        .client_identity(ClientIdentity::new(
+            CertificateInput::from_pem(certificate_pem),
+            PrivateKeyInput::from_pem(private_key_pem),
+        ))
+        .trust_source(TrustSource::platform())
         .build()?;
     Ok(Client::new(client_configuration, transport)?)
 }
@@ -116,6 +122,8 @@ fn typed_execution_returns_public_response_types(
 ) -> Result<ClientBatchResponse, ClientError> {
     client.execute(batch, &CodecLimits::defaults())
 }
+
+fn operation_response_types_are_reachable(_: GetResponse, _: GetAttributeListResponse) {}
 
 fn asynchronous_result_type_is_reachable(_: PendingOutcome) {}
 

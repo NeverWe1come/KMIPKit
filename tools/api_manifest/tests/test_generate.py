@@ -121,6 +121,7 @@ def _create_repo(parent: Path) -> Path:
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source_path, destination)
     referenced_paths: set[str] = set()
+    relocated_generated_evidence: dict[str, str] = {}
     for collection_name in (
         "operations",
         "capabilities",
@@ -138,7 +139,16 @@ def _create_repo(parent: Path) -> Path:
                     parts = Path(relative_path).parts
                     if parts and parts[0] == "specs":
                         referenced_paths.add(str(Path(*parts[:2]) / "spec.md"))
-            referenced_paths.update(record.get("parityEvidenceIds", []))
+            evidence_ids = record.get("parityEvidenceIds", [])
+            for index, evidence_id in enumerate(evidence_ids):
+                if evidence_id in V2_GENERATED_OUTPUTS:
+                    relocated_path = (
+                        "tests/fixtures/api/manifest-input-evidence/" + evidence_id
+                    )
+                    relocated_generated_evidence[relocated_path] = evidence_id
+                    evidence_ids[index] = relocated_path
+                else:
+                    referenced_paths.add(evidence_id)
 
     # KMIPKIT-0018 retains a stale Draft status and relies on its merged PR
     # approval record in the public API feature evidence during owner checks.
@@ -150,6 +160,14 @@ def _create_repo(parent: Path) -> Path:
         destination = root / relative_path
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source_path, destination)
+    for relocated_path, source_relative_path in relocated_generated_evidence.items():
+        source_path = ROOT / source_relative_path
+        destination = root / relocated_path
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source_path, destination)
+    (api_dir / MANIFEST.name).write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
     return root
 
 
@@ -234,7 +252,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             self.assertEqual(preexisting_outputs, [])
 
     def test_manifest_input_limit_reserves_bounded_room_for_the_full_inventory(self) -> None:
-        self.assertEqual(generate.MAX_MANIFEST_BYTES, 23 * 1024 * 1024)
+        self.assertEqual(generate.MAX_MANIFEST_BYTES, 40 * 1024 * 1024)
 
     def test_manifest_input_limit_rejects_oversized_files_before_json_decode(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -1149,7 +1167,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         self.assertIn('"generic_ttlv_model"', generated)
         self.assertIn('"ttlv_wire_codec"', generated)
         self.assertIn('"vendor_extension_registry"', generated)
-        self.assertNotIn('"public_binding_surface"', generated)
+        self.assertIn('"public_binding_surface"', generated)
         self.assertNotIn('"rust_transport_exchange"', generated)
 
     def test_java_public_api_splits_large_declaration_json_without_losing_content(self) -> None:

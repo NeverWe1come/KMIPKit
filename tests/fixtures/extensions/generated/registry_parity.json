@@ -9892,20 +9892,14 @@
         "name": "ClientBatchItemResult",
         "package": "org.kmipkit.extensions"
       },
-      "kind": "opaque-handle",
+      "kind": "struct",
       "python": {
         "module": "kmipkit.client",
         "name": "BatchItemResult"
       },
       "requirementIds": [
-        "KMIPKIT-0007-FR-001",
         "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-011",
-        "KMIPKIT-0043-FR-005",
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-012",
-        "KMIPKIT-0043-FR-013",
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0012-FR-011"
       ],
       "rust": {
         "module": "kmipkit_client",

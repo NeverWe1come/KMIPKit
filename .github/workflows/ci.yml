@@ -214,6 +214,10 @@ jobs:
         id: run-workspace-tests
         run: cargo test --workspace --all-features --locked
 
+      - name: Check the external single-dependency Rust consumer
+        id: check-single-dependency-rust-consumer
+        run: cargo check --locked --manifest-path tests/fixtures/rust-single-dependency/Cargo.toml
+
       - name: Build documentation
         id: build-documentation
         run: cargo doc --workspace --all-features --no-deps --locked
