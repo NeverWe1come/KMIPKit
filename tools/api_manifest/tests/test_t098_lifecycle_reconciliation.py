@@ -150,6 +150,9 @@ class T098LifecycleReconciliationTests(unittest.TestCase):
                 (current["packageId"], current["kind"], current["exportName"]),
             )
 
+    def test_reconciled_manifest_stays_within_the_bounded_parser_input_size(self) -> None:
+        self.assertLessEqual(MANIFEST_PATH.stat().st_size, generate.MAX_MANIFEST_BYTES)
+
     def test_every_baseline_declaration_is_resolved_without_owner_candidates(self) -> None:
         baseline_ids = {row["declarationId"] for row in self.baseline_rows}
         mapped_ids = _expected_mapped_ids(self.baseline_rows)
