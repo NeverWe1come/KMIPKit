@@ -274,7 +274,10 @@ fn selected_encoding_mismatch_never_retries_or_falls_back() {
         );
         let peer = peer.join().expect("the bounded retry probe completes");
         let error = result.expect_err("the mismatched response is rejected without fallback");
-        assert_eq!(error.cause_category(), TransportCauseCategory::Http);
+        assert_eq!(
+            error.cause_category(),
+            TransportCauseCategory::EncodingMismatch
+        );
         assert_eq!(
             error.delivery_state(),
             RequestDeliveryState::ResponseStarted
