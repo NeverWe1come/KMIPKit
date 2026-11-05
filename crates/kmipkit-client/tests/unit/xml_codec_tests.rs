@@ -42,7 +42,7 @@ fn equal(left: &Item, right: &Item) {
             (ValueView::TextString(a), ValueView::TextString(b)) => assert_eq!(a, b),
             (ValueView::Boolean(a), ValueView::Boolean(b)) => assert_eq!(a, b),
             _ => panic!("incompatible item types"),
-        })
+        });
     });
 }
 
@@ -56,8 +56,8 @@ fn ordered_repeated_children_and_default_structure_survive_roundtrip() {
             panic!("structure")
         };
         assert_eq!(s.children().len(), 2);
-        equal(&s.children()[0], &item(0x420074, Value::enumeration(1)));
-        equal(&s.children()[1], &item(0x420074, Value::enumeration(2)));
+        equal(&s.children()[0], &item(0x0042_0074, Value::enumeration(1)));
+        equal(&s.children()[1], &item(0x0042_0074, Value::enumeration(2)));
     });
     equal(&root, &parse(&xml(&root)));
 }
@@ -69,15 +69,15 @@ fn general_form_namespaces_and_hex_tags_resolve_to_raw_identity() {
         "<k:TTLV xmlns:k=\"urn:oasis:tc:kmip:xmlns\" tag=\"0x540001\" type=\"Integer\" value=\"0xffffffff\"/>",
         "<TTLV xmlns=\"urn:oasis:tc:kmip:xmlns\" tag=\"0x540001\" type=\"Integer\" value=\"-1\"/>",
     ] {
-        equal(&parse(input), &item(0x540001, Value::integer(-1)));
+        equal(&parse(input), &item(0x0054_0001, Value::integer(-1)));
     }
     assert_eq!(
-        xml(&item(0x540001, Value::integer(-1))),
+        xml(&item(0x0054_0001, Value::integer(-1))),
         "<TTLV tag=\"0x540001\" type=\"Integer\" value=\"-1\"/>"
     );
     equal(
         &parse("<TTLV tag=\"BatchCount\" type=\"Integer\" value=\"2\"/>"),
-        &item(0x42000d, Value::integer(2)),
+        &item(0x0042_000d, Value::integer(2)),
     );
 }
 
@@ -117,7 +117,7 @@ fn all_scalar_types_have_independently_specified_xml_values() {
         ),
     ];
     for (value, ty, expected) in cases {
-        let root = item(0x540001, value);
+        let root = item(0x0054_0001, value);
         let output = xml(&root);
         assert_eq!(
             output,
@@ -130,16 +130,16 @@ fn all_scalar_types_have_independently_specified_xml_values() {
 #[test]
 fn symbolic_enum_names_and_raw_unknown_values_remain_distinct() {
     assert_eq!(
-        xml(&item(0x42005c, Value::enumeration(4))),
+        xml(&item(0x0042_005c, Value::enumeration(4))),
         "<Operation type=\"Enumeration\" value=\"ReKey\"/>"
     );
     equal(
         &parse("<Operation type=\"Enumeration\" value=\"ReKey\"/>"),
-        &item(0x42005c, Value::enumeration(4)),
+        &item(0x0042_005c, Value::enumeration(4)),
     );
     equal(
         &parse("<Operation type=\"Enumeration\" value=\"0x8fffffff\"/>"),
-        &item(0x42005c, Value::enumeration(0x8fff_ffff)),
+        &item(0x0042_005c, Value::enumeration(0x8fff_ffff)),
     );
 }
 
@@ -148,27 +148,27 @@ fn symbolic_enum_names_and_raw_unknown_values_remain_distinct() {
 fn masks_use_space_separated_names_and_preserve_unknown_bits() {
     for (tag, input, bits, expected) in [
         (
-            0x42002c,
+            0x0042_002c,
             "Encrypt Decrypt CertificateSign",
             0x100c_u32,
             "Encrypt Decrypt CertificateSign",
         ),
         (
-            0x42002c,
+            0x0042_002c,
             "CertificateSign 0x0000000c 0x80000000",
             0x8000_100c,
             "Encrypt Decrypt CertificateSign 0x80000000",
         ),
-        (0x42002c, "-1", u32::MAX, ""),
-        (0x42002c, "0x00000040", 0x40, "0x00000040"),
+        (0x0042_002c, "-1", u32::MAX, ""),
+        (0x0042_002c, "0x00000040", 0x40, "0x00000040"),
         (
-            0x42008e,
+            0x0042_008e,
             "OnLineStorage ArchivalStorage",
             3,
             "OnLineStorage ArchivalStorage",
         ),
-        (0x42015e, "Software Hardware", 3, "Software Hardware"),
-        (0x42002c, "0", 0, "0x00000000"),
+        (0x0042_015e, "Software Hardware", 3, "Software Hardware"),
+        (0x0042_002c, "0", 0, "0x00000000"),
     ] {
         let source = format!("<TTLV tag=\"0x{tag:06X}\" type=\"Integer\" value=\"{input}\"/>");
         let root = parse(&source);
@@ -203,7 +203,7 @@ fn numeric_lexical_forms_are_range_checked() {
             &parse(&format!(
                 "<TTLV tag=\"0x540001\" type=\"{ty}\" value=\"{value}\"/>"
             )),
-            &item(0x540001, expected),
+            &item(0x0054_0001, expected),
         );
     }
 }
@@ -228,7 +228,7 @@ fn datetime_timezones_leap_days_and_negative_epochs_preserve_seconds() {
         let root = parse(&format!(
             "<ActivationDate type=\"DateTime\" value=\"{value}\"/>"
         ));
-        equal(&root, &item(0x420001, Value::date_time(seconds)));
+        equal(&root, &item(0x0042_0001, Value::date_time(seconds)));
         assert!(xml(&root).contains(canonical));
     }
 }
@@ -239,7 +239,7 @@ fn xml_attribute_normalization_preserves_character_references() {
         &parse(
             "<TTLV tag=\"0x540001\" type=\"TextString\" value=\"a\r\nb\tc&#xD;&#10;&#9;&lt;&amp;\"/>",
         ),
-        &item(0x540001, Value::text_string("a b c\r\n\t<&".into())),
+        &item(0x0054_0001, Value::text_string("a b c\r\n\t<&".into())),
     );
 }
 
@@ -414,7 +414,7 @@ fn invalid_model_values_fail_encoding_as_redacted_values() {
         Value::text_string("bad\0text".into()),
     ] {
         assert_eq!(
-            encode(&item(0x540001, value), &CodecLimits::defaults())
+            encode(&item(0x0054_0001, value), &CodecLimits::defaults())
                 .unwrap_err()
                 .kind(),
             WireCodecErrorKind::InvalidValue
@@ -448,22 +448,8 @@ fn official_msgenc_xml_m_1_21_replays_all_four_messages() {
         position = end;
     }
     assert_eq!(messages.len(), 4);
-    fn find(item: &Item, tag: u32) -> Option<i32> {
-        item.with_value(|v| match v {
-            ValueView::Integer(v) if item.tag().raw() == tag => Some(*v),
-            ValueView::Structure(s) => s.children().iter().find_map(|i| find(i, tag)),
-            _ => None,
-        })
-    }
-    assert_eq!(find(&messages[0], 0x420050), Some(256));
-    assert_eq!(find(&messages[2], 0x420050), Some(2048));
-    fn status(item: &Item) -> Option<u32> {
-        item.with_value(|v| match v {
-            ValueView::Enumeration(v) if item.tag().raw() == 0x42007f => Some(*v),
-            ValueView::Structure(s) => s.children().iter().find_map(status),
-            _ => None,
-        })
-    }
+    assert_eq!(find(&messages[0], 0x0042_0050), Some(256));
+    assert_eq!(find(&messages[2], 0x0042_0050), Some(2048));
     assert_eq!(status(&messages[1]), Some(1));
     assert_eq!(status(&messages[3]), Some(0));
 }
@@ -479,9 +465,9 @@ fn generated_scalar_and_ordered_tree_roundtrips_preserve_raw_values() {
             Value::byte_string(bytes),
             Value::integer(integer),
         ] {
-            children.try_push(item(0x540001, value)).unwrap();
+            children.try_push(item(0x0054_0001, value)).unwrap();
         }
-        let root = item(0x540002, Value::structure(children));
+        let root = item(0x0054_0002, Value::structure(children));
         equal(&root, &parse(&xml(&root)));
         true
     }
@@ -499,14 +485,22 @@ fn invalid_character_reference_grammar_and_xml_prolog_are_rejected() {
         " <!--prolog--><?xml version='1.0'?><RequestPayload/>",
         "<TTLV tag='0x540001' type='DateTime' value='01970-01-01T00:00:00Z'/>",
     ] {
-        assert!(decode(input.as_bytes(), &CodecLimits::defaults()).is_err(), "accepted {input}");
+        assert!(
+            decode(input.as_bytes(), &CodecLimits::defaults()).is_err(),
+            "accepted {input}"
+        );
     }
 }
 
 #[test]
 fn depth_preflight_precedes_decoding_forbidden_structure_attributes() {
     let input = b"<RequestPayload><RequestPayload value='&undeclared;'/></RequestPayload>";
-    assert_eq!(decode(input, &CodecLimits::new(1000, 1, 100).unwrap()).unwrap_err().kind(), WireCodecErrorKind::LimitExceeded);
+    assert_eq!(
+        decode(input, &CodecLimits::new(1000, 1, 100).unwrap())
+            .unwrap_err()
+            .kind(),
+        WireCodecErrorKind::LimitExceeded
+    );
 }
 
 #[test]
@@ -521,28 +515,70 @@ fn namespace_scopes_declarations_comments_and_explicit_scalars_are_supported() {
 
 #[test]
 fn datetime_entire_model_range_and_xml_year_boundaries_roundtrip() {
-    for seconds in [i64::MIN, i64::MAX, -62_135_596_801, -62_135_596_800, 253_402_300_799, 253_402_300_800] {
-        let root = item(0x540001, Value::date_time(seconds));
+    for seconds in [
+        i64::MIN,
+        i64::MAX,
+        -62_135_596_801,
+        -62_135_596_800,
+        253_402_300_799,
+        253_402_300_800,
+    ] {
+        let root = item(0x0054_0001, Value::date_time(seconds));
         equal(&root, &parse(&xml(&root)));
     }
-    fn property(seconds: i64) -> bool {
-        let root = item(0x540001, Value::date_time(seconds));
-        equal(&root, &parse(&xml(&root)));
-        true
-    }
-    QuickCheck::new().tests(200).quickcheck(property as fn(i64) -> bool);
+    QuickCheck::new()
+        .tests(200)
+        .quickcheck(datetime_property as fn(i64) -> bool);
 }
 
 #[test]
 fn all_assigned_mask_flags_normalize_and_roundtrip_without_naming_placeholders() {
     let cases = [
-        (0x42002c, "Sign Verify Encrypt Decrypt WrapKey UnwrapKey MACGenerate MACVerify DeriveKey KeyAgreement CertificateSign CRLSign Authenticate Unrestricted FPEEncrypt FPEDecrypt", 0x00f0_3bbf_u32),
-        (0x42015e, "Software Hardware OnProcessor OnSystem OffSystem Hypervisor OperatingSystem Container OnPremises OffPremises SelfManaged Outsourced Validated SameJurisdiction", 0x0000_3fff),
-        (0x42008e, "OnLineStorage ArchivalStorage DestroyedStorage", 7),
+        (
+            0x0042_002c,
+            "Sign Verify Encrypt Decrypt WrapKey UnwrapKey MACGenerate MACVerify DeriveKey KeyAgreement CertificateSign CRLSign Authenticate Unrestricted FPEEncrypt FPEDecrypt",
+            0x00f0_3bbf_u32,
+        ),
+        (
+            0x0042_015e,
+            "Software Hardware OnProcessor OnSystem OffSystem Hypervisor OperatingSystem Container OnPremises OffPremises SelfManaged Outsourced Validated SameJurisdiction",
+            0x0000_3fff,
+        ),
+        (
+            0x0042_008e,
+            "OnLineStorage ArchivalStorage DestroyedStorage",
+            7,
+        ),
     ];
     for (tag, flags, bits) in cases {
-        let root = parse(&format!("<TTLV tag='0x{tag:06X}' type='Integer' value='{flags}'/>"));
-        equal(&root, &item(tag, Value::integer(i32::from_be_bytes(bits.to_be_bytes()))));
+        let root = parse(&format!(
+            "<TTLV tag='0x{tag:06X}' type='Integer' value='{flags}'/>"
+        ));
+        equal(
+            &root,
+            &item(tag, Value::integer(i32::from_be_bytes(bits.to_be_bytes()))),
+        );
         assert!(xml(&root).contains(flags));
     }
+}
+
+fn find(item: &Item, tag: u32) -> Option<i32> {
+    item.with_value(|v| match v {
+        ValueView::Integer(v) if item.tag().raw() == tag => Some(*v),
+        ValueView::Structure(s) => s.children().iter().find_map(|i| find(i, tag)),
+        _ => None,
+    })
+}
+fn status(item: &Item) -> Option<u32> {
+    item.with_value(|v| match v {
+        ValueView::Enumeration(v) if item.tag().raw() == 0x0042_007f => Some(*v),
+        ValueView::Structure(s) => s.children().iter().find_map(status),
+        _ => None,
+    })
+}
+
+fn datetime_property(seconds: i64) -> bool {
+    let root = item(0x0054_0001, Value::date_time(seconds));
+    equal(&root, &parse(&xml(&root)));
+    true
 }
