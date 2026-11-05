@@ -130,6 +130,11 @@ class WireEncodingPublicApiTests(unittest.TestCase):
         self.assertIn("uint32_t struct_size;", c_header)
         self.assertIn("kmipkit_byte_span_v1_t endpoint;", c_header)
         self.assertIn("pub endpoint: kmipkit_byte_span_v1_t,", rust_ffi)
+        self.assertLess(
+            c_header.index("} kmipkit_transport_input_v1_t;"),
+            c_header.index("} kmipkit_transport_config_v1_t;"),
+            "dependent by-value C records must be declared before their consumers",
+        )
 
 
 if __name__ == "__main__":
