@@ -19,6 +19,7 @@ flowchart TB
     Facade --> Client[kmipkit-client]
     Client --> Protocol[kmipkit-protocol]
     Client --> Transport[kmipkit-transport]
+  Client --> Encoding[Private TTLV JSON XML codecs]
     Protocol --> TTLV[kmipkit-ttlv]
     Transport --> Raw[Raw TLS 1.3]
     Transport --> HTTPS[HTTPS / HTTP 1.1]
@@ -88,6 +89,9 @@ provide stable public APIs for advanced integration.
 - Implemented: synchronous execution for explicit typed Discover Versions batches through the private writer and test fake.
 - Implemented: one-exchange Poll, Cancel, Process, and Query Asynchronous Requests methods with operation-specific response validation, bounded decoding, delivery-state evidence, and redacted errors.
 - No production Client constructor or live network backend. Discovery remains explicit; retries, follow-up polling, failover, and background waits are never automatic.
+- Private TTLV, JSON, and XML codecs share the ordered generic TTLV Item model
+  and checked-in catalog naming metadata. TTLV is the default; selection and
+  public client integration are governed by KMIPKIT-0054 through KMIPKIT-0057.
 
 ### `kmipkit`
 

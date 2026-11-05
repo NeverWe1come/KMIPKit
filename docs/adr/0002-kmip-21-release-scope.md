@@ -1,6 +1,6 @@
 # ADR-0002: KMIP 2.1 release scope
 
-Status: Accepted
+Status: Superseded by ADR-0017
 Date: 2026-10-03
 
 ## Context
@@ -11,15 +11,17 @@ precise claim.
 
 ## Decision
 
-Version 1.0 implements all KMIP 2.1 client-initiated operations with TTLV, raw
-TLS, HTTPS/HTTP 1.1, batch, and KMIP protocol asynchronous behavior. It exposes
-synchronous APIs in Rust, C, Java, and Python. Version 1.1 adds server-initiated
-operations. JSON, XML, Rust async/await, and older KMIP versions are later work.
+This decision established the original 1.0 scope. Its encoding scope was
+superseded on 2026-11-05 by [ADR-0017](0017-multi-encoding-1-0-scope.md).
+Version 1.0 includes client-initiated operations, batch, and KMIP protocol
+asynchronous behavior, with synchronous APIs in Rust, C, Java, and Python.
+Version 1.1 adds server-initiated operations. Rust async/await and older KMIP
+versions remain later work.
 
 ## Consequences
 
-The 1.0 completeness claim is precise and testable. Architecture boundaries
-must permit both message directions later without exposing incomplete 1.1 APIs.
+The original 1.0 completeness claim was precise and testable. ADR-0017 expands
+its encoding set and preserves the client-initiated 1.0 boundary.
 
 ## Alternatives considered
 

@@ -11,10 +11,19 @@ implemented boundary.
 
 ## Target 1.0 transports
 
+The typed client supports TTLV, JSON, and XML over both transports, with TTLV
+as the default. JSON/XML HTTPS body and Content-Type behavior follows the
+contextual interpretation in [ADR-0017](../adr/0017-multi-encoding-1-0-scope.md).
+The local received-byte cap applies to actual wire bytes; KMIP `Maximum
+Response Size` retains its TTLV-equivalent meaning.
+
 ### Raw TLS
 
 - Tokio TCP and `tokio-rustls` on the private per-client worker.
 - Read the 8-byte TTLV header first.
+- For JSON/XML, read one complete document incrementally under configured
+  byte, depth, and element limits; do not add a proprietary framing prefix.
+- Close the raw-TLS connection after one response document for every encoding.
 - Validate root tag, type, declared length, configured maximum, and arithmetic
   before allocation.
 - Read exactly the value and padding, then close the connection after that one
@@ -28,7 +37,8 @@ implemented boundary.
 - POST to a configurable path; default `/kmip`.
 - Send exactly one `Host` header derived from the endpoint authority; the
   target path and TLS verification-name override do not alter it.
-- `Content-Type: application/octet-stream`.
+- `Content-Type` is `application/octet-stream` for TTLV, `application/json`
+  for JSON, and `text/xml` for XML under ADR-0017's contextual interpretation.
 - No redirect, proxy, or compression behavior.
 - Strict KMIP HTTPS profile status, header, and body checks.
 
@@ -62,7 +72,9 @@ configuration at runtime.
 ## Connection model
 
 One client serializes its calls through one worker. HTTPS may reuse a healthy
-HTTP/1 connection; raw TLS closes its connection after each response frame.
+HTTP/1 connection; raw TLS closes its connection after each complete KMIP
+response document. TTLV uses its header framing; JSON/XML use bounded
+incremental document parsing.
 A network or protocol framing error invalidates the current connection. A
 later operation may reconnect. The failed operation is never retried
 automatically.
@@ -104,8 +116,9 @@ Defaults:
 - Individual value: bounded by the complete message maximum.
 
 Values are configurable. Checks occur before allocation and use overflow-safe
-arithmetic. Version 1.0 buffers one complete message; streaming values are
-future work.
+arithmetic. TTLV messages retain their complete-message framing. JSON/XML raw
+TLS bodies are read incrementally until one bounded document is complete;
+KMIPKit adds no wire prefix and closes that connection after the response.
 
 ## Credentials
 
