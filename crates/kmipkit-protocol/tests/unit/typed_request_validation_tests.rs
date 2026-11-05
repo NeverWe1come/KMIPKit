@@ -647,6 +647,48 @@ fn import_validation_recurses_into_the_selected_managed_object() {
 }
 
 #[test]
+fn import_and_register_validation_reject_known_object_type_mismatches() {
+    const OPAQUE_OBJECT: u32 = 0x0042_005B;
+    const OPAQUE_DATA_TYPE: u32 = 0x0042_0059;
+    const OPAQUE_DATA_VALUE: u32 = 0x0042_005A;
+    let opaque_object = || {
+        schema_item(
+            OPAQUE_OBJECT,
+            Value::structure(schema_structure([
+                schema_item(OPAQUE_DATA_TYPE, Value::enumeration(1)),
+                schema_item(OPAQUE_DATA_VALUE, Value::byte_string(vec![0xCA, 0xFE])),
+            ])),
+        )
+    };
+
+    let import_report = ImportRequest::new(
+        UniqueIdentifier::TextString("object-id".to_owned()),
+        ObjectType::from_raw(2),
+        AttributeSet::new(),
+        opaque_object(),
+    )
+    .validate();
+    assert!(import_report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R092"
+            && issue.path().to_string() == "Request Payload.Any Object"
+            && issue.source().to_string() == "KMIP v2.1 §6.1.25, Table 238"
+    }));
+
+    let register_report = RegisterRequest::new(
+        ObjectType::from_raw(2),
+        AttributeSet::new(),
+        opaque_object(),
+    )
+    .validate();
+    assert!(register_report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R140"
+            && issue.path().to_string() == "Request Payload.Any Object"
+            && issue.source().to_string() == "KMIP v2.1 §6.1.43, Table 291"
+    }));
+    assert!(!format!("{import_report:?}{register_report:?}").contains("CAFE"));
+}
+
+#[test]
 fn cryptographic_requests_validate_supplied_parameter_structures() {
     let reports = [
         EncryptRequest::new(None, None)
