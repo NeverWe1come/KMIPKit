@@ -221,7 +221,10 @@ class PackageDocumentationContractTests(unittest.TestCase):
             if item["capabilityId"] == "public_binding_surface"
         )
 
-        for language, guide in (("English", self.english), ("Spanish", self.spanish)):
+        for language, guide, nonclaim in (
+            ("English", self.english, "does not claim KMIP conformance"),
+            ("Spanish", self.spanish, "no afirma conformidad KMIP"),
+        ):
             with self.subTest(language=language):
                 match = re.search(
                     r"(?m)^\|\s*`public_binding_surface`\s*\|\s*"
@@ -230,6 +233,7 @@ class PackageDocumentationContractTests(unittest.TestCase):
                 )
                 self.assertIsNotNone(match)
                 self.assertEqual(capability["capabilityState"], match.group(1))
+                self.assertIn(nonclaim, guide)
                 self.assertNotIn("mappings remain incomplete", guide.lower())
                 self.assertNotIn(
                     "los mapeos de la capacidad siguen incompletos", guide.lower()
