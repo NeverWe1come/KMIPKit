@@ -26,6 +26,7 @@ pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
     "typed_message_model",
     "usage_allocation_guard",
     "vendor_extension_registry",
+    "wire_encoding_selection",
 ];
 pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
     (
@@ -21658,5 +21659,85 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-3975b3cc942c4b93a2c6",
         "rust-kmipkit",
         "kmipkit::ttlv::codec::decode_with_limits",
+    ),
+    (
+        "WireEncoding.Json:rust",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::WireEncoding::Json",
+    ),
+    (
+        "WireEncoding.Ttlv:rust",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::WireEncoding::Ttlv",
+    ),
+    (
+        "WireEncoding.Xml:rust",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::WireEncoding::Xml",
+    ),
+    (
+        "WireEncoding:rust",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::WireEncoding",
+    ),
+    (
+        "client_configuration_wire_encoding:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::extension_registry::ClientConfiguration::wire_encoding",
+    ),
+    (
+        "client_configuration_with_wire_encoding:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::extension_registry::ClientConfiguration::with_wire_encoding",
+    ),
+    (
+        "request_options_with_wire_encoding:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::RequestOptions::with_wire_encoding",
+    ),
+    (
+        "request_options_wire_encoding:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::RequestOptions::wire_encoding",
+    ),
+    (
+        "WireEncoding:client",
+        "rust-kmipkit-client",
+        "kmipkit_client::WireEncoding",
+    ),
+    (
+        "WireEncoding.TTLV:client",
+        "rust-kmipkit-client",
+        "kmipkit_client::WireEncoding::Ttlv",
+    ),
+    (
+        "WireEncoding.JSON:client",
+        "rust-kmipkit-client",
+        "kmipkit_client::WireEncoding::Json",
+    ),
+    (
+        "WireEncoding.XML:client",
+        "rust-kmipkit-client",
+        "kmipkit_client::WireEncoding::Xml",
+    ),
+    (
+        "request_options_with_wire_encoding:transport",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::RequestOptions::with_wire_encoding",
+    ),
+    (
+        "request_options_wire_encoding:transport",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::RequestOptions::wire_encoding",
+    ),
+    (
+        "request_options_with_wire_encoding:facade",
+        "rust-kmipkit",
+        "kmipkit::RequestOptions::with_wire_encoding",
+    ),
+    (
+        "request_options_wire_encoding:facade",
+        "rust-kmipkit",
+        "kmipkit::RequestOptions::wire_encoding",
     ),
 ];

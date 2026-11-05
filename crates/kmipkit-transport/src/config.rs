@@ -654,6 +654,7 @@ impl Default for TimeoutPolicy {
 
 /// KMIP 2.1 wire representation used for one request and its response.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+#[repr(u32)]
 #[non_exhaustive]
 pub enum WireEncoding {
     /// Binary Tag-Type-Length-Value encoding (the compatibility default).

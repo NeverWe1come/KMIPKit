@@ -138,6 +138,7 @@ tabla.
 | `discover_versions_request_item` | declared | Hay mapeos de los constructores del elemento de solicitud en los cuatro lenguajes; la conformidad completa de Discover Versions sigue pendiente. |
 | `client_batch_model` | declared | El modelo de lotes tipados y ordenados está mapeado en cuatro lenguajes; aún no cubre todas las operaciones. |
 | `client_execution` | declared | Los mapeos de solicitud y respuesta de Discover Versions están presentes en Rust, C, Java y Python; falta completar la conformidad de operaciones 1.0. |
+| `wire_encoding_selection` | declared | Los valores predeterminados y la selección por intercambio de TTLV, JSON y XML están mapeados en Rust, C, Java y Python. |
 | `client_asynchronous_operations` | declared | Cancel, Poll, Process y Query Asynchronous Requests usan llamadas explícitas de un intercambio en cuatro lenguajes; conservan los bytes exactos de correlación y la respuesta TTLV genérica de Query, sin sondeo automático. |
 | `crypto_response_ttlv` | declared | El acceso separado a TTLV de errores de FR-015 sigue limitado a sus cuatro accesores aprobados; el TTLV de respuestas correctas tipadas se registra en las cinco filas de operaciones. |
 | `production_transport` | declared | Rust y los tres adaptadores exponen la configuración aprobada de transporte cliente TLS 1.3; falta evidencia de interoperabilidad. |

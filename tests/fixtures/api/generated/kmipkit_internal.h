@@ -67,6 +67,11 @@ typedef uint32_t kmipkit_credential_validation_error_kind_t;
 #define KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_FIELD_OUT_OF_ORDER ((kmipkit_credential_validation_error_kind_t)5)
 #define KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_INVALID_TTLV_STRUCTURE ((kmipkit_credential_validation_error_kind_t)6)
 
+typedef uint32_t kmipkit_wire_encoding_t;
+#define KMIPKIT_WIRE_ENCODING_TTLV ((kmipkit_wire_encoding_t)0)
+#define KMIPKIT_WIRE_ENCODING_JSON ((kmipkit_wire_encoding_t)1)
+#define KMIPKIT_WIRE_ENCODING_XML ((kmipkit_wire_encoding_t)2)
+
 #define KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG ((uint32_t)1)
 #define KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME ((uint32_t)2)
 #define KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES ((uint32_t)1)
@@ -176,11 +181,11 @@ typedef struct kmipkit_profile_readiness_view_v1_t kmipkit_profile_readiness_vie
 typedef struct kmipkit_profile_readiness_blocker_view_v1_t kmipkit_profile_readiness_blocker_view_v1_t;
 typedef struct kmipkit_profile_catalog_row_view_v1_t kmipkit_profile_catalog_row_view_v1_t;
 typedef struct kmipkit_profile_validation_result_t kmipkit_profile_validation_result_t;
-
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
-typedef struct kmipkit_transport_input_v1_t kmipkit_transport_input_v1_t;
+typedef struct kmipkit_timeout_limit_v1_t kmipkit_timeout_limit_v1_t;
 typedef struct kmipkit_transport_config_v1_t kmipkit_transport_config_v1_t;
+typedef struct kmipkit_transport_input_v1_t kmipkit_transport_input_v1_t;
 
 typedef struct {
     uint64_t max_definitions;
@@ -810,7 +815,7 @@ int32_t kmipkit_register_request_with_opaque_object_context(kmipkit_register_req
 int32_t kmipkit_register_request_with_protection_storage_masks(kmipkit_register_request_t * request, kmipkit_ttlv_structure_t * masks, kmipkit_register_request_t ** out_request);
 /* KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-003, KMIPKIT-0044-FR-004, KMIPKIT-0044-FR-005, KMIPKIT-0044-FR-006, KMIPKIT-0044-FR-007 */
 int32_t kmipkit_client_batch_item_register(kmipkit_register_request_t * request, kmipkit_client_batch_item_t ** out_item);
-/* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
+/* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-021, KMIPKIT-0057-FR-005 */
 int32_t kmipkit_client_batch_create(kmipkit_client_batch_t ** out_batch);
 /* KMIPKIT-0006-FR-002, KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_set_request_time_stamp(kmipkit_client_batch_t * batch, int64_t time_stamp);
@@ -820,7 +825,7 @@ int32_t kmipkit_client_batch_request_time_stamp(kmipkit_client_batch_t * batch, 
 int32_t kmipkit_client_batch_set_order_option(kmipkit_client_batch_t * batch, uint8_t enabled);
 /* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_set_asynchronous_indicator(kmipkit_client_batch_t * batch, uint32_t indicator);
-/* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
+/* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-021, KMIPKIT-0057-FR-005 */
 int32_t kmipkit_client_batch_add_item(kmipkit_client_batch_t * batch, kmipkit_client_batch_item_t ** inout_item);
 /* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_add_error_continuation_value(kmipkit_client_batch_t * batch, uint32_t value);
@@ -832,9 +837,9 @@ int32_t kmipkit_client_batch_set_client_correlation_value(kmipkit_client_batch_t
  */
 /* KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-008, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_item_with_unique_batch_item_id(kmipkit_client_batch_item_t * item, const uint8_t * id_data, uint64_t id_length, kmipkit_client_batch_item_t ** out_item);
-/* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-021 */
+/* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-021, KMIPKIT-0057-FR-005 */
 int32_t kmipkit_client_batch_response_item_count(kmipkit_client_batch_response_t * response, uint64_t * out_count);
-/* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-021 */
+/* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-021, KMIPKIT-0057-FR-005 */
 int32_t kmipkit_client_batch_response_item_at(kmipkit_client_batch_response_t * response, uint64_t index, kmipkit_client_batch_item_response_t ** out_item);
 /* Returns an owned read-only view of the indexed batch item. Getters expose item metadata only: Unique Batch Item ID and extension identity or criticality.
  * The view retains the batch owner lifetime without copying request payload bytes and remains valid after the original batch handle is released. Batch execution still consumes request items as usual; this view does not expose request payload access. Release the view with kmipkit_client_batch_item_release.
@@ -863,7 +868,7 @@ int32_t kmipkit_client_batch_item_response_unique_batch_item_id(kmipkit_client_b
  */
 /* KMIPKIT-0006-FR-008, KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_item_response_pending_correlation_value(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_byte_span_v1_t * out_value);
-/* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
+/* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-021, KMIPKIT-0057-FR-005 */
 int32_t kmipkit_client_create(kmipkit_client_configuration_t * configuration, kmipkit_transport_config_t ** transport_configuration, kmipkit_client_t ** out_client);
 /* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_execute(kmipkit_client_t * client, kmipkit_client_batch_t ** batch, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
@@ -2052,6 +2057,18 @@ int32_t kmipkit_attribute_set_is_empty(kmipkit_attribute_set_t * attributes, uin
  */
 /* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-006, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-013, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_attribute_set_into_items(kmipkit_attribute_set_t * attributes, kmipkit_ttlv_structure_t ** out_items);
+/* KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-021, KMIPKIT-0057-FR-005 */
+int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
+/* KMIPKIT-0057-FR-001, KMIPKIT-0057-FR-005 */
+int32_t kmipkit_client_configuration_wire_encoding(kmipkit_client_configuration_t * configuration, uint32_t * out_encoding);
+/* KMIPKIT-0057-FR-001, KMIPKIT-0057-FR-005 */
+int32_t kmipkit_client_configuration_with_wire_encoding(kmipkit_client_configuration_t * configuration, kmipkit_wire_encoding_t encoding, kmipkit_client_configuration_t ** out_configuration);
+/* Pass -1 to use the configured default; pass 0, 1, or 2 for TTLV, JSON, or XML.
+ */
+/* KMIPKIT-0057-FR-001, KMIPKIT-0057-FR-002, KMIPKIT-0057-FR-004, KMIPKIT-0057-FR-005 */
+int32_t kmipkit_client_execute_with_options(kmipkit_client_t * client, kmipkit_client_batch_t ** batch, kmipkit_codec_limits_t * limits, int32_t encoding_override, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-021, KMIPKIT-0057-FR-005 */
+int32_t kmipkit_transport_config_create_v1(const kmipkit_transport_config_v1_t * configuration, kmipkit_transport_config_t ** out_configuration);
 /* KMIPKIT-0006-FR-021, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_message_extension_view_ttlv(kmipkit_message_extension_view_t * extension, kmipkit_ttlv_structure_t ** out_structure);
 /* KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
@@ -2210,16 +2227,12 @@ int32_t kmipkit_profile_validation_result_validate_response_v1(kmipkit_profile_v
  */
 /* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_profile_validation_result_validate_response_with_context_v1(kmipkit_profile_validation_result_t * result, kmipkit_ttlv_structure_t * request, kmipkit_ttlv_structure_t * response, const kmipkit_profile_validation_context_v1_t * context);
-/* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
-int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
 /* Executes one KMIP batch and returns an owned generic ResponseMessage TTLV only for an approved missing, repeated, or malformed Unique Identifier in a successful MAC, MAC Verify, Sign, or Signature Verify response.
  * The caller owns and must release out_error_response_ttlv when it is non-null; it remains null for all other failures and successful execution.
  * The generic response is preserved without placing raw response bytes in diagnostics.
  */
 /* Approved exact C-only exclusion: kmipkit_client_execute_with_options_and_error_ttlv_v1 */
 int32_t kmipkit_client_execute_with_options_and_error_ttlv_v1(kmipkit_client_t * client, kmipkit_client_batch_t ** batch, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response, kmipkit_ttlv_structure_t ** out_error_response_ttlv);
-/* Approved exact C-only exclusion: kmipkit_transport_config_create_v1 */
-int32_t kmipkit_transport_config_create_v1(const kmipkit_transport_config_v1_t * configuration, kmipkit_transport_config_t ** out_configuration);
 
 #ifdef __cplusplus
 }
