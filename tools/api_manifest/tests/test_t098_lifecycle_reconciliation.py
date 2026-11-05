@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 import re
@@ -210,6 +211,31 @@ class T098LifecycleReconciliationTests(unittest.TestCase):
                         <= requirements
                     )
                     generate._validate_normalized_client_protocol_error_source(row)
+
+    def test_lifecycle_error_families_are_explicitly_allowed_by_the_generator(self) -> None:
+        candidate = next(
+            row
+            for row in self.baseline_rows
+            if row["exportName"] == "kmipkit_protocol::ActivateError"
+        )
+        row = copy.deepcopy(self.declarations_by_id[candidate["declarationId"]])
+        row["declarationState"] = "verified"
+        row["requirementIds"] = sorted(
+            set(row["requirementIds"])
+            | {
+                "KMIPKIT-0018-FR-001",
+                "KMIPKIT-0018-FR-006",
+                "KMIPKIT-0018-FR-010",
+                "KMIPKIT-0007-FR-006",
+                "KMIPKIT-0007-FR-008",
+                "KMIPKIT-0007-FR-013",
+                "KMIPKIT-0043-FR-005",
+                "KMIPKIT-0043-FR-010",
+                "KMIPKIT-0043-FR-021",
+                "KMIPKIT-0043-FR-022",
+            }
+        )
+        generate._validate_normalized_client_protocol_error_source(row)
 
     def test_other_mapped_rows_preserve_the_operation_and_language_targets(self) -> None:
         for item in self.baseline_rows:
