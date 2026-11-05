@@ -13,7 +13,7 @@ use kmipkit_protocol::extension::ExtensionIdentity;
 use kmipkit_protocol::{
     ActivateRequest, ActivateResponse, AddAttributeRequest, AddAttributeResponse,
     AdjustAttributeRequest, AdjustAttributeResponse, ArchiveRequest, ArchiveResponse,
-    AsynchronousOperationError, AttributeReference, CancelRequest, CancelResponse,
+    AsynchronousOperationError, AttributeReference, Authentication, CancelRequest, CancelResponse,
     CancellationResult, CertifyRequest, CertifyResponse, CheckRequest, CheckResponse,
     CreateKeyPairRequest, CreateKeyPairResponse, CreateRequest, CreateResponse,
     CreateSplitKeyRequest, CreateSplitKeyResponse, CryptographicOperationResponseContext,
@@ -147,6 +147,7 @@ const MESSAGE_EXTENSION: u32 = 0x0042_0051;
 const BATCH_ORDER_OPTION: u32 = 0x0042_0010;
 const ASYNCHRONOUS_INDICATOR: u32 = 0x0042_0007;
 const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
+const AUTHENTICATION: u32 = 0x0042_000C;
 const ATTESTATION_CAPABLE_INDICATOR: u32 = 0x0042_00D3;
 const OPERATION: u32 = 0x0042_005C;
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
@@ -1118,6 +1119,7 @@ impl fmt::Debug for ClientBatchItem {
 /// A typed ordered request batch with common client-selected message options.
 pub struct ClientBatch {
     items: Vec<ClientBatchItem>,
+    authentication: Option<Authentication>,
     request_time_stamp: Option<i64>,
     batch_order_option: Option<bool>,
     batch_error_continuation_values: Vec<u32>,
@@ -1137,6 +1139,7 @@ impl ClientBatch {
     pub fn new(item: ClientBatchItem) -> Self {
         Self {
             items: vec![item],
+            authentication: None,
             request_time_stamp: None,
             batch_order_option: None,
             batch_error_continuation_values: Vec::new(),
@@ -1150,6 +1153,7 @@ impl ClientBatch {
     pub fn from_items(items: impl IntoIterator<Item = ClientBatchItem>) -> Self {
         Self {
             items: items.into_iter().collect(),
+            authentication: None,
             request_time_stamp: None,
             batch_order_option: None,
             batch_error_continuation_values: Vec::new(),
@@ -1161,6 +1165,17 @@ impl ClientBatch {
     /// Appends a typed request item in execution order.
     pub fn push(&mut self, item: ClientBatchItem) {
         self.items.push(item);
+    }
+
+    /// Sets optional Authentication for this Request Message.
+    ///
+    /// The same owned Authentication applies to every item in the batch. It
+    /// is encoded once in Request Header and is never retained in the client
+    /// configuration.
+    #[must_use]
+    pub fn with_authentication(mut self, authentication: Authentication) -> Self {
+        self.authentication = Some(authentication);
+        self
     }
 
     /// Sets the optional caller-supplied Request Header Time Stamp.
@@ -1225,6 +1240,7 @@ impl fmt::Debug for ClientBatch {
         formatter
             .debug_struct("ClientBatch")
             .field("item_count", &self.items.len())
+            .field("authentication", &self.authentication.is_some())
             .field("request_time_stamp", &self.request_time_stamp.is_some())
             .field("batch_order_option", &self.batch_order_option)
             .field(
@@ -6591,6 +6607,12 @@ fn build_request_header(
         ATTESTATION_CAPABLE_INDICATOR,
         Value::boolean(true),
     )?;
+    if let Some(authentication) = &batch.authentication {
+        let tree = authentication
+            .with_ttlv(|value| value.try_clone())
+            .map_err(model_protocol_error)?;
+        push(&mut header, AUTHENTICATION, Value::structure(tree))?;
+    }
     if let Some(value) = options.batch_error_continuation.encoded {
         push(
             &mut header,
