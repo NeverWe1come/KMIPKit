@@ -8,6 +8,10 @@ const VENDOR_EXTENSION: u32 = 0x0054_0001;
 const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
 const HASHING_ALGORITHM: u32 = 0x0042_0038;
 const DATA: u32 = 0x0042_00C2;
+const KEY_WRAPPING_SPECIFICATION: u32 = 0x0042_0047;
+const WRAPPING_METHOD: u32 = 0x0042_009E;
+const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
+const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 
 fn item(tag: u32, value: Value) -> Item {
     let raw_tag = RawTag::new(tag).expect("fixture tag fits the TTLV tag field");
@@ -218,6 +222,39 @@ fn derivation_parameters_preserve_repeated_data_and_unknown_extensions() {
     assert_eq!(view.children()[0].tag().raw(), 0x0042_0030);
     assert_eq!(view.children()[1].tag().raw(), 0x0042_0030);
     assert_eq!(view.children()[2].tag().raw(), VENDOR_EXTENSION);
+}
+
+#[test]
+fn get_payload_recursively_validates_key_wrapping_specification() {
+    let key_information = structure([item(
+        UNIQUE_IDENTIFIER,
+        Value::text_string("wrapping-key".to_owned()),
+    )]);
+    let wrapping = structure([
+        item(
+            WRAPPING_METHOD,
+            Value::text_string("invalid-type".to_owned()),
+        ),
+        item(
+            ENCRYPTION_KEY_INFORMATION,
+            Value::structure(key_information),
+        ),
+    ]);
+    let payload = structure([item(KEY_WRAPPING_SPECIFICATION, Value::structure(wrapping))]);
+
+    let report = validate_structure(
+        &payload.view(),
+        Some(ValidationSchema::RequestPayload(RequestPayloadSchema::Get)),
+    );
+
+    let issue = report
+        .issues()
+        .iter()
+        .find(|issue| {
+            issue.path().to_string() == "Request Payload.Key Wrapping Specification.Wrapping Method"
+        })
+        .expect("wrong Wrapping Method TTLV type is reported recursively");
+    assert_eq!(issue.source().to_string(), "KMIP v2.1 §7.18, Table 370");
 }
 
 #[test]
