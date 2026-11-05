@@ -158,6 +158,19 @@ impl KeyWrappingData {
 
     /// Reads Key Wrapping Data and retains unknown members, repeats, and order.
     pub fn try_from_item(item: Item) -> Result<Self, ManagedObjectError> {
+        let wrapping_method = Self::validate_item(&item)?;
+        Ok(Self {
+            wrapping_method,
+            encryption_key_information: None,
+            mac_signature_key_information: None,
+            mac_signature: None,
+            iv_counter_nonce: None,
+            encoding_option: None,
+            raw_item: Some(item),
+        })
+    }
+
+    pub(crate) fn validate_item(item: &Item) -> Result<u32, ManagedObjectError> {
         if item.tag().raw() != KEY_WRAPPING_DATA || item.item_type() != ItemType::Structure {
             return Err(ManagedObjectError::InvalidStructure);
         }
@@ -211,15 +224,7 @@ impl KeyWrappingData {
         if !present[1] && !present[2] {
             return Err(ManagedObjectError::InvalidFieldCombination);
         }
-        Ok(Self {
-            wrapping_method: wrapping_method.ok_or(ManagedObjectError::IncorrectFieldType)?,
-            encryption_key_information: None,
-            mac_signature_key_information: None,
-            mac_signature: None,
-            iv_counter_nonce: None,
-            encoding_option: None,
-            raw_item: Some(item),
-        })
+        wrapping_method.ok_or(ManagedObjectError::IncorrectFieldType)
     }
 
     /// Lends the full structure for callback-scoped inspection.

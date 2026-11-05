@@ -136,8 +136,7 @@ pub(crate) fn validate_structure(
                 return Err(ManagedObjectError::IncorrectFieldType);
             }
             if field.tag().raw() == KEY_BLOCK {
-                let nested = field.try_clone().map_err(ManagedObjectError::from)?;
-                KeyBlock::try_from_item(nested)?;
+                KeyBlock::validate_item(field)?;
             }
             if present[position] {
                 return Err(ManagedObjectError::DuplicateField);
@@ -163,8 +162,11 @@ pub(crate) fn validate_structure(
 fn validate_object_constraints(item: &Item, expected_tag: u32) -> Result<(), ManagedObjectError> {
     match expected_tag {
         SECRET_DATA => {
-            let key_block = structure_child(item, KEY_BLOCK)?;
-            if KeyBlock::try_from_item(key_block)?.has_cryptographic_properties() {
+            let has_crypto_properties = with_item(item, KEY_BLOCK, |key_block| {
+                KeyBlock::has_cryptographic_properties_item(key_block)
+            })
+            .ok_or(ManagedObjectError::MissingRequiredField)??;
+            if has_crypto_properties {
                 return Err(ManagedObjectError::InvalidFieldCombination);
             }
         }
@@ -189,18 +191,20 @@ fn validate_object_constraints(item: &Item, expected_tag: u32) -> Result<(), Man
     Ok(())
 }
 
-fn structure_child(item: &Item, tag: u32) -> Result<Item, ManagedObjectError> {
+fn with_item<R>(
+    item: &Item,
+    field_tag: u32,
+    callback: impl for<'a> FnOnce(&'a Item) -> R,
+) -> Option<R> {
     item.with_value(|value| {
         let ValueView::Structure(structure) = value else {
-            return Err(ManagedObjectError::InvalidStructure);
+            return None;
         };
         structure
             .children()
             .iter()
-            .find(|child| child.tag().raw() == tag)
-            .ok_or(ManagedObjectError::MissingRequiredField)?
-            .try_clone()
-            .map_err(ManagedObjectError::from)
+            .find(|child| child.tag().raw() == field_tag)
+            .map(callback)
     })
 }
 

@@ -8,7 +8,7 @@ use zeroize::Zeroizing;
 
 use crate::{AttributeSet, KeyCompressionType, KeyFormatType, ManagedObjectError};
 
-use crate::key_material::KeyMaterial;
+use crate::key_material::{KeyMaterial, validate_key_material_item};
 use crate::key_wrapping::KeyWrappingData;
 use crate::managed_object::{checked_tag, make_item};
 
@@ -32,6 +32,13 @@ pub enum KeyBlockValue {
 enum StoredKeyBlockValue {
     Plaintext(KeyValue),
     Wrapped(Zeroizing<Vec<u8>>),
+}
+
+struct ParsedKeyBlock {
+    key_format_type: KeyFormatType,
+    key_compression_type: Option<KeyCompressionType>,
+    cryptographic_algorithm: Option<u32>,
+    cryptographic_length: Option<i32>,
 }
 
 /// A typed Key Block builder that emits members in Table 12 order.
@@ -76,121 +83,28 @@ impl KeyBlock {
     }
 
     /// Reads a source-ordered Key Block while retaining its complete TTLV tree.
-    #[allow(clippy::too_many_lines)] // The source-ordered Table 12 parser validates one complete Key Block pass.
     pub fn try_from_item(item: Item) -> Result<Self, ManagedObjectError> {
-        if item.tag().raw() != KEY_BLOCK || item.item_type() != ItemType::Structure {
-            return Err(ManagedObjectError::InvalidStructure);
-        }
-        let mut present = [false; 6];
-        let mut last_position = None;
-        let mut key_format_type = None;
-        let mut key_compression_type = None;
-        let mut cryptographic_algorithm = None;
-        let mut cryptographic_length = None;
-        let mut value_type = None;
-        let mut wrapping = false;
-        item.with_value(|value| {
-            let ValueView::Structure(structure) = value else {
-                return Err(ManagedObjectError::InvalidStructure);
-            };
-            for child in structure.children() {
-                let position = match child.tag().raw() {
-                    KEY_FORMAT_TYPE => 0,
-                    KEY_COMPRESSION_TYPE => 1,
-                    KEY_VALUE => 2,
-                    CRYPTOGRAPHIC_ALGORITHM => 3,
-                    CRYPTOGRAPHIC_LENGTH => 4,
-                    KEY_WRAPPING_DATA => 5,
-                    _ => continue,
-                };
-                if present[position] {
-                    return Err(ManagedObjectError::DuplicateField);
-                }
-                if last_position.is_some_and(|last| position < last) {
-                    return Err(ManagedObjectError::IncorrectFieldOrder);
-                }
-                let valid = match (position, child.item_type()) {
-                    (0, ItemType::Enumeration) => {
-                        key_format_type = child.with_value(|value| match value {
-                            ValueView::Enumeration(raw) => Some(KeyFormatType::from_raw(*raw)),
-                            _ => None,
-                        });
-                        true
-                    }
-                    (1, ItemType::Enumeration) => {
-                        key_compression_type = child.with_value(|value| match value {
-                            ValueView::Enumeration(raw) => {
-                                Some(crate::KeyCompressionType::from_raw(*raw))
-                            }
-                            _ => None,
-                        });
-                        true
-                    }
-                    (2, ItemType::Structure | ItemType::ByteString) => {
-                        value_type = Some(child.item_type());
-                        true
-                    }
-                    (3, ItemType::Enumeration) => {
-                        cryptographic_algorithm = child.with_value(|value| match value {
-                            ValueView::Enumeration(raw) => Some(*raw),
-                            _ => None,
-                        });
-                        true
-                    }
-                    (4, ItemType::Integer) => {
-                        cryptographic_length = child.with_value(|value| match value {
-                            ValueView::Integer(raw) => Some(*raw),
-                            _ => None,
-                        });
-                        true
-                    }
-                    (5, ItemType::Structure) => {
-                        let wrapping_item = child.try_clone().map_err(ManagedObjectError::from)?;
-                        KeyWrappingData::try_from_item(wrapping_item)?;
-                        wrapping = true;
-                        true
-                    }
-                    _ => false,
-                };
-                if !valid {
-                    return Err(ManagedObjectError::IncorrectFieldType);
-                }
-                present[position] = true;
-                last_position = Some(position);
-            }
-            Ok(())
-        })?;
-        if !present[0] {
-            return Err(ManagedObjectError::MissingRequiredField);
-        }
-        if present[3] != present[4]
-            || value_type.is_some_and(|kind| (kind == ItemType::ByteString) != wrapping)
-            || (value_type.is_none() && wrapping)
-        {
-            return Err(ManagedObjectError::InvalidFieldCombination);
-        }
-        let format = key_format_type.ok_or(ManagedObjectError::IncorrectFieldType)?;
-        if value_type == Some(ItemType::Structure) {
-            let key_value = item.with_value(|value| match value {
-                ValueView::Structure(block) => block
-                    .children()
-                    .iter()
-                    .find(|child| child.tag().raw() == KEY_VALUE)
-                    .and_then(|key_value| key_value.try_clone().ok()),
-                _ => None,
-            });
-            let key_value = key_value.ok_or(ManagedObjectError::MissingRequiredField)?;
-            KeyValue::try_from_item(key_value, format)?;
-        }
+        let parsed = parse_key_block(&item)?;
         Ok(Self {
-            key_format_type: format,
-            key_compression_type,
+            key_format_type: parsed.key_format_type,
+            key_compression_type: parsed.key_compression_type,
             key_value: None,
-            cryptographic_algorithm,
-            cryptographic_length,
+            cryptographic_algorithm: parsed.cryptographic_algorithm,
+            cryptographic_length: parsed.cryptographic_length,
             key_wrapping_data: None,
             raw_item: Some(item),
         })
+    }
+
+    pub(crate) fn validate_item(item: &Item) -> Result<(), ManagedObjectError> {
+        parse_key_block(item).map(|_| ())
+    }
+
+    pub(crate) fn has_cryptographic_properties_item(
+        item: &Item,
+    ) -> Result<bool, ManagedObjectError> {
+        let parsed = parse_key_block(item)?;
+        Ok(parsed.cryptographic_algorithm.is_some() || parsed.cryptographic_length.is_some())
     }
 
     /// Returns the source-preserving Key Format Type.
@@ -344,6 +258,114 @@ impl KeyBlock {
     }
 }
 
+#[allow(clippy::too_many_lines)] // Table 12 validation stays in one ordered borrowed pass to avoid cloning secret descendants.
+fn parse_key_block(item: &Item) -> Result<ParsedKeyBlock, ManagedObjectError> {
+    if item.tag().raw() != KEY_BLOCK || item.item_type() != ItemType::Structure {
+        return Err(ManagedObjectError::InvalidStructure);
+    }
+    item.with_value(|value| {
+        let ValueView::Structure(structure) = value else {
+            return Err(ManagedObjectError::InvalidStructure);
+        };
+        let mut present = [false; 6];
+        let mut last_position = None;
+        let mut key_format_type = None;
+        let mut key_compression_type = None;
+        let mut cryptographic_algorithm = None;
+        let mut cryptographic_length = None;
+        let mut value_type = None;
+        let mut wrapping = false;
+        for child in structure.children() {
+            let position = match child.tag().raw() {
+                KEY_FORMAT_TYPE => 0,
+                KEY_COMPRESSION_TYPE => 1,
+                KEY_VALUE => 2,
+                CRYPTOGRAPHIC_ALGORITHM => 3,
+                CRYPTOGRAPHIC_LENGTH => 4,
+                KEY_WRAPPING_DATA => 5,
+                _ => continue,
+            };
+            if present[position] {
+                return Err(ManagedObjectError::DuplicateField);
+            }
+            if last_position.is_some_and(|last| position < last) {
+                return Err(ManagedObjectError::IncorrectFieldOrder);
+            }
+            let valid = match (position, child.item_type()) {
+                (0, ItemType::Enumeration) => {
+                    key_format_type = child.with_value(|value| match value {
+                        ValueView::Enumeration(raw) => Some(KeyFormatType::from_raw(*raw)),
+                        _ => None,
+                    });
+                    true
+                }
+                (1, ItemType::Enumeration) => {
+                    key_compression_type = child.with_value(|value| match value {
+                        ValueView::Enumeration(raw) => {
+                            Some(crate::KeyCompressionType::from_raw(*raw))
+                        }
+                        _ => None,
+                    });
+                    true
+                }
+                (2, ItemType::Structure | ItemType::ByteString) => {
+                    value_type = Some(child.item_type());
+                    true
+                }
+                (3, ItemType::Enumeration) => {
+                    cryptographic_algorithm = child.with_value(|value| match value {
+                        ValueView::Enumeration(raw) => Some(*raw),
+                        _ => None,
+                    });
+                    true
+                }
+                (4, ItemType::Integer) => {
+                    cryptographic_length = child.with_value(|value| match value {
+                        ValueView::Integer(raw) => Some(*raw),
+                        _ => None,
+                    });
+                    true
+                }
+                (5, ItemType::Structure) => {
+                    KeyWrappingData::validate_item(child)?;
+                    wrapping = true;
+                    true
+                }
+                _ => false,
+            };
+            if !valid {
+                return Err(ManagedObjectError::IncorrectFieldType);
+            }
+            present[position] = true;
+            last_position = Some(position);
+        }
+        if !present[0] {
+            return Err(ManagedObjectError::MissingRequiredField);
+        }
+        if present[3] != present[4]
+            || value_type.is_some_and(|kind| (kind == ItemType::ByteString) != wrapping)
+            || (value_type.is_none() && wrapping)
+        {
+            return Err(ManagedObjectError::InvalidFieldCombination);
+        }
+        let format = key_format_type.ok_or(ManagedObjectError::IncorrectFieldType)?;
+        if value_type == Some(ItemType::Structure) {
+            let key_value = structure
+                .children()
+                .iter()
+                .find(|child| child.tag().raw() == KEY_VALUE)
+                .ok_or(ManagedObjectError::MissingRequiredField)?;
+            KeyValue::validate_item(key_value, format.raw())?;
+        }
+        Ok(ParsedKeyBlock {
+            key_format_type: format,
+            key_compression_type,
+            cryptographic_algorithm,
+            cryptographic_length,
+        })
+    })
+}
+
 /// A plaintext Key Value Structure containing Key Material and optional Attributes.
 pub struct KeyValue {
     item: Item,
@@ -395,6 +417,14 @@ impl KeyValue {
         item: Item,
         key_format_type: KeyFormatType,
     ) -> Result<Self, ManagedObjectError> {
+        Self::validate_item(&item, key_format_type.raw())?;
+        Ok(Self {
+            item,
+            key_format_type: key_format_type.raw(),
+        })
+    }
+
+    pub(crate) fn validate_item(item: &Item, format: u32) -> Result<(), ManagedObjectError> {
         if item.tag().raw() != KEY_VALUE || item.item_type() != ItemType::Structure {
             return Err(ManagedObjectError::InvalidStructure);
         }
@@ -419,6 +449,7 @@ impl KeyValue {
                         }
                         found_material = true;
                         seen_material = true;
+                        validate_key_material_item(child, format)?;
                     }
                     ATTRIBUTES => {
                         if found_attributes
@@ -441,21 +472,7 @@ impl KeyValue {
         if !found_material {
             return Err(ManagedObjectError::MissingRequiredField);
         }
-        let material = item
-            .with_value(|value| match value {
-                ValueView::Structure(structure) => structure
-                    .children()
-                    .iter()
-                    .find(|child| child.tag().raw() == 0x0042_0043)
-                    .and_then(|child| child.try_clone().ok()),
-                _ => None,
-            })
-            .ok_or(ManagedObjectError::MissingRequiredField)?;
-        KeyMaterial::try_from_item(material, key_format_type)?;
-        Ok(Self {
-            item,
-            key_format_type: key_format_type.raw(),
-        })
+        Ok(())
     }
 
     /// Lends the Key Value Structure for callback-scoped navigation.

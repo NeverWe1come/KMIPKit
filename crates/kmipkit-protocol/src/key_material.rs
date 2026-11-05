@@ -67,7 +67,7 @@ impl KeyMaterial {
             return Err(ManagedObjectError::IncorrectFieldType);
         }
         let item = make_item(KEY_MATERIAL, Value::structure(structure))?;
-        validate_transparent_key_material(&item, format_raw)?;
+        validate_key_material_item(&item, format_raw)?;
         Ok(Self { item, format_raw })
     }
 
@@ -82,11 +82,7 @@ impl KeyMaterial {
         item: Item,
         format: crate::KeyFormatType,
     ) -> Result<Self, ManagedObjectError> {
-        if item.tag().raw() != KEY_MATERIAL || !format_accepts_type(format.raw(), item.item_type())
-        {
-            return Err(ManagedObjectError::IncorrectFieldType);
-        }
-        validate_transparent_key_material(&item, format.raw())?;
+        validate_key_material_item(&item, format.raw())?;
         Ok(Self {
             item,
             format_raw: format.raw(),
@@ -124,7 +120,13 @@ fn format_accepts_type(format: u32, item_type: ItemType) -> bool {
     }
 }
 
-fn validate_transparent_key_material(item: &Item, format: u32) -> Result<(), ManagedObjectError> {
+pub(crate) fn validate_key_material_item(
+    item: &Item,
+    format: u32,
+) -> Result<(), ManagedObjectError> {
+    if item.tag().raw() != KEY_MATERIAL || !format_accepts_type(format, item.item_type()) {
+        return Err(ManagedObjectError::IncorrectFieldType);
+    }
     match format {
         7 => TransparentSymmetricKey::validate_item(item),
         8 => TransparentDsaPrivateKey::validate_item(item),
