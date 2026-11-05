@@ -17,8 +17,8 @@ use std::error::Error;
 use std::rc::Rc;
 
 use kmipkit_protocol::{
-    AttributeSet, CreateRequest, HashRequest, ObjectType, OperationData, Pkcs11Request,
-    SecretBytes, SetDefaultsRequest,
+    AttributeSet, CreateRequest, HashRequest, InteropRequest, ObjectType, OperationData,
+    Pkcs11Request, SecretBytes, SecretText, SetDefaultsRequest,
 };
 use kmipkit_test_support::{ExchangeScript, ScriptedTransport};
 use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
@@ -440,6 +440,41 @@ fn malformed_hash_parameters_are_not_sent() {
     assert_eq!(fake.borrow().write_call_count(), 0);
     assert!(!error.to_string().contains("HASH_PREFLIGHT_SECRET_CANARY"));
     assert!(!format!("{error:?}").contains("HASH_PREFLIGHT_SECRET_CANARY"));
+}
+
+#[test]
+fn diagnostic_extension_cannot_override_interop_fields_before_transport() {
+    const INTEROP_FUNCTION: u32 = 0x0042_0160;
+    const CANARY: &str = "INTEROP_EXTENSION_PREFLIGHT_CANARY";
+    let extension = Item::new(
+        RawTag::new(INTEROP_FUNCTION)
+            .expect("Interop Function tag is valid")
+            .try_checked()
+            .expect("Interop Function is allocated"),
+        Value::text_string(CANARY.to_owned()),
+    )
+    .expect("extension fixture is valid TTLV");
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Interop(
+        InteropRequest::new(1, SecretText::new("synthetic-id".to_owned()))
+            .with_extension(extension),
+    )));
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::Success {
+            response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let error = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect_err("an extension cannot override a defined Interop field");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert_eq!(fake.borrow().write_call_count(), 0);
+    assert!(!error.to_string().contains(CANARY));
+    assert!(!format!("{error:?}").contains(CANARY));
 }
 
 #[test]
