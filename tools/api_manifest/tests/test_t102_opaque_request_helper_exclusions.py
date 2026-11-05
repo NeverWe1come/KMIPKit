@@ -19,6 +19,7 @@ from tools.api_manifest.tests.t102_manifest_totals import (
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+TRACEABILITY = ROOT / "specs" / "043-public-api-bindings" / "traceability.md"
 OWNER = "docs/adr/0006-public-api-and-bindings.md"
 EXPECTED = {
     "rust-observed-5c3085bfc5d5023a37fa": "kmipkit_client::ClientBatchItem::request",
@@ -80,6 +81,27 @@ class T102OpaqueRequestHelperExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
         )
         self.assertEqual(T102_BLOCKED_CANDIDATES, blocked)
+
+    def test_traceability_records_request_readback_as_an_adr_exclusion(self) -> None:
+        rows = TRACEABILITY.read_text(encoding="utf-8").splitlines()
+        requirements = {
+            "KMIPKIT-0043-FR-021": next(
+                line for line in rows if line.startswith("| KMIPKIT-0043-FR-021 |")
+            ),
+            "KMIPKIT-0043-FR-022": next(
+                line for line in rows if line.startswith("| KMIPKIT-0043-FR-022 |")
+            ),
+        }
+        for requirement_id, row in requirements.items():
+            with self.subTest(requirement_id=requirement_id):
+                self.assertIn(
+                    "ClientBatchItem::request readback exports are exact reviewed exclusions under ADR-0006",
+                    row,
+                )
+                self.assertNotIn(
+                    "ClientBatchItem::request readback exports remain blocked under KMIPKIT-0043",
+                    row,
+                )
 
 
 if __name__ == "__main__":
