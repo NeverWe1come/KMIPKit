@@ -106,6 +106,37 @@ fn cryptographic_parameters_preserve_unknown_members_and_future_enumerations() {
 }
 
 #[test]
+fn derive_key_payload_recursively_validates_derivation_parameters() {
+    let derivation_parameters = structure([item(0x0042_0084, Value::integer(9))]);
+    let payload = structure([
+        item(OBJECT_TYPE, Value::enumeration(2)),
+        item(0x0042_0094, Value::text_string("derivation-key".to_owned())),
+        item(0x0042_0031, Value::enumeration(2)),
+        item(0x0042_0032, Value::structure(derivation_parameters)),
+        item(ATTRIBUTES, Value::structure(Structure::new())),
+    ]);
+
+    let report = validate_structure(
+        &payload.view(),
+        Some(ValidationSchema::RequestPayload(
+            RequestPayloadSchema::DeriveKey,
+        )),
+    );
+
+    assert!(
+        report.issues().iter().any(|issue| {
+            issue.path().to_string() == "Request Payload.Derivation Parameters.Salt"
+        })
+    );
+    assert!(
+        report
+            .issues()
+            .iter()
+            .all(|issue| { issue.source().to_string() == "KMIP v2.1 §7.12, Table 364" })
+    );
+}
+
+#[test]
 fn generic_structure_without_identity_does_not_guess_an_operation_schema() {
     let mut structure = Structure::new();
     structure
