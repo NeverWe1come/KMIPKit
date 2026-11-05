@@ -76,6 +76,36 @@ fn standalone_delete_attribute_model_preserves_both_optional_selectors() {
         SUCCESS
     );
 
+    let mut current_present = 0;
+    let mut current_copy = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_delete_attribute_request_current_attribute(
+            request,
+            &raw mut current_present,
+            &raw mut current_copy,
+        ),
+        SUCCESS
+    );
+    assert_eq!(current_present, 1);
+    assert!(!current_copy.is_null());
+    kmipkit_ttlv_item_release(current_copy);
+
+    let mut reference_present = 0;
+    let mut reference_copy = name_attribute_reference_record();
+    assert_eq!(
+        client_abi::kmipkit_delete_attribute_request_attribute_reference(
+            request,
+            &raw mut reference_present,
+            &raw mut reference_copy,
+        ),
+        SUCCESS
+    );
+    assert_eq!(reference_present, 1);
+    assert_eq!(
+        reference_copy.kind,
+        crate::KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME
+    );
+
     let mut payload_handle_ptr = ptr::null_mut();
     assert_eq!(
         client_abi::kmipkit_delete_attribute_request_to_ttlv_payload(
@@ -131,6 +161,28 @@ fn standalone_modify_attribute_model_keeps_current_and_new_items_distinct() {
         ),
         SUCCESS
     );
+
+    let mut current_present = 0;
+    let mut current_copy = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_modify_attribute_request_current_attribute(
+            request,
+            &raw mut current_present,
+            &raw mut current_copy,
+        ),
+        SUCCESS
+    );
+    assert_eq!(current_present, 1);
+    assert!(!current_copy.is_null());
+    kmipkit_ttlv_item_release(current_copy);
+
+    let mut new_copy = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_modify_attribute_request_new_attribute(request, &raw mut new_copy),
+        SUCCESS
+    );
+    assert!(!new_copy.is_null());
+    kmipkit_ttlv_item_release(new_copy);
 
     let mut payload_handle_ptr = ptr::null_mut();
     assert_eq!(
@@ -224,6 +276,90 @@ fn standalone_set_attribute_model_serializes_and_enters_a_batch() {
     kmipkit_ttlv_structure_release(payload_handle_ptr);
     kmipkit_set_attribute_request_release(request);
     kmipkit_ttlv_item_release(new_attribute);
+}
+
+#[test]
+fn optional_attribute_request_getters_preserve_absence_and_reject_missing_outputs() {
+    let mut delete_request = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_delete_attribute_request_create(
+            ptr::null(),
+            ptr::null_mut(),
+            ptr::null(),
+            &raw mut delete_request,
+        ),
+        SUCCESS
+    );
+
+    let mut current_present = u8::MAX;
+    let mut current_copy = ptr::dangling_mut();
+    assert_eq!(
+        client_abi::kmipkit_delete_attribute_request_current_attribute(
+            delete_request,
+            &raw mut current_present,
+            &raw mut current_copy,
+        ),
+        SUCCESS
+    );
+    assert_eq!(current_present, 0);
+    assert!(current_copy.is_null());
+
+    let mut reference_present = u8::MAX;
+    let mut reference = name_attribute_reference_record();
+    assert_eq!(
+        client_abi::kmipkit_delete_attribute_request_attribute_reference(
+            delete_request,
+            &raw mut reference_present,
+            &raw mut reference,
+        ),
+        SUCCESS
+    );
+    assert_eq!(reference_present, 0);
+    assert_eq!(reference.kind, 0);
+    assert_eq!(
+        client_abi::kmipkit_delete_attribute_request_attribute_reference(
+            delete_request,
+            ptr::null_mut(),
+            &raw mut reference,
+        ),
+        ERROR_INVALID_INPUT
+    );
+
+    let new_attribute = make_handle(Kind::Item, HandleValue::Item(attribute_item()));
+    let mut modify_request = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_modify_attribute_request_create(
+            ptr::null(),
+            ptr::null_mut(),
+            new_attribute,
+            &raw mut modify_request,
+        ),
+        SUCCESS
+    );
+    current_present = u8::MAX;
+    current_copy = ptr::dangling_mut();
+    assert_eq!(
+        client_abi::kmipkit_modify_attribute_request_current_attribute(
+            modify_request,
+            &raw mut current_present,
+            &raw mut current_copy,
+        ),
+        SUCCESS
+    );
+    assert_eq!(current_present, 0);
+    assert!(current_copy.is_null());
+    assert_eq!(
+        client_abi::kmipkit_modify_attribute_request_current_attribute(
+            modify_request,
+            &raw mut current_present,
+            ptr::null_mut(),
+        ),
+        ERROR_INVALID_INPUT
+    );
+
+    kmipkit_modify_attribute_request_release(modify_request);
+    kmipkit_ttlv_item_release(new_attribute);
+    kmipkit_delete_attribute_request_release(delete_request);
 }
 
 #[test]

@@ -11,6 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+BASELINE_INVENTORY = ROOT / "specs" / "043-public-api-bindings" / "reports" / "t100-query-ping-baseline.json"
 OWNER_SPEC = "specs/020-query-ping/spec.md"
 BASE_CANDIDATE_COUNT = 262
 BASE_CANDIDATE_SHA256 = "a525c1d1f8af9eb4d76ef7c243f0ab780bdb2fbbe8a486865de933059cf6a48a"
@@ -129,37 +130,37 @@ def _expected_mappings() -> dict[str, tuple[str, dict[str, str], set[str]]]:
     return expected
 
 
+def _baseline_candidate_identities() -> set[tuple[str, str]]:
+    inventory = json.loads(BASELINE_INVENTORY.read_text(encoding="utf-8"))
+    return {
+        (row["packageId"], row["exportName"])
+        for row in inventory["identities"]
+    }
+
+
 class T100QueryPingDeclarationMappingTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
 
     def test_base_candidate_and_full_owner_identities_are_pinned(self) -> None:
-        candidates = [
-            row
-            for row in self.manifest["publicDeclarations"]
-            if row.get("candidateSpecId") == "KMIPKIT-0020"
-        ]
-        if candidates:
-            rows = candidates
-        else:
-            mapped_names = set(_expected_mappings())
-            mapped = [
-                row
-                for row in self.manifest["publicDeclarations"]
-                if row.get("approvalSource", {}).get("path") == OWNER_SPEC
-                and row["exportName"] in mapped_names
-            ]
-            excluded = [
-                row
-                for row in self.manifest["approvedExclusions"]
-                if row.get("approvalSource", {}).get("path") == OWNER_SPEC
-                and "T100" in row.get("evidence", "")
-            ]
-            rows = mapped + excluded
-        identities = sorted(f"{row['packageId']}|{row['exportName']}" for row in rows)
+        inventory = json.loads(BASELINE_INVENTORY.read_text(encoding="utf-8"))
+        identities = sorted(
+            f"{row['packageId']}|{row['exportName']}"
+            for row in inventory["identities"]
+        )
+        rows = inventory["identities"]
+        self.assertEqual(BASE_CANDIDATE_COUNT, inventory["count"])
+        self.assertEqual(BASE_CANDIDATE_SHA256, inventory["sha256"])
         self.assertEqual(BASE_CANDIDATE_COUNT, len(rows))
         self.assertEqual(BASE_CANDIDATE_SHA256, hashlib.sha256("\n".join(identities).encode()).hexdigest())
+        self.assertEqual(
+            {"rust-kmipkit": 14, "rust-kmipkit-client": 15, "rust-kmipkit-protocol": 233},
+            {
+                package: sum(row["packageId"] == package for row in rows)
+                for package in ("rust-kmipkit", "rust-kmipkit-client", "rust-kmipkit-protocol")
+            },
+        )
 
     def test_no_kmipkit_0020_candidates_remain_blocked(self) -> None:
         unresolved = [
@@ -206,12 +207,33 @@ class T100QueryPingDeclarationMappingTests(unittest.TestCase):
                 for path in EVIDENCE:
                     self.assertTrue((ROOT / path).is_file(), path)
 
+    def test_exact_t100_baseline_is_partitioned_into_twelve_mappings_and_250_exclusions(self) -> None:
+        baseline = _baseline_candidate_identities()
+        mapped = {
+            (row["packageId"], row["exportName"])
+            for row in self.manifest["publicDeclarations"]
+            if row.get("approvalSource", {}).get("path") == OWNER_SPEC
+            and row["exportName"] in _expected_mappings()
+        }
+        excluded = {
+            (row["packageId"], row["exportName"])
+            for row in self.manifest["approvedExclusions"]
+            if row.get("approvalSource", {}).get("path") == OWNER_SPEC
+            and "T100" in row.get("evidence", "")
+            and (row["packageId"], row["exportName"]) in baseline
+        }
+
+        self.assertEqual(T100_MAPPING_COUNT, len(mapped))
+        self.assertEqual(T100_EXCLUSION_COUNT, len(excluded))
+        self.assertEqual(baseline, mapped | excluded)
+
     def test_every_t100_exclusion_is_exact_and_owner_backed(self) -> None:
         excluded = [
             row
             for row in self.manifest["approvedExclusions"]
             if row.get("approvalSource", {}).get("path") == OWNER_SPEC
             and "T100" in row.get("evidence", "")
+            and (row["packageId"], row["exportName"]) in _baseline_candidate_identities()
         ]
         self.assertEqual(T100_EXCLUSION_COUNT, len(excluded))
         identities = [(row["packageId"], row["exportName"]) for row in excluded]
@@ -231,6 +253,7 @@ class T100QueryPingDeclarationMappingTests(unittest.TestCase):
             for row in self.manifest["approvedExclusions"]
             if row.get("approvalSource", {}).get("path") == OWNER_SPEC
             and "T100" in row.get("evidence", "")
+            and (row["packageId"], row["exportName"]) in _baseline_candidate_identities()
         ]
         self.assertEqual(T100_EXCLUSION_COUNT, len(excluded))
         self.assertEqual(133, sum(row["exportName"].startswith("<") for row in excluded))
@@ -257,6 +280,7 @@ class T100QueryPingDeclarationMappingTests(unittest.TestCase):
             for row in self.manifest["approvedExclusions"]
             if row.get("approvalSource", {}).get("path") == OWNER_SPEC
             and "T100" in row.get("evidence", "")
+            and (row["packageId"], row["exportName"]) in _baseline_candidate_identities()
         }
         self.assertTrue(expected.keys() <= excluded.keys())
         for identity, direct_method in expected.items():

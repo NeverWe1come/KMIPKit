@@ -19,6 +19,7 @@ import org.jspecify.annotations.Nullable;
 /** Common, operation-independent metadata for one response batch item. */
 public final class ClientBatchItemResult implements AutoCloseable {
     private static final int MAX_NATIVE_ARRAY_ELEMENTS = 100_000;
+    private static final long DERIVE_KEY_OPERATION = 0x0000_0005L;
 
     private final NativeHandle handle;
     private final long maxElements;
@@ -474,7 +475,10 @@ public final class ClientBatchItemResult implements AutoCloseable {
      * response. The returned response owns an independent TTLV copy; callers must close it.
      */
     public Optional<DeriveKeyResponse> deriveKeyResponse() {
-        if (resultStatus() != 0) return Optional.empty();
+        ClientBatchItemMetadataV2 metadata = metadataV2();
+        if (metadata.resultStatus() != 0 || metadata.operation() != DERIVE_KEY_OPERATION) {
+            return Optional.empty();
+        }
         NativeExtensionRegistry.ensureLoaded();
         Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseDeriveKey);
         return Optional.of(parseDeriveKeyResponse(values));

@@ -3578,6 +3578,7 @@ final class ClientFacadeTlsIntegrationTest {
                         typed.attributeReferences().get(1).vendorIdentification().orElseThrow());
                 assertEquals("Comment",
                         typed.attributeReferences().get(1).attributeName().orElseThrow());
+                assertTrue(item.deriveKeyResponse().isEmpty());
                 try (TtlvStructure payload = typed.responsePayloadTtlv();
                         TtlvStructureView view = payload.view()) {
                     assertEquals(3, view.itemCount());
