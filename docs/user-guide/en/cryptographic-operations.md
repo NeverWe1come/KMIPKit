@@ -7,6 +7,36 @@ retry, split data, or continue a multipart operation for you. Request and
 response fields follow OASIS KMIP Specification v2.1 §§6.1.24, 6.1.32,
 6.1.33, 6.1.55, and 6.1.56, Tables 235–237, 259–264, and 334–339.
 
+## Typed Cryptographic Parameters
+
+`CryptographicParametersBuilder` offers typed setters for all 18 members in
+KMIP v2.1 §4.16, Table 59. It emits known fields in the table's required order,
+regardless of setter call order. Enumeration inputs are raw values, so future
+and vendor values remain representable. The typed model also preserves unknown
+TTLV members and exposes them through `with_ttlv`. Building the structure does
+not choose an algorithm or protection policy for the caller.
+
+```rust,kmipkit-test
+use kmipkit_protocol::named_values_generated::values::enumeration::cryptographic_algorithm;
+use kmipkit_protocol::{CryptographicParametersBuilder, EncryptRequest, ProtocolError};
+
+#[allow(dead_code)]
+fn typed_encrypt_request() -> Result<EncryptRequest, ProtocolError> {
+    let parameters = CryptographicParametersBuilder::new()
+        .with_random_iv(true)
+        .with_cryptographic_algorithm(cryptographic_algorithm::AES)
+        .build()?;
+    Ok(EncryptRequest::new(None, None).with_typed_cryptographic_parameters(parameters))
+}
+
+fn main() {}
+```
+
+`P Source` is secret input: the builder takes ownership of its bytes and
+KMIPKit zeroizes the owned copy when it is dropped. The callback accessor only
+lends the bytes for the callback's lifetime. Copies made by application code
+are outside that guarantee. Debug output contains metadata only.
+
 ## Construct and send requests
 
 Choose keys and Cryptographic Parameters according to application policy and

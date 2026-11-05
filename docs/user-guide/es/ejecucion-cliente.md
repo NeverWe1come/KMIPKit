@@ -60,6 +60,58 @@ compatibilidad retroactiva entre versiones principales conforme a KMIP §9.16.
 Consulta [ADR-0002](../../adr/0002-kmip-21-release-scope.md) para conocer el
 alcance de la versión.
 
+## Métodos directos y opciones por intercambio
+
+`Client` ofrece un método directo tipado para cada una de las 56 operaciones
+iniciadas por el cliente. Los métodos que realizan un intercambio también
+tienen una variante `*_with_options` que acepta `RequestOptions`; las opciones
+solo se aplican a ese intercambio. Cada llamada directa envía una petición y
+devuelve su respuesta de un solo elemento. No reintenta ni ejecuta Poll de
+forma implícita. El estado Pending y su valor de correlación siguen siendo
+explícitos en el resultado.
+
+Usa `ClientBatch` cuando una petición necesite Authentication en la cabecera,
+Asynchronous Indicator, varios Batch Items ordenados u otros campos
+compartidos de la cabecera. Authentication se adjunta a ese lote y se codifica
+una vez para el Request Message; los métodos directos no seleccionan ni
+conservan credenciales.
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientBatch, ClientBatchItem, ClientError, ClientRequest, RequestOptions};
+use kmipkit_protocol::{Authentication, GetRequest};
+use kmipkit_ttlv::codec::CodecLimits;
+
+#[allow(dead_code)]
+fn get_directo(
+    client: &mut Client,
+    limits: &CodecLimits,
+    options: &RequestOptions,
+) -> Result<(), ClientError> {
+    let response = client.get_with_options(GetRequest::new(), limits, options)?;
+    let _outcome = response.outcome();
+    Ok(())
+}
+
+#[allow(dead_code)]
+fn get_con_authentication(
+    client: &mut Client,
+    limits: &CodecLimits,
+    authentication: Authentication,
+) -> Result<(), ClientError> {
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Get(GetRequest::new())))
+        .with_authentication(authentication);
+    let _response = client.execute(batch, limits)?;
+    Ok(())
+}
+
+fn main() {}
+```
+
+`Authentication` es distinta de la autenticación TLS del cliente. La primera
+es un valor KMIP de la cabecera Request proporcionado por el llamador; la
+segunda autentica la conexión TLS. KMIPKit no conserva credenciales KMIP en
+`Client`.
+
 ## Operaciones de creación en el servidor
 
 Create, Create Key Pair y Create Split Key envían peticiones tipadas elegidas

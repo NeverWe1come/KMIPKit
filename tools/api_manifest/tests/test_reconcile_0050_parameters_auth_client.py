@@ -13,18 +13,21 @@ def _manifest() -> dict:
             "declarationId": "get-c",
             "packageId": "c-kmipkit",
             "exportName": "kmipkit_client_batch_item_get",
+            "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
             "languageMappings": {"c": {"packageId": "c-kmipkit", "name": "kmipkit_client_batch_item_get"}},
         },
         {
             "declarationId": "get-java",
             "packageId": "java-kmipkit",
             "exportName": "org.kmipkit.extensions.ClientBatchItem.get",
+            "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
             "languageMappings": {"java": {"packageId": "java-kmipkit", "name": "org.kmipkit.extensions.ClientBatchItem.get"}},
         },
         {
             "declarationId": "get-python",
             "packageId": "python-kmipkit",
             "exportName": "kmipkit.extensions.client_batch_item_get",
+            "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
             "languageMappings": {"python": {"packageId": "python-kmipkit", "name": "kmipkit.extensions.client_batch_item_get"}},
         },
     ]
@@ -35,6 +38,12 @@ def _manifest() -> dict:
                 "operationId": "KMIPKIT-ELEM-OP-C2S-GET",
                 "name": "Get",
                 "apiState": "verified",
+                "approvalEvidence": {
+                    "kind": "feature-specification",
+                    "path": "specs/017-managed-object-retrieval/spec.md",
+                    "status": "Approved",
+                    "evidence": "Approved for implementation by the maintainer.",
+                },
                 "declarations": {
                     "rust": [],
                     "c": ["get-c"],
@@ -99,6 +108,21 @@ class Reconcile0050Tests(unittest.TestCase):
         ]}
         with self.assertRaises(reconcile.ReconciliationError):
             reconcile.reconcile(_manifest(), invalid)
+
+    def test_reconciliation_repairs_its_stale_approval_evidence(self) -> None:
+        manifest = _manifest()
+        stale_source = {
+            "kind": "feature-specification",
+            "path": "specs/050-parameters-auth-client/spec.md",
+            "status": "Approved",
+            "evidence": "The maintainer directly approved the KMIPKIT-0050 implementation plan.",
+        }
+        manifest["publicDeclarations"][0]["approvalSource"] = stale_source
+        result = reconcile.reconcile(manifest, {"missingFromManifest": []})
+        self.assertEqual(
+            manifest["operations"][0]["approvalEvidence"],
+            result["publicDeclarations"][0]["approvalSource"],
+        )
 
 
 if __name__ == "__main__":

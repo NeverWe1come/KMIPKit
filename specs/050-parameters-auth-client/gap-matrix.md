@@ -1,6 +1,8 @@
 # KMIPKIT-0050 Existing-Capability Gap Matrix
 
-Reviewed against the KMIPKIT-0049 parent commit `815f3cc351ac234004a8c0cd532a1a8ecee5cde0`.
+The “Existing state” and “Current state” columns below describe the KMIPKIT-0049
+parent commit `815f3cc351ac234004a8c0cd532a1a8ecee5cde0`. The implementation
+status after KMIPKIT-0050 is recorded in the following section.
 
 | Capability | Existing state | Gap and approved change | Acceptance evidence |
 |---|---|---|---|
@@ -9,6 +11,15 @@ Reviewed against the KMIPKIT-0049 parent commit `815f3cc351ac234004a8c0cd532a1a8
 | Direct operation methods | `ClientOperation` has 56 variants. `ClientRequest` has 52 variants, with the four asynchronous request paths handled by `execute_poll`, `execute_cancel`, `execute_process`, and `execute_query_async_requests`. Fourteen `ClientRequest` variants lack a same-named direct method on `Client`. | Add: `discover_versions`, `delegated_login`, `login`, `logout`, `get`, `locate`, `add_attribute`, `adjust_attribute`, `delete_attribute`, `modify_attribute`, `set_attribute`, `get_attributes`, `encrypt`, and `decrypt`, each with `_with_options`. | Compile-time consumer names all 56 methods and option variants; fake transport compares new wrappers to one-item `ClientBatch` behavior. |
 | Direct option parity | Ten existing direct methods have no `_with_options` counterpart: `get_constraints`, `get_attribute_list`, `set_constraints`, `set_defaults`, `get_usage_allocation`, `validate`, `rng_retrieve`, `log`, `interop`, and `rng_seed`. | Add `_with_options` counterparts using the same `RequestOptions` type and forwarding behavior already used by peer methods. | Compile-time signature inventory and option pass-through tests. |
 | Secret lifetime / diagnostics | Credential values use secret wrapper types and the protocol layer redacts typed credential formatting. The request execution path owns transient TTLV and encoded request buffers. | Keep all secret ownership on the passed batch; inspect and test every clone/encoding boundary; ensure no new error or debug path formats the body or credentials and owned transient copies are zeroized. | Tests assert absence of canary credential text/bytes in formatting and verify owned buffer/model drop paths under established zeroization hooks. |
+
+## Implemented state in KMIPKIT-0050
+
+| Capability | Final state | Verification |
+|---|---|---|
+| Cryptographic Parameters | Public lossless typed model and builder cover all 18 Table 59 members, canonical field order, typed accessors, unknown-member retention, and the generic `Structure` bridge. All ten planned operation/key-information setters have additive typed forms; generic setters remain available. | `crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs`; `crates/kmipkit-protocol/tests/cryptographic_parameters_typed_setters.rs` |
+| Request Authentication | `ClientBatch::with_authentication` supplies one optional Authentication in the Request Header, shared by every item in the message. The client keeps no global credential state. | `crates/kmipkit-client/tests/unit/request_authentication_tests.rs`; `crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs` |
+| Direct operation methods | All 56 client-initiated operations have direct typed Rust calls. Each operation has the supported per-exchange `_with_options` counterpart, including Poll, Cancel, Process, and Query Asynchronous Requests. The 14 formerly missing methods use the same one-item request path as `ClientBatch`; 10 existing methods gained missing options forms. | `crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs`; `crates/kmipkit-client/tests/unit/direct_method_behavior_tests.rs` |
+| Public API manifest | Every newly observed Rust route maps to its owning operation capability or a blocked four-language capability. Trait projections without independent capability have exact KMIPKIT-0050 exclusions. No Rust export remains unclassified. | `tools/api_manifest/reconcile_0050_parameters_auth_client.py`; `python tools/api_manifest/audit_rust_exports.py --check`; `python tools/api_manifest/generate.py --check` |
 
 The direct-method counts come from `crates/kmipkit-client/src/execute.rs`:
 `ClientRequest` at line 223, `ClientOperation` at line 1538, and Client methods
