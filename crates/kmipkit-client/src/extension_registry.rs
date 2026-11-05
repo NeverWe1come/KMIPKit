@@ -235,7 +235,7 @@ impl RegisteredExtensionValue {
     }
 }
 
-/// Immutable client configuration containing one owned extension registry.
+/// Immutable client configuration containing an extension registry and encoding default.
 ///
 /// The production transport constructor can consume this configuration
 /// without rebuilding or sharing registry state between clients.
