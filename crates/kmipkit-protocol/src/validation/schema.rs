@@ -113,6 +113,10 @@ pub enum NestedStructureSchema {
     Pkcs11Interface,
     /// The §3.1 Key Block structure shared by managed cryptographic objects.
     KeyBlock,
+    /// The §3.2 Key Value structure containing Key Material and optional Attributes.
+    KeyValue,
+    /// The §3.3 Key Wrapping Data structure.
+    KeyWrappingData,
     /// The §2.3 Opaque Object structure.
     OpaqueObject,
 }
