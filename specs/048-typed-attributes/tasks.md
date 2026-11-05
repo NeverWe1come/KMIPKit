@@ -8,14 +8,14 @@
 
 ## Phase 2: Red - failing contracts for both user stories
 
-- [ ] T004 [US1] Add failing generator tests for the 62 direct definitions, exact tags, encodings, multiplicity, and Certificate Attributes exclusion in `tools/normative_catalog/tests/test_generate_typed_attributes.py` (FR-001, FR-002, FR-008; Red commit).
+- [ ] T004 [US1] Add failing tests for the 62 direct definitions, exact tags, encodings, multiplicity, and Certificate Attributes exclusion in `tools/normative_catalog/tests/test_generate_typed_attributes.py`, exercising `tools/normative_catalog/generate_attribute_types.py` (FR-001, FR-002, FR-008; Red commit).
 - [ ] T005 [US1] Add failing Rust tests for scalar, enum, byte-string, interval, Structure, RNG Parameters, and Unique Identifier typed values in `crates/kmipkit-protocol/tests/unit/typed_attribute_tests.rs` (FR-002, FR-005, FR-006; Red commit).
 - [ ] T006 [US1] Add failing tests for repeated-value order, singleton multiplicity, unknown generic Items, and Structure child preservation in `crates/kmipkit-protocol/tests/unit/typed_attribute_tests.rs` (FR-003, FR-006, FR-007; Red commit).
 - [ ] T007 [US2] Add failing typed Current/New wrapper construction and tag/type mismatch tests in `crates/kmipkit-protocol/tests/unit/typed_attribute_tests.rs` (FR-004, FR-005; Red commit).
 
 ## Phase 3: Green - typed construction and reading
 
-- [ ] T008 [US1] Implement deterministic catalog-to-marker generation in `tools/normative_catalog/generate_typed_attributes.py` and generated output in `crates/kmipkit-protocol/src/typed_attributes_generated.rs` (FR-001, FR-002, FR-008; Green commit).
+- [ ] T008 [US1] Extend `tools/normative_catalog/generate_attribute_types.py` to deterministically render typed markers alongside existing TTLV type metadata into `crates/kmipkit-protocol/src/typed_attributes_generated.rs` (FR-001, FR-002, FR-008; Green commit).
 - [ ] T009 [US1] Add the sealed typed definition contract, owned attributes, borrowed callback views, and redacted conversion errors in `crates/kmipkit-protocol/src/typed_attributes.rs` (FR-002, FR-005, FR-006).
 - [ ] T010 [US1] Add typed insertion and ordered typed queries to `AttributeSet` in `crates/kmipkit-protocol/src/attribute.rs` without removing generic APIs (FR-003, FR-007).
 - [ ] T011 [US2] Add typed constructors and views to `CurrentAttribute` and `NewAttribute` in `crates/kmipkit-protocol/src/attribute.rs` (FR-004, FR-005; Green commit).

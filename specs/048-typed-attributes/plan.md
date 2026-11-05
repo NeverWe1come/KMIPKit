@@ -20,13 +20,14 @@ Provide typed Rust definitions, construction, and reading for each direct KMIP 2
 
 ## Normative Design Decisions
 
-1. A typed attribute marker identifies an immutable catalog tag and its source-defined TTLV value category.
-2. The typed owned value and borrowed view cover Boolean, Byte String, Date-Time, Enumeration, Integer, Interval, Structure, Text String, RNG Parameters, and Unique Identifier's source-permitted alternatives.
-3. Enumeration wrappers preserve all raw 32-bit values, including values not yet named in 0047.
-4. `AttributeSet` typed queries return every matching occurrence in wire order. Existing `try_new` / `try_push` multiplicity validation remains authoritative.
-5. Typed Current/New wrappers contain exactly one direct Item. Existing constructors stay source-compatible.
-6. Structure payloads remain generic and lossless in this feature; specialized object/key builders belong to 0049.
-7. Manifest reconciliation is explicit and deterministic. No generated Rust or documentation output is hand-edited.
+1. Extend the existing `tools/normative_catalog/generate_attribute_types.py` so one validated catalog input produces both the TTLV type-enforcement table and typed marker output; do not add a second parser for the same catalog semantics.
+2. A typed attribute marker identifies an immutable catalog tag and its source-defined TTLV value category.
+3. The typed owned value and borrowed view cover Boolean, Byte String, Date-Time, Enumeration, Integer, Interval, Structure, Text String, RNG Parameters, and Unique Identifier's source-permitted alternatives.
+4. Enumeration wrappers preserve all raw 32-bit values, including values not yet named in 0047.
+5. `AttributeSet` typed queries return every matching occurrence in wire order. Existing `try_new` / `try_push` multiplicity validation remains authoritative.
+6. Typed Current/New wrappers contain exactly one direct Item. Existing constructors stay source-compatible.
+7. Structure payloads remain generic and lossless in this feature; specialized object/key builders belong to 0049.
+8. Manifest reconciliation is explicit and deterministic. No generated Rust or documentation output is hand-edited.
 
 ## Constitution Check
 
