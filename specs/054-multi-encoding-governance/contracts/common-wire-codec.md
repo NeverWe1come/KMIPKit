@@ -35,12 +35,19 @@ client selector and common dispatch are introduced only by KMIPKIT-0057.
 ## Names and unknown values
 
 - Look up known tag source names, assigned Enumeration names/values, and
-  tag-to-Enumeration-family mappings from the private tables generated offline
-  by `tools/normative_catalog/generate_wire_names.py` from the reviewed
-  catalog; builds never scrape or download OASIS sources. Mapping inputs are
-  catalog `structure_member`, `message_field`, and `operation_structure` rows
-  whose source encoding is Enumeration; each maps by its assigned tag name
-  and the longest matching Enumeration family suffix.
+  tag-to-Enumeration-family mappings from the private metadata generated
+  offline by `tools/normative_catalog/generate_wire_names.py` from the reviewed
+  catalog; builds never scrape or download OASIS sources. The generated Rust
+  module includes a TSV resource rather than expanding every catalog row into
+  repeated Rust tuple syntax. Records use `T<TAB>tag-hex<TAB>tag-name`,
+  `F<TAB>tag-hex<TAB>enumeration-family`, or
+  `E<TAB>enumeration-family<TAB>value-hex<TAB>value-name`, in that order and
+  sorted within each record type. Hex values are uppercase and fixed-width.
+  Names are UTF-8 and cannot contain tabs or line breaks; generation fails if
+  the catalog contains those delimiters. Mapping inputs are catalog
+  `structure_member`, `message_field`, and `operation_structure` rows whose
+  source encoding is Enumeration; each maps by its assigned tag name and the
+  longest matching Enumeration family suffix.
 - The common model retains an Enumeration as its raw 32-bit value. Resolve its
   family through the generated tag-to-family table; when an unambiguous family
   mapping is absent or the value is unknown, preserve it in an OASIS-permitted
