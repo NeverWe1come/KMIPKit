@@ -321,6 +321,16 @@ impl DeriveKeyRequest {
                 },
             );
         }
+        if let Some(parameters) = &self.derivation_parameters.cryptographic_parameters {
+            return crate::validation::validate_nested_structure_with_prefix(
+                &parameters.view(),
+                crate::NestedStructureSchema::CryptographicParameters,
+                &crate::ValidationPath::root()
+                    .field("Request Payload")
+                    .field("Derivation Parameters")
+                    .field("Cryptographic Parameters"),
+            );
+        }
         ValidationReport::default()
     }
 }

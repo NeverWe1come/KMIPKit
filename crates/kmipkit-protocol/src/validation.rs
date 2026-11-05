@@ -11,6 +11,14 @@ pub use schema::{
 };
 pub use typed_requests::ValidateKmipRequest;
 
+pub(crate) fn validate_nested_structure_with_prefix(
+    structure: &kmipkit_ttlv::StructureView<'_>,
+    schema: NestedStructureSchema,
+    prefix: &ValidationPath,
+) -> ValidationReport {
+    nested::validate_nested_with_prefix(structure, schema, prefix)
+}
+
 /// Severity of one locally detected validation finding.
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
