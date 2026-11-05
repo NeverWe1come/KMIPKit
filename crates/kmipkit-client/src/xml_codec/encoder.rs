@@ -2,7 +2,7 @@
 use super::characters::xml_char;
 use super::names::{enum_name, family, normalize, rows, tag_name};
 use super::values::datetime;
-use super::{ALLOCATION, INVALID_VALUE, LIMIT, Result};
+use super::{ALLOCATION, INVALID_VALUE, LIMIT, WireCodecError};
 use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Item, ValueView};
 use zeroize::Zeroizing;
@@ -12,7 +12,7 @@ struct Output {
     cap: usize,
 }
 impl Output {
-    fn push(&mut self, text: &str) -> Result<()> {
+    fn push(&mut self, text: &str) -> Result<(), WireCodecError> {
         let required = self
             .bytes
             .len()
@@ -35,7 +35,7 @@ impl Output {
         Ok(())
     }
 
-    fn escaped(&mut self, text: &str) -> Result<()> {
+    fn escaped(&mut self, text: &str) -> Result<(), WireCodecError> {
         for c in text.chars() {
             match c {
                 '&' => self.push("&amp;")?,
@@ -53,7 +53,7 @@ impl Output {
         Ok(())
     }
 
-    fn octets(&mut self, bytes: &[u8]) -> Result<()> {
+    fn octets(&mut self, bytes: &[u8]) -> Result<(), WireCodecError> {
         const HEX: &[u8; 16] = b"0123456789ABCDEF";
         for &byte in bytes {
             self.push(
@@ -65,7 +65,7 @@ impl Output {
     }
 }
 
-fn emit_mask(output: &mut Output, raw: u32, value: i32) -> Result<()> {
+fn emit_mask(output: &mut Output, raw: u32, value: i32) -> Result<(), WireCodecError> {
     let Some(family) = family(raw, "M") else {
         return output.push(&Zeroizing::new(value.to_string()));
     };
@@ -86,7 +86,8 @@ fn emit_mask(output: &mut Output, raw: u32, value: i32) -> Result<()> {
         if !first {
             output.push(" ")?;
         }
-        output.push(&Zeroizing::new(format!("0x{bits:08X}")))?;
+        output.push("0x")?;
+        output.octets(&bits.to_be_bytes())?;
     }
     Ok(())
 }
@@ -97,7 +98,7 @@ fn emit(
     limits: &CodecLimits,
     depth: usize,
     count: &mut usize,
-) -> Result<()> {
+) -> Result<(), WireCodecError> {
     if *count >= limits.max_elements() {
         return Err(LIMIT);
     }
@@ -108,7 +109,9 @@ fn emit(
     output.push("<")?;
     output.push(element)?;
     if name.is_none() {
-        output.push(&format!(" tag=\"0x{raw:06X}\""))?;
+        output.push(" tag=\"0x")?;
+        output.octets(&raw.to_be_bytes()[1..])?;
+        output.push("\"")?;
     }
     item.with_value(|view| {
         if let ValueView::Structure(s) = view {
@@ -154,13 +157,14 @@ fn emit(
                 if let Some(name) = enum_name(raw, *v) {
                     output.push(&name)?;
                 } else {
-                    output.push(&Zeroizing::new(format!("0x{v:08X}")))?;
+                    output.push("0x")?;
+                    output.octets(&v.to_be_bytes())?;
                 }
             }
             ValueView::Boolean(v) => output.push(if *v { "true" } else { "false" })?,
             ValueView::TextString(v) => output.escaped(v)?,
             ValueView::ByteString(v) => output.octets(v)?,
-            ValueView::DateTime(v) => output.push(&datetime(*v))?,
+            ValueView::DateTime(v) => output.push(&datetime(*v)?)?,
             ValueView::Interval(v) => output.push(&Zeroizing::new(v.to_string()))?,
             _ => return Err(INVALID_VALUE),
         }
@@ -168,7 +172,10 @@ fn emit(
     })
 }
 
-pub(crate) fn encode(item: &Item, limits: &CodecLimits) -> Result<Zeroizing<Vec<u8>>> {
+pub(super) fn emit_document(
+    item: &Item,
+    limits: &CodecLimits,
+) -> Result<Zeroizing<Vec<u8>>, WireCodecError> {
     let mut output = Output {
         bytes: Zeroizing::new(Vec::new()),
         cap: limits.max_message_bytes(),

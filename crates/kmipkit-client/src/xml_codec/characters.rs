@@ -1,5 +1,5 @@
 //! XML 1.0 character and zeroizing attribute handling.
-use super::{ALLOCATION, INVALID_DOCUMENT, Result};
+use super::{ALLOCATION, INVALID_DOCUMENT, WireCodecError};
 use zeroize::Zeroizing;
 
 pub(super) fn xml_space(c: char) -> bool {
@@ -9,7 +9,7 @@ pub(super) fn xml_char(c: char) -> bool {
     matches!(c, '\t' | '\n' | '\r' | '\u{20}'..='\u{D7FF}' | '\u{E000}'..='\u{FFFD}' | '\u{10000}'..='\u{10FFFF}')
 }
 
-pub(super) fn attribute(value: &str) -> Result<Zeroizing<String>> {
+pub(super) fn attribute(value: &str) -> Result<Zeroizing<String>, WireCodecError> {
     let mut output = Zeroizing::new(String::new());
     output
         .try_reserve_exact(value.len())

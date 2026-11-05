@@ -2,7 +2,7 @@
 use super::characters::{attribute, xml_char, xml_space};
 use super::names::tag_value;
 use super::values::scalar;
-use super::{ALLOCATION, INVALID_DOCUMENT, INVALID_VALUE, LIMIT, NAMESPACE, Result};
+use super::{ALLOCATION, INVALID_DOCUMENT, INVALID_VALUE, LIMIT, NAMESPACE, WireCodecError};
 use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Item, RawTag, Structure, Value};
 use quick_xml::Reader;
@@ -17,7 +17,7 @@ struct Frame {
     namespaces: Vec<(Zeroizing<String>, Zeroizing<String>)>,
 }
 
-fn qname(name: &str) -> Result<(&str, &str)> {
+fn qname(name: &str) -> Result<(&str, &str), WireCodecError> {
     fn valid(name: &str) -> bool {
         let mut chars = name.chars();
         chars.next().is_some_and(|c| c == '_' || c.is_alphabetic())
@@ -30,7 +30,7 @@ fn qname(name: &str) -> Result<(&str, &str)> {
     Ok((prefix, local))
 }
 
-fn start(event: &BytesStart<'_>, frames: &[Frame]) -> Result<Frame> {
+fn start(event: &BytesStart<'_>, frames: &[Frame]) -> Result<Frame, WireCodecError> {
     let name = event.name();
     let name = name.as_ref();
     let (prefix, local) = qname(name)?;
@@ -131,7 +131,7 @@ fn start(event: &BytesStart<'_>, frames: &[Frame]) -> Result<Frame> {
     })
 }
 
-fn finish(frame: Frame) -> Result<Item> {
+fn finish(frame: Frame) -> Result<Item, WireCodecError> {
     Item::new(
         frame.tag,
         frame
@@ -141,7 +141,7 @@ fn finish(frame: Frame) -> Result<Item> {
     .map_err(|_| INVALID_VALUE)
 }
 
-fn attach(item: Item, frames: &mut [Frame], root: &mut Option<Item>) -> Result<()> {
+fn attach(item: Item, frames: &mut [Frame], root: &mut Option<Item>) -> Result<(), WireCodecError> {
     if let Some(parent) = frames.last_mut() {
         parent.children.try_push(item).map_err(|_| INVALID_VALUE)
     } else if root.is_some() {
@@ -152,7 +152,11 @@ fn attach(item: Item, frames: &mut [Frame], root: &mut Option<Item>) -> Result<(
     }
 }
 
-fn preflight(event: &BytesStart<'_>, depth: usize, limits: &CodecLimits) -> Result<()> {
+fn preflight(
+    event: &BytesStart<'_>,
+    depth: usize,
+    limits: &CodecLimits,
+) -> Result<(), WireCodecError> {
     if depth < limits.max_structure_depth() {
         return Ok(());
     }
@@ -171,7 +175,25 @@ fn preflight(event: &BytesStart<'_>, depth: usize, limits: &CodecLimits) -> Resu
     Err(LIMIT)
 }
 
-pub(crate) fn decode(bytes: &[u8], limits: &CodecLimits) -> Result<Item> {
+fn check_declaration(text: &str) -> Result<(), WireCodecError> {
+    let declaration = BytesStart::from_content(text, 3);
+    let mut state = 0;
+    for attribute in declaration.attributes() {
+        let attribute = attribute.map_err(|_| INVALID_DOCUMENT)?;
+        match (state, attribute.key.as_ref(), attribute.value.as_ref()) {
+            (0, "version", "1.0") => state = 1,
+            (1, "encoding", encoding) if encoding.eq_ignore_ascii_case("UTF-8") => state = 2,
+            (1 | 2, "standalone", "yes" | "no") => state = 3,
+            _ => return Err(INVALID_DOCUMENT),
+        }
+    }
+    if state == 0 {
+        return Err(INVALID_DOCUMENT);
+    }
+    Ok(())
+}
+
+pub(crate) fn decode(bytes: &[u8], limits: &CodecLimits) -> Result<Item, WireCodecError> {
     if bytes.len() > limits.max_message_bytes() {
         return Err(LIMIT);
     }
@@ -235,21 +257,10 @@ pub(crate) fn decode(bytes: &[u8], limits: &CodecLimits) -> Result<Item> {
                 }
             }
             Event::Decl(event) => {
-                if declaration
-                    || before != 0
-                    || count != 0
-                    || root.is_some()
-                    || event.version().map_err(|_| INVALID_DOCUMENT)?.as_ref() != "1.0"
-                {
+                if declaration || before != 0 || count != 0 || root.is_some() {
                     return Err(INVALID_DOCUMENT);
                 }
-                if let Some(encoding) = event.encoding()
-                    && !encoding
-                        .map_err(|_| INVALID_DOCUMENT)?
-                        .eq_ignore_ascii_case("UTF-8")
-                {
-                    return Err(INVALID_DOCUMENT);
-                }
+                check_declaration(event.as_ref())?;
                 declaration = true;
             }
             Event::Eof => {
