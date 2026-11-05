@@ -387,6 +387,47 @@ fn malformed_pkcs11_function_is_not_sent() {
 }
 
 #[test]
+fn malformed_pkcs11_function_canary_is_redacted_before_transport() {
+    const FUNCTION: u32 = 0x0042_015A;
+    const CANARY: &str = "PREFLIGHT_SECRET_CANARY_0051";
+
+    let mut function = Structure::new();
+    function
+        .try_push(
+            Item::new(
+                RawTag::new(FUNCTION)
+                    .expect("PKCS#11 Function is a valid tag")
+                    .try_checked()
+                    .expect("PKCS#11 Function is allocated"),
+                Value::text_string(CANARY.to_owned()),
+            )
+            .expect("malformed PKCS#11 Function is still valid generic TTLV"),
+        )
+        .expect("function fixture is valid generic TTLV");
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Pkcs11(
+        Pkcs11Request::new(function),
+    )));
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::Success {
+            response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let error = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect_err("malformed PKCS#11 Function is rejected during typed preflight");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(error.category(), ClientErrorCategory::Validation);
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert_eq!(fake.borrow().write_call_count(), 0);
+    assert!(!error.to_string().contains(CANARY));
+    assert!(!format!("{error:?}").contains(CANARY));
+}
+
+#[test]
 fn malformed_nested_defaults_are_not_sent() {
     const OBJECT_DEFAULTS: u32 = 0x0042_0153;
     const OBJECT_TYPE: u32 = 0x0042_0057;
