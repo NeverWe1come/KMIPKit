@@ -5,6 +5,9 @@ use crate::{NestedStructureSchema, RequestPayloadSchema, ValidationSchema, valid
 const OBJECT_TYPE: u32 = 0x0042_0057;
 const ATTRIBUTES: u32 = 0x0042_0125;
 const VENDOR_EXTENSION: u32 = 0x0054_0001;
+const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
+const HASHING_ALGORITHM: u32 = 0x0042_0038;
+const DATA: u32 = 0x0042_00C2;
 
 fn item(tag: u32, value: Value) -> Item {
     let raw_tag = RawTag::new(tag).expect("fixture tag fits the TTLV tag field");
@@ -12,8 +15,43 @@ fn item(tag: u32, value: Value) -> Item {
     Item::new(checked_tag, value).expect("fixture item is valid in the generic model")
 }
 
+fn structure(items: impl IntoIterator<Item = Item>) -> Structure {
+    let mut structure = Structure::new();
+    for child in items {
+        structure
+            .try_push(child)
+            .expect("test structure stays within generic model limits");
+    }
+    structure
+}
+
 fn create_schema() -> ValidationSchema {
     ValidationSchema::RequestPayload(RequestPayloadSchema::Create)
+}
+
+#[test]
+fn encrypt_payload_recursively_validates_known_cryptographic_parameter_fields() {
+    let parameters = structure([item(
+        HASHING_ALGORITHM,
+        Value::byte_string(b"invalid-ttlv-type".to_vec()),
+    )]);
+    let payload = structure([
+        item(CRYPTOGRAPHIC_PARAMETERS, Value::structure(parameters)),
+        item(DATA, Value::byte_string(b"input".to_vec())),
+    ]);
+
+    let report = validate_structure(
+        &payload.view(),
+        Some(ValidationSchema::RequestPayload(RequestPayloadSchema::Encrypt)),
+    );
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.path().to_string()
+            == "Request Payload.Cryptographic Parameters.Hashing Algorithm"
+    }));
+    assert!(report.issues().iter().all(|issue| {
+        issue.source().to_string() == "KMIP v2.1 §4.16, Table 59"
+    }));
 }
 
 #[test]
