@@ -167,17 +167,56 @@ def _tag_enumeration_families(catalog: dict[str, Any]) -> list[tuple[int, str]]:
     if not isinstance(elements, list):
         raise ValueError("catalog has no element list")
 
-    families = [
-        element.get("name")
+    enumeration_elements = [
+        element
         for element in elements
         if isinstance(element, dict) and element.get("kind") == "enumeration"
     ]
+    families = [element.get("name") for element in enumeration_elements]
     if not all(isinstance(name, str) and name for name in families):
         raise ValueError("catalog enumeration family is invalid")
     tags_by_name = dict((name, value) for value, name in _assigned_tag_names(catalog))
     if len(set(families)) != len(families):
         raise ValueError("catalog contains ambiguous Enumeration family names")
     family_by_tag: dict[int, str] = {}
+
+    # Some KMIP fields are Enumeration-typed tags represented directly by a
+    # same-named enumeration family, rather than by a structure_member row.
+    # The catalog records their type through the generic `Tag` enumeration
+    # parent. Use that explicit relationship; do not infer from names alone.
+    generic_tag_parents = {
+        element.get("element_id")
+        for element in enumeration_elements
+        if element.get("name") == "Tag"
+        and isinstance(element.get("element_id"), str)
+        and element.get("element_id")
+    }
+    if len(generic_tag_parents) > 1:
+        raise ValueError("catalog has ambiguous generic Enumeration tag identifiers")
+    generic_tag_parent = next(iter(generic_tag_parents), None)
+    family_names = set(families)
+    for tag_element in elements:
+        parents = tag_element.get("parent_element_ids") if isinstance(tag_element, dict) else None
+        if (
+            not isinstance(tag_element, dict)
+            or tag_element.get("kind") != "tag"
+            or tag_element.get("allocation") != "assigned"
+            or generic_tag_parent is None
+            or not isinstance(parents, list)
+            or generic_tag_parent not in parents
+        ):
+            continue
+        tag_name = tag_element.get("name")
+        raw_tag = tag_element.get("wire_value")
+        if not isinstance(tag_name, str) or tag_name not in family_names:
+            continue
+        if not isinstance(raw_tag, str) or not _TAG_VALUE.fullmatch(raw_tag):
+            raise ValueError("catalog Enumeration tag has an invalid assigned tag value")
+        tag = int(raw_tag.removeprefix("0x").removeprefix("0X"), 16)
+        existing_family = family_by_tag.setdefault(tag, tag_name)
+        if existing_family != tag_name:
+            raise ValueError("catalog maps one Enumeration tag to multiple families")
+
     for member in elements:
         if (
             not isinstance(member, dict)
@@ -194,7 +233,9 @@ def _tag_enumeration_families(catalog: dict[str, Any]) -> list[tuple[int, str]]:
             raise ValueError("catalog Enumeration member has no matching family")
         family = max(matching_families, key=len)
         tag = tags_by_name[member_name]
-        family_by_tag.setdefault(tag, family)
+        existing_family = family_by_tag.setdefault(tag, family)
+        if existing_family != family:
+            raise ValueError("catalog maps one Enumeration tag to multiple families")
     return sorted((tag, family) for tag, family in family_by_tag.items())
 
 

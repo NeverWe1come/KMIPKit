@@ -50,10 +50,13 @@ client selector and common dispatch are introduced only by KMIPKIT-0057.
   family. `B` includes only assigned catalog values; reserved and extension
   placeholder values are omitted. Hex values are uppercase and fixed-width.
   Names are UTF-8 and cannot contain tabs or line breaks; generation fails if
-  the catalog contains those delimiters. Mapping inputs are catalog
+  the catalog contains those delimiters. Mapping inputs include catalog
   `structure_member`, `message_field`, and `operation_structure` rows whose
   source encoding is Enumeration; each maps by its assigned tag name and the
-  longest matching Enumeration family suffix.
+  longest matching Enumeration family suffix. Direct Enumeration-typed tags
+  also map when the assigned tag is parented by the catalog's generic `Tag`
+  Enumeration marker and has an exact same-name Enumeration family. The
+  explicit type parent and exact family name prevent name-only inference.
 - Bit Mask family names come from catalog `bitmask` rows and map to the
   assigned tag with the same source name. `B` records come from assigned
   `bitmask_value` rows and their unique parent Bit Mask. Reserved values and

@@ -356,10 +356,12 @@ T	420176	Asynchronous Correlation Values
 F	420007	Asynchronous Indicator
 F	42000E	Batch Error Continuation Option
 F	420011	Block Cipher Mode
+F	420012	Cancellation Result
 F	420019	Certificate Request Type
 F	42001D	Certificate Type
 F	420024	Credential Type
 F	420028	Cryptographic Algorithm
+F	420031	Derivation Method
 F	420038	Hashing Algorithm
 F	420041	Key Compression Type
 F	420042	Key Format Type
@@ -369,6 +371,8 @@ F	420057	Object Type
 F	420059	Opaque Data Type
 F	42005C	Operation
 F	42005F	Padding Method
+F	420070	Put Function
+F	420074	Query Function
 F	420075	Recommended Curve
 F	42007E	Result Reason
 F	42007F	Result Status
@@ -376,12 +380,17 @@ F	420082	Revocation Reason Code
 F	420083	Key Role Type
 F	420086	Secret Data Type
 F	42008A	Split Key Method
+F	42008D	State
+F	420094	Unique Identifier
 F	420098	Usage Limits Unit
+F	42009B	Validity Indicator
 F	42009E	Wrapping Method
 F	4200A3	Encoding Option
+F	4200AC	Object Group Member
 F	4200AE	Digital Signature Algorithm
 F	4200BA	Key Value Location Type
 F	4200C1	Alternative Name Type
+F	4200C2	Data
 F	4200C7	Attestation Type
 F	4200DA	RNG Algorithm
 F	4200DB	DRBG Algorithm
@@ -393,9 +402,16 @@ F	4200F2	Unwrap Mode
 F	4200F3	Destroy Action
 F	4200F4	Shredding Algorithm
 F	4200F5	RNG Mode
+F	4200F6	Client Registration Method
+F	4200F8	Key Wrap Type
 F	420101	Mask Generator
 F	420102	Hashing Algorithm
+F	420138	Tag
+F	42013A	NIST Key Type
+F	420145	Protection Level
 F	42014A	Ticket Type
+F	420151	Endpoint Role
+F	420158	Adjustment Type
 F	42015A	PKCS#11 Function
 F	42015D	PKCS#11 Return Code
 F	420160	Interop Function
