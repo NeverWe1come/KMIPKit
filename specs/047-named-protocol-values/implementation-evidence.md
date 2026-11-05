@@ -3,19 +3,19 @@
 ## TDD commits
 
 - Red: `74231e4f6` adds the catalog/generator contract tests.
-- Additional Red refinements: `97ef086e5`, `c2d6956d4`, `1f412c2e3`,
-  `fd775b3a2`, `1b547d604`, `c4f1b7545`, `1041708cd`, and `b89d76c06` cover
+- Additional Red refinements: `cb10b7965`, `1b43ce373`, `094848e9a`,
+  `a6767e9ea`, `f49ee6a46`, `16a8e028c`, `607b922c9`, and `e3186eaaa` cover
   Java unsigned KMIP values, C public-header auditing, Rust lint safety, empty
-  Enumeration groups, and normalized-name collisions.
-- Full-workspace Red: `1ee468edd` updates the capability-query fixture after
+  Enumeration groups, normalized-name collisions, and documentation readiness.
+- Full-workspace Red: `61fa86fb8` updates the capability-query fixture after
   the workspace suite exposed that the newly mapped `named_protocol_values`
   capability was absent from its fixed expected list.
-- Green follow-up: `bee7b0295` adds the capability to the Rust facade's local
+- Green follow-up: `b676413fd` adds the capability to the Rust facade's local
   availability query, which now includes that
   mapped capability; the subsequent full workspace test run passes.
-- Green: `0ec3e4f0d` implements generation and the four language surfaces.
-- Refactor: `892304402` centralizes source provenance without changing output.
-- Coverage exclusion contract and rationale: `db34dec26`, `fc7e48126`.
+- Green: `8e3907a04` implements generation and the four language surfaces.
+- Refactor: `b50e199c5` centralizes source provenance without changing output.
+- Coverage exclusion contract and rationale: `11fc263f7`, `fe55c99d7`.
 
 ## Local verification
 
@@ -60,8 +60,8 @@ not edited manually.
 
 The coverage gate excludes only the exact generated named-value files in Rust,
 Java, and Python, with the rationale and consumer tests recorded in
-`docs/development/testing.md`. Coverage thresholds are not weakened. Full
-The local Windows LLVM run is evidence only and does not replace the aggregate
+`docs/development/testing.md`. Coverage thresholds are not weakened. The local
+Windows LLVM run is evidence only and does not replace the aggregate
 platform and adapter coverage gate. Remote platform CI and full adapter
 aggregate coverage are still pending.
 
@@ -75,5 +75,6 @@ independent human security review required before release.
 
 The feature branch is intended to target
 `feature/KMIPKIT-0043-t076-shared-client-mapping` as a draft stacked PR. The
-remote push, PR creation, and current PR checks will be recorded after those
-actions complete.
+remote branch push succeeded after replacing private commit email addresses
+with the account's GitHub noreply address; repository content is unchanged.
+The draft PR URL and current PR checks will be recorded after PR creation.
