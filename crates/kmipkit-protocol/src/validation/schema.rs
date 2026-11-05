@@ -111,6 +111,10 @@ pub enum NestedStructureSchema {
     Pkcs11InputParameters,
     /// The §7.28 PKCS#11 Interface structure.
     Pkcs11Interface,
+    /// The §3.1 Key Block structure shared by managed cryptographic objects.
+    KeyBlock,
+    /// The §2.3 Opaque Object structure.
+    OpaqueObject,
 }
 
 #[derive(Clone, Copy)]
@@ -202,20 +206,26 @@ pub(super) fn validate_structure_with_descriptor_and_prefix(
             item.item_type(),
             prefix,
         );
-        if let Some(nested_schema) = descriptor.fields[field_index].nested_schema
-            && let ItemType::Structure = item.item_type()
-        {
+        if let ItemType::Structure = item.item_type() {
             let mut child_prefix = prefix.clone().field(descriptor.fields[field_index].name);
             if descriptor.fields[field_index].max_count.is_none() {
                 child_prefix = child_prefix.index(child_index);
             }
+            let child_tag = item.tag().raw();
             let nested_report = item.with_value(|value| match value {
                 kmipkit_ttlv::ValueView::Structure(nested) => {
-                    super::nested::validate_nested_with_prefix(
-                        &nested,
-                        nested_schema,
-                        &child_prefix,
-                    )
+                    if matches!(descriptor.fields[field_index].tag, FieldTag::ManagedObject) {
+                        super::nested::validate_managed_object(&nested, child_tag, &child_prefix)
+                    } else if let Some(nested_schema) = descriptor.fields[field_index].nested_schema
+                    {
+                        super::nested::validate_nested_with_prefix(
+                            &nested,
+                            nested_schema,
+                            &child_prefix,
+                        )
+                    } else {
+                        ValidationReport::default()
+                    }
                 }
                 _ => ValidationReport::default(),
             });

@@ -568,6 +568,76 @@ const PKCS11_INTERFACE_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
     nested_schema: None,
 }];
 
+const KEY_BLOCK_FIELDS: &[FieldDescriptor] = &[
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R262",
+        name: "Key Format Type",
+        tag: FieldTag::Exact(0x0042_0042),
+        types: TYPE_ENUMERATION,
+        min_count: 1,
+        max_count: Some(1),
+        nested_schema: None,
+    },
+    optional_singleton_field!(
+        "KMIPKIT-0051-R263",
+        "Key Compression Type",
+        0x0042_0041,
+        TYPE_ENUMERATION
+    ),
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R264",
+        name: "Key Value",
+        tag: FieldTag::Exact(0x0042_0045),
+        types: TYPE_BYTE_STRING | TYPE_STRUCTURE,
+        min_count: 0,
+        max_count: Some(1),
+        nested_schema: None,
+    },
+    optional_singleton_field!(
+        "KMIPKIT-0051-R265",
+        "Cryptographic Algorithm",
+        0x0042_0028,
+        TYPE_ENUMERATION
+    ),
+    optional_singleton_field!(
+        "KMIPKIT-0051-R266",
+        "Cryptographic Length",
+        0x0042_002A,
+        TYPE_INTEGER
+    ),
+    optional_singleton_field!(
+        "KMIPKIT-0051-R267",
+        "Key Wrapping Data",
+        0x0042_0046,
+        TYPE_STRUCTURE
+    ),
+];
+
+const KEY_BEARING_OBJECT_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
+    rule_id: "KMIPKIT-0051-R268",
+    name: "Key Block",
+    tag: FieldTag::Exact(0x0042_0040),
+    types: TYPE_STRUCTURE,
+    min_count: 1,
+    max_count: Some(1),
+    nested_schema: Some(NestedStructureSchema::KeyBlock),
+}];
+
+const OPAQUE_OBJECT_FIELDS: &[FieldDescriptor] = &[
+    required_singleton_field!(
+        "KMIPKIT-0051-R269",
+        "Opaque Data Type",
+        0x0042_0059,
+        TYPE_ENUMERATION
+    ),
+    required_singleton_field!(
+        "KMIPKIT-0051-R270",
+        "Opaque Data Value",
+        0x0042_005A,
+        TYPE_BYTE_STRING
+    ),
+];
+
 const BLOCK_CIPHER_MODE: u32 = 0x0042_0011;
 const IV_LENGTH: u32 = 0x0042_00CD;
 const TAG_LENGTH: u32 = 0x0042_00CE;
@@ -603,11 +673,84 @@ pub(super) fn validate_nested_with_prefix(
     if schema == NestedStructureSchema::CryptographicParameters {
         validate_cryptographic_parameter_requirements(structure, prefix, &mut report);
     }
+    if schema == NestedStructureSchema::KeyBlock {
+        report.append(validate_key_block_requirements(structure, prefix));
+    }
     if schema == NestedStructureSchema::KeyWrappingSpecification {
         validate_key_wrapping_information_alternative(structure, prefix, &mut report);
     }
 
     report
+}
+
+fn validate_key_block_requirements(
+    structure: &StructureView<'_>,
+    prefix: &ValidationPath,
+) -> ValidationReport {
+    const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
+    const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
+
+    let has_algorithm = has_tag(structure, CRYPTOGRAPHIC_ALGORITHM);
+    let has_length = has_tag(structure, CRYPTOGRAPHIC_LENGTH);
+    let mut report = ValidationReport::default();
+
+    let (missing_field, rule_id) = match (has_algorithm, has_length) {
+        (true, false) => (Some("Cryptographic Length"), "KMIPKIT-0051-R266"),
+        (false, true) => (Some("Cryptographic Algorithm"), "KMIPKIT-0051-R265"),
+        _ => (None, ""),
+    };
+    if let Some(field) = missing_field {
+        report.push(ValidationIssue::new(
+            ValidationCode::new(rule_id),
+            prefix.clone().field(field),
+            ValidationSeverity::Error,
+            ValidationSourceRef::Oasis {
+                document: "KMIP v2.1",
+                reference: "§3.1, Table 12",
+            },
+        ));
+    }
+
+    report
+}
+
+pub(super) fn validate_managed_object(
+    structure: &StructureView<'_>,
+    object_tag: u32,
+    prefix: &ValidationPath,
+) -> ValidationReport {
+    match object_tag {
+        0x0042_0013 => {
+            validate_nested_with_prefix(structure, NestedStructureSchema::Certificate, prefix)
+        }
+        0x0042_0018 => validate_nested_with_prefix(
+            structure,
+            NestedStructureSchema::CertificateRequest,
+            prefix,
+        ),
+        0x0042_005B => {
+            validate_nested_with_prefix(structure, NestedStructureSchema::OpaqueObject, prefix)
+        }
+        0x0042_00BD => validate_key_bearing_object(structure, "§2.4, Table 5", prefix),
+        0x0042_0064 => validate_key_bearing_object(structure, "§2.5, Table 6", prefix),
+        0x0042_006D => validate_key_bearing_object(structure, "§2.6, Table 7", prefix),
+        0x0042_0085 => validate_key_bearing_object(structure, "§2.7, Table 8", prefix),
+        0x0042_0089 => validate_key_bearing_object(structure, "§2.8, Table 9", prefix),
+        0x0042_008F => validate_key_bearing_object(structure, "§2.9, Table 10", prefix),
+        _ => ValidationReport::default(),
+    }
+}
+
+fn validate_key_bearing_object(
+    structure: &StructureView<'_>,
+    source: &'static str,
+    prefix: &ValidationPath,
+) -> ValidationReport {
+    let descriptor = RequestSchemaDescriptor {
+        source,
+        fields: KEY_BEARING_OBJECT_FIELDS,
+    };
+    validate_structure_with_descriptor_and_prefix(structure, &descriptor, prefix)
 }
 
 pub(super) fn validate_derive_key_conditions(
@@ -760,6 +903,8 @@ fn descriptor(schema: NestedStructureSchema) -> RequestSchemaDescriptor {
             ("§7.27, Table 379", PKCS11_INPUT_PARAMETERS_FIELDS)
         }
         NestedStructureSchema::Pkcs11Interface => ("§7.28, Table 380", PKCS11_INTERFACE_FIELDS),
+        NestedStructureSchema::KeyBlock => ("§3.1, Table 12", KEY_BLOCK_FIELDS),
+        NestedStructureSchema::OpaqueObject => ("§2.3, Table 4", OPAQUE_OBJECT_FIELDS),
     };
     RequestSchemaDescriptor { source, fields }
 }

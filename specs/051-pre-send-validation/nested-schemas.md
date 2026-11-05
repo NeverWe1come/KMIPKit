@@ -31,6 +31,9 @@ remain in the caller's TTLV tree and are not rejected solely for being unknown.
 | `Asynchronous Correlation Values` | §7.1, Table 352 | Zero or more Asynchronous Correlation Value Byte Strings; the individual values remain opaque. | R259 | `validation_schema_tests::query_async_requests_recursively_checks_correlation_value_type` |
 | `PKCS#11 Interface` | §7.28, Table 380 | Zero or one PKCS#11 Interface Text String; profile-specific meaning remains opaque. | R260 | `validation_schema_tests::pkcs11_request_schema_recursively_checks_interface_structure` |
 | `PKCS#11 Input Parameters` | §7.27, Table 379 | Zero or one PKCS#11 Input Parameters Byte String; parameter bytes remain opaque. | R261 | `validation_schema_tests::pkcs11_request_schema_recursively_checks_input_parameter_structure` |
+| `Key Block` | §3.1, Table 12 | Required Key Format Type; optional Key Compression Type, Key Value, Cryptographic Algorithm, Cryptographic Length, and Key Wrapping Data in table order. Key Value may be Byte String or Structure. If either Cryptographic Algorithm or Cryptographic Length is present, the other is required. | R262–R267 | `validation_schema_tests::register_schema_recursively_checks_key_block_fields`; `validation_schema_tests::key_block_requires_length_when_algorithm_is_present` |
+| Key-bearing managed-object wrapper | §2.4–§2.9, Tables 5–10 | PGP Key, Private Key, Public Key, Secret Data, Split Key, and Symmetric Key contain one required Key Block; source reference is selected by object tag. | R268 | `validation_schema_tests::register_schema_recursively_checks_key_block_fields` |
+| `Opaque Object` | §2.3, Table 4 | Required Opaque Data Type Enumeration and Opaque Data Value Byte String in table order; unknown enum values remain open. | R269–R270 | `validation_schema_tests::register_schema_checks_both_required_opaque_object_fields` |
 
 ## Boundaries
 
@@ -68,3 +71,7 @@ families have been reconciled and covered by the operation-family tasks.
 - Ticket type values, protocol version numbers, and asynchronous correlation
   bytes remain open values; this structural layer checks only their TTLV type,
   order, and cardinality.
+- Managed-object recursion is selected by the standard object Structure tag.
+  The Key Block checks its own table-defined shape but does not inspect wrapped
+  Key Value bytes, infer key material format, parse transparent-key semantics,
+  or decide server-side key policy.
