@@ -66,13 +66,13 @@ The review-fix cycle is also kept in separate signed commits:
 | Check | Result |
 |---|---|
 | `bindings/python/.venv/Scripts/python.exe -B tools/api_manifest/generate.py --check` | Passed; all 12 generated outputs current. |
-| `bindings/python/.venv/Scripts/python.exe -m pytest -q tools/api_manifest/tests/test_manifest_v2.py tools/api_manifest/tests/test_t030_package_docs.py tools/api_manifest/tests/test_generate.py tools/api_manifest/tests/test_wire_encoding_public_api.py --tb=short` | 97 passed, 2 skipped. |
+| `bindings/python/.venv/Scripts/python.exe -m pytest -q tools/api_manifest/tests/test_manifest_v2.py tools/api_manifest/tests/test_t030_package_docs.py tools/api_manifest/tests/test_generate.py tools/api_manifest/tests/test_wire_encoding_public_api.py --tb=short` | 98 passed, 2 skipped. |
 | Exact checked-in Rust inventory test | 1 passed. |
 | CI extension fixture command: `python -B -m unittest discover --failfast -s tools/api_manifest/tests -p 'test_extension_fixtures.py' -v` | 17 passed, 1 Windows symlink-permission skip. |
 | `mvn -q -f bindings/java/pom.xml test` | Passed, including JNI native build and Java TLS encoding override test. |
 | `bindings/python/.venv/Scripts/python.exe -m pytest -q bindings/python/tests` | 162 passed. |
 | `cargo test -p kmipkit-client --all-features wire_encoding_tests` | 7 passed. |
-| `cargo test -p kmipkit-ffi --all-features --test c_api_coverage public_c_client_executes_a_valid_json_override_over_mutual_tls -- --exact --nocapture` | Passed. The C helper builds registry/configuration, DER identity/trust transport, client, limits, and DiscoverVersions batch from `kmipkit.h`, then calls override `1`. The local server observes a JSON `RequestMessage` and returns a synthetic JSON success response with a ProtocolVersion payload. |
+| `cargo test -p kmipkit-ffi --all-features --test c_api_coverage public_c_client_executes_a_valid_json_override_over_mutual_tls -- --exact --nocapture` | Passed. The C helper builds registry/configuration, DER identity/trust transport, client, limits, and DiscoverVersions batch from `kmipkit.h`, then passes `KMIPKIT_WIRE_ENCODING_JSON` (value `1`). The local server observes a JSON `RequestMessage` and returns a synthetic JSON success response with a ProtocolVersion payload. |
 | `cargo test -p kmipkit-ffi --all-features` | 54 Rust unit tests and 4 C ABI consumer tests passed. This proves the local ABI/transport path only; it is not an OASIS vector or independent-implementation interoperability result. |
 | `cargo fmt --all --check` | Passed. |
 | `cargo clippy -p kmipkit -p kmipkit-ffi -p kmipkit-client -p kmipkit-transport --all-targets --all-features -- -D warnings` | Passed. |
@@ -80,6 +80,41 @@ The review-fix cycle is also kept in separate signed commits:
 
 The new C integration test holds the test private-key copy in
 `zeroize::Zeroizing`; the local TLS server uses ephemeral test PKI material.
+
+## C ABI record-selector follow-up
+
+The final C path uses generated symbolic constants for all versioned transport
+record discriminators and flags. The manifest ties each `uint32_t` constant to
+its record field and numeric meaning, the schema validates the field/value
+shape, and the generator emits the documented macros in `kmipkit.h`. These
+entries are C ABI record inputs only and are explicitly excluded from
+cross-language enum parity; they do not add Rust, Java, or Python enums. The C
+consumer now uses the endpoint, trust, source, material encoding, timeout,
+TLS-name flag, and `KMIPKIT_WIRE_ENCODING_JSON` constants instead of numeric
+selectors.
+
+This follow-up is recorded as a separate signed RED/GREEN/REFACTOR cycle:
+
+- RED `2bf1493c3` — require the C-only manifest constants and symbolic C
+  consumer values.
+- GREEN `d267a629d` — add the schema and generator support, document all 13
+  values in the generated header, and update the C consumer.
+- REFACTOR — this evidence update records the final follow-up checks in its own
+  signed commit.
+
+Follow-up verification:
+
+| Check | Result |
+|---|---|
+| Four-file API manifest suite (`test_manifest_v2.py`, `test_t030_package_docs.py`, `test_generate.py`, `test_wire_encoding_public_api.py`) | 98 passed, 2 skipped. |
+| `bindings/python/.venv/Scripts/python.exe -B tools/api_manifest/generate.py --check` | Passed; all 12 generated outputs current. |
+| `cargo test -p kmipkit-ffi --all-features --test c_api_coverage public_c_client_executes_a_valid_json_override_over_mutual_tls -- --exact --nocapture` | Passed after replacing the raw C record selectors with generated constants. |
+| `cargo fmt --all --check` and targeted Clippy with `-D warnings` | Passed. |
+| `git diff --check` | Passed. |
+
+The header constants expose only the numeric C ABI input values. The existing
+ABI selectors and values are unchanged; the additions make those values
+readable by C callers.
 
 The compiler emitted non-fatal AWS-LC environment warnings about NASM and an
 optional C feature probe; the Rust, C, JNI, and Java build/test commands above
