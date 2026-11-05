@@ -85,6 +85,9 @@ environment warnings about NASM and an optional compiler probe.
   findings (scan `ab320995-27a7-4417-8bdc-17bed9db42a6`). The reviewer noted an
   unconfirmed resource concern: caller-supplied `Authentication` is deep-cloned
   before encoder limits apply; no remote path or exploitability was established.
-- Draft pull request: pending creation and verification.
+- Draft pull request: [#118](https://github.com/NeverWe1come/KMIPKit/pull/118),
+  base `feature/KMIPKIT-0049-managed-objects`, head
+  `feature/KMIPKIT-0050-parameters-auth-client`, verified open and draft at
+  commit `4f23fba09f791dbbd7f510188151a3683fef1dfb`.
 - This evidence does not claim profile conformance, interoperability, human
   security approval, or release readiness.

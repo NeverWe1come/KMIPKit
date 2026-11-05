@@ -79,7 +79,7 @@
 - [x] T036 Review secret handling, raw request diagnostics, generic TTLV preservation, all 56 mappings, and spec/plan/task agreement; no unresolved implementation finding in the coordinator review. Independent review results are recorded under T037.
 - [x] T037 Run independent security and QA reviews, address findings, and record their scope and results. Both reviews found no confirmed defect after the coverage calculation was reconciled. The security reviewer noted an unconfirmed local-input memory amplification concern because Authentication is cloned before encoder limits; no remote path or exploitability was established. CI and the ADR-0012 candidate-callsite lifecycle test remain required before merge; retain draft status while hosted CI is unavailable.
 - [x] T038 Commit Red, Green, and Refactor evidence in distinct commits for each implementation group; commit IDs are listed in `implementation-evidence.md`.
-- [ ] T039 Open a draft PR with `gh` from `feature/KMIPKIT-0050-parameters-auth-client` to `feature/KMIPKIT-0049-managed-objects`; verify URL, state, base, head, and commit in implementation evidence.
+- [x] T039 Open a draft PR with `gh` from `feature/KMIPKIT-0050-parameters-auth-client` to `feature/KMIPKIT-0049-managed-objects`; verify URL, state, base, head, and commit in implementation evidence. PR #118 is open and draft at `4f23fba09f791dbbd7f510188151a3683fef1dfb`.
 
 ## Dependencies
 
