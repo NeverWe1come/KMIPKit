@@ -120,7 +120,7 @@ def field_descriptor(cells: list[str]) -> str:
         digits = f"{int(raw_tag.group(1), 16):08x}"
         tag = f"FieldTag::Exact(0x{digits[:4]}_{digits[4:]})"
     minimum, maximum = cardinality(cells[5])
-    nested_match = re.search(r"nested schema: ([A-Za-z]+)", cells[7])
+    nested_match = re.search(r"nested schema: ([A-Za-z][A-Za-z0-9]*)", cells[7])
     nested_schema = (
         f"Some(NestedStructureSchema::{nested_match.group(1)})"
         if nested_match

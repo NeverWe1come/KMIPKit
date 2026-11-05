@@ -548,6 +548,26 @@ const REVOCATION_REASON_FIELDS: &[FieldDescriptor] = &[
     ),
 ];
 
+const PKCS11_INPUT_PARAMETERS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
+    rule_id: "KMIPKIT-0051-R261",
+    name: "PKCS#11 Input Parameters",
+    tag: FieldTag::Exact(0x0042_015B),
+    types: TYPE_BYTE_STRING,
+    min_count: 0,
+    max_count: Some(1),
+    nested_schema: None,
+}];
+
+const PKCS11_INTERFACE_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
+    rule_id: "KMIPKIT-0051-R260",
+    name: "PKCS#11 Interface",
+    tag: FieldTag::Exact(0x0042_0159),
+    types: TYPE_TEXT_STRING,
+    min_count: 0,
+    max_count: Some(1),
+    nested_schema: None,
+}];
+
 const BLOCK_CIPHER_MODE: u32 = 0x0042_0011;
 const IV_LENGTH: u32 = 0x0042_00CD;
 const TAG_LENGTH: u32 = 0x0042_00CE;
@@ -736,6 +756,10 @@ fn descriptor(schema: NestedStructureSchema) -> RequestSchemaDescriptor {
         NestedStructureSchema::Ticket => ("§7.39, Table 391", TICKET_FIELDS),
         NestedStructureSchema::ProtocolVersion => ("§9.16, Table 421", PROTOCOL_VERSION_FIELDS),
         NestedStructureSchema::RevocationReason => ("§4.47, Table 123", REVOCATION_REASON_FIELDS),
+        NestedStructureSchema::Pkcs11InputParameters => {
+            ("§7.27, Table 379", PKCS11_INPUT_PARAMETERS_FIELDS)
+        }
+        NestedStructureSchema::Pkcs11Interface => ("§7.28, Table 380", PKCS11_INTERFACE_FIELDS),
     };
     RequestSchemaDescriptor { source, fields }
 }

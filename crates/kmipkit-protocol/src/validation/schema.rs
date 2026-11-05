@@ -107,6 +107,10 @@ pub enum NestedStructureSchema {
     ProtocolVersion,
     /// The §4.47 Revocation Reason structure.
     RevocationReason,
+    /// The §7.27 PKCS#11 Input Parameters structure.
+    Pkcs11InputParameters,
+    /// The §7.28 PKCS#11 Interface structure.
+    Pkcs11Interface,
 }
 
 #[derive(Clone, Copy)]

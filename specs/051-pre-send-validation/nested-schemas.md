@@ -29,6 +29,8 @@ remain in the caller's TTLV tree and are not rejected solely for being unknown.
 | `Protocol Version` | §9.16, Table 421 | Required Protocol Version Major and Minor Integer values in table order; do not reject future version numbers at this structural layer. | R255–R256 | `validation_schema_tests::discover_versions_recursively_checks_protocol_version_members` |
 | `Revocation Reason` | §4.47, Table 123 | Required Revocation Reason Code Enumeration followed by optional Revocation Message Text String. | R257–R258 | `validation_schema_tests::revoke_recursively_checks_revocation_reason_code_type` |
 | `Asynchronous Correlation Values` | §7.1, Table 352 | Zero or more Asynchronous Correlation Value Byte Strings; the individual values remain opaque. | R259 | `validation_schema_tests::query_async_requests_recursively_checks_correlation_value_type` |
+| `PKCS#11 Interface` | §7.28, Table 380 | Zero or one PKCS#11 Interface Text String; profile-specific meaning remains opaque. | R260 | `validation_schema_tests::pkcs11_request_schema_recursively_checks_interface_structure` |
+| `PKCS#11 Input Parameters` | §7.27, Table 379 | Zero or one PKCS#11 Input Parameters Byte String; parameter bytes remain opaque. | R261 | `validation_schema_tests::pkcs11_request_schema_recursively_checks_input_parameter_structure` |
 
 ## Boundaries
 

@@ -1681,10 +1681,10 @@ static PKCS11_FIELDS: &[FieldDescriptor] = &[
         rule_id: "KMIPKIT-0051-R127",
         name: "PKCS#11 Interface",
         tag: FieldTag::Exact(0x0042_0159),
-        types: TYPE_STRUCTURE | TYPE_TEXT_STRING,
+        types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::Pkcs11Interface),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R128",
@@ -1708,10 +1708,10 @@ static PKCS11_FIELDS: &[FieldDescriptor] = &[
         rule_id: "KMIPKIT-0051-R130",
         name: "PKCS#11 Input Parameters",
         tag: FieldTag::Exact(0x0042_015b),
-        types: TYPE_STRUCTURE | TYPE_BYTE_STRING,
+        types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::Pkcs11InputParameters),
     },
 ];
 

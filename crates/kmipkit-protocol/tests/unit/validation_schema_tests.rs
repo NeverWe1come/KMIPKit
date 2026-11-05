@@ -667,29 +667,24 @@ fn pkcs11_request_schema_recursively_checks_interface_structure() {
     let payload = structure([
         item(
             PKCS11_INTERFACE,
-            Value::structure(structure([item(
-                PKCS11_INTERFACE,
-                Value::integer(1),
-            )])),
+            Value::structure(structure([item(PKCS11_INTERFACE, Value::integer(1))])),
         ),
         item(
             PKCS11_FUNCTION,
-            Value::structure(structure([item(
-                PKCS11_FUNCTION,
-                Value::enumeration(1),
-            )])),
+            Value::structure(structure([item(PKCS11_FUNCTION, Value::enumeration(1))])),
         ),
     ]);
 
     let report = validate_structure(
         &payload.view(),
-        Some(ValidationSchema::RequestPayload(RequestPayloadSchema::Pkcs11)),
+        Some(ValidationSchema::RequestPayload(
+            RequestPayloadSchema::Pkcs11,
+        )),
     );
 
     assert!(report.issues().iter().any(|issue| {
         issue.code().as_str() == "KMIPKIT-0051-R260"
-            && issue.path().to_string()
-                == "Request Payload.PKCS#11 Interface.PKCS#11 Interface"
+            && issue.path().to_string() == "Request Payload.PKCS#11 Interface.PKCS#11 Interface"
             && issue.source().to_string() == "KMIP v2.1 §7.28, Table 380"
     }));
 }
@@ -699,10 +694,7 @@ fn pkcs11_request_schema_recursively_checks_input_parameter_structure() {
     let payload = structure([
         item(
             PKCS11_FUNCTION,
-            Value::structure(structure([item(
-                PKCS11_FUNCTION,
-                Value::enumeration(1),
-            )])),
+            Value::structure(structure([item(PKCS11_FUNCTION, Value::enumeration(1))])),
         ),
         item(
             PKCS11_INPUT_PARAMETERS,
@@ -715,7 +707,9 @@ fn pkcs11_request_schema_recursively_checks_input_parameter_structure() {
 
     let report = validate_structure(
         &payload.view(),
-        Some(ValidationSchema::RequestPayload(RequestPayloadSchema::Pkcs11)),
+        Some(ValidationSchema::RequestPayload(
+            RequestPayloadSchema::Pkcs11,
+        )),
     );
 
     assert!(report.issues().iter().any(|issue| {
