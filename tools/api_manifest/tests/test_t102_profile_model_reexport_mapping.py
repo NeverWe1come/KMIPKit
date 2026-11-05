@@ -101,9 +101,17 @@ class T102ProfileModelReexportMappingTests(unittest.TestCase):
             for type_name, suffixes in MODEL_SUFFIXES.items()
             for suffix in suffixes
         }
-        self.assertEqual(38, len(expected))
+        expected.update(
+            (
+                "rust-kmipkit",
+                f"kmipkit::protocol::{type_name}{suffix}",
+            )
+            for type_name, suffixes in MODEL_SUFFIXES.items()
+            for suffix in suffixes
+        )
+        self.assertEqual(57, len(expected))
         self.assertEqual(
-            2,
+            3,
             sum(name.endswith("::ProfileValidationSelection::validate") for _, name in expected),
         )
         self.assertFalse(any("ProfileValidationResult" in name for _, name in expected))
