@@ -54,3 +54,87 @@ Results: all commands exit 0. The six focused encoding tests pass. The full
 transport crate suite passes 624 unit/integration tests and 5 doc tests,
 including 115 tests in the HTTPS target. The existing AWS-LC build diagnostics
 described above remain present.
+
+## REFACTOR
+
+Name the settings `HttpsExchangeSettings` to make their per-exchange lifetime
+explicit even on a reused connection, isolate the exact OASIS media-type
+mapping, and document direct-call TTLV compatibility. Extend the reuse test
+with an option-free TTLV call after XML. Add a public-adapter exchange test
+alongside the source-included tests so both public dispatch and private
+zeroization observers exercise JSON and XML. Retain the existing request
+construction error branch without reformatting its unchanged lines.
+
+```text
+cargo fmt --all --check
+git diff --check
+cargo clippy -p kmipkit-transport --all-targets --all-features -- -D warnings
+cargo test -p kmipkit-transport --test https encoding_tests -- --quiet
+cargo llvm-cov clean --workspace
+cargo llvm-cov -p kmipkit-transport --all-features --json --output-path target/0057-https-coverage.json -- --quiet
+```
+
+Formatting, whitespace validation, Clippy, and all seven focused tests pass.
+The first Clippy run identified five new test assertion-style lints; their
+assertions were clarified without suppressing a lint or printing wire bodies.
+Coverage artifacts were cleaned because old instrumented client binaries
+otherwise contributed obsolete HTTPS source locations. Normalize the fresh
+export with the repository coverage tools and project its records onto the
+executable transport source inventory for this slice. Test-support source
+and external macro records do not belong to the transport coverage scope.
+
+Final instrumented result: exit 0; 625 unit/integration tests pass, including
+116 HTTPS target tests. Scoped coverage parsed by the unchanged repository
+coverage tools is 29/29 changed executable lines (100.00%), HTTPS source
+923/1011 lines (91.30%), and transport 3741/3932 lines (95.14%). No changed
+executable line is uncovered. These measurements exceed the 95% changed-code
+and 85% transport thresholds; they do not substitute for the full release
+coverage matrix.
+
+The following Python input was run with `python -` from the worktree root to
+calculate the scoped measurement against the Task 2 plus plan baseline:
+
+```python
+from functools import cache
+from pathlib import Path
+import json
+import subprocess
+from scripts import coverage_gate as gate
+
+root = Path.cwd()
+sources = {
+    p.as_posix()
+    for p in Path("crates/kmipkit-transport/src").glob("*.rs")
+    if gate.rust_source_has_function_body(p.read_text(encoding="utf-8"))
+}
+absolute_sources = {(root / p).resolve() for p in sources}
+
+@cache
+def in_scope(filename):
+    return Path(filename).resolve() in absolute_sources
+
+data = json.loads(Path("target/0057-https-coverage.json").read_text())
+for item in data["data"]:
+    item["files"] = [f for f in item["files"] if in_scope(f["filename"])]
+    item["functions"] = [
+        f for f in item["functions"] if any(in_scope(n) for n in f["filenames"])
+    ]
+report = gate.parse_llvm_export(
+    gate.normalize_llvm_export(data, root), root, source_filter=sources
+)
+diff = subprocess.check_output(
+    ["git", "diff", "--unified=0", "15461c8bd", "--",
+     "crates/kmipkit-transport/src/https.rs"], text=True
+)
+changed = {
+    (p, n) for p, lines in gate.parse_added_rust_lines(diff).items() for n in lines
+}
+print(gate.changed_code_result(changed, report))
+covered = sum(n > 0 for lines in report.values() for n in lines.values())
+total = sum(len(lines) for lines in report.values())
+total += sum(report.summary_uncovered_excess.values())
+print(f"Transport: {covered}/{total} ({covered * 100 / total:.2f}%)")
+```
+
+Workspace-wide, foreign-language, generated-output, platform-matrix, and
+interoperability evidence remains assigned to Tasks 5–6.
