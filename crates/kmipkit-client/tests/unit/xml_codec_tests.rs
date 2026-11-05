@@ -620,7 +620,8 @@ fn normalized_initial_digits_and_xml_text_escape_combinations_roundtrip() {
 // KMIPKIT-0056-R004: the complete input must pass limits before parser allocation.
 #[test]
 fn complete_element_preflight_precedes_earlier_payload_decoding() {
-    let input = b"<RequestPayload><BatchCount type='Integer' value='bad'/><BatchItem/></RequestPayload>";
+    let input =
+        b"<RequestPayload><BatchCount type='Integer' value='bad'/><BatchItem/></RequestPayload>";
     assert_eq!(
         decode(input, &CodecLimits::new(1000, 10, 2).unwrap())
             .unwrap_err()
@@ -631,7 +632,8 @@ fn complete_element_preflight_precedes_earlier_payload_decoding() {
 
 #[test]
 fn complete_depth_preflight_precedes_earlier_namespace_decoding() {
-    let input = b"<RequestPayload xmlns='&undeclared;'><BatchItem type='Str&#117;cture'/></RequestPayload>";
+    let input =
+        b"<RequestPayload xmlns='&undeclared;'><BatchItem type='Str&#117;cture'/></RequestPayload>";
     assert_eq!(
         decode(input, &CodecLimits::new(1000, 1, 10).unwrap())
             .unwrap_err()
