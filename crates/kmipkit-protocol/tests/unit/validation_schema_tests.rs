@@ -26,6 +26,16 @@ const CERTIFICATE_REQUEST: u32 = 0x0042_0018;
 const CERTIFICATE_TYPE: u32 = 0x0042_001D;
 const CERTIFICATE_VALUE: u32 = 0x0042_001E;
 const CERTIFICATE_REQUEST_VALUE: u32 = 0x0042_0140;
+const PROTOCOL_VERSION: u32 = 0x0042_0069;
+const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
+const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
+const TICKET: u32 = 0x0042_0149;
+const TICKET_TYPE: u32 = 0x0042_014A;
+const TICKET_VALUE: u32 = 0x0042_014B;
+const ASYNC_CORRELATION_VALUES: u32 = 0x0042_0176;
+const ASYNC_CORRELATION_VALUE: u32 = 0x0042_0006;
+const REVOCATION_REASON: u32 = 0x0042_0081;
+const REVOCATION_REASON_CODE: u32 = 0x0042_0082;
 
 fn item(tag: u32, value: Value) -> Item {
     let raw_tag = RawTag::new(tag).expect("fixture tag fits the TTLV tag field");
@@ -499,6 +509,114 @@ fn reprovision_request_checks_certificate_request_members() {
             && issue.path().to_string()
                 == "Request Payload.Certificate Request.Certificate Request Type"
             && issue.source().to_string() == "KMIP v2.1 §2.2, Table 3"
+    }));
+}
+
+#[test]
+fn discover_versions_recursively_checks_protocol_version_members() {
+    let version = structure([item(PROTOCOL_VERSION_MAJOR, Value::integer(2))]);
+    let payload = structure([item(PROTOCOL_VERSION, Value::structure(version))]);
+    let report = validate_structure(
+        &payload.view(),
+        Some(ValidationSchema::RequestPayload(
+            RequestPayloadSchema::DiscoverVersions,
+        )),
+    );
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R256"
+            && issue.path().to_string()
+                == "Request Payload.Protocol Version[0].Protocol Version Minor"
+            && issue.source().to_string() == "KMIP v2.1 §9.16, Table 421"
+    }));
+
+    let valid_version = structure([
+        item(PROTOCOL_VERSION_MAJOR, Value::integer(2)),
+        item(PROTOCOL_VERSION_MINOR, Value::integer(1)),
+    ]);
+    let valid_payload = structure([item(PROTOCOL_VERSION, Value::structure(valid_version))]);
+    assert!(
+        validate_structure(
+            &valid_payload.view(),
+            Some(ValidationSchema::RequestPayload(
+                RequestPayloadSchema::DiscoverVersions,
+            )),
+        )
+        .is_valid()
+    );
+}
+
+#[test]
+fn logout_recursively_checks_ticket_value() {
+    let ticket = structure([item(TICKET_TYPE, Value::enumeration(1))]);
+    let payload = structure([item(TICKET, Value::structure(ticket))]);
+    let report = validate_structure(
+        &payload.view(),
+        Some(ValidationSchema::RequestPayload(
+            RequestPayloadSchema::Logout,
+        )),
+    );
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R254"
+            && issue.path().to_string() == "Request Payload.Ticket.Ticket Value"
+            && issue.source().to_string() == "KMIP v2.1 §7.39, Table 391"
+    }));
+
+    let valid_ticket = structure([
+        item(TICKET_TYPE, Value::enumeration(0x8000_0001)),
+        item(TICKET_VALUE, Value::byte_string(vec![0xCA, 0xFE])),
+    ]);
+    let valid_payload = structure([item(TICKET, Value::structure(valid_ticket))]);
+    assert!(
+        validate_structure(
+            &valid_payload.view(),
+            Some(ValidationSchema::RequestPayload(
+                RequestPayloadSchema::Logout
+            )),
+        )
+        .is_valid()
+    );
+}
+
+#[test]
+fn query_async_requests_recursively_checks_correlation_value_type() {
+    let values = structure([item(ASYNC_CORRELATION_VALUE, Value::integer(7))]);
+    let payload = structure([item(ASYNC_CORRELATION_VALUES, Value::structure(values))]);
+    let report = validate_structure(
+        &payload.view(),
+        Some(ValidationSchema::RequestPayload(
+            RequestPayloadSchema::QueryAsyncRequests,
+        )),
+    );
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R259"
+            && issue.path().to_string()
+                == "Request Payload.Asynchronous Correlation Values.Asynchronous Correlation Value[0]"
+            && issue.source().to_string() == "KMIP v2.1 §7.1, Table 352"
+    }));
+}
+
+#[test]
+fn revoke_recursively_checks_revocation_reason_code_type() {
+    let reason = structure([item(
+        REVOCATION_REASON_CODE,
+        Value::text_string("invalid".to_owned()),
+    )]);
+    let payload = structure([item(REVOCATION_REASON, Value::structure(reason))]);
+    let report = validate_structure(
+        &payload.view(),
+        Some(ValidationSchema::RequestPayload(
+            RequestPayloadSchema::Revoke,
+        )),
+    );
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R257"
+            && issue.path().to_string()
+                == "Request Payload.Revocation Reason.Revocation Reason Code"
+            && issue.source().to_string() == "KMIP v2.1 §4.47, Table 123"
     }));
 }
 
