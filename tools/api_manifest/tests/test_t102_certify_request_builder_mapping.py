@@ -50,6 +50,7 @@ OPERATION_ADDED_EVIDENCE = {
     "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py",
 }
 CERTIFY_REQUEST_IDENTIFIER_ID = "rust-observed-d0317408cb64ea049eaf"
+PKCS11_REQUEST_EXTENSIONS_C_DECLARATION_ID = "T102:pkcs11-request-extensions:c"
 RAW_CERTIFY_DECLARATIONS = {
     "rust-observed-e0a06a71290bee987cc7",
     "rust-observed-5722377217051635233d",
@@ -71,6 +72,10 @@ PKCS11_REQUEST_SETTER_IDS = {
     "rust-observed-837fc199aac73b1ffd00",
     "rust-observed-cc71aab290dc65b5928f",
     "rust-observed-573ae1d0de80ffa2884b",
+}
+PKCS11_REQUEST_EXTENSION_IDS = {
+    "rust-observed-ad5c5204337d486b06bb",
+    "rust-observed-358ceac77d04d65b6238",
 }
 RECERTIFY_TYPE_ID = "rust-observed-4e379cb3b97bca658dbf"
 RAW_CERTIFY_EVIDENCE = {
@@ -147,8 +152,8 @@ REQUEST_CONSTRUCTION_REQUIREMENTS = {
 }
 BLOCKED_BEFORE = 224
 BLOCKED_AFTER = 221
-DECLARATIONS_SHA256 = "4db861caa5c5228f80e2672db57f7ec536ad49700069ee723ec56b6a50988cd6"
-OPERATIONS_SHA256 = "6779f66bb4b879b308e576f31aa0e08d6264b89770897bf56c9814f8346e907d"
+DECLARATIONS_SHA256 = "e99095da4229ccc500a28463c002c22837edb5ebf4382281863657e5825460bb"
+OPERATIONS_SHA256 = "65448e51f91f3abc9f13b7ee83c2829a55a39fdd064febd97d36f16be9fad44c"
 
 
 def canonical_sha256(value: object) -> str:
@@ -311,16 +316,20 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                 self.assertTrue(proof in source, evidence_path)
 
         manifest_v2 = (ROOT / "tools/api_manifest/tests/test_manifest_v2.py").read_text(encoding="utf-8")
-        certify_builder_block = manifest_v2.split('"Certify": {', 1)[1].split("},", 1)[0]
-        self.assertNotIn("bindings/c/tests/client_abi_consumer.c", certify_builder_block)
-        self.assertNotIn("ClientFacadeTlsIntegrationTest.java", certify_builder_block)
-        self.assertNotIn("bindings/python/tests/test_certify_operation.py", certify_builder_block)
+        raw_operation_block = manifest_v2.split("raw_operation_evidence = {", 1)[1].split("}", 1)[0]
+        for raw_metadata_source in (
+            "bindings/c/tests/client_abi_consumer.c",
+            "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+            "bindings/python/tests/test_client.py",
+            "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        ):
+            self.assertIn(raw_metadata_source, raw_operation_block)
         for builder_only_path in (
             "crates/kmipkit-ffi/tests/c_api_coverage.rs",
             "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs",
             "tools/api_manifest/tests/test_t102_certify_request_builder_mapping.py",
         ):
-            self.assertIn(builder_only_path, certify_builder_block)
+            self.assertNotIn(builder_only_path, raw_operation_block)
 
     def test_type_without_value_is_exercised_as_an_exact_wire_case_in_all_bindings(self) -> None:
         sources = {
@@ -348,7 +357,12 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
         self.assertTrue("fields: CERTIFY_TYPE_ONLY" in ffi_wire)
 
     def test_non_target_declarations_and_operation_rows_match_snapshot(self) -> None:
-        target_ids = {target["id"] for target in TARGETS} | {CERTIFY_REQUEST_IDENTIFIER_ID} | {
+        target_ids = {
+            target["id"] for target in TARGETS
+        } | {
+            CERTIFY_REQUEST_IDENTIFIER_ID,
+            PKCS11_REQUEST_EXTENSIONS_C_DECLARATION_ID,
+        } | PKCS11_REQUEST_EXTENSION_IDS | {
             target["id"] for target in REQUEST_CONSTRUCTION_TARGETS
         }
         other_declarations = copy.deepcopy([
@@ -407,7 +421,7 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                 declaration.pop("approvalSource", None)
                 declaration.pop("languageMappings", None)
                 declaration.pop("parityEvidenceIds", None)
-            if declaration["declarationId"] in PKCS11_REQUEST_SETTER_IDS:
+            if declaration["declarationId"] in PKCS11_REQUEST_SETTER_IDS | PKCS11_REQUEST_EXTENSION_IDS:
                 declaration["capabilityId"] = "public_binding_surface"
                 declaration["requirementIds"] = ["KMIPKIT-0043-FR-021"]
                 declaration["declarationState"] = "blocked"
@@ -467,7 +481,12 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                 operation["declarations"]["rust"] = [
                     declaration_id
                     for declaration_id in operation["declarations"]["rust"]
-                    if declaration_id not in PKCS11_REQUEST_SETTER_IDS
+                    if declaration_id not in PKCS11_REQUEST_SETTER_IDS | PKCS11_REQUEST_EXTENSION_IDS
+                ]
+                operation["declarations"]["c"] = [
+                    declaration_id
+                    for declaration_id in operation["declarations"]["c"]
+                    if declaration_id != PKCS11_REQUEST_EXTENSIONS_C_DECLARATION_ID
                 ]
         self.assertEqual(OPERATIONS_SHA256, canonical_sha256(other_operations))
 

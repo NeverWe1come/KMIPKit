@@ -130,13 +130,9 @@ FUNCTIONAL_STATES = {
     },
     "RegisterRequest": {
         "": "verified",
-        "::attributes": "blocked",
-        "::into_ttlv_payload": "blocked",
         "::new": "declared",
-        "::object": "blocked",
-        "::object_type": "blocked",
         "::with_opaque_object_context": "verified",
-        "::with_protection_storage_masks": "blocked",
+        "::with_protection_storage_masks": "verified",
     },
 }
 

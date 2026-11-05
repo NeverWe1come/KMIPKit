@@ -141,13 +141,13 @@ class T102ResponseConversionErrorMappingTests(unittest.TestCase):
                     {item for item in response["parityEvidenceIds"] if item.startswith("crates/") or item.startswith("tools/")} <= set(row["parityEvidenceIds"])
                 )
 
-    def test_direct_response_parser_methods_remain_outside_this_mapping(self) -> None:
+    def test_direct_response_parser_methods_map_to_their_typed_results(self) -> None:
         for family in FAMILY_COUNTS:
             with self.subTest(family=family):
                 response_name = f"kmipkit_protocol::{family.removesuffix('Error')}Response::try_from_response_item"
                 parser = self.declarations[("rust-kmipkit-protocol", response_name)]
-                self.assertEqual("blocked", parser["declarationState"])
-                self.assertEqual("KMIPKIT-0043", parser["candidateSpecId"])
+                self.assertEqual("verified", parser["declarationState"])
+                self.assertNotIn("candidateSpecId", parser)
 
     def test_mapped_error_trait_exclusion_evidence_does_not_claim_parent_is_blocked(self) -> None:
         mapped_errors = (

@@ -162,11 +162,10 @@ class T102InteropRequestTraitExclusionTests(unittest.TestCase):
             "kmipkit_protocol::InteropRequest::new",
             "kmipkit_protocol::InteropRequest::interop_function",
             "kmipkit_protocol::InteropRequest::into_ttlv_payload",
-        }
-        blocked = {
             "kmipkit_protocol::InteropRequest::with_extension",
             "kmipkit_protocol::InteropRequest::with_interop_identifier",
         }
+        blocked: set[str] = set()
         self.assertEqual(set(protocol_rows), verified | blocked)
         self.assertEqual(
             {

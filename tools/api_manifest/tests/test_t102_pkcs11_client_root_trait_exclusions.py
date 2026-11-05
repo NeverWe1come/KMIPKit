@@ -154,9 +154,9 @@ class T102Pkcs11ClientRootTraitExclusionTests(unittest.TestCase):
         expected_states = {
             "kmipkit_client::Pkcs11Request": "verified",
             "kmipkit_client::Pkcs11Request::new": "verified",
-            "kmipkit_client::Pkcs11Request::into_ttlv_payload": "blocked",
+            "kmipkit_client::Pkcs11Request::into_ttlv_payload": "verified",
             "kmipkit_client::Pkcs11Request::with_correlation_value": "verified",
-            "kmipkit_client::Pkcs11Request::with_extension": "blocked",
+            "kmipkit_client::Pkcs11Request::with_extension": "verified",
             "kmipkit_client::Pkcs11Request::with_input_parameters": "verified",
             "kmipkit_client::Pkcs11Request::with_interface": "verified",
             "kmipkit_client::Pkcs11Response": "verified",

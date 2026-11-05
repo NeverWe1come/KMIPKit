@@ -177,7 +177,7 @@ class T102LocateValueTraitExclusionTests(unittest.TestCase):
             and not row["exportName"].startswith("<")
         }
         expected = {
-            f"kmipkit_protocol::{name}": "blocked"
+            f"kmipkit_protocol::{name}": "verified"
             for name in TYPES
         }
         for name in TYPES:

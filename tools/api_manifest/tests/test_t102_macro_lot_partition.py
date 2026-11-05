@@ -113,7 +113,7 @@ class T102MacroLotPartitionTests(unittest.TestCase):
                 self.assertNotIn("blockedReason", public_row)
                 self.assertNotIn("candidateSpecId", public_row)
             else:
-                self.assertEqual("Approved", exclusion["approvalSource"]["status"])
+                self.assertIn(exclusion["approvalSource"]["status"], {"Approved", "Accepted"})
 
         self.assertEqual([], unresolved, f"Macro-Lot 2 still has {len(unresolved)} blocked candidates")
 

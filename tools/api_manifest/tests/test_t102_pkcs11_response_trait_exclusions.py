@@ -156,10 +156,9 @@ class T102Pkcs11ResponseTraitExclusionTests(unittest.TestCase):
             "kmipkit_protocol::Pkcs11Response::with_return_code",
             "kmipkit_protocol::Pkcs11Response::with_ttlv",
             "kmipkit_protocol::Pkcs11Response::with_ttlv_payload",
-        }
-        blocked = {
             "kmipkit_protocol::Pkcs11Response::try_from_response_item",
         }
+        blocked: set[str] = set()
         self.assertEqual(set(protocol_rows), verified | blocked)
         self.assertEqual(
             {

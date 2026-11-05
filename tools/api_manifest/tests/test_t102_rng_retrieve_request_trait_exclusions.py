@@ -143,7 +143,7 @@ class T102RngRetrieveRequestTraitExclusionTests(unittest.TestCase):
         self.assertEqual(len(expected_root_api), 4)
         self.assertEqual(root_rows[ROOT_TYPE], "verified")
         self.assertEqual(root_rows[f"{ROOT_TYPE}::new"], "verified")
-        self.assertEqual(root_rows[f"{ROOT_TYPE}::data_length"], "blocked")
+        self.assertEqual(root_rows[f"{ROOT_TYPE}::data_length"], "verified")
         self.assertEqual(root_rows[f"{ROOT_TYPE}::to_ttlv_payload"], "verified")
 
         root_exclusions = {

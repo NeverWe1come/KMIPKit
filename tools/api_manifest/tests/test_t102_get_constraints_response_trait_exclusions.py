@@ -614,7 +614,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith("kmipkit_protocol::SetConstraintsResponse")
         }
-        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(set(rows), verified | set(blocked))
         self.assertEqual(
             {name for name, row in rows.items() if row["declarationState"] == "verified"},
             verified,
@@ -780,7 +780,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith("kmipkit_protocol::CertifyResponse")
         }
-        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(set(rows), verified | set(blocked))
         self.assertEqual(
             {name for name, row in rows.items() if row["declarationState"] == "verified"},
             verified,
@@ -1536,8 +1536,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             "kmipkit_protocol::LocateRequest::storage_status_mask",
             "kmipkit_protocol::LocateRequest::to_ttlv_payload",
         }
-        blocked = {
-        }
+        blocked: set[str] = set()
         rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -1545,7 +1544,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit_protocol::LocateRequest")
         }
 
-        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(set(rows), verified | set(blocked))
         self.assertEqual(
             {name for name, row in rows.items() if row["declarationState"] == "verified"},
             verified,
@@ -2991,17 +2990,16 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         self.assertEqual(len(conditional_paths), 5)
         self.assertEqual(audited_exclusions, EXPECTED_RNG_RETRIEVE_RESPONSE_TRAIT_EXPORTS)
 
-    def test_rng_retrieve_response_preserves_secret_data_and_blocked_helpers(self) -> None:
+    def test_rng_retrieve_response_preserves_secret_data_and_mapped_helpers(self) -> None:
         verified = {
             "kmipkit_protocol::RngRetrieveResponse",
             "kmipkit_protocol::RngRetrieveResponse::data",
             "kmipkit_protocol::RngRetrieveResponse::with_ttlv",
             "kmipkit_protocol::RngRetrieveResponse::result",
             "kmipkit_protocol::RngRetrieveResponse::try_from_response_item",
-        }
-        blocked = {
             "kmipkit_protocol::RngRetrieveResponse::try_from_pending_response_item",
         }
+        blocked: set[str] = set()
         rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -3027,10 +3025,9 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             set(rows["kmipkit_protocol::RngRetrieveResponse::data"]["languageMappings"]),
             {"c", "java", "python", "rust"},
         )
-        expected_root_blocked = {
-            "kmipkit::RngRetrieveResponse::try_from_pending_response_item",
-        }
+        expected_root_blocked: set[str] = set()
         expected_root_verified = {
+            "kmipkit::RngRetrieveResponse::try_from_pending_response_item",
             "kmipkit::RngRetrieveResponse",
             "kmipkit::RngRetrieveResponse::data",
             "kmipkit::RngRetrieveResponse::with_ttlv",
@@ -3150,17 +3147,16 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         self.assertEqual(len(conditional_paths), 5)
         self.assertEqual(audited_exclusions, EXPECTED_RNG_SEED_RESPONSE_TRAIT_EXPORTS)
 
-    def test_rng_seed_response_preserves_zero_length_and_blocked_helpers(self) -> None:
+    def test_rng_seed_response_preserves_zero_length_and_mapped_helpers(self) -> None:
         verified = {
             "kmipkit_protocol::RngSeedResponse",
             "kmipkit_protocol::RngSeedResponse::data_length",
             "kmipkit_protocol::RngSeedResponse::with_ttlv",
             "kmipkit_protocol::RngSeedResponse::result",
             "kmipkit_protocol::RngSeedResponse::try_from_response_item",
-        }
-        blocked = {
             "kmipkit_protocol::RngSeedResponse::try_from_pending_response_item",
         }
+        blocked: set[str] = set()
         rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -3186,10 +3182,9 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             set(rows["kmipkit_protocol::RngSeedResponse::data_length"]["languageMappings"]),
             {"c", "java", "python", "rust"},
         )
-        expected_root_blocked = {
-            "kmipkit::RngSeedResponse::try_from_pending_response_item",
-        }
+        expected_root_blocked: set[str] = set()
         expected_root_verified = {
+            "kmipkit::RngSeedResponse::try_from_pending_response_item",
             "kmipkit::RngSeedResponse",
             "kmipkit::RngSeedResponse::data_length",
             "kmipkit::RngSeedResponse::with_ttlv",

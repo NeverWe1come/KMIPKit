@@ -9878,6 +9878,40 @@
         "name": "TtlvValueViewHandle",
         "owner": "ffi"
       }
+    },
+    {
+      "c": {
+        "handleKind": "client_batch_item_response",
+        "kind": "opaque-handle",
+        "name": "kmipkit_client_batch_item_response_t",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_client_batch_item_response_release"
+      },
+      "id": "ClientBatchItemOutcome",
+      "java": {
+        "name": "ClientBatchItemResult",
+        "package": "org.kmipkit.extensions"
+      },
+      "kind": "opaque-handle",
+      "python": {
+        "module": "kmipkit.client",
+        "name": "BatchItemResult"
+      },
+      "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_client",
+        "name": "ClientBatchItemResponse",
+        "owner": "client"
+      }
     }
   ]
 }

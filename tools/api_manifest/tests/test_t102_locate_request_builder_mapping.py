@@ -105,6 +105,9 @@ LOCATE_FUNCTION_IDS = {
     "client_batch_item_response_locate_unique_identifier_at",
 }
 
+# The KMIP v2.1 §6.1.28-011 server-only clause is not attached to client API rows.
+LOCATE_DECLARATIONS_WITH_MISATTRIBUTED_SERVER_REQUIREMENT: set[str] = set()
+
 EXPECTED = (
     (
         "rust-observed-e07fce825be9d33278e1",

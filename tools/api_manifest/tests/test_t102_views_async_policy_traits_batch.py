@@ -421,7 +421,7 @@ class T102ViewsAsyncPolicyTraitsBatchTests(unittest.TestCase):
             ("rust-kmipkit-protocol", "kmipkit_protocol::PollResponse"): "declared",
             ("rust-kmipkit-protocol", "kmipkit_protocol::ProcessResponse"): "declared",
             ("rust-kmipkit-protocol", "kmipkit_protocol::QueryAsyncRequestsResponse"): "declared",
-            ("rust-kmipkit-protocol", "kmipkit_protocol::CertifyRequest"): "blocked",
+            ("rust-kmipkit-protocol", "kmipkit_protocol::CertifyRequest"): "verified",
             ("rust-kmipkit", "kmipkit::UsageAllocationContext"): "declared",
             ("rust-kmipkit", "kmipkit::SetDefaultsResponse"): "verified",
             ("rust-kmipkit", "kmipkit::GetUsageAllocationResponse"): "verified",

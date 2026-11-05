@@ -6130,7 +6130,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "kmipkit_protocol::CryptographicAlgorithm",
             )
         ]
-        self.assertEqual(unknown_owner["declarationState"], "blocked")
+        self.assertEqual(unknown_owner["declarationState"], "verified")
+        self.assertEqual(
+            unknown_owner["approvalSource"]["path"],
+            "specs/004-generic-ttlv-model/spec.md",
+        )
+        self.assertEqual(unknown_owner["parityScope"], "four-language")
         transport_exchange = by_package_and_name[
             ("rust-kmipkit-transport", "kmipkit_transport::Transport::exchange")
         ]

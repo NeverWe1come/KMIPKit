@@ -214,11 +214,11 @@ class T102RecertifyRekeyKeyPairBuilderMappingTests(unittest.TestCase):
             "verified",
             self.declarations["rust-observed-e98ebdedfd3bd6dc5178"]["declarationState"],
         )
-        for blocked_id in (
+        for mapped_id in (
             "rust-observed-1f4d5ae1f197c06d274f",
             "rust-observed-e1413e6ad346eed590c5",
         ):
-            self.assertEqual("blocked", self.declarations[blocked_id]["declarationState"])
+            self.assertEqual("verified", self.declarations[mapped_id]["declarationState"])
 
     def test_recertify_type_and_value_condition_and_description_are_source_pinned(self) -> None:
         oasis = " ".join(re.sub(

@@ -74,13 +74,13 @@ ERROR_SUFFIXES = {
     "::MissingResultStatus": "declared", "::MissingSuccessPayload": "declared", "::UnexpectedOperation": "declared",
 }
 RELATED_STATES = {
-    "DeriveKeyRequest": {"": "blocked", "::into_ttlv_payload": "blocked", "::new": "blocked"},
+    "DeriveKeyRequest": {"": "verified", "::into_ttlv_payload": "verified", "::new": "verified"},
     "DeriveKeyResponse": {"": "verified", "::result": "verified", "::try_from_response_item": "verified", "::unique_identifier": "verified", "::with_ttlv": "verified"},
-    "ExportRequest": {"": "verified", "::into_ttlv_payload": "verified", "::new": "verified", "::with_key_compression_type": "verified", "::with_key_format_type": "verified", "::with_key_wrap_type": "verified", "::with_key_wrapping_specification": "verified", "::with_unique_identifier": "verified", "::unique_identifier": "blocked"},
+    "ExportRequest": {"": "verified", "::into_ttlv_payload": "verified", "::new": "verified", "::with_key_compression_type": "verified", "::with_key_format_type": "verified", "::with_key_wrap_type": "verified", "::with_key_wrapping_specification": "verified", "::with_unique_identifier": "verified", "::unique_identifier": "verified"},
     "ExportResponse": {"": "verified", "::attributes": "verified", "::object": "verified", "::object_type": "verified", "::result": "verified", "::try_from_response_item": "verified", "::unique_identifier": "verified", "::with_ttlv": "verified"},
     "ImportRequest": {"": "verified", "::attributes": "verified", "::into_ttlv_payload": "verified", "::key_wrap_type": "verified", "::new": "verified", "::object": "verified", "::object_type": "verified", "::replace_existing": "verified", "::unique_identifier": "verified", "::with_key_wrap_type": "verified", "::with_replace_existing": "verified"},
     "ImportResponse": {"": "verified", "::result": "verified", "::try_from_response_item": "verified", "::unique_identifier": "verified", "::with_ttlv": "verified"},
-    "JoinSplitKeyRequest": {"": "verified", "::attributes": "blocked", "::into_ttlv_payload": "verified", "::new": "verified", "::object_type": "blocked", "::protection_storage_masks": "blocked", "::references": "blocked", "::secret_data_type": "blocked", "::with_attributes": "verified", "::with_protection_storage_masks": "verified", "::with_secret_data_type": "verified"},
+    "JoinSplitKeyRequest": {"": "verified", "::attributes": "verified", "::into_ttlv_payload": "verified", "::new": "verified", "::object_type": "verified", "::protection_storage_masks": "verified", "::references": "verified", "::secret_data_type": "verified", "::with_attributes": "verified", "::with_protection_storage_masks": "verified", "::with_secret_data_type": "verified"},
     "JoinSplitKeyResponse": {"": "verified", "::result": "verified", "::try_from_response_item": "verified", "::unique_identifier": "verified", "::with_ttlv": "verified"},
 }
 

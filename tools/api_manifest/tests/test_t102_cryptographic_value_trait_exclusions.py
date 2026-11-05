@@ -209,42 +209,58 @@ class T102CryptographicValueTraitExclusionTests(unittest.TestCase):
 
         self.assertEqual(len(all_expected), 126)
 
-    def test_functional_value_and_response_framing_exports_remain_blocked(self) -> None:
-        expected_functional_exports = {
-            "kmipkit_protocol::CryptographicAlgorithm",
-            "kmipkit_protocol::CryptographicAlgorithm::from_raw",
-            "kmipkit_protocol::CryptographicAlgorithm::raw",
-            "kmipkit_protocol::DigitalSignatureAlgorithm",
-            "kmipkit_protocol::DigitalSignatureAlgorithm::from_raw",
-            "kmipkit_protocol::DigitalSignatureAlgorithm::raw",
-            "kmipkit_protocol::HashingAlgorithm",
-            "kmipkit_protocol::HashingAlgorithm::from_raw",
-            "kmipkit_protocol::HashingAlgorithm::raw",
-            "kmipkit_protocol::ValidityIndicator",
-            "kmipkit_protocol::ValidityIndicator::from_raw",
-            "kmipkit_protocol::ValidityIndicator::raw",
-            "kmipkit_protocol::CryptographicOperationResponseContext",
-            "kmipkit_protocol::CryptographicOperationResponseContext::SinglePart",
-            "kmipkit_protocol::CryptographicOperationResponseContext::MultipartNonFinal",
-            "kmipkit_protocol::CryptographicOperationResponseContext::MultipartFinal",
-            "kmipkit_protocol::VerificationResponseContext",
-            "kmipkit_protocol::VerificationResponseContext::SinglePart",
-            "kmipkit_protocol::VerificationResponseContext::MultipartNonFinal",
-            "kmipkit_protocol::VerificationResponseContext::MultipartFinal",
+    def test_functional_value_exports_are_verified_and_response_context_is_excluded(self) -> None:
+        mapped_exports = {
+            f"kmipkit_protocol::{name}{suffix}"
+            for name in (
+                "CryptographicAlgorithm",
+                "DigitalSignatureAlgorithm",
+                "HashingAlgorithm",
+                "ValidityIndicator",
+            )
+            for suffix in ("", "::from_raw", "::raw")
         }
         declarations = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
-            and row.get("exportName") in expected_functional_exports
+            and row.get("exportName") in mapped_exports
         }
-        self.assertEqual(set(declarations), expected_functional_exports)
+        self.assertEqual(set(declarations), mapped_exports)
         self.assertTrue(
-            all(row["declarationState"] == "blocked" for row in declarations.values())
+            all(row["declarationState"] == "verified" for row in declarations.values())
         )
         self.assertTrue(
-            all(row["candidateSpecId"] == "KMIPKIT-0043" for row in declarations.values())
+            all("candidateSpecId" not in row for row in declarations.values())
         )
+
+        context_exports = {
+            f"kmipkit_protocol::{type_name}{suffix}"
+            for type_name in (
+                "CryptographicOperationResponseContext",
+                "VerificationResponseContext",
+            )
+            for suffix in (
+                "",
+                "::SinglePart",
+                "::MultipartNonFinal",
+                "::MultipartFinal",
+            )
+        }
+        declarations = {
+            row["exportName"]
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName") in context_exports
+        }
+        exclusions = {
+            row["exportName"]
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName") in context_exports
+        }
+        self.assertEqual(set(), declarations)
+        self.assertEqual(context_exports, exclusions)
 
     def test_response_payload_error_and_ttlv_policies_are_unchanged(self) -> None:
         expected_response_states = {

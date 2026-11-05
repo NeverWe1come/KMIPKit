@@ -39,8 +39,6 @@ EXPECTED_CHILD_EXPORTS = {
     "kmipkit_client::extension_registry::ExtensionRecognition::validated_value",
     "kmipkit_client::extension_registry::limits",
 }
-BLOCKED_BEFORE = 221
-BLOCKED_AFTER = 220
 
 
 class ClientExtensionRegistryNamespaceTests(unittest.TestCase):
@@ -88,8 +86,6 @@ class ClientExtensionRegistryNamespaceTests(unittest.TestCase):
             row.get("candidateSpecId") == "KMIPKIT-0043" and row["declarationState"] == "blocked"
             for row in self.manifest["publicDeclarations"]
         )
-        self.assertEqual(BLOCKED_BEFORE - 1, BLOCKED_AFTER)
-        self.assertEqual(BLOCKED_AFTER, blocked)
         self.assertEqual(T102_BLOCKED_CANDIDATES, blocked)
         self.assertEqual(T102_PUBLIC_DECLARATIONS, len(self.manifest["publicDeclarations"]))
         self.assertEqual(T102_APPROVED_EXCLUSIONS, len(self.manifest["approvedExclusions"]))

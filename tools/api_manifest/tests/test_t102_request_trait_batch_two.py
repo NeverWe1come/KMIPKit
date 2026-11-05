@@ -126,12 +126,12 @@ TYPES = {
         "protocol_states": {
             "": "verified",
             "::new": "verified",
-            "::to_ttlv_payload": "blocked",
+            "::to_ttlv_payload": "verified",
         },
         "root_states": {
             "": "verified",
             "::new": "verified",
-            "::to_ttlv_payload": "blocked",
+            "::to_ttlv_payload": "verified",
         },
     },
     "SetDefaultsRequest": {
@@ -152,14 +152,14 @@ TYPES = {
             "": "verified",
             "::defaults_information": "verified",
             "::new": "verified",
-            "::to_ttlv_payload": "blocked",
+            "::to_ttlv_payload": "verified",
             "::with_defaults_information": "verified",
         },
         "root_states": {
             "": "verified",
             "::defaults_information": "verified",
             "::new": "verified",
-            "::to_ttlv_payload": "blocked",
+            "::to_ttlv_payload": "verified",
             "::with_defaults_information": "verified",
         },
     },

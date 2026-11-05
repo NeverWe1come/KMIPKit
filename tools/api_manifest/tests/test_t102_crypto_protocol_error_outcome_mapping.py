@@ -147,12 +147,12 @@ class T102CryptoProtocolErrorOutcomeMappingTests(unittest.TestCase):
                 self.assertTrue(required <= set(row["requirementIds"]))
                 self.assertTrue(PARITY_EVIDENCE <= set(row["parityEvidenceIds"]))
 
-    def test_operation_specific_parsers_remain_blocked(self) -> None:
+    def test_operation_specific_parsers_map_to_their_typed_results(self) -> None:
         for identity in DIRECT_PARSERS:
             with self.subTest(export=identity[1]):
                 row = self.declarations[identity]
-                self.assertEqual(row["declarationState"], "blocked")
-                self.assertEqual(row["candidateSpecId"], "KMIPKIT-0043")
+                self.assertEqual(row["declarationState"], "verified")
+                self.assertNotIn("candidateSpecId", row)
 
     def test_normalized_outcome_allowlist_rejects_kind_and_missing_owner_requirement(self) -> None:
         row = copy.deepcopy(

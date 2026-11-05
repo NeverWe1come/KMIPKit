@@ -217,16 +217,16 @@ class T102KeyValueTraitExclusionTests(unittest.TestCase):
             with self.subTest(context=context):
                 self.assertIn(context, traceability)
 
-    def test_parent_raw_paths_remain_blocked_and_secret_traits_are_redacted_exclusions(self) -> None:
+    def test_parent_raw_paths_are_verified_and_secret_traits_are_redacted_exclusions(self) -> None:
         expected_blocked = {
-            f"kmipkit_protocol::{type_name}{suffix}": "blocked"
+            f"kmipkit_protocol::{type_name}{suffix}": "verified"
             for type_name in KEY_VALUE_TYPES
             for suffix in ("", "::from_raw", "::raw")
         }
         expected_blocked.update(
             {
-                "kmipkit_protocol::DerivationParameters": "blocked",
-                "kmipkit_protocol::DeriveKeyRequest": "blocked",
+                "kmipkit_protocol::DerivationParameters": "verified",
+                "kmipkit_protocol::DeriveKeyRequest": "verified",
             }
         )
         observed = {

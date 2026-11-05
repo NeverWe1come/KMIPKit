@@ -106,6 +106,9 @@ pub struct kmipkit_ttlv_item_view_t { _private: [u8; 0] }
 #[repr(C)]
 pub struct kmipkit_ttlv_value_view_t { _private: [u8; 0] }
 
+#[repr(C)]
+pub struct kmipkit_client_batch_item_response_t { _private: [u8; 0] }
+
 unsafe extern "C" {
     pub fn kmipkit_extension_identity_release(handle: *mut kmipkit_extension_identity_t);
     pub fn kmipkit_extension_compatibility_release(handle: *mut kmipkit_extension_compatibility_t);
@@ -132,6 +135,7 @@ unsafe extern "C" {
     pub fn kmipkit_ttlv_structure_view_release(handle: *mut kmipkit_ttlv_structure_view_t);
     pub fn kmipkit_ttlv_item_view_release(handle: *mut kmipkit_ttlv_item_view_t);
     pub fn kmipkit_ttlv_value_view_release(handle: *mut kmipkit_ttlv_value_view_t);
+    pub fn kmipkit_client_batch_item_response_release(handle: *mut kmipkit_client_batch_item_response_t);
     // KMIPKIT-0012-FR-002, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012
     pub fn kmipkit_extension_identity_create(vendor_identifier_data: *const u8, vendor_identifier_length: u64, name_data: *const u8, name_length: u64, version_data: *const u8, version_length: u64, out_identity: *mut *mut kmipkit_extension_identity_t) -> i32;
     // KMIPKIT-0012-FR-009, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012

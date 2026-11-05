@@ -12,6 +12,8 @@ import json
 import unittest
 from pathlib import Path
 
+from tools.api_manifest.tests.t102_manifest_totals import T102_BLOCKED_CANDIDATES
+
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 CAPABILITY = "KMIPKIT-ELEM-OP-C2S-PKCS-11"
@@ -139,6 +141,16 @@ class T102Pkcs11RequestExtensionMappingTests(unittest.TestCase):
                 for row in self.manifest["publicDeclarations"]
             },
         )
+
+    def test_macro_lot_two_has_no_blocked_declarations(self) -> None:
+        blocked = [
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("candidateSpecId") == "KMIPKIT-0043"
+            and row["declarationState"] == "blocked"
+        ]
+        self.assertEqual(T102_BLOCKED_CANDIDATES, len(blocked))
+        self.assertEqual(0, T102_BLOCKED_CANDIDATES)
 
 
 if __name__ == "__main__":

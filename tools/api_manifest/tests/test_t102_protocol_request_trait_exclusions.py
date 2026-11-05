@@ -33,7 +33,7 @@ TYPES = {
         "request_table": "Table 199 as request",
         "protocol_functional_states": {
             "": "verified",
-            "::into_ttlv_payload": "blocked",
+            "::into_ttlv_payload": "verified",
             "::new": "verified",
             "::with_lease_time_date_time": "verified",
             "::with_lease_time_interval": "verified",
@@ -42,7 +42,7 @@ TYPES = {
         },
         "root_functional_states": {
             "": "verified",
-            "::into_ttlv_payload": "blocked",
+            "::into_ttlv_payload": "verified",
             "::new": "verified",
             "::with_lease_time_date_time": "verified",
             "::with_lease_time_interval": "verified",
@@ -59,12 +59,12 @@ TYPES = {
         "request_table": "Table 256 as request",
         "protocol_functional_states": {
             "": "verified",
-            "::into_ttlv_payload": "blocked",
+            "::into_ttlv_payload": "verified",
             "::new": "verified",
         },
         "root_functional_states": {
             "": "verified",
-            "::into_ttlv_payload": "blocked",
+            "::into_ttlv_payload": "verified",
             "::new": "verified",
         },
     },
@@ -78,16 +78,16 @@ TYPES = {
         "protocol_functional_states": {
             "": "verified",
             "::new": "verified",
-            "::to_ttlv_payload": "blocked",
-            "::unique_identifier": "blocked",
+            "::to_ttlv_payload": "verified",
+            "::unique_identifier": "verified",
             "::usage_limits_count": "verified",
             "::with_unique_identifier": "verified",
         },
         "root_functional_states": {
             "": "verified",
             "::new": "verified",
-            "::to_ttlv_payload": "blocked",
-            "::unique_identifier": "blocked",
+            "::to_ttlv_payload": "verified",
+            "::unique_identifier": "verified",
             "::usage_limits_count": "verified",
             "::with_unique_identifier": "verified",
         },
@@ -102,8 +102,6 @@ TYPES = {
         "protocol_functional_states": {
             "": "verified",
             "::new": "verified",
-            "::split_key_threshold": "blocked",
-            "::unique_identifier": "blocked",
             "::with_split_key_threshold": "verified",
         },
         "root_functional_states": {},

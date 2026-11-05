@@ -136,10 +136,8 @@ class T102JoinSplitKeySecretDataTypeMappingTests(unittest.TestCase):
         self.assertIn(REKEY_KEY_PAIR_UID_ID, operation["declarations"]["rust"])
         self.assertTrue(REKEY_KEY_PAIR_UID_EVIDENCE <= set(operation["parityEvidenceIds"]))
 
-    def test_join_split_key_members_are_mapped_and_rekey_key_pair_uid_stays_blocked(self) -> None:
-        expected_blocked = {
-            "kmipkit_protocol::RekeyKeyPairRequest::private_key_unique_identifier",
-        }
+    def test_join_split_key_members_and_rekey_private_identifier_are_mapped(self) -> None:
+        expected_blocked: set[str] = set()
         actual_blocked = {
             row["exportName"]
             for row in self.manifest["publicDeclarations"]

@@ -196473,6 +196473,7 @@
       "mappingSemantics": "normalized-client-protocol-error-outcome",
       "packageId": "rust-kmipkit-protocol",
       "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
@@ -196565,6 +196566,7 @@
       "mappingSemantics": "normalized-client-protocol-error-outcome",
       "packageId": "rust-kmipkit-protocol",
       "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
@@ -196657,6 +196659,7 @@
       "mappingSemantics": "normalized-client-protocol-error-outcome",
       "packageId": "rust-kmipkit-protocol",
       "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
@@ -196749,6 +196752,7 @@
       "mappingSemantics": "normalized-client-protocol-error-outcome",
       "packageId": "rust-kmipkit-protocol",
       "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
@@ -196841,6 +196845,7 @@
       "mappingSemantics": "normalized-client-protocol-error-outcome",
       "packageId": "rust-kmipkit-protocol",
       "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
@@ -196933,6 +196938,7 @@
       "mappingSemantics": "normalized-client-protocol-error-outcome",
       "packageId": "rust-kmipkit-protocol",
       "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
@@ -197025,6 +197031,7 @@
       "mappingSemantics": "normalized-client-protocol-error-outcome",
       "packageId": "rust-kmipkit-protocol",
       "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
@@ -197117,6 +197124,7 @@
       "mappingSemantics": "normalized-client-protocol-error-outcome",
       "packageId": "rust-kmipkit-protocol",
       "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
@@ -197209,6 +197217,7 @@
       "mappingSemantics": "normalized-client-protocol-error-outcome",
       "packageId": "rust-kmipkit-protocol",
       "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
@@ -220968,7 +220977,9 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
         "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs",
@@ -221014,6 +221025,13 @@
         }
       },
       "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "tools/api_manifest/tests/test_manifest_v2.py"
+      ],
       "parityScope": "four-language",
       "requirementIds": [
         "KMIPKIT-0014-FR-008",
@@ -221053,6 +221071,13 @@
         }
       },
       "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "tools/api_manifest/tests/test_manifest_v2.py"
+      ],
       "parityScope": "four-language",
       "requirementIds": [
         "KMIPKIT-0014-FR-008",
@@ -221092,6 +221117,13 @@
         }
       },
       "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "tools/api_manifest/tests/test_manifest_v2.py"
+      ],
       "parityScope": "four-language",
       "requirementIds": [
         "KMIPKIT-0014-FR-008",
@@ -221134,8 +221166,11 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/add_attribute_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
@@ -221194,7 +221229,10 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/adjust_attribute_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
@@ -221253,7 +221291,10 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_delete_attribute_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-ffi/tests/support/delete_attribute_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
         "tools/api_manifest/tests/test_manifest_v2.py",
@@ -221311,8 +221352,11 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/ModifyAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_modify_attribute_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-ffi/tests/support/modify_attribute_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
         "tools/api_manifest/tests/test_manifest_v2.py",
@@ -221370,8 +221414,11 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/SetAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_set_attribute_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/set_attribute_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs",
@@ -221430,8 +221477,11 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/GetAttributesJavaFacadeTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_get_attributes_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs",
         "tools/api_manifest/tests/test_manifest_v2.py"
@@ -221486,8 +221536,11 @@
       "packageId": "rust-kmipkit-client",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/GetAttributeListJavaFacadeTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_get_attribute_list_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-ffi/tests/support/get_attribute_list_abi_tests.rs",
@@ -221547,8 +221600,12 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_encrypt_decrypt_operations.py",
-        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs"
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "tools/api_manifest/tests/test_manifest_v2.py"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -221613,8 +221670,12 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_encrypt_decrypt_operations.py",
-        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs"
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "tools/api_manifest/tests/test_manifest_v2.py"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -221680,7 +221741,10 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs",
@@ -221689,6 +221753,7 @@
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
+        "tools/api_manifest/tests/test_manifest_v2.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
       "parityScope": "four-language",
@@ -221739,7 +221804,10 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs",
@@ -221748,6 +221816,7 @@
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
+        "tools/api_manifest/tests/test_manifest_v2.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
       "parityScope": "four-language",
@@ -221798,6 +221867,10 @@
       },
       "packageId": "rust-kmipkit-client",
       "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ],
       "parityScope": "four-language",
@@ -221855,7 +221928,10 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs",
@@ -221864,6 +221940,7 @@
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
+        "tools/api_manifest/tests/test_manifest_v2.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
       "parityScope": "four-language",
@@ -221914,6 +221991,10 @@
       },
       "packageId": "rust-kmipkit-client",
       "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ],
       "parityScope": "four-language",
@@ -221971,9 +222052,13 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/python/tests/test_async_operation_mapping.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/poll_execution_tests.rs",
         "crates/kmipkit-protocol/tests/unit/poll_tests.rs",
+        "tools/api_manifest/tests/test_manifest_v2.py",
         "tools/api_manifest/tests/test_t076_client_mapping.py",
         "tools/api_manifest/tests/test_t093_async_declaration_parity.py"
       ],
@@ -222026,9 +222111,13 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/python/tests/test_async_operation_mapping.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/cancel_execution_tests.rs",
         "crates/kmipkit-protocol/tests/unit/cancel_tests.rs",
+        "tools/api_manifest/tests/test_manifest_v2.py",
         "tools/api_manifest/tests/test_t076_client_mapping.py",
         "tools/api_manifest/tests/test_t093_async_declaration_parity.py"
       ],
@@ -222081,9 +222170,13 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/python/tests/test_async_operation_mapping.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/process_execution_tests.rs",
         "crates/kmipkit-protocol/tests/unit/process_tests.rs",
+        "tools/api_manifest/tests/test_manifest_v2.py",
         "tools/api_manifest/tests/test_t076_client_mapping.py",
         "tools/api_manifest/tests/test_t093_async_declaration_parity.py"
       ],
@@ -222136,7 +222229,9 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/query_async_execution_tests.rs",
         "tools/api_manifest/tests/test_manifest_v2.py",
         "tools/api_manifest/tests/test_t076_client_mapping.py"
@@ -232604,7 +232699,9 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
         "crates/kmipkit-ffi/tests/c_api_coverage.rs",
         "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs",
@@ -232650,6 +232747,13 @@
         }
       },
       "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "tools/api_manifest/tests/test_manifest_v2.py"
+      ],
       "parityScope": "four-language",
       "requirementIds": [
         "KMIPKIT-0014-FR-001",
@@ -232693,6 +232797,13 @@
         }
       },
       "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "tools/api_manifest/tests/test_manifest_v2.py"
+      ],
       "parityScope": "four-language",
       "requirementIds": [
         "KMIPKIT-0014-FR-008",
@@ -232732,6 +232843,13 @@
         }
       },
       "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "tools/api_manifest/tests/test_manifest_v2.py"
+      ],
       "parityScope": "four-language",
       "requirementIds": [
         "KMIPKIT-0014-FR-008",
@@ -232774,8 +232892,11 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/add_attribute_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
@@ -232834,7 +232955,10 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/adjust_attribute_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
@@ -232893,7 +233017,10 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_delete_attribute_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-ffi/tests/support/delete_attribute_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
         "tools/api_manifest/tests/test_manifest_v2.py",
@@ -232951,8 +233078,11 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/ModifyAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_modify_attribute_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-ffi/tests/support/modify_attribute_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
         "tools/api_manifest/tests/test_manifest_v2.py",
@@ -233010,8 +233140,11 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/SetAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_set_attribute_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/set_attribute_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs",
@@ -233070,8 +233203,11 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/GetAttributesJavaFacadeTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_get_attributes_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs",
         "tools/api_manifest/tests/test_manifest_v2.py"
@@ -233126,8 +233262,11 @@
       "packageId": "rust-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/GetAttributeListJavaFacadeTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_get_attribute_list_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-ffi/tests/support/get_attribute_list_abi_tests.rs",
@@ -233187,8 +233326,12 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_encrypt_decrypt_operations.py",
-        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs"
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "tools/api_manifest/tests/test_manifest_v2.py"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -233253,8 +233396,12 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_encrypt_decrypt_operations.py",
-        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs"
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "tools/api_manifest/tests/test_manifest_v2.py"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -233320,7 +233467,10 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs",
@@ -233329,6 +233479,7 @@
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
+        "tools/api_manifest/tests/test_manifest_v2.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
       "parityScope": "four-language",
@@ -233379,7 +233530,10 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs",
@@ -233388,6 +233542,7 @@
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
+        "tools/api_manifest/tests/test_manifest_v2.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
       "parityScope": "four-language",
@@ -233438,6 +233593,10 @@
       },
       "packageId": "rust-kmipkit",
       "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ],
       "parityScope": "four-language",
@@ -233495,7 +233654,10 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs",
@@ -233504,6 +233666,7 @@
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
+        "tools/api_manifest/tests/test_manifest_v2.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ],
       "parityScope": "four-language",
@@ -233554,6 +233717,10 @@
       },
       "packageId": "rust-kmipkit",
       "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ],
       "parityScope": "four-language",
@@ -233611,9 +233778,13 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/python/tests/test_async_operation_mapping.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/poll_execution_tests.rs",
         "crates/kmipkit-protocol/tests/unit/poll_tests.rs",
+        "tools/api_manifest/tests/test_manifest_v2.py",
         "tools/api_manifest/tests/test_t076_client_mapping.py",
         "tools/api_manifest/tests/test_t093_async_declaration_parity.py"
       ],
@@ -233666,9 +233837,13 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/python/tests/test_async_operation_mapping.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/cancel_execution_tests.rs",
         "crates/kmipkit-protocol/tests/unit/cancel_tests.rs",
+        "tools/api_manifest/tests/test_manifest_v2.py",
         "tools/api_manifest/tests/test_t076_client_mapping.py",
         "tools/api_manifest/tests/test_t093_async_declaration_parity.py"
       ],
@@ -233721,9 +233896,13 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/python/tests/test_async_operation_mapping.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/process_execution_tests.rs",
         "crates/kmipkit-protocol/tests/unit/process_tests.rs",
+        "tools/api_manifest/tests/test_manifest_v2.py",
         "tools/api_manifest/tests/test_t076_client_mapping.py",
         "tools/api_manifest/tests/test_t093_async_declaration_parity.py"
       ],
@@ -233776,7 +233955,9 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/query_async_execution_tests.rs",
         "tools/api_manifest/tests/test_manifest_v2.py",
         "tools/api_manifest/tests/test_t076_client_mapping.py"
@@ -241566,8 +241747,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
-        "bindings/python/tests/test_rng_operation.py",
         "bindings/python/tests/test_rng_native_integration.py",
+        "bindings/python/tests/test_rng_operation.py",
         "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
@@ -241634,8 +241815,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
-        "bindings/python/tests/test_rng_operation.py",
         "bindings/python/tests/test_rng_native_integration.py",
+        "bindings/python/tests/test_rng_operation.py",
         "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
@@ -247487,12 +247668,15 @@
       "packageId": "rust-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RecertifyMappingTest.java",
         "bindings/python/tests/test_recertify_operation.py",
         "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
-        "tools/api_manifest/tests/test_recertify_parity_manifest.py"
+        "tools/api_manifest/tests/test_recertify_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_identifier_member_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -248501,11 +248685,13 @@
       "packageId": "rust-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/CertifyJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/CertifyResponseMappingTest.java",
         "bindings/python/tests/test_certify_operation.py",
         "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
@@ -248573,7 +248759,10 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/CheckResponseMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/python/tests/test_check_operation.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/check_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/check_operation_tests.rs",
@@ -248641,8 +248830,11 @@
       "packageId": "rust-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs",
@@ -248704,9 +248896,13 @@
       },
       "packageId": "rust-kmipkit",
       "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyMappingTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyResponseMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_derive_key_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs",
@@ -248768,8 +248964,11 @@
       "packageId": "rust-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/ExportResponseMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_export_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/export_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs",
@@ -248820,8 +249019,11 @@
       "packageId": "rust-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/get_tests.rs",
@@ -248896,8 +249098,11 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/GetConstraintsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/GetConstraintsResponseMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_get_constraints_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/get_constraints_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-ffi/tests/support/get_constraints_abi_tests.rs",
@@ -248963,8 +249168,11 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs",
@@ -249029,8 +249237,11 @@
       "packageId": "rust-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_import_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
@@ -249098,8 +249309,11 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/InteropJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/InteropResponseMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_interop_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/interop_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/interop_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/interop_operation_tests.rs",
@@ -249157,8 +249371,11 @@
       "packageId": "rust-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/JoinSplitKeyMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_join_split_key_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/join_split_key_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs",
@@ -249226,8 +249443,11 @@
       "packageId": "rust-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
@@ -249304,8 +249524,11 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/LogJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/LogResponseMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_log_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/log_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/log_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/log_operation_tests.rs",
@@ -249371,8 +249594,11 @@
       "packageId": "rust-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
@@ -249436,8 +249662,11 @@
       "packageId": "rust-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/LogoutMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_logout_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/logout_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs",
@@ -249501,8 +249730,11 @@
       "packageId": "rust-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/ObtainLeaseMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_obtain_lease_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs",
@@ -249570,13 +249802,17 @@
       },
       "packageId": "rust-kmipkit",
       "parityEvidenceIds": [
-        "tests/fixtures/api/pkcs11-parity.json",
-        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/Pkcs11MappingTest.java",
+        "bindings/python/tests/test_client.py",
+        "bindings/python/tests/test_pkcs11_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/pkcs11_abi_tests.rs",
-        "bindings/c/tests/client_abi_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/extensions/Pkcs11MappingTest.java",
-        "bindings/python/tests/test_pkcs11_operation.py"
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs",
+        "tests/fixtures/api/pkcs11-parity.json",
+        "tools/api_manifest/tests/test_manifest_v2.py"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -249637,9 +249873,12 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/ReProvisionMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_reprovision_native_integration.py",
         "bindings/python/tests/test_reprovision_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/reprovision_operation_tests.rs",
@@ -249707,8 +249946,11 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RecertifyMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_recertify_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
@@ -249773,8 +250015,11 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RegisterMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_register_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
@@ -249840,9 +250085,12 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_rekey_native_integration.py",
         "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
@@ -249908,9 +250156,12 @@
       "packageId": "rust-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyKeyPairMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_rekey_key_pair_native_integration.py",
         "bindings/python/tests/test_rekey_key_pair_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs",
@@ -249977,8 +250228,11 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RevokeMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_revoke_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/revoke_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs",
@@ -250038,8 +250292,11 @@
       "packageId": "rust-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
@@ -250104,8 +250361,11 @@
       "packageId": "rust-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
@@ -250172,8 +250432,11 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/SetConstraintsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/SetConstraintsResponseMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_set_constraints_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/set_constraints_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-ffi/tests/support/set_constraints_abi_tests.rs",
@@ -250240,9 +250503,12 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_query_ping_operation.py",
         "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
@@ -250309,9 +250575,12 @@
       "packageId": "rust-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/ValidateJavaFacadeTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/ValidateResponseMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_validate_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/validate_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/validate_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs",
@@ -269240,12 +269509,15 @@
       "packageId": "rust-kmipkit-client",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
+        "bindings/python/tests/test_rng_native_integration.py",
         "bindings/python/tests/test_rng_operation.py",
         "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
-        "tools/api_manifest/tests/test_rng_parity_manifest.py"
+        "tools/api_manifest/tests/test_rng_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_rng_pending_response_mapping.py"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -269305,12 +269577,15 @@
       "packageId": "rust-kmipkit-client",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
+        "bindings/python/tests/test_rng_native_integration.py",
         "bindings/python/tests/test_rng_operation.py",
         "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
-        "tools/api_manifest/tests/test_rng_parity_manifest.py"
+        "tools/api_manifest/tests/test_rng_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_rng_pending_response_mapping.py"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -275995,11 +276270,13 @@
       "packageId": "rust-kmipkit-client",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/CertifyJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/CertifyResponseMappingTest.java",
         "bindings/python/tests/test_certify_operation.py",
         "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
@@ -276067,7 +276344,10 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/CheckResponseMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/python/tests/test_check_operation.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/check_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/check_operation_tests.rs",
@@ -276135,8 +276415,11 @@
       "packageId": "rust-kmipkit-client",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs",
@@ -276198,9 +276481,13 @@
       },
       "packageId": "rust-kmipkit-client",
       "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyMappingTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyResponseMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_derive_key_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs",
@@ -276262,8 +276549,11 @@
       "packageId": "rust-kmipkit-client",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/ExportResponseMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_export_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/export_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs",
@@ -276314,8 +276604,11 @@
       "packageId": "rust-kmipkit-client",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/get_tests.rs",
@@ -276390,8 +276683,11 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/GetConstraintsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/GetConstraintsResponseMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_get_constraints_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/get_constraints_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-ffi/tests/support/get_constraints_abi_tests.rs",
@@ -276457,8 +276753,11 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs",
@@ -276523,8 +276822,11 @@
       "packageId": "rust-kmipkit-client",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_import_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
@@ -276592,8 +276894,11 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/InteropJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/InteropResponseMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_interop_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/interop_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/interop_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/interop_operation_tests.rs",
@@ -276651,8 +276956,11 @@
       "packageId": "rust-kmipkit-client",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/JoinSplitKeyMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_join_split_key_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/join_split_key_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs",
@@ -276720,8 +277028,11 @@
       "packageId": "rust-kmipkit-client",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
@@ -276798,8 +277109,11 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/LogJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/LogResponseMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_log_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/log_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/log_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/log_operation_tests.rs",
@@ -276865,8 +277179,11 @@
       "packageId": "rust-kmipkit-client",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
@@ -276930,8 +277247,11 @@
       "packageId": "rust-kmipkit-client",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/LogoutMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_logout_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/logout_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs",
@@ -276995,8 +277315,11 @@
       "packageId": "rust-kmipkit-client",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/ObtainLeaseMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_obtain_lease_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs",
@@ -277064,13 +277387,17 @@
       },
       "packageId": "rust-kmipkit-client",
       "parityEvidenceIds": [
-        "tests/fixtures/api/pkcs11-parity.json",
-        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/Pkcs11MappingTest.java",
+        "bindings/python/tests/test_client.py",
+        "bindings/python/tests/test_pkcs11_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/pkcs11_abi_tests.rs",
-        "bindings/c/tests/client_abi_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/extensions/Pkcs11MappingTest.java",
-        "bindings/python/tests/test_pkcs11_operation.py"
+        "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs",
+        "tests/fixtures/api/pkcs11-parity.json",
+        "tools/api_manifest/tests/test_manifest_v2.py"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -277131,9 +277458,12 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/ReProvisionMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_reprovision_native_integration.py",
         "bindings/python/tests/test_reprovision_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/reprovision_operation_tests.rs",
@@ -277201,8 +277531,11 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RecertifyMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_recertify_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
@@ -277267,8 +277600,11 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RegisterMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_register_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
@@ -277334,9 +277670,12 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_rekey_native_integration.py",
         "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
@@ -277402,9 +277741,12 @@
       "packageId": "rust-kmipkit-client",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyKeyPairMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_rekey_key_pair_native_integration.py",
         "bindings/python/tests/test_rekey_key_pair_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs",
@@ -277471,8 +277813,11 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RevokeMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_revoke_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/revoke_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs",
@@ -277532,8 +277877,11 @@
       "packageId": "rust-kmipkit-client",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
@@ -277598,8 +277946,11 @@
       "packageId": "rust-kmipkit-client",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
@@ -277666,8 +278017,11 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/SetConstraintsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/SetConstraintsResponseMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_set_constraints_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/set_constraints_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-ffi/tests/support/set_constraints_abi_tests.rs",
@@ -277734,9 +278088,12 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_query_ping_operation.py",
         "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
@@ -277803,9 +278160,12 @@
       "packageId": "rust-kmipkit-client",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
         "bindings/java/src/test/java/org/kmipkit/ValidateJavaFacadeTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/ValidateResponseMappingTest.java",
+        "bindings/python/tests/test_client.py",
         "bindings/python/tests/test_validate_operation.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
         "crates/kmipkit-client/tests/unit/validate_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/validate_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs",
@@ -278135,7 +278495,9 @@
         "bindings/python/tests/test_check_operation.py",
         "crates/kmipkit-client/tests/unit/check_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
-        "crates/kmipkit-protocol/tests/unit/check_operation_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/check_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_identifier_member_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -283003,7 +283365,8 @@
         "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs",
-        "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs",
+        "tools/api_manifest/tests/test_t102_get_usage_allocation_request_mapping.py"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -283530,7 +283893,9 @@
         "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs",
-        "tools/api_manifest/tests/test_obtain_lease_parity_manifest.py"
+        "tools/api_manifest/tests/test_obtain_lease_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_identifier_member_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -291724,6 +292089,7 @@
       "mappingSemantics": "normalized-client-protocol-error-outcome",
       "packageId": "rust-kmipkit-protocol",
       "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/main/java/org/kmipkit/ProtocolException.java",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeContractTest.java",
@@ -314789,15 +315155,15 @@
       "packageId": "rust-kmipkit-protocol",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RecertifyMappingTest.java",
         "bindings/python/tests/test_recertify_operation.py",
         "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
         "tools/api_manifest/tests/test_recertify_parity_manifest.py",
-        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py",
-        "tools/api_manifest/tests/test_t102_lifecycle_request_identifier_member_mapping.py"
+        "tools/api_manifest/tests/test_t102_lifecycle_request_identifier_member_mapping.py",
+        "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -345011,6 +345377,13 @@
         }
       },
       "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "tools/api_manifest/tests/test_manifest_v2.py"
+      ],
       "parityScope": "four-language",
       "requirementIds": [
         "KMIPKIT-0014-FR-008",
@@ -350524,6 +350897,13 @@
         }
       },
       "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "tools/api_manifest/tests/test_manifest_v2.py"
+      ],
       "parityScope": "four-language",
       "requirementIds": [
         "KMIPKIT-0014-FR-008",
@@ -477703,6 +478083,8 @@
       },
       "requirementIds": [
         "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-012",
