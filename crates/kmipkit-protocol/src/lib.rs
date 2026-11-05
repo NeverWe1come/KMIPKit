@@ -503,6 +503,10 @@ mod attribute_limits_tests;
 mod attribute_coverage_contract_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/typed_attribute_tests.rs"]
+mod typed_attribute_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/ticket_model_tests.rs"]
 mod ticket_model_tests;
 
