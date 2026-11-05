@@ -222,7 +222,17 @@ fn selected_encoding_rejects_mismatched_duplicate_missing_and_invalid_response_t
             let peer = peer.join().expect("the bounded HTTPS peer completes");
             let error =
                 result.expect_err("a response type outside the selected format is rejected");
-            assert_eq!(error.cause_category(), TransportCauseCategory::Http);
+            let is_supported_other_encoding = FORMATS.iter().any(|(_, supported, _)| {
+                *supported != selected_media_type && response_type == *supported
+            });
+            assert_eq!(
+                error.cause_category(),
+                if is_supported_other_encoding {
+                    TransportCauseCategory::EncodingMismatch
+                } else {
+                    TransportCauseCategory::Http
+                }
+            );
             assert_eq!(
                 error.delivery_state(),
                 RequestDeliveryState::ResponseStarted

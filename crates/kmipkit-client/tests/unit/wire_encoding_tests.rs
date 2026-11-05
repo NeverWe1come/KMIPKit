@@ -5,8 +5,8 @@
 //! no fallback, borrowed limits, and cleanup are `KMIPKit` project contracts.
 
 use std::cell::RefCell;
-use std::rc::Rc;
 use std::io;
+use std::rc::Rc;
 use std::sync::Arc;
 
 use kmipkit_protocol::ProtocolCauseCategory;
@@ -253,10 +253,7 @@ fn transport_encoding_mismatch_becomes_a_redacted_protocol_error() {
         .execute(batch(), &CodecLimits::defaults())
         .expect_err("a response encoded differently from the request is rejected");
 
-    assert_eq!(
-        error.category(),
-        crate::ClientErrorCategory::Protocol
-    );
+    assert_eq!(error.category(), crate::ClientErrorCategory::Protocol);
     assert_eq!(
         error.cause_category(),
         Some(ClientCauseCategory::Protocol(

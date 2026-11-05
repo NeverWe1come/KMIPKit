@@ -135,14 +135,26 @@ fn https_rejects_server_error_status_without_exposing_response_bytes() {
 
 #[test]
 fn https_rejects_response_header_policy_violations_before_returning_body_bytes() {
-    const CASES: [&[u8]; 4] = [
-        b"HTTP/1.1 200 OK\r\nContent-Length: 8\r\n\r\nresponse",
-        b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Type: application/octet-stream\r\nContent-Length: 8\r\n\r\nresponse",
-        b"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 8\r\n\r\nresponse",
-        b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Encoding: gzip\r\nContent-Length: 8\r\n\r\nresponse",
+    const CASES: [(&[u8], crate::TransportCauseCategory); 4] = [
+        (
+            b"HTTP/1.1 200 OK\r\nContent-Length: 8\r\n\r\nresponse",
+            crate::TransportCauseCategory::Http,
+        ),
+        (
+            b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Type: application/octet-stream\r\nContent-Length: 8\r\n\r\nresponse",
+            crate::TransportCauseCategory::Http,
+        ),
+        (
+            b"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 8\r\n\r\nresponse",
+            crate::TransportCauseCategory::EncodingMismatch,
+        ),
+        (
+            b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Encoding: gzip\r\nContent-Length: 8\r\n\r\nresponse",
+            crate::TransportCauseCategory::Http,
+        ),
     ];
 
-    for response in CASES {
+    for (response, expected_cause) in CASES {
         let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
         let (listener, address) = loopback_listener();
         let peer = spawn_http_peer_with_response(listener, server_config(&pki), 1, response);
@@ -157,7 +169,7 @@ fn https_rejects_response_header_policy_violations_before_returning_body_bytes()
         let error = adapter
             .exchange_with_options(fixtures::REQUEST_SENTINEL, 64, &RequestOptions::default())
             .expect_err("unsupported response metadata is rejected");
-        assert_eq!(error.cause_category(), crate::TransportCauseCategory::Http);
+        assert_eq!(error.cause_category(), expected_cause);
         assert_eq!(
             error.delivery_state(),
             crate::RequestDeliveryState::ResponseStarted

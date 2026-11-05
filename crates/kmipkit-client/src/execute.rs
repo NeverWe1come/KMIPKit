@@ -47,8 +47,8 @@ use kmipkit_protocol::{ValidateRequest, ValidateResponse};
 #[cfg(test)]
 use kmipkit_transport::Transport;
 use kmipkit_transport::{
-    HttpsTransport, RawTlsTransport, RequestDeliveryState, RequestOptions, TransportConfig,
-    TransportConfigError, WireEncoding,
+    HttpsTransport, RawTlsTransport, RequestDeliveryState, RequestOptions, TransportCauseCategory,
+    TransportConfig, TransportConfigError, WireEncoding,
 };
 use kmipkit_ttlv::codec::{CodecLimits, DecodeError, decode_with_limits};
 use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Value, ValueView};
@@ -5759,7 +5759,18 @@ impl Client {
         );
         drop(encoded);
 
-        let response = transport_result.map_err(ClientError::transport)?;
+        let response = transport_result.map_err(|error| {
+            if error.cause_category() == TransportCauseCategory::EncodingMismatch {
+                let protocol = ProtocolError::new(
+                    ProtocolErrorKind::MalformedMessage,
+                    ProtocolCauseCategory::InvalidEncoding,
+                    std::io::Error::other("response media type did not match selected encoding"),
+                );
+                protocol_failure_at(protocol, error.delivery_state())
+            } else {
+                ClientError::transport(error)
+            }
+        })?;
         decode_transport_response(
             response,
             limits,

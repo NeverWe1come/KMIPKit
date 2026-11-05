@@ -977,13 +977,29 @@ fn validate_response_content_type(
         .split(';')
         .next()
         .map(str::trim);
-    if !media_type.is_some_and(|value| value.eq_ignore_ascii_case(expected_content_type)) {
+    let Some(media_type) = media_type else {
         return Err(http_response_error(
             control,
-            "HTTP response media type did not match selected encoding",
+            "HTTP response media type was invalid",
+        ));
+    };
+    if media_type.eq_ignore_ascii_case(expected_content_type) {
+        return Ok(());
+    }
+    if ["application/octet-stream", "application/json", "text/xml"]
+        .iter()
+        .any(|supported| media_type.eq_ignore_ascii_case(supported))
+    {
+        return Err(safe_error(
+            control.delivery_state(),
+            TransportCauseCategory::EncodingMismatch,
+            io::Error::other("HTTP response encoding did not match selected encoding"),
         ));
     }
-    Ok(())
+    Err(http_response_error(
+        control,
+        "HTTP response media type did not match selected encoding",
+    ))
 }
 
 fn parse_response_content_length(
