@@ -14,6 +14,19 @@ pub(super) fn attribute(value: &str) -> Result<Zeroizing<String>, WireCodecError
     output
         .try_reserve_exact(value.len())
         .map_err(|_| ALLOCATION)?;
+    attribute_chars(value, |c| output.push(c))?;
+    Ok(output)
+}
+
+/// Compare normalized type metadata without allocating during lexical preflight.
+pub(super) fn attribute_matches(value: &str, expected: &str) -> Result<bool, WireCodecError> {
+    let mut expected = expected.chars();
+    let mut matches = true;
+    attribute_chars(value, |c| matches &= expected.next() == Some(c))?;
+    Ok(matches && expected.next().is_none())
+}
+
+fn attribute_chars(value: &str, mut emit: impl FnMut(char)) -> Result<(), WireCodecError> {
     let mut chars = value.chars();
     while let Some(c) = chars.next() {
         match c {
@@ -22,9 +35,9 @@ pub(super) fn attribute(value: &str) -> Result<Zeroizing<String>, WireCodecError
                 if chars.as_str().starts_with('\n') {
                     chars.next();
                 }
-                output.push(' ');
+                emit(' ');
             }
-            '\t' | '\n' => output.push(' '),
+            '\t' | '\n' => emit(' '),
             '&' => {
                 let remaining = chars.as_str();
                 let end = remaining.find(';').ok_or(INVALID_DOCUMENT)?;
@@ -57,10 +70,10 @@ pub(super) fn attribute(value: &str) -> Result<Zeroizing<String>, WireCodecError
                 for _ in 0..=end {
                     chars.next();
                 }
-                output.push(c);
+                emit(c);
             }
-            _ => output.push(c),
+            _ => emit(c),
         }
     }
-    Ok(output)
+    Ok(())
 }

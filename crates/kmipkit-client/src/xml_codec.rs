@@ -9,6 +9,7 @@ mod characters;
 mod decoder;
 mod encoder;
 mod names;
+mod preflight;
 mod values;
 
 pub(crate) fn decode(

@@ -18,16 +18,28 @@ struct Frame {
 }
 
 fn qname(name: &str) -> Result<(&str, &str), WireCodecError> {
-    fn valid(name: &str) -> bool {
-        let mut chars = name.chars();
-        chars.next().is_some_and(|c| c == '_' || c.is_alphabetic())
-            && chars.all(|c| c == '_' || c == '-' || c == '.' || c.is_alphanumeric())
+    match name.split_once(':') {
+        Some((prefix, local)) if ncname(prefix) && ncname(local) => Ok((prefix, local)),
+        None if ncname(name) => Ok(("", name)),
+        _ => Err(INVALID_DOCUMENT),
     }
-    let (prefix, local) = name.split_once(':').unwrap_or(("", name));
-    if (!prefix.is_empty() && !valid(prefix)) || !valid(local) || local.contains(':') {
-        return Err(INVALID_DOCUMENT);
+}
+
+fn ncname(name: &str) -> bool {
+    // XML 1.0 fifth edition section 2.3 [4]/[4a], excluding namespace colon.
+    fn start(c: char) -> bool {
+        matches!(c, 'A'..='Z' | '_' | 'a'..='z' | '\u{C0}'..='\u{D6}'
+            | '\u{D8}'..='\u{F6}' | '\u{F8}'..='\u{2FF}' | '\u{370}'..='\u{37D}'
+            | '\u{37F}'..='\u{1FFF}' | '\u{200C}'..='\u{200D}' | '\u{2070}'..='\u{218F}'
+            | '\u{2C00}'..='\u{2FEF}' | '\u{3001}'..='\u{D7FF}' | '\u{F900}'..='\u{FDCF}'
+            | '\u{FDF0}'..='\u{FFFD}' | '\u{10000}'..='\u{EFFFF}')
     }
-    Ok((prefix, local))
+    let mut chars = name.chars();
+    chars.next().is_some_and(start)
+        && chars.all(|c| {
+            start(c)
+                || matches!(c, '-' | '.' | '0'..='9' | '\u{B7}' | '\u{300}'..='\u{36F}' | '\u{203F}'..='\u{2040}')
+        })
 }
 
 fn start(event: &BytesStart<'_>, frames: &[Frame]) -> Result<Frame, WireCodecError> {
@@ -41,8 +53,8 @@ fn start(event: &BytesStart<'_>, frames: &[Frame]) -> Result<Frame, WireCodecErr
         let key = attr.key.as_ref();
         if key == "xmlns" || key.starts_with("xmlns:") {
             let namespace_prefix = if key == "xmlns" { "" } else { &key[6..] };
-            if !namespace_prefix.is_empty() {
-                qname(namespace_prefix)?;
+            if key != "xmlns" && !ncname(namespace_prefix) {
+                return Err(INVALID_DOCUMENT);
             }
             let uri = attribute(&attr.value)?;
             if namespace_prefix == "xmlns"
@@ -201,9 +213,11 @@ pub(crate) fn decode(bytes: &[u8], limits: &CodecLimits) -> Result<Item, WireCod
     if !text.chars().all(xml_char) {
         return Err(INVALID_DOCUMENT);
     }
+    super::preflight::check(text, limits)?;
     let mut reader = Reader::from_str(text);
     reader.config_mut().check_comments = true;
-    // Compare our own zeroizing names rather than copying to a parser stack.
+    // Keep equality checks in our zeroizing frames. quick-xml still maintains
+    // its own ordinary name stack; the complete lexical pass bounds it first.
     reader.config_mut().check_end_names = false;
     let mut frames: Vec<Frame> = Vec::new();
     let mut root = None;
