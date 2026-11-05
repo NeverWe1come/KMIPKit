@@ -202,6 +202,36 @@ class Reconcile0048TypedAttributesTests(unittest.TestCase):
         self.assertEqual(c_helper["capabilityId"], "named_protocol_mask_single_bit_lookup")
         self.assertEqual(set(c_helper["languageMappings"]), {"c"})
 
+    def test_corrects_java_mask_method_names_to_the_published_camel_case(self) -> None:
+        manifest = copy.deepcopy(self.manifest)
+        old_name = "org.kmipkit.protocol.KmipValues.CryptographicUsageMask.known_bits"
+        new_name = "org.kmipkit.protocol.KmipValues.CryptographicUsageMask.knownBits"
+        manifest["capabilities"][0]["mappings"]["java"] = [old_name]
+        manifest["publicDeclarations"][0]["languageMappings"]["java"] = {
+            "packageId": "java-kmipkit", "name": old_name,
+        }
+        manifest["publicDeclarations"].append({
+            "declarationId": "old-java-known-bits",
+            "packageId": "java-kmipkit",
+            "kind": "java-member",
+            "exportName": old_name,
+            "capabilityId": "named_protocol_values",
+            "requirementIds": ["KMIPKIT-0047-FR-004"],
+            "declarationState": "declared",
+            "parityScope": "four-language",
+            "languageMappings": {"java": {"packageId": "java-kmipkit", "name": old_name}},
+        })
+
+        result = reconcile(manifest, {"missingFromManifest": []})
+
+        declaration = next(row for row in result["publicDeclarations"] if row["packageId"] == "java-kmipkit")
+        self.assertEqual(declaration["exportName"], new_name)
+        self.assertEqual(declaration["declarationId"], f"kmipkit-0047-java-{new_name}")
+        facade_row = next(row for row in result["publicDeclarations"] if row["declarationId"] == "facade-active")
+        self.assertEqual(facade_row["languageMappings"]["java"]["name"], new_name)
+        named_values = next(item for item in result["capabilities"] if item["capabilityId"] == "named_protocol_values")
+        self.assertEqual(named_values["mappings"]["java"], [new_name])
+
 
 if __name__ == "__main__":
     unittest.main()
