@@ -9,6 +9,10 @@
   IDs in `KMIPKIT-REQ-SPEC-*` for operative client requirements.
 - Alternatives considered: Usage Guide examples and tag-number ordering were
   rejected because they are informative and do not define structure order.
+- The exact order is taken from each table. Table 9 places Key Block last in
+  Split Key; Table 12 places Key Compression Type before Key Value. Object
+  structure tags come from the pinned §11.56 tag catalog and are distinct from
+  Object Type Enumeration values.
 
 - Decision: Represent all nine structures in §§2.1–2.9, including PGP Key.
 - Rationale: The approved feature explicitly requires all nine 1.0 object

@@ -98,6 +98,10 @@ redaction and owned-payload cleanup behavior.
   Type. KMIPKit does not infer algorithm, size, usage, or protection policy.
 - A Split Key's Prime Field Size is required only for Polynomial Sharing
   Prime Field; Key Part Identifier must be from 1 through Split Key Parts.
+- Builders follow source table order even where it is not intuitive: Table 9
+  places Key Block after Split Key Parts, Key Part Identifier, Split Key
+  Threshold, Split Key Method, and optional Prime Field Size; Table 12 places
+  Key Compression Type before Key Value.
 - Transparent RSA private material permits the alternative field sets
   specified by §3.7; the model preserves whichever supported form the caller
   supplies.

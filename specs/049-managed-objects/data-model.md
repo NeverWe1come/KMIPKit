@@ -34,6 +34,13 @@ values. The typed representation associates both values; Register and Import
 continue to carry the object-specific tagged Item directly, preserving their
 current wire shape.
 
+Table-defined order controls output. In particular, Table 9 emits Split Key
+Parts, Key Part Identifier, Split Key Threshold, Split Key Method, optional
+Prime Field Size, then Key Block. Table 12 emits Key Format Type, optional Key
+Compression Type, Key Value, Cryptographic Algorithm, Cryptographic Length,
+and Key Wrapping Data, omitting absent optional fields without reordering the
+remaining fields.
+
 ## Key-material forms
 
 The `Key Format Type` remains an open raw Enumeration from §11.25. Typed

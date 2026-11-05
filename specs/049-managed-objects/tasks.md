@@ -79,8 +79,8 @@
 
 ### Red — tests first
 
-- [ ] T026 [US3] Add failing fake-transport tests for typed Register objects and unchanged generic Register construction in `crates/kmipkit-protocol/tests/managed_object_operations.rs`.
-- [ ] T027 [US3] Add failing fake-transport tests for typed Import objects, wrapped Key Value, Attributes, and unchanged generic Import construction in `crates/kmipkit-protocol/tests/managed_object_operations.rs`.
+- [ ] T026 [US3] Add failing fake-transport tests for typed Register objects, direct object-specific Item tags, and unchanged generic Register construction in `crates/kmipkit-client/tests/unit/register_execution_tests.rs`.
+- [ ] T027 [US3] Add failing fake-transport tests for typed Import objects, wrapped Key Value, Attributes, direct object-specific Item tags, and unchanged generic Import construction in `crates/kmipkit-client/tests/unit/import_execution_tests.rs`.
 - [ ] T028 [US3] Add failing tests for secret redaction, ownership transfer without a hidden copy, and borrow lifetimes in `crates/kmipkit-protocol/tests/managed_object_secrets.rs`; rely on the existing `crates/kmipkit-ttlv/tests/value_zeroization.rs` executable contract for drop-time zeroization rather than asserting freed memory from an integration test.
 
 ### Green — minimum implementation
