@@ -17,7 +17,8 @@ use std::error::Error;
 use std::rc::Rc;
 
 use kmipkit_protocol::{
-    AttributeSet, CreateRequest, ObjectType, Pkcs11Request, SetDefaultsRequest,
+    AttributeSet, CreateRequest, HashRequest, ObjectType, OperationData, Pkcs11Request,
+    SecretBytes, SetDefaultsRequest,
 };
 use kmipkit_test_support::{ExchangeScript, ScriptedTransport};
 use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
@@ -384,6 +385,61 @@ fn malformed_pkcs11_function_is_not_sent() {
     assert_eq!(error.category(), ClientErrorCategory::Validation);
     assert_eq!(fake.borrow().exchange_count(), 0);
     assert_eq!(fake.borrow().write_call_count(), 0);
+}
+
+#[test]
+fn malformed_hash_parameters_are_not_sent() {
+    const BLOCK_CIPHER_MODE: u32 = 0x0042_0011;
+    const HASHING_ALGORITHM: u32 = 0x0042_0038;
+    const CANARY: &[u8] = b"HASH_PREFLIGHT_SECRET_CANARY";
+
+    let mut parameters = Structure::new();
+    parameters
+        .try_push(
+            Item::new(
+                RawTag::new(HASHING_ALGORITHM)
+                    .expect("Hashing Algorithm tag is valid")
+                    .try_checked()
+                    .expect("Hashing Algorithm is allocated"),
+                Value::enumeration(6),
+            )
+            .expect("Hashing Algorithm is valid TTLV"),
+        )
+        .expect("parameters fixture is valid generic TTLV");
+    parameters
+        .try_push(
+            Item::new(
+                RawTag::new(BLOCK_CIPHER_MODE)
+                    .expect("Block Cipher Mode tag is valid")
+                    .try_checked()
+                    .expect("Block Cipher Mode is allocated"),
+                Value::enumeration(9),
+            )
+            .expect("Block Cipher Mode is valid TTLV"),
+        )
+        .expect("parameters fixture is valid generic TTLV");
+    let request = ClientRequest::Hash(
+        HashRequest::new(parameters)
+            .with_data(OperationData::ByteString(SecretBytes::new(CANARY.to_vec()))),
+    );
+    let batch = ClientBatch::new(ClientBatchItem::new(request));
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::Success {
+            response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let error = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect_err("invalid nested Hash parameters must fail preflight");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert_eq!(fake.borrow().write_call_count(), 0);
+    assert!(!error.to_string().contains("HASH_PREFLIGHT_SECRET_CANARY"));
+    assert!(!format!("{error:?}").contains("HASH_PREFLIGHT_SECRET_CANARY"));
 }
 
 #[test]
