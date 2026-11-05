@@ -106,4 +106,3 @@ class T102OpaqueRequestHelperExclusionTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
