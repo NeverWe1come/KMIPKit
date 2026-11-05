@@ -106,13 +106,20 @@ struct AuthenticationObservingTransport {
     secret_reached_transport: Rc<Cell<bool>>,
 }
 
+struct AuthenticatedClientFixture {
+    client: Client,
+    script: Rc<RefCell<ScriptedTransport>>,
+    owner_live_during_exchange: Rc<Cell<bool>>,
+    secret_reached_transport: Rc<Cell<bool>>,
+}
+
 impl Transport for AuthenticationObservingTransport {
     fn exchange(
         &mut self,
         request: &[u8],
         max_response_bytes: usize,
     ) -> Result<TransportResponse, TransportError> {
-        let secret_reached_transport = decode(request).ok().is_some_and(|root| {
+        let secret_reached_transport = decode(request).is_ok_and(|root| {
             root.with_value(|value| match value {
                 ValueView::Structure(message) => contains_text(&message, SECRET_SENTINEL),
                 _ => false,
@@ -130,12 +137,7 @@ impl Transport for AuthenticationObservingTransport {
 fn authenticated_client(
     script: ExchangeScript,
     observer: ZeroizationObserver,
-) -> (
-    Client,
-    Rc<RefCell<ScriptedTransport>>,
-    Rc<Cell<bool>>,
-    Rc<Cell<bool>>,
-) {
+) -> AuthenticatedClientFixture {
     let script = Rc::new(RefCell::new(ScriptedTransport::new(script)));
     let owner_live_during_exchange = Rc::new(Cell::new(false));
     let secret_reached_transport = Rc::new(Cell::new(false));
@@ -146,12 +148,12 @@ fn authenticated_client(
         secret_reached_transport: Rc::clone(&secret_reached_transport),
     };
     let client = Client::for_test_with_request_observer(transport, observer);
-    (
+    AuthenticatedClientFixture {
         client,
         script,
         owner_live_during_exchange,
         secret_reached_transport,
-    )
+    }
 }
 
 fn authenticated_batch() -> ClientBatch {
@@ -215,7 +217,7 @@ fn authentication_is_omitted_by_default_and_batch_formatting_is_redacted() {
 #[test]
 fn authentication_owner_lives_through_successful_exchange_and_is_zeroized() {
     let observer = ZeroizationObserver::new(None);
-    let (mut client, script, owner_live, secret_reached_transport) = authenticated_client(
+    let mut fixture = authenticated_client(
         ExchangeScript::Success {
             response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
             request_write_chunks: vec![2, 3],
@@ -223,25 +225,27 @@ fn authentication_owner_lives_through_successful_exchange_and_is_zeroized() {
         observer.clone(),
     );
 
-    client
+    fixture
+        .client
         .execute(authenticated_batch(), &CodecLimits::defaults())
         .expect("authenticated Discover Versions response is valid");
 
-    assert!(secret_reached_transport.get());
-    assert!(owner_live.get());
+    assert!(fixture.secret_reached_transport.get());
+    assert!(fixture.owner_live_during_exchange.get());
     assert_eq!(observer.result(), Some(true));
-    assert_eq!(script.borrow().exchange_count(), 1);
+    assert_eq!(fixture.script.borrow().exchange_count(), 1);
 }
 
 #[test]
 fn authentication_owner_is_zeroized_after_partial_write_without_retry() {
     let observer = ZeroizationObserver::new(None);
-    let (mut client, script, owner_live, secret_reached_transport) = authenticated_client(
+    let mut fixture = authenticated_client(
         ExchangeScript::FailAfterPartialWrite { written_bytes: 2 },
         observer.clone(),
     );
 
-    let error = client
+    let error = fixture
+        .client
         .execute(authenticated_batch(), &CodecLimits::defaults())
         .expect_err("the transport fails after a partial request write");
 
@@ -249,15 +253,16 @@ fn authentication_owner_is_zeroized_after_partial_write_without_retry() {
         error.delivery_state(),
         Some(RequestDeliveryState::PossiblySent)
     );
-    assert!(secret_reached_transport.get());
-    assert!(owner_live.get());
+    assert!(fixture.secret_reached_transport.get());
+    assert!(fixture.owner_live_during_exchange.get());
     assert_eq!(observer.result(), Some(true));
-    assert_eq!(script.borrow().exchange_count(), 1);
-    assert_eq!(script.borrow().write_call_count(), 1);
+    assert_eq!(fixture.script.borrow().exchange_count(), 1);
+    assert_eq!(fixture.script.borrow().write_call_count(), 1);
     assert!(!format!("{error:?}").contains(SECRET_SENTINEL));
     assert!(!error.to_string().contains(SECRET_SENTINEL));
     assert!(
-        script
+        fixture
+            .script
             .borrow()
             .captured_logs()
             .iter()
