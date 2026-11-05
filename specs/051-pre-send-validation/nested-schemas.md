@@ -35,7 +35,7 @@ remain in the caller's TTLV tree and are not rejected solely for being unknown.
 | Key-bearing managed-object wrapper | §2.4–§2.9, Tables 5–10 | PGP Key, Private Key, Public Key, Secret Data, Split Key, and Symmetric Key contain one required Key Block; source reference is selected by object tag. | R268 | `validation_schema_tests::register_schema_recursively_checks_key_block_fields` |
 | `Opaque Object` | §2.3, Table 4 | Required Opaque Data Type Enumeration and Opaque Data Value Byte String in table order; unknown enum values remain open. | R269–R270 | `validation_schema_tests::register_schema_checks_both_required_opaque_object_fields` |
 | `Key Wrapping Data` | §3.3, Tables 14–15 | Required Wrapping Method; optional key-information structures, MAC/Signature, IV/Counter/Nonce, and Encoding Option in table order; at least one Encryption Key Information or MAC/Signature Key Information is required, and both are allowed. | R271–R277 | `validation_schema_tests::key_block_recursively_checks_key_wrapping_data_members` |
-| `Key Value` | §3.2, Table 13 | Required Key Material as Byte String or Structure, followed by optional Attributes Structure. Unknown members remain preserved. | R278–R279 | `validation_schema_tests::key_value_structure_requires_key_material` |
+| `Key Value` | §3.2, Table 13 | Required Key Material as Byte String or Structure, followed by optional Attributes Structure. For the explicitly listed Raw, Opaque, PKCS#1, PKCS#8, ECPrivateKey, and transparent key formats, enforce the corresponding Key Material TTLV type; unknown and extension formats remain open. | R278–R280 | `validation_schema_tests::key_value_structure_requires_key_material`; `validation_schema_tests::key_format_type_selects_known_key_material_ttlv_type`; `validation_schema_tests::unknown_key_format_does_not_reject_future_material_shapes` |
 
 ## Boundaries
 
@@ -75,6 +75,7 @@ families have been reconciled and covered by the operation-family tasks.
   order, and cardinality.
 - Managed-object recursion is selected by the standard object Structure tag.
   Key Block recursion validates plaintext Key Value and Key Wrapping Data
-  structures. Wrapped Key Value bytes remain opaque. The current nested checks
-  require Key Material but do not select a transparent-key schema by Key Format
-  Type, parse transparent-key semantics, or decide server-side key policy.
+  structures. Wrapped Key Value bytes remain opaque. For key formats with an
+  explicit Byte String or Structure representation in §3.2 Table 13, the
+  validator checks only the Key Material TTLV type. It does not parse a
+  transparent-key schema or decide server-side key policy.
