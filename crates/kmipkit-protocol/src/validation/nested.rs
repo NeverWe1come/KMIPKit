@@ -231,6 +231,54 @@ const CRYPTOGRAPHIC_PARAMETERS_FIELDS: &[FieldDescriptor] = &[
     ),
 ];
 
+const DERIVATION_PARAMETERS_FIELDS: &[FieldDescriptor] = &[
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R221",
+        name: "Cryptographic Parameters",
+        tag: FieldTag::Exact(0x0042_002B),
+        types: TYPE_STRUCTURE,
+        min_count: 0,
+        max_count: Some(1),
+        nested_schema: Some(NestedStructureSchema::CryptographicParameters),
+    },
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R222",
+        name: "Initialization Vector",
+        tag: FieldTag::Exact(0x0042_003A),
+        types: TYPE_BYTE_STRING,
+        min_count: 0,
+        max_count: Some(1),
+        nested_schema: None,
+    },
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R223",
+        name: "Derivation Data",
+        tag: FieldTag::Exact(0x0042_0030),
+        types: TYPE_BYTE_STRING,
+        min_count: 0,
+        max_count: None,
+        nested_schema: None,
+    },
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R224",
+        name: "Salt",
+        tag: FieldTag::Exact(0x0042_0084),
+        types: TYPE_BYTE_STRING,
+        min_count: 0,
+        max_count: Some(1),
+        nested_schema: None,
+    },
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R225",
+        name: "Iteration Count",
+        tag: FieldTag::Exact(0x0042_003C),
+        types: TYPE_INTEGER,
+        min_count: 0,
+        max_count: Some(1),
+        nested_schema: None,
+    },
+];
+
 const BLOCK_CIPHER_MODE: u32 = 0x0042_0011;
 const IV_LENGTH: u32 = 0x0042_00CD;
 const TAG_LENGTH: u32 = 0x0042_00CE;
@@ -264,6 +312,110 @@ pub(super) fn validate_nested_with_prefix(
     report
 }
 
+pub(super) fn validate_derive_key_conditions(
+    request_payload: &StructureView<'_>,
+) -> ValidationReport {
+    const DERIVATION_METHOD: u32 = 0x0042_0031;
+    const DERIVATION_PARAMETERS: u32 = 0x0042_0032;
+    const PBKDF2: u32 = 1;
+    const HASH: u32 = 2;
+    const SALT: u32 = 0x0042_0084;
+    const ITERATION_COUNT: u32 = 0x0042_003C;
+    const HASHING_ALGORITHM: u32 = 0x0042_0038;
+    const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
+
+    let method = request_payload
+        .children()
+        .iter()
+        .find(|item| item.tag().raw() == DERIVATION_METHOD)
+        .and_then(|item| {
+            item.with_value(|value| match value {
+                kmipkit_ttlv::ValueView::Enumeration(method) => Some(*method),
+                _ => None,
+            })
+        });
+    let parameters = request_payload
+        .children()
+        .iter()
+        .find(|item| item.tag().raw() == DERIVATION_PARAMETERS);
+    let Some(parameters) = parameters else {
+        return ValidationReport::default();
+    };
+
+    let mut report = ValidationReport::default();
+    parameters.with_value(|value| {
+        let kmipkit_ttlv::ValueView::Structure(parameters) = value else {
+            return;
+        };
+        let prefix = ValidationPath::root()
+            .field("Request Payload")
+            .field("Derivation Parameters");
+
+        if method == Some(PBKDF2) {
+            if !parameters
+                .children()
+                .iter()
+                .any(|field| field.tag().raw() == SALT)
+            {
+                report.push(ValidationIssue::new(
+                    ValidationCode::new("KMIPKIT-0051-R226"),
+                    prefix.clone().field("Salt"),
+                    ValidationSeverity::Error,
+                    ValidationSourceRef::Oasis {
+                        document: "KMIP v2.1",
+                        reference: "§7.12, Table 364",
+                    },
+                ));
+            }
+            if !parameters
+                .children()
+                .iter()
+                .any(|field| field.tag().raw() == ITERATION_COUNT)
+            {
+                report.push(ValidationIssue::new(
+                    ValidationCode::new("KMIPKIT-0051-R227"),
+                    prefix.clone().field("Iteration Count"),
+                    ValidationSeverity::Error,
+                    ValidationSourceRef::Oasis {
+                        document: "KMIP v2.1",
+                        reference: "§7.12, Table 364",
+                    },
+                ));
+            }
+        }
+
+        if method == Some(HASH) {
+            let has_hashing_algorithm = parameters
+                .children()
+                .iter()
+                .find(|field| field.tag().raw() == CRYPTOGRAPHIC_PARAMETERS)
+                .is_some_and(|field| {
+                    field.with_value(|value| match value {
+                        kmipkit_ttlv::ValueView::Structure(parameters) => parameters
+                            .children()
+                            .iter()
+                            .any(|item| item.tag().raw() == HASHING_ALGORITHM),
+                        _ => true,
+                    })
+                });
+            if !has_hashing_algorithm {
+                report.push(ValidationIssue::new(
+                    ValidationCode::new("KMIPKIT-0051-R228"),
+                    prefix
+                        .field("Cryptographic Parameters")
+                        .field("Hashing Algorithm"),
+                    ValidationSeverity::Error,
+                    ValidationSourceRef::Oasis {
+                        document: "KMIP v2.1",
+                        reference: "§6.1.14, Table 205; §7.12, Table 364",
+                    },
+                ));
+            }
+        }
+    });
+    report
+}
+
 fn descriptor(schema: NestedStructureSchema) -> RequestSchemaDescriptor {
     let (source, fields) = match schema {
         NestedStructureSchema::Constraints => ("§7.7, Table 358", CONSTRAINTS_FIELDS),
@@ -280,6 +432,9 @@ fn descriptor(schema: NestedStructureSchema) -> RequestSchemaDescriptor {
         NestedStructureSchema::ObjectDefaults => ("§7.22, Table 374", OBJECT_DEFAULTS_FIELDS),
         NestedStructureSchema::CryptographicParameters => {
             ("§4.16, Table 59", CRYPTOGRAPHIC_PARAMETERS_FIELDS)
+        }
+        NestedStructureSchema::DerivationParameters => {
+            ("§7.12, Table 364", DERIVATION_PARAMETERS_FIELDS)
         }
     };
     RequestSchemaDescriptor { source, fields }

@@ -128,11 +128,14 @@ fn derive_key_payload_recursively_validates_derivation_parameters() {
             issue.path().to_string() == "Request Payload.Derivation Parameters.Salt"
         })
     );
-    assert!(
-        report
-            .issues()
-            .iter()
-            .all(|issue| { issue.source().to_string() == "KMIP v2.1 §7.12, Table 364" })
+    let salt_issue = report
+        .issues()
+        .iter()
+        .find(|issue| issue.path().to_string() == "Request Payload.Derivation Parameters.Salt")
+        .expect("malformed Salt is reported at its schema path");
+    assert_eq!(
+        salt_issue.source().to_string(),
+        "KMIP v2.1 §7.12, Table 364"
     );
 }
 
@@ -165,6 +168,56 @@ fn derive_key_schema_applies_pbkdf2_parameter_requirements_from_outer_method() {
             "Request Payload.Derivation Parameters.Iteration Count",
         ]
     );
+}
+
+#[test]
+fn derive_key_schema_requires_hashing_algorithm_for_hash_method() {
+    let derivation_parameters = structure([item(
+        CRYPTOGRAPHIC_PARAMETERS,
+        Value::structure(Structure::new()),
+    )]);
+    let payload = structure([
+        item(OBJECT_TYPE, Value::enumeration(2)),
+        item(0x0042_0094, Value::text_string("derivation-key".to_owned())),
+        item(0x0042_0031, Value::enumeration(2)),
+        item(0x0042_0032, Value::structure(derivation_parameters)),
+        item(ATTRIBUTES, Value::structure(Structure::new())),
+    ]);
+
+    let report = validate_structure(
+        &payload.view(),
+        Some(ValidationSchema::RequestPayload(
+            RequestPayloadSchema::DeriveKey,
+        )),
+    );
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.path().to_string()
+            == "Request Payload.Derivation Parameters.Cryptographic Parameters.Hashing Algorithm"
+    }));
+}
+
+#[test]
+fn derivation_parameters_preserve_repeated_data_and_unknown_extensions() {
+    let parameters = structure([
+        item(0x0042_0030, Value::byte_string(b"first".to_vec())),
+        item(0x0042_0030, Value::byte_string(b"second".to_vec())),
+        item(VENDOR_EXTENSION, Value::text_string("opaque".to_owned())),
+    ]);
+
+    let report = validate_structure(
+        &parameters.view(),
+        Some(ValidationSchema::Nested(
+            NestedStructureSchema::DerivationParameters,
+        )),
+    );
+
+    assert!(report.is_valid());
+    let view = parameters.view();
+    assert_eq!(view.children().len(), 3);
+    assert_eq!(view.children()[0].tag().raw(), 0x0042_0030);
+    assert_eq!(view.children()[1].tag().raw(), 0x0042_0030);
+    assert_eq!(view.children()[2].tag().raw(), VENDOR_EXTENSION);
 }
 
 #[test]

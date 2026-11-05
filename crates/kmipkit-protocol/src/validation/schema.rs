@@ -73,6 +73,8 @@ pub enum NestedStructureSchema {
     ObjectDefaults,
     /// The §4.16 Cryptographic Parameters attribute structure.
     CryptographicParameters,
+    /// The §7.12 Derivation Parameters structure.
+    DerivationParameters,
 }
 
 #[derive(Clone, Copy)]
@@ -96,12 +98,12 @@ pub fn validate_structure(
         return ValidationReport::default();
     };
 
-    let descriptor = match schema {
+    let request_payload_schema = match schema {
         ValidationSchema::RequestPayload(request_schema) => {
             let Some(descriptor) = generated::descriptor(request_schema) else {
                 return unsupported_schema_report();
             };
-            descriptor
+            (request_schema, descriptor)
         }
         ValidationSchema::Nested(nested_schema) => {
             return super::nested::validate_nested_structure(structure, nested_schema);
@@ -109,7 +111,12 @@ pub fn validate_structure(
         ValidationSchema::Unsupported => return unsupported_schema_report(),
     };
 
-    validate_structure_with_descriptor(structure, &descriptor)
+    let (request_schema, descriptor) = request_payload_schema;
+    let mut report = validate_structure_with_descriptor(structure, &descriptor);
+    if request_schema == RequestPayloadSchema::DeriveKey {
+        report.append(super::nested::validate_derive_key_conditions(structure));
+    }
+    report
 }
 
 fn unsupported_schema_report() -> ValidationReport {

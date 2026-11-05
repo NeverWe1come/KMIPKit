@@ -981,7 +981,7 @@ static DERIVEKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 1,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::DerivationParameters),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R056",

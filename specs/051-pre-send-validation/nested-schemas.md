@@ -14,6 +14,7 @@ remain in the caller's TTLV tree and are not rejected solely for being unknown.
 | `Defaults Information` | §7.11, Table 363 | Zero or more `Object Defaults` Structure children. | R197 | `typed_request_validation_tests::defaults_validation_checks_required_attribute_container_and_preserves_empty_defaults`; `validation_schema_tests::request_payload_schema_recurses_into_known_nested_payloads` |
 | `Object Defaults` | §7.22, Table 374 | Exactly one of `Object Type` Enumeration or `Object Types` Structure; one `Attributes` Structure is required; `Object Groups` is optional. | R198–R200 | `validation_schema_tests::nested_object_defaults_enforces_alternative_and_required_attributes`; `typed_request_validation_tests::defaults_validation_checks_required_attribute_container_and_preserves_empty_defaults` |
 | `Cryptographic Parameters` | §4.16, Table 59 | Eighteen known optional singleton fields in table order, with their specified TTLV types; require `IV Length` for locally recognized CTR, CCM, and GCM modes, and `Tag Length` for GCM. | R201–R220 | `validation_schema_tests::encrypt_payload_recursively_validates_known_cryptographic_parameter_fields`; `validation_schema_tests::cryptographic_parameters_require_iv_and_gcm_tag_lengths_when_mode_requires_them`; `validation_schema_tests::cryptographic_parameters_preserve_unknown_members_and_future_enumerations` |
+| `Derivation Parameters` | §7.12, Table 364 | Optional Cryptographic Parameters, Initialization Vector, Salt, and Iteration Count; repeatable Derivation Data; all known children use the table's TTLV type and order. The enclosing Derive Key request requires Salt and Iteration Count for PBKDF2 and Hashing Algorithm for HASH. | R221–R228 | `validation_schema_tests::derive_key_payload_recursively_validates_derivation_parameters`; `validation_schema_tests::derive_key_schema_applies_pbkdf2_parameter_requirements_from_outer_method`; `validation_schema_tests::derive_key_schema_requires_hashing_algorithm_for_hash_method` |
 
 ## Boundaries
 
@@ -35,3 +36,7 @@ families have been reconciled and covered by the operation-family tasks.
   The IV/Tag Length presence rules reuse the existing KMIPKit interpretation of
   §4.16 for locally recognized CTR, CCM, and GCM modes; unknown modes are not
   rejected and object-derived parameters are not inferred.
+- A standalone Derivation Parameters schema does not guess the outer Derivation
+  Method or whether a Unique Identifier denotes a Secret Data object. PBKDF2,
+  HASH, and input-object-dependent rules require the enclosing Derive Key
+  Request Payload context; a Secret Data object's type remains server state.
