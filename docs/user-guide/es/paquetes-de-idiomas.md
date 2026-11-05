@@ -1,5 +1,74 @@
 # Paquetes para Java y Python
 
+## Fachada Rust
+
+Las aplicaciones Rust pueden declarar `kmipkit` como su única dependencia
+directa de KMIPKit. La fachada expone el namespace completo del protocolo
+tipado como `kmipkit::protocol`, los valores TTLV genéricos y su decodificador
+con límites como `kmipkit::ttlv`, y los tipos de configuración TLS necesarios
+para crear el cliente. Las importaciones existentes desde la raíz siguen
+disponibles.
+
+```toml
+[dependencies]
+kmipkit = "1.0"
+```
+
+```rust
+use kmipkit::protocol::{EncryptRequest, GetRequest, PollRequest};
+use kmipkit::ttlv::codec::{decode_with_limits, CodecLimits};
+use kmipkit::ttlv::{Item, Value};
+use kmipkit::{Client, ClientBatch, ClientBatchResponse, ClientError};
+use kmipkit::client_config::{client_extension_registry, ClientConfiguration};
+use kmipkit::transport_config::{
+    CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, TransportConfig, TrustSource,
+};
+
+fn request_types(_: Option<(GetRequest, EncryptRequest, PollRequest)>) {}
+
+fn build_client(
+    certificate_pem: Vec<u8>,
+    private_key_pem: Vec<u8>,
+) -> Result<Client, Box<dyn std::error::Error>> {
+    let registry = client_extension_registry(
+        Vec::new(),
+        kmipkit::protocol::extension::defaults(),
+    )?;
+    let client_configuration = ClientConfiguration::new(registry);
+    let transport = TransportConfig::builder(Endpoint::raw_tls("localhost", 5696))
+        .client_identity(ClientIdentity::new(
+            CertificateInput::from_pem(certificate_pem),
+            PrivateKeyInput::from_pem(private_key_pem),
+        ))
+        .trust_source(TrustSource::platform())
+        .build()?;
+    Ok(Client::new(client_configuration, transport)?)
+}
+
+fn inspect_ttlv(encoded_ttlv: &[u8]) -> Result<(), Box<dyn std::error::Error>> {
+    let limits = CodecLimits::defaults();
+    let _decoded = decode_with_limits(encoded_ttlv, &limits);
+    let _value = Item::new(
+        kmipkit::ttlv::RawTag::new(0x0042_0077)?.try_checked()?,
+        Value::integer(1),
+    );
+    Ok(())
+}
+
+fn execute(
+    client: &mut Client,
+    batch: ClientBatch,
+) -> Result<ClientBatchResponse, ClientError> {
+    let limits = CodecLimits::defaults();
+    client.execute(batch, &limits)
+}
+```
+
+`kmipkit::ttlv` ofrece el modelo de valores genéricos y un decodificador con
+límite de recursos. No expone un codificador genérico de salida; las
+peticiones se codifican mediante la ejecución tipada del cliente. La fachada
+omite el intercambio de bajo nivel y sus adaptadores concretos.
+
 ## Versión y entornos de ejecución
 
 Los metadatos de los paquetes Java y Python siguen el campo `releaseLine` del

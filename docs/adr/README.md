@@ -30,6 +30,8 @@ one and links both directions.
 - [ADR-0015: Tokio worker for synchronous TLS and HTTPS transports](0015-asynchronous-transport-worker.md) (Accepted; resolver decision superseded by ADR-0016)
 - [ADR-0016: Preserve native system name-resolution policy](0016-native-system-name-resolution.md) (Accepted)
 
+- [ADR-0017: Single-dependency Rust facade](0017-single-dependency-rust-facade.md) (Accepted)
+
 ## Template
 
 ```text

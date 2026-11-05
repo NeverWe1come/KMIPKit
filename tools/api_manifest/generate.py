@@ -31,7 +31,7 @@ SCHEMA_PATH = "specification/api/public-api.schema.json"
 CATALOG_PATH = "specification/catalog/kmip-2.1.json"
 # Public API parity records include exact declarations in all four languages;
 # keep parsing bounded while leaving room for the complete generated inventory.
-MAX_MANIFEST_BYTES = 23 * 1024 * 1024
+MAX_MANIFEST_BYTES = 40 * 1024 * 1024
 MAX_SCHEMA_BYTES = 4 * 1024 * 1024
 MAX_CATALOG_BYTES = 16 * 1024 * 1024
 MAX_RELEASE_METADATA_BYTES = 1024 * 1024
@@ -3067,6 +3067,12 @@ def _registry_manifest_v2(manifest: dict[str, Any]) -> dict[str, Any]:
     # Keep that generated compatibility slice stable while the complete v2 API
     # records the implemented extension-package names.
     for record in registry_types:
+        record["requirementIds"] = [
+            requirement for requirement in record["requirementIds"]
+            if requirement.startswith("KMIPKIT-0012-")
+        ]
+        if record.get("id") == "ClientBatchItemOutcome":
+            record["kind"] = "struct"
         if record.get("id") == "ClientBatchItem":
             record["java"] = {**record["java"], "package": "org.kmipkit"}
             record["python"] = {**record["python"], "module": "kmipkit"}

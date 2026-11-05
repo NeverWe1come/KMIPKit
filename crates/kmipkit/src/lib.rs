@@ -10,7 +10,7 @@
 //!     Client, ClientBatch, ClientBatchResponse, ClientError, ProfileObjectState,
 //!     ProfileValidationContext, ProfileValidationSelection,
 //! };
-//! use kmipkit_ttlv::codec::CodecLimits;
+//! use kmipkit::ttlv::codec::CodecLimits;
 //!
 //! fn execute_for_profile(
 //!     client: &mut Client,
@@ -30,6 +30,31 @@
 //! }
 //! ```
 #![forbid(unsafe_code)]
+
+/// Complete typed protocol models and operation helpers.
+pub use kmipkit_protocol as protocol;
+/// Generic TTLV values and the bounded decoder.
+pub use kmipkit_ttlv as ttlv;
+
+/// Configuration for client-owned vendor extension definitions.
+pub mod client_config {
+    pub use kmipkit_client::extension_registry::{
+        ClientConfiguration, ClientExtensionRegistry, client_extension_registry,
+    };
+}
+
+/// Selected configuration types for the supported TLS 1.3 mutual-TLS transports.
+///
+/// This namespace configures the high-level client. It intentionally omits the
+/// raw transport exchange trait, response byte containers, and concrete
+/// transport adapters.
+pub mod transport_config {
+    pub use kmipkit_transport::{
+        CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RevocationListInput,
+        TimeoutLimit, TimeoutPolicy, TransportConfig, TransportConfigBuilder, TransportConfigError,
+        TrustSource,
+    };
+}
 
 /// The synchronized `KMIPKit` package version compiled into this library.
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
