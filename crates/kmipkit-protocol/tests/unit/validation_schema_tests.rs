@@ -21,6 +21,11 @@ const OBJECTS: u32 = 0x0042_014E;
 const OPERATIONS: u32 = 0x0042_014F;
 const NEW_ATTRIBUTE: u32 = 0x0042_013D;
 const CURRENT_ATTRIBUTE: u32 = 0x0042_013C;
+const CERTIFICATE: u32 = 0x0042_0013;
+const CERTIFICATE_REQUEST: u32 = 0x0042_0018;
+const CERTIFICATE_TYPE: u32 = 0x0042_001D;
+const CERTIFICATE_VALUE: u32 = 0x0042_001E;
+const CERTIFICATE_REQUEST_VALUE: u32 = 0x0042_0140;
 
 fn item(tag: u32, value: Value) -> Item {
     let raw_tag = RawTag::new(tag).expect("fixture tag fits the TTLV tag field");
@@ -448,6 +453,51 @@ fn current_attribute_wrapper_rejects_multiple_attribute_items() {
         issue.code().as_str() == "KMIPKIT-0051-R248"
             && issue.path().to_string() == "Request Payload.Current Attribute.Attribute"
             && issue.source().to_string() == "KMIP v2.1 §5.6, Table 162"
+    }));
+}
+
+#[test]
+fn validate_request_recursively_checks_certificate_structure_without_parsing_der() {
+    let certificate = structure([
+        item(CERTIFICATE_TYPE, Value::integer(1)),
+        item(CERTIFICATE_VALUE, Value::byte_string(vec![0x30, 0x00])),
+    ]);
+    let payload = structure([item(CERTIFICATE, Value::structure(certificate))]);
+    let report = validate_structure(
+        &payload.view(),
+        Some(ValidationSchema::RequestPayload(
+            RequestPayloadSchema::Validate,
+        )),
+    );
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R249"
+            && issue.path().to_string()
+                == "Request Payload.Certificate[0].Certificate Type"
+            && issue.source().to_string() == "KMIP v2.1 §2.1, Table 2"
+    }));
+}
+
+#[test]
+fn reprovision_request_checks_certificate_request_members() {
+    let certificate_request =
+        structure([item(CERTIFICATE_REQUEST_VALUE, Value::byte_string(vec![0x30, 0x00]))]);
+    let payload = structure([item(
+        CERTIFICATE_REQUEST,
+        Value::structure(certificate_request),
+    )]);
+    let report = validate_structure(
+        &payload.view(),
+        Some(ValidationSchema::RequestPayload(
+            RequestPayloadSchema::ReProvision,
+        )),
+    );
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R251"
+            && issue.path().to_string()
+                == "Request Payload.Certificate Request.Certificate Request Type"
+            && issue.source().to_string() == "KMIP v2.1 §2.2, Table 3"
     }));
 }
 
