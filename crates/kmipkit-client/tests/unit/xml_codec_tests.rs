@@ -591,15 +591,24 @@ fn declaration_grammar_is_checked_and_valid_utf8_bom_is_accepted() {
         "<?xml version='1.0' version='1.0'?><RequestPayload/>",
         "<?xml version='1.0' standalone='yes' encoding='UTF-8'?><RequestPayload/>",
     ] {
-        assert!(decode(input.as_bytes(), &CodecLimits::defaults()).is_err(), "accepted {input}");
+        assert!(
+            decode(input.as_bytes(), &CodecLimits::defaults()).is_err(),
+            "accepted {input}"
+        );
     }
-    equal(&parse("\u{FEFF}<?xml version='1.0' encoding='UTF-8' standalone='yes'?><RequestPayload/>"), &parse("<RequestPayload/>"));
+    equal(
+        &parse("\u{FEFF}<?xml version='1.0' encoding='UTF-8' standalone='yes'?><RequestPayload/>"),
+        &parse("<RequestPayload/>"),
+    );
 }
 
 #[test]
 fn normalized_initial_digits_and_xml_text_escape_combinations_roundtrip() {
     let algorithm = item(0x0042_0028, Value::enumeration(2));
-    assert_eq!(xml(&algorithm), "<CryptographicAlgorithm type=\"Enumeration\" value=\"DES3\"/>");
+    assert_eq!(
+        xml(&algorithm),
+        "<CryptographicAlgorithm type=\"Enumeration\" value=\"DES3\"/>"
+    );
     equal(&algorithm, &parse(&xml(&algorithm)));
     let text = item(0x0054_0001, Value::text_string("<>\"'&".into()));
     equal(&text, &parse(&xml(&text)));

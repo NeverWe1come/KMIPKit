@@ -1,5 +1,5 @@
 //! Catalog-only XML names; Profiles v2.1 §§5.4.1.1–5.4.1.3.
-use super::{INVALID_VALUE, Result};
+use super::{INVALID_VALUE, WireCodecError};
 use crate::wire_names_generated::WIRE_NAMES;
 
 // Profiles §5.4.1.1: preserve acronym case and move initial digits.
@@ -30,7 +30,11 @@ pub(super) fn normalize(source: &str) -> String {
             0
         };
         let token = if digits > 0 {
-            format!("{}{}", &token[digits..], &token[..digits])
+            {
+                let mut moved = token[digits..].to_owned();
+                moved.push_str(&token[..digits]);
+                moved
+            }
         } else {
             token.to_owned()
         };
@@ -65,7 +69,7 @@ pub(super) fn tag_name(raw: u32) -> Option<String> {
         .map(|r| normalize(r[2]))
 }
 
-pub(super) fn tag_value(name: &str) -> Result<u32> {
+pub(super) fn tag_value(name: &str) -> Result<u32, WireCodecError> {
     if name.starts_with("0x") {
         return hex_number(name, 6).and_then(|v| u32::try_from(v).map_err(|_| INVALID_VALUE));
     }
@@ -88,7 +92,7 @@ pub(super) fn enum_name(raw: u32, value: u32) -> Option<String> {
         .map(|r| normalize(r[3]))
 }
 
-pub(super) fn enum_value(raw: u32, value: &str) -> Result<u32> {
+pub(super) fn enum_value(raw: u32, value: &str) -> Result<u32, WireCodecError> {
     if value.starts_with("0x") {
         return hex_number(value, 8).and_then(|v| u32::try_from(v).map_err(|_| INVALID_VALUE));
     }
@@ -99,7 +103,7 @@ pub(super) fn enum_value(raw: u32, value: &str) -> Result<u32> {
         .ok_or(INVALID_VALUE)
 }
 
-pub(super) fn hex_number(value: &str, digits: usize) -> Result<u64> {
+pub(super) fn hex_number(value: &str, digits: usize) -> Result<u64, WireCodecError> {
     let hex = value.strip_prefix("0x").ok_or(INVALID_VALUE)?;
     if hex.len() != digits || !hex.bytes().all(|b| b.is_ascii_hexdigit()) {
         return Err(INVALID_VALUE);

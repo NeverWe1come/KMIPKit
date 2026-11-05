@@ -1,11 +1,12 @@
 //! Lossless XML scalar values; Profiles v2.1 §§5.4.1.6.3–5.4.1.6.13.
 use super::characters::xml_space;
 use super::names::{enum_value, family, hex_number, normalize, rows};
-use super::{ALLOCATION, INVALID_VALUE, Result};
+use super::{ALLOCATION, INVALID_VALUE, WireCodecError};
 use kmipkit_ttlv::Value;
+use std::fmt::Write;
 use zeroize::Zeroizing;
 
-fn integer(raw: u32, value: &str) -> Result<i32> {
+fn integer(raw: u32, value: &str) -> Result<i32, WireCodecError> {
     if let Ok(number) = value.parse::<i32>() {
         return Ok(number);
     }
@@ -34,14 +35,14 @@ fn integer(raw: u32, value: &str) -> Result<i32> {
     Ok(i32::from_be_bytes(bits.to_be_bytes()))
 }
 
-fn signed_long(value: &str) -> Result<i64> {
+fn signed_long(value: &str) -> Result<i64, WireCodecError> {
     if value.starts_with("0x") {
         return Ok(i64::from_be_bytes(hex_number(value, 16)?.to_be_bytes()));
     }
     value.parse().map_err(|_| INVALID_VALUE)
 }
 
-fn octets(text: &str, big: bool) -> Result<Vec<u8>> {
+fn octets(text: &str, big: bool) -> Result<Vec<u8>, WireCodecError> {
     if !text.len().is_multiple_of(2)
         || (big && (text.is_empty() || !text.len().is_multiple_of(16)))
         || !text.bytes().all(|c| c.is_ascii_hexdigit())
@@ -65,7 +66,7 @@ fn octets(text: &str, big: bool) -> Result<Vec<u8>> {
     Ok(std::mem::take(&mut *bytes))
 }
 
-pub(super) fn scalar(raw: u32, ty: &str, value: &str) -> Result<Value> {
+pub(super) fn scalar(raw: u32, ty: &str, value: &str) -> Result<Value, WireCodecError> {
     let collapsed = value.trim_matches(xml_space);
     Ok(match ty {
         "Integer" => Value::integer(integer(raw, collapsed)?),
@@ -117,14 +118,14 @@ fn civil_from_days(days: i128) -> (i128, i128, i128) {
     (y + i128::from(m <= 2), m, d)
 }
 
-fn two_digits(value: &str) -> Result<i128> {
+fn two_digits(value: &str) -> Result<i128, WireCodecError> {
     if value.len() != 2 || !value.bytes().all(|c| c.is_ascii_digit()) {
         return Err(INVALID_VALUE);
     }
     value.parse().map_err(|_| INVALID_VALUE)
 }
 
-fn parse_datetime(text: &str) -> Result<i64> {
+fn parse_datetime(text: &str) -> Result<i64, WireCodecError> {
     let (date, time) = text.split_once('T').ok_or(INVALID_VALUE)?;
     let (year_month, day) = date.rsplit_once('-').ok_or(INVALID_VALUE)?;
     let (year, month) = year_month.rsplit_once('-').ok_or(INVALID_VALUE)?;
@@ -200,21 +201,30 @@ fn parse_datetime(text: &str) -> Result<i64> {
     i64::try_from(seconds).map_err(|_| INVALID_VALUE)
 }
 
-pub(super) fn datetime(seconds: i64) -> Zeroizing<String> {
+pub(super) fn datetime(seconds: i64) -> Result<Zeroizing<String>, WireCodecError> {
     let seconds = i128::from(seconds);
     let (year, month, day) = civil_from_days(seconds.div_euclid(86_400));
     let clock = seconds.rem_euclid(86_400);
     let h = clock / 3600;
     let m = clock / 60 % 60;
     let s = clock % 60;
+    let mut text = Zeroizing::new(String::new());
+    // Every date representable by i64 seconds fits this reservation, so the
+    // formatter never grows a secret-bearing String allocation.
+    text.try_reserve_exact(64).map_err(|_| ALLOCATION)?;
     if year <= 0 {
-        Zeroizing::new(format!(
+        write!(
+            &mut *text,
             "-{:04}-{month:02}-{day:02}T{h:02}:{m:02}:{s:02}Z",
             1 - year
-        ))
+        )
+        .map_err(|_| ALLOCATION)?;
     } else {
-        Zeroizing::new(format!(
+        write!(
+            &mut *text,
             "{year:04}-{month:02}-{day:02}T{h:02}:{m:02}:{s:02}Z"
-        ))
+        )
+        .map_err(|_| ALLOCATION)?;
     }
+    Ok(text)
 }

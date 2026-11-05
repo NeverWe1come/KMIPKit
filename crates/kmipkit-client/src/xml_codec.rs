@@ -14,18 +14,17 @@ mod values;
 pub(crate) fn decode(
     bytes: &[u8],
     limits: &kmipkit_ttlv::codec::CodecLimits,
-) -> Result<kmipkit_ttlv::Item> {
+) -> Result<kmipkit_ttlv::Item, WireCodecError> {
     decoder::decode(bytes, limits)
 }
 
 pub(crate) fn encode(
     item: &kmipkit_ttlv::Item,
     limits: &kmipkit_ttlv::codec::CodecLimits,
-) -> Result<zeroize::Zeroizing<Vec<u8>>> {
-    encoder::encode(item, limits)
+) -> Result<zeroize::Zeroizing<Vec<u8>>, WireCodecError> {
+    encoder::emit_document(item, limits)
 }
 
-type Result<T> = std::result::Result<T, WireCodecError>;
 const NAMESPACE: &str = "urn:oasis:tc:kmip:xmlns";
 const INVALID_DOCUMENT: WireCodecError = WireCodecError::new(WireCodecErrorKind::InvalidDocument);
 const INVALID_VALUE: WireCodecError = WireCodecError::new(WireCodecErrorKind::InvalidValue);
