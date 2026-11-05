@@ -70,6 +70,7 @@ class NamedValueGeneratorTests(unittest.TestCase):
         self.assertIn("#[must_use]\n            pub const fn known_bits", rust)
         self.assertIn("/// `AESKeyWrapPadding`;", rust)
         self.assertNotIn("match raw {\n                    _ => None", rust)
+        self.assertNotIn("match raw {\n                None", rust)
 
     def test_duplicate_names_and_values_are_rejected(self) -> None:
         catalog: dict[str, Any] = {
