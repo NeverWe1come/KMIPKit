@@ -635,14 +635,18 @@ trait Example { fn declaration(&self); }
                 self.assertTrue(GATE.is_coverage_source_path(path))
         self.assertTrue(GATE.is_coverage_source_path("crates/kmipkit/src/test/helpers.rs"))
 
-    def test_java_package_info_metadata_is_excluded_from_adapter_coverage(self) -> None:
+    def test_non_executable_java_metadata_is_excluded_from_adapter_coverage(self) -> None:
         self.require_gate()
-        message_package_metadata = "bindings/java/src/main/java/org/kmipkit/message/package-info.java"
+        metadata_sources = {
+            "bindings/java/src/main/java/org/kmipkit/message/package-info.java",
+            "bindings/java/src/main/java/org/kmipkit/credentials/CredentialValidationErrorKind.java",
+            "bindings/java/src/main/java/org/kmipkit/extensions/NativeAttributeRequests.java",
+            "bindings/java/src/main/java/org/kmipkit/ttlv/NativeTtlvCodec.java",
+            "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvDecodeErrorKind.java",
+        }
 
-        self.assertNotIn(
-            message_package_metadata,
-            GATE.scan_adapter_sources(REPOSITORY_ROOT)["Java adapters"],
-        )
+        java_sources = GATE.scan_adapter_sources(REPOSITORY_ROOT)["Java adapters"]
+        self.assertTrue(metadata_sources.isdisjoint(java_sources))
 
     def test_generated_profile_metadata_is_excluded_from_raw_coverage(self) -> None:
         self.require_gate()
