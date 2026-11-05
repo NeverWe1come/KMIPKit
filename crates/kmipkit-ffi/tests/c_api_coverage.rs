@@ -79,6 +79,10 @@ const MAX_TEST_TTLV_VALUE_BYTES: usize = 8_388_608;
 static TEMP_DIRECTORY_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 unsafe extern "C" {
+    fn kmipkit_public_client_surface_probe() -> i32;
+}
+
+unsafe extern "C" {
     fn kmipkit_ttlv_decode(
         data: *const u8,
         length: u64,
@@ -94,6 +98,14 @@ fn compiled_c_consumer_preserves_nonce_bytes_and_ttlv_structure() {
     let status = unsafe { kmipkit_nonce_c_consumer_round_trip(&raw mut item_count) };
     assert_eq!(status, 0);
     assert_eq!(item_count, 2);
+}
+
+#[test]
+fn public_c_header_constructs_a_batch_and_reaches_the_encoding_override_entrypoint() {
+    // SAFETY: The C probe owns and releases its temporary handles and passes
+    // only null client inputs to the override entry point, so it performs no I/O.
+    let status = unsafe { kmipkit_public_client_surface_probe() };
+    assert_eq!(status, 0, "public C declarations and ABI calls must agree");
 }
 
 #[test]
