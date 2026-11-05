@@ -12,7 +12,8 @@ wire formats without claiming valid typed requests or official profile cases.
 | KMIPKIT-0057-HTTPS-001 | OASIS KMIP Profiles v2.1 §5.3.1, list items 2, 5–9; ADR-0018 decision 4 | Selected-format request Content-Type, unchanged body, POST, Content-Length, no-cache | `selected_encoding_posts_exact_body_and_headers_and_accepts_the_same_format_at_the_byte_cap` |
 | KMIPKIT-0057-HTTPS-002 | Profiles v2.1 §5.3.2, list items 2, 4–7; ADR-0018 decisions 1, 4–5 | Require one response Content-Type matching this exchange; retain status and length validation | `selected_encoding_rejects_mismatched_duplicate_missing_and_invalid_response_types_without_allocation`; `selected_encoding_changes_on_a_reused_https_connection` |
 | KMIPKIT-0057-HTTPS-003 | ADR-0018 decision 6; approved 0057 acceptance criteria | Actual request/response byte caps, allocation guard, partial response zeroization | `selected_encoding_preserves_request_limits_before_connection`; `selected_encoding_preserves_response_byte_limits_and_partial_response_zeroization`; exact-cap success test |
-| KMIPKIT-0057-HTTPS-004 | ADR-0018 decision 5; constitution IV; approved 0057 acceptance criteria | Redacted HTTP mismatch error, ResponseStarted evidence, invalidated session, no retry/fallback | `selected_encoding_mismatch_never_retries_or_falls_back`; response type rejection test |
+| KMIPKIT-0057-HTTPS-004 | ADR-0018 decision 5; approved 0057 specification | A valid alternate KMIP media type becomes a redacted protocol `InvalidEncoding` error with `ResponseStarted`; invalid HTTP metadata remains an HTTP transport error | `selected_encoding_mismatch_never_retries_or_falls_back`; `response_content_type_validation_distinguishes_mismatch_from_invalid_metadata`; `transport_encoding_mismatch_becomes_a_redacted_protocol_error` |
+| KMIPKIT-0057-HTTPS-005 | ADR-0018 decision 5; approved 0057 specification | A detected format mismatch invalidates the reusable session and does not retry or fall back | `selected_encoding_mismatch_never_retries_or_falls_back`; `https_rejects_invalid_status_response_headers_and_encodings` |
 
 The contextual body rule is KMIPKit's interpretation of the internal source
 inconsistency recorded by ADR-0018. This evidence does not claim an OASIS
@@ -138,3 +139,43 @@ print(f"Transport: {covered}/{total} ({covered * 100 / total:.2f}%)")
 
 Workspace-wide, foreign-language, generated-output, platform-matrix, and
 interoperability evidence remains assigned to Tasks 5–6.
+
+## Cross-encoding mismatch classification correction
+
+The first independent review found that a valid alternate `Content-Type` was
+rejected by HTTPS but retained the generic HTTP transport category. That did
+not meet the approved 0057 requirement to report an encoding mismatch as a
+protocol error. The fix adds a payload-free `EncodingMismatch` transport cause
+so the HTTPS adapter can distinguish another supported KMIP media type from
+missing, duplicated, malformed, or unsupported HTTP metadata. The client maps
+only this cause to `ProtocolErrorKind::MalformedMessage` and
+`ProtocolCauseCategory::InvalidEncoding`, preserving the transport's delivery
+state. Other transport errors retain their existing classification.
+
+### RED
+
+```text
+cargo test -p kmipkit-transport --test https encoding_tests -- --quiet
+cargo test -p kmipkit-client --lib transport_encoding_mismatch_becomes_a_redacted_protocol_error
+```
+
+Both commands exited 1 as expected. The HTTPS test observed `Http` where the
+new contract expected `EncodingMismatch`. The client test observed
+`ClientErrorCategory::Transport` where the contract expected
+`ClientErrorCategory::Protocol`.
+
+### GREEN and REFACTOR
+
+```text
+cargo fmt --all --check
+git diff --check
+cargo test -p kmipkit-client -p kmipkit-transport --all-features
+cargo clippy -p kmipkit-client -p kmipkit-transport --all-targets --all-features -- -D warnings
+```
+
+All commands pass. HTTPS classifies only a different supported media type as
+`EncodingMismatch`; missing, duplicate, malformed, unsupported, and other HTTP
+response failures retain the HTTP category. The typed client maps the
+distinguishable cause to a redacted protocol error with unchanged
+`ResponseStarted` evidence. Tests cover valid alternate encodings, invalid
+metadata, redaction, session invalidation, and absence of retry/fallback.
