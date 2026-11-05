@@ -348,6 +348,20 @@ const KEY_INFORMATION_FIELDS: &[FieldDescriptor] = &[
     },
 ];
 
+macro_rules! optional_nested_field {
+    ($rule:literal, $name:literal, $tag:literal, $schema:expr) => {
+        FieldDescriptor {
+            rule_id: $rule,
+            name: $name,
+            tag: FieldTag::Exact($tag),
+            types: TYPE_STRUCTURE,
+            min_count: 0,
+            max_count: Some(1),
+            nested_schema: Some($schema),
+        }
+    };
+}
+
 const RIGHTS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
     rule_id: "KMIPKIT-0051-R237",
     name: "Right",
@@ -359,42 +373,30 @@ const RIGHTS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
 }];
 
 const RIGHT_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R238",
-        name: "Usage Limits",
-        tag: FieldTag::Exact(0x0042_0095),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::UsageLimits),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R239",
-        name: "Operations",
-        tag: FieldTag::Exact(0x0042_014F),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::Operations),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R240",
-        name: "Objects",
-        tag: FieldTag::Exact(0x0042_014E),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::Objects),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R241",
-        name: "Object Groups",
-        tag: FieldTag::Exact(0x0042_0166),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::ObjectGroups),
-    },
+    optional_nested_field!(
+        "KMIPKIT-0051-R238",
+        "Usage Limits",
+        0x0042_0095,
+        NestedStructureSchema::UsageLimits
+    ),
+    optional_nested_field!(
+        "KMIPKIT-0051-R239",
+        "Operations",
+        0x0042_014F,
+        NestedStructureSchema::Operations
+    ),
+    optional_nested_field!(
+        "KMIPKIT-0051-R240",
+        "Objects",
+        0x0042_014E,
+        NestedStructureSchema::Objects
+    ),
+    optional_nested_field!(
+        "KMIPKIT-0051-R241",
+        "Object Groups",
+        0x0042_0166,
+        NestedStructureSchema::ObjectGroups
+    ),
 ];
 
 const USAGE_LIMITS_FIELDS: &[FieldDescriptor] = &[
