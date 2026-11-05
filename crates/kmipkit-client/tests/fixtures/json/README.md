@@ -20,16 +20,17 @@ contain the deterministic normative JSON wire examples from the pinned
 Profiles HTML §5.5.4.1 table immediately following “The normative corresponding
 wire encoding in JSON”. The offline `extract_profiles_json.py` utility strips
 HTML markup/entities and converts indentation nonbreaking spaces to ordinary
-spaces; all JSON tokens, versions, values and timestamps are retained exactly.
+spaces and removes trailing indentation whitespace; all JSON tokens, versions,
+values and timestamps are retained exactly.
 Pinned source HTML SHA-256: `f11144aa793335f38dbd1864ec4709ca83ac80f588bbb790ba37f6c53be207a9`.
 Run it from any directory with Python to reproduce these three fixtures.
 Their SHA-256 values are:
 
 | Fixture | SHA-256 |
 |---|---|
-| request-time-0.json | 51a75d58c1df8e77a4b614a30cdf26fd2a5219bc7347463b38c5996d33810ae4 |
-| response-time-0.json | 431bc2cd5b9689354e4ef6b32692d3a1c86f45e68ee72c599a7754f390a31368 |
-| request-time-1.json | ed49a233d4ec805dad556c4a50b4424a13824275876971acdb45f6b84d3b8ece |
+| request-time-0.json | 9a3c35fe677a16877ac7ee54e5073793a345c2512fed81a06cb1fa21faacecc9 |
+| response-time-0.json | e82000c45832cdced3620c8db610d36729d71969d156e1bb23cb1ce56ce0a555 |
+| request-time-1.json | 77a336ad8bdbead20285f102a7088f33e007612f5c782206041bbd589dbf335d |
 
 These HTML examples retain ProtocolVersion 1.4. They are exercised as literal
 generic Item codec vectors, not as authorized KMIPKit client protocol versions.

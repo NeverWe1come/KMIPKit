@@ -1,53 +1,53 @@
 {"tag":"ResponseMessage",
   "value":[
 
-   
+
   {"tag":"ResponseHeader", "value":[
 
-     
+
   {"tag":"ProtocolVersion", "value":[
 
-       
+
   {"tag":"ProtocolVersionMajor",
   "type":"Integer",
   "value":"0x00000001"},
 
-       
+
   {"tag":"ProtocolVersionMinor", "type":"Integer",
   "value":"0x00000004"}
 
       ]},
 
-     
+
   {"tag":"TimeStamp",
   "type":"DateTime",
   "value":"2016-01-04T11:47:46+00:00"},
 
-     
+
   {"tag":"BatchCount",
   "type":"Integer",
   "value":"0x00000001"}
 
     ]},
 
-   
+
   {"tag":"BatchItem", "value":[
 
-     
+
   {"tag":"Operation", "type":"Enumeration",
   "value":"Query"},
 
-     
+
   {"tag":"ResultStatus",
   "type":"Enumeration",
   "value":"OperationFailed"},
 
-     
+
   {"tag":"ResultReason",
   "type":"Enumeration",
   "value":"ResponseTooLarge"},
 
-     
+
   {"tag":"ResultMessage",
   "type":"TextString", "value":"TOO_LARGE"}
 
