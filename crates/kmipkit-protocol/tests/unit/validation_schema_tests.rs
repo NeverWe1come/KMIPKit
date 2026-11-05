@@ -36,6 +36,9 @@ const ASYNC_CORRELATION_VALUES: u32 = 0x0042_0176;
 const ASYNC_CORRELATION_VALUE: u32 = 0x0042_0006;
 const REVOCATION_REASON: u32 = 0x0042_0081;
 const REVOCATION_REASON_CODE: u32 = 0x0042_0082;
+const PKCS11_INTERFACE: u32 = 0x0042_0159;
+const PKCS11_FUNCTION: u32 = 0x0042_015A;
+const PKCS11_INPUT_PARAMETERS: u32 = 0x0042_015B;
 
 fn item(tag: u32, value: Value) -> Item {
     let raw_tag = RawTag::new(tag).expect("fixture tag fits the TTLV tag field");
@@ -656,6 +659,70 @@ fn query_async_requests_recursively_checks_operation_value_type() {
         issue.code().as_str() == "KMIPKIT-0051-R246"
             && issue.path().to_string() == "Request Payload.Operations.Operation[0]"
             && issue.source().to_string() == "KMIP v2.1 §7.25, Table 377"
+    }));
+}
+
+#[test]
+fn pkcs11_request_schema_recursively_checks_interface_structure() {
+    let payload = structure([
+        item(
+            PKCS11_INTERFACE,
+            Value::structure(structure([item(
+                PKCS11_INTERFACE,
+                Value::integer(1),
+            )])),
+        ),
+        item(
+            PKCS11_FUNCTION,
+            Value::structure(structure([item(
+                PKCS11_FUNCTION,
+                Value::enumeration(1),
+            )])),
+        ),
+    ]);
+
+    let report = validate_structure(
+        &payload.view(),
+        Some(ValidationSchema::RequestPayload(RequestPayloadSchema::Pkcs11)),
+    );
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R260"
+            && issue.path().to_string()
+                == "Request Payload.PKCS#11 Interface.PKCS#11 Interface"
+            && issue.source().to_string() == "KMIP v2.1 §7.28, Table 380"
+    }));
+}
+
+#[test]
+fn pkcs11_request_schema_recursively_checks_input_parameter_structure() {
+    let payload = structure([
+        item(
+            PKCS11_FUNCTION,
+            Value::structure(structure([item(
+                PKCS11_FUNCTION,
+                Value::enumeration(1),
+            )])),
+        ),
+        item(
+            PKCS11_INPUT_PARAMETERS,
+            Value::structure(structure([item(
+                PKCS11_INPUT_PARAMETERS,
+                Value::enumeration(1),
+            )])),
+        ),
+    ]);
+
+    let report = validate_structure(
+        &payload.view(),
+        Some(ValidationSchema::RequestPayload(RequestPayloadSchema::Pkcs11)),
+    );
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R261"
+            && issue.path().to_string()
+                == "Request Payload.PKCS#11 Input Parameters.PKCS#11 Input Parameters"
+            && issue.source().to_string() == "KMIP v2.1 §7.27, Table 379"
     }));
 }
 
