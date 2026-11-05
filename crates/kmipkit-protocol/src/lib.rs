@@ -221,6 +221,10 @@ pub use sign::{SignError, SignRequest, SignResponse};
 pub use signature_verify::{SignatureVerifyError, SignatureVerifyRequest, SignatureVerifyResponse};
 pub use ticket::{Ticket, TicketType, TicketValidationError, TicketValidationErrorKind};
 pub use validate::{ValidateError, ValidateRequest, ValidateResponse};
+pub use validation::{
+    ValidationCode, ValidationIssue, ValidationPath, ValidationPathSegment, ValidationReport,
+    ValidationSeverity, ValidationSourceRef,
+};
 
 #[cfg(test)]
 #[path = "../tests/unit/discover_versions_tests.rs"]
