@@ -9,7 +9,7 @@ use crate::{
 };
 
 const OPERATION: u32 = 0x0000_0025;
-const DATA_LENGTH: u32 = 0x0042_00D5;
+const DATA_LENGTH: u32 = 0x0042_00C4;
 const DATA: u32 = 0x0042_00C2;
 const SUCCESS: u32 = 0;
 

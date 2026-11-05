@@ -12,7 +12,7 @@ use crate::{
 
 const OPERATION: u32 = 0x0000_0026;
 const DATA: u32 = 0x0042_00C2;
-const DATA_LENGTH: u32 = 0x0042_00D5;
+const DATA_LENGTH: u32 = 0x0042_00C4;
 const SUCCESS: u32 = 0;
 
 /// A KMIP v2.1 RNG Seed request from §6.1.50, Table 319.
