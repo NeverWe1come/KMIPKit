@@ -1,5 +1,8 @@
 # Paquetes para Java y Python
 
+Para los objetos gestionados y el material de clave tipados en Rust, consulta
+[Objetos gestionados y material de clave](objetos-gestionados-y-material-de-clave.md).
+
 ## Fachada Rust
 
 Las aplicaciones Rust pueden declarar `kmipkit` como su única dependencia

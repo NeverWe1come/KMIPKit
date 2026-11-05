@@ -1,40 +1,83 @@
-# KMIPKIT-0049 Local Validation Guide
+# KMIPKIT-0049 Rust Quickstart
 
-This guide describes the compiling Rust consumer that the implementation
-must provide. It becomes executable as soon as the typed models land; the
-test task keeps the code sample in sync with the real API.
+The examples use the public API in `kmipkit-protocol` and correspond to the
+compiled consumer cases in `crates/kmipkit-protocol/tests/managed_object_examples.rs`.
+For expanded guidance in both supported documentation languages, see
+`docs/user-guide/en/managed-objects-and-key-material.md` and
+`docs/user-guide/es/objetos-gestionados-y-material-de-clave.md`.
 
-## Construct a plaintext key object
+## Plaintext object
 
-1. Create explicit Key Format Type and Cryptographic Algorithm values.
-2. Build Key Material using the caller's chosen format; do not infer an
-   algorithm or key size from the bytes.
-3. Add optional typed Attributes to Key Value when the chosen KMIP structure
-   carries them.
-4. Wrap Key Value in Key Block, then in the selected managed-object type.
-5. Convert to an Item and pass it to the typed Register or Import helper. The
-   Item carries its object-specific Structure tag (such as `Symmetric Key`),
-   separate from the Object Type Enumeration; the request sends that Item
-   directly without an additional wrapper.
+```rust
+use kmipkit_protocol::{
+    AttributeSet, KeyBlock, KeyBlockValue, KeyFormatType, KeyMaterial, KeyValue,
+    SymmetricKey,
+};
 
-The compiled example must assert exact child order and tag/value types from
-the pinned OASIS table and verify the request through the fake transport.
+let material = KeyMaterial::byte_string(1, vec![0xA1, 0xA2])?;
+let value = KeyValue::try_new(material, Some(AttributeSet::new()))?;
+let block = KeyBlock::try_new(KeyFormatType::from_raw(1))?
+    .with_key_value(KeyBlockValue::Plaintext(value));
+let item = SymmetricKey::try_new(block)?.into_item();
+assert_eq!(item.tag().raw(), 0x0042_008F);
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
 
-## Construct wrapped material
+## Wrapped object
 
-1. Supply wrapped bytes and Key Wrapping Data, including required key
-   identifiers and caller-selected parameters.
-2. Keep the wrapping method, key information, IV/counter/nonce, and encoding
-   option explicit.
-3. Verify that the resulting Key Block carries a Byte String Key Value and
-   preserves the supplied wrapping metadata.
+```rust
+use kmipkit_protocol::{
+    EncryptionKeyInformation, KeyBlock, KeyBlockValue, KeyFormatType,
+    KeyWrappingData, SymmetricKey,
+};
 
-KMIPKit does not perform the wrapping operation or retry the request.
+let wrapping = KeyWrappingData::try_new(1)?
+    .with_encryption_key_information(
+        EncryptionKeyInformation::try_new("wrapping-key".to_owned())?,
+    );
+let block = KeyBlock::try_new(KeyFormatType::from_raw(1))?
+    .with_key_value(KeyBlockValue::Wrapped(vec![0xB1, 0xB2]))
+    .with_key_wrapping_data(wrapping);
+let item = SymmetricKey::try_new(block)?.into_item();
+assert_eq!(item.tag().raw(), 0x0042_008F);
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
 
-## Validate locally
+## Transparent material and unknown fallback
 
-Run the focused Rust tests, API manifest generator check, export audit, format,
-Clippy, and protocol tests specified in
-`implementation-evidence.md`. After local implementation checks, run the
-workspace coverage gate on the supported Windows toolchain. Hosted matrix
-checks remain separate evidence and must be recorded when billing permits.
+```rust
+use kmipkit_protocol::{ManagedObject, ObjectType, TransparentSymmetricKey};
+use kmipkit_ttlv::{Item, RawTag, Structure, Value};
+
+let transparent = TransparentSymmetricKey::try_new(vec![0xC1, 0xC2])?;
+assert_eq!(transparent.into_item().tag().raw(), 0x0042_0043);
+
+let vendor_tag = RawTag::new(0x0054_0102)?.try_checked()?;
+let extension = Item::new(vendor_tag, Value::structure(Structure::new()))?;
+let unknown = ManagedObject::unknown(ObjectType::from_raw(0x8000_0001), extension)?;
+assert_eq!(unknown.object_type().raw(), 0x8000_0001);
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+## Secret owner lifetime
+
+```rust
+use kmipkit_protocol::KeyMaterial;
+
+let caller_owned_secret = vec![0xD1, 0xD2];
+let secret_owner = KeyMaterial::byte_string(1, caller_owned_secret)?;
+drop(secret_owner);
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+KMIPKit zeroizes the payload storage owned by the TTLV value. Copies held by the
+caller, application, foreign runtime, TLS stack, or platform libraries remain
+outside KMIPKit's ownership boundary. The models transport key material and do
+not perform wrapping, unwrapping, or cryptographic operations.
+
+## Local verification
+
+Run the focused Rust tests, API manifest generator check, Rust and binding
+export audits, format, Clippy, protocol tests, and coverage gate recorded in
+`implementation-evidence.md`. Hosted matrix checks remain separate evidence
+and must be recorded when the required GitHub billing is available.

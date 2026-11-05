@@ -5,9 +5,8 @@
 are in `specification/catalog/kmip-2.1.json`.
 
 The table below lists the operative stable catalog requirement IDs in §§2.1–
-3.12. `Test path` identifies the planned executable check before implementation;
-the implementation-evidence record will replace planned references with exact
-test names and code locations after Green.
+3.12 and their stable feature requirements. The resolved mapping below names
+the exact source tables, implementation modules, and executable test functions.
 
 | OASIS requirement ID | Section | KMIPKIT requirement | Planned implementation and verification |
 |---|---:|---|---|
@@ -73,3 +72,36 @@ are accounted for in the gap matrix's requiredness columns and schema tests,
 but are not reported as independent normative behavior. Requirements whose
 only applicable behavior belongs to NIST key-type attributes or Re-Provision
 are outside this feature and remain assigned to their existing scope.
+
+## Resolved implementation-to-test mapping
+
+All source references below are in the pinned `KMIPKIT-SRC-spec`. Table numbers
+refer to KMIP Specification v2.1. The requirement IDs listed in each row are
+the complete set covered by its implementation and executable evidence.
+
+| Requirement IDs | Exact OASIS source | Implementation | Executable evidence |
+|---|---|---|---|
+| `KMIPKIT-REQ-SPEC-2.3-001`, `-002`, `-003` | §2.3, Table 4; §6.1.43, Tables 291–293 | `crates/kmipkit-protocol/src/managed_object.rs`; additive Register/Import helpers in `register.rs` and `import.rs` | `managed_objects.rs::every_known_managed_object_uses_its_oasis_structure_tag_and_field_order`; `managed_objects.rs::unknown_object_types_and_vendor_children_remain_lossless`; `register_execution_tests.rs::typed_certificate_register_uses_direct_object_tag_on_fake_transport`; `import_execution_tests.rs::typed_wrapped_symmetric_key_import_uses_direct_object_tag_on_fake_transport` |
+| `KMIPKIT-REQ-SPEC-2.4-001-001`, `-001-002`, `-002-001`, `-002-002` | §2.4, Table 5; §6.1.25, Tables 205–207 | `managed_object.rs` preserves PGP version and opaque Key Block; PGP decomposition is explicitly out of scope | `managed_objects.rs::every_known_managed_object_uses_its_oasis_structure_tag_and_field_order`; `managed_objects.rs::every_known_object_type_dispatches_only_its_matching_structure_tag`; `managed_object_examples.rs::plaintext_typed_object_uses_direct_object_structure`; `spec.md` Edge Cases and Scope and Exclusions record the non-PGP-aware boundary |
+| `KMIPKIT-REQ-SPEC-2.7-001` | §2.7, Table 8; §§3.1–3.3, Tables 12–17 | `managed_object.rs`, `key_block.rs`, `key_wrapping.rs` | `managed_objects.rs::every_known_managed_object_uses_its_oasis_structure_tag_and_field_order`; `key_structures.rs::plaintext_and_wrapped_key_values_have_distinct_ttlv_types`; `managed_object_examples.rs::wrapped_object_keeps_wrapping_metadata_and_uses_byte_string` |
+| `KMIPKIT-REQ-SPEC-2.8-001-001`, `-001-002`, `-003` | §2.8, Table 9; §10.1.2 | `managed_object.rs::SplitKey` schema and conditional validation | `managed_objects.rs::split_key_rejects_identifier_outside_one_through_parts`; `managed_objects.rs::polynomial_prime_field_requires_prime_field_size`; `managed_objects.rs::split_key_reader_rejects_invalid_numeric_and_conditional_fields`; `managed_objects.rs::split_key_prime_field_size_precedes_key_block_in_table_nine_order` |
+| `KMIPKIT-REQ-SPEC-3.1-001`, `-002`, `-004-001`, `-004-002`, `-005-001`, `-005-002`, `-006`, `-007` | §3.1, Table 12; §10.1.2 | `key_block.rs` | `key_structures.rs::key_block_builder_emits_canonical_order_independent_of_setter_order`; `key_structures.rs::key_block_rejects_unpaired_algorithm_and_length`; `key_structures.rs::wrapped_key_value_requires_key_wrapping_data`; `key_structures.rs::plaintext_key_value_forbids_key_wrapping_data`; `key_structures.rs::key_block_reader_preserves_the_tree_and_exposes_typed_header_values` |
+| `KMIPKIT-REQ-SPEC-3.2-001`, `-003` | §3.2, Table 13; §10.1.2 | `key_block.rs::KeyValue` and `key_material.rs::KeyMaterial` | `key_material.rs::key_value_keeps_optional_attributes_after_required_material`; `key_material.rs::key_material_reader_preserves_format_and_ttlv_type`; `key_material.rs::known_key_formats_reject_the_wrong_key_material_ttlv_form` |
+| `KMIPKIT-REQ-SPEC-3.3-001-001`, `-001-002`, `-004`, `-009`, `-010`, `-011` | §3.3, Tables 14–17; §10.1.2 | `key_wrapping.rs`; `key_block.rs` verifies nested wrapping data | `key_wrapping.rs::key_wrapping_data_emits_method_before_optional_metadata`; `key_wrapping.rs::wrapping_reader_checks_required_identifiers_and_keeps_unknown_fields`; `key_wrapping.rs::wrapping_data_requires_encryption_or_mac_signature_key_information`; `key_structures.rs::wrapped_key_value_requires_key_wrapping_data` |
+| `KMIPKIT-REQ-SPEC-3.3-002`, `-006` | §3.3, Tables 14–15 | Caller-owned conditions are represented in profile evidence; no unsupported universal inference is made when wrapping-method details or the encoded plaintext are unavailable | `crates/kmipkit-protocol/src/profile.rs` documents the limitation; `crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_caller_owned_wrapping_iv_and_ttlv_encoding_obligations` proves the requirements remain explicitly caller-attested |
+| `KMIPKIT-REQ-SPEC-3.3-003` | §3.3, Table 14; §11.18 | Existing profile request validation rejects Key Value Attributes with No Encoding | `crates/kmipkit-protocol/src/profile.rs`; `crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_key_value_attributes_when_wrapping_uses_no_encoding` |
+| `KMIPKIT-REQ-SPEC-3.4-002` | §3.4, Table 18 | `key_material.rs::TransparentSymmetricKey` | `transparent_key_material.rs::transparent_symmetric_key_contains_required_key_bytes` |
+| `KMIPKIT-REQ-SPEC-3.5-002`, `-003`, `-004`, `-005` | §3.5, Table 19 | `key_material.rs::TransparentDsaPrivateKey` | `transparent_key_material.rs::transparent_dsa_private_and_public_fields_follow_tables_19_and_20` |
+| `KMIPKIT-REQ-SPEC-3.6-002`, `-004`, `-005` | §3.6, Table 20 | `key_material.rs::TransparentDsaPublicKey` | `transparent_key_material.rs::transparent_dsa_private_and_public_fields_follow_tables_19_and_20` |
+| `KMIPKIT-REQ-SPEC-3.7-002`, `-003` | §3.7, Table 21 | `key_material.rs::TransparentRsaPrivateKey` | `transparent_key_material.rs::transparent_rsa_private_supports_only_source_defined_alternatives` |
+| `KMIPKIT-REQ-SPEC-3.8-002`, `-003` | §3.8, Table 22 | `key_material.rs::TransparentRsaPublicKey` | `transparent_key_material.rs::transparent_rsa_public_requires_modulus_and_public_exponent` |
+| `KMIPKIT-REQ-SPEC-3.9-002`, `-003`, `-004` | §3.9, Table 23 | `key_material.rs::TransparentDhPrivateKey` | `transparent_key_material.rs::transparent_dh_private_and_public_preserve_optional_q_and_j` |
+| `KMIPKIT-REQ-SPEC-3.10-002`, `-003`, `-004` | §3.10, Table 24 | `key_material.rs::TransparentDhPublicKey` | `transparent_key_material.rs::transparent_dh_private_and_public_preserve_optional_q_and_j` |
+| `KMIPKIT-REQ-SPEC-3.11-002`, `-003` | §3.11, Table 25 | `key_material.rs::TransparentEcPrivateKey` | `transparent_key_material.rs::transparent_ec_private_and_public_preserve_curve_and_material` |
+| `KMIPKIT-REQ-SPEC-3.12-002`, `-003` | §3.12, Table 26 | `key_material.rs::TransparentEcPublicKey` | `transparent_key_material.rs::transparent_ec_private_and_public_preserve_curve_and_material` |
+| `KMIPKIT-REQ-SPEC-6.1.43-005` | §§3.2–3.3, Tables 13–17; §6.1.43, Tables 291–293; §11.18 | `register.rs`, `import.rs`, `key_block.rs`, `key_wrapping.rs` | `register_execution_tests.rs::typed_certificate_register_uses_direct_object_tag_on_fake_transport`; `import_execution_tests.rs::typed_wrapped_symmetric_key_import_uses_direct_object_tag_on_fake_transport`; `profile_unit.rs::profile_rejects_key_value_attributes_when_wrapping_uses_no_encoding` |
+
+The requirement IDs above are exactly the 53 operative IDs in the feature
+scope. Catalog records that are table-heading metadata are not counted as
+independent requirements. Caller-attested obligations are traceable but are
+not presented as automatically verified by local structural parsing.

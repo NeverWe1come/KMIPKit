@@ -44,7 +44,7 @@ fn wrapped_object_keeps_wrapping_metadata_and_uses_byte_string() {
 }
 
 #[test]
-fn transparent_material_and_unknown_object_fallback_remain_available() {
+fn transparent_material_unknown_fallback_and_secret_owner_examples_compile() {
     let transparent = TransparentSymmetricKey::try_new(vec![0xC1])
         .expect("transparent key has required Key bytes")
         .into_item();
@@ -61,4 +61,9 @@ fn transparent_material_and_unknown_object_fallback_remain_available() {
     let unknown = ManagedObject::unknown(ObjectType::from_raw(0x8000_0001), extension)
         .expect("unknown Object Type remains generic");
     assert_eq!(unknown.object_type().raw(), 0x8000_0001);
+
+    let caller_owned_secret = vec![0xD1, 0xD2];
+    let secret_owner = KeyMaterial::byte_string(1, caller_owned_secret)
+        .expect("Raw key bytes become a KMIPKit-owned zeroizing value");
+    drop(secret_owner);
 }

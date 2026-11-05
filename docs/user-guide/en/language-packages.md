@@ -1,5 +1,8 @@
 # Java and Python packages
 
+For typed Rust managed objects and key material, see
+[Managed objects and key material](managed-objects-and-key-material.md).
+
 ## Rust facade
 
 Rust applications can declare `kmipkit` as their only direct KMIPKit
