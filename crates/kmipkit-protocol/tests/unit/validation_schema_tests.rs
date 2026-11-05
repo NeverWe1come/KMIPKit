@@ -621,6 +621,45 @@ fn revoke_recursively_checks_revocation_reason_code_type() {
 }
 
 #[test]
+fn query_request_recursively_checks_object_group_value_type() {
+    let groups = structure([item(0x0042_0056, Value::integer(7))]);
+    let payload = structure([
+        item(0x0042_0074, Value::enumeration(1)),
+        item(0x0042_0166, Value::structure(groups)),
+    ]);
+    let report = validate_structure(
+        &payload.view(),
+        Some(ValidationSchema::RequestPayload(
+            RequestPayloadSchema::Query,
+        )),
+    );
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R196"
+            && issue.path().to_string() == "Request Payload.Object Groups.Object Group[0]"
+            && issue.source().to_string() == "KMIP v2.1 §7.23, Table 375"
+    }));
+}
+
+#[test]
+fn query_async_requests_recursively_checks_operation_value_type() {
+    let operations = structure([item(0x0042_005C, Value::integer(7))]);
+    let payload = structure([item(OPERATIONS, Value::structure(operations))]);
+    let report = validate_structure(
+        &payload.view(),
+        Some(ValidationSchema::RequestPayload(
+            RequestPayloadSchema::QueryAsyncRequests,
+        )),
+    );
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R246"
+            && issue.path().to_string() == "Request Payload.Operations.Operation[0]"
+            && issue.source().to_string() == "KMIP v2.1 §7.25, Table 377"
+    }));
+}
+
+#[test]
 fn generic_structure_without_identity_does_not_guess_an_operation_schema() {
     let mut structure = Structure::new();
     structure
