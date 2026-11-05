@@ -279,6 +279,25 @@ class T098LifecycleReconciliationTests(unittest.TestCase):
                 self.assertEqual(OWNER_APPROVAL, row["approvalSource"]["path"])
                 self.assertIn("KMIPKIT-0018-FR-001", row["requirementIds"])
 
+    def test_operation_rows_reference_each_reconciled_rust_declaration(self) -> None:
+        for operation in OPERATIONS:
+            expected = {
+                row["declarationId"]
+                for row in self.baseline_rows
+                if row["declarationId"] in _expected_mapped_ids(self.baseline_rows)
+                and _operation_for_name(row["exportName"]) == operation
+            }
+            manifest_operation = next(
+                item
+                for item in self.manifest["operations"]
+                if item.get("operationId") == f"KMIPKIT-ELEM-OP-C2S-{operation.upper()}"
+            )
+            with self.subTest(operation=operation):
+                self.assertTrue(
+                    expected <= set(manifest_operation["declarations"]["rust"]),
+                    f"operation row omits mapped Rust declarations: {sorted(expected - set(manifest_operation['declarations']['rust']))[:5]}",
+                )
+
     def test_all_trait_paths_are_exact_owner_backed_rust_only_exclusions(self) -> None:
         expected = {
             (row["packageId"], row["exportName"]): row
