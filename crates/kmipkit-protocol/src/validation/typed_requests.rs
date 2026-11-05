@@ -35,7 +35,7 @@ fn validate_nested_request_field(
     schema: crate::NestedStructureSchema,
     field: &'static str,
 ) -> ValidationReport {
-    super::nested::validate_nested_with_prefix(
+    crate::validation::validate_nested_structure_with_prefix(
         &structure.view(),
         schema,
         &crate::ValidationPath::root()
@@ -359,7 +359,7 @@ impl ValidateKmipRequest for SetConstraintsRequest {
     const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::SetConstraints;
 
     fn validate(&self) -> ValidationReport {
-        super::nested::validate_nested_with_prefix(
+        crate::validation::validate_nested_structure_with_prefix(
             &self.constraints(),
             crate::NestedStructureSchema::Constraints,
             &crate::ValidationPath::root()
@@ -375,7 +375,7 @@ impl ValidateKmipRequest for SetDefaultsRequest {
     fn validate(&self) -> ValidationReport {
         let mut report = ValidationReport::default();
         if let Some(defaults) = self.defaults_information() {
-            report.append(super::nested::validate_nested_with_prefix(
+            report.append(crate::validation::validate_nested_structure_with_prefix(
                 &defaults,
                 crate::NestedStructureSchema::DefaultsInformation,
                 &crate::ValidationPath::root()

@@ -678,9 +678,8 @@ fn derive_key_validation_recurses_into_cryptographic_parameters() {
         ObjectType::from_raw(2),
         vec![UniqueIdentifier::TextString("source".to_owned())],
         DerivationMethod::from_raw(4),
-        DerivationParameters::new().with_cryptographic_parameters(
-            gcm_parameters_without_required_lengths(),
-        ),
+        DerivationParameters::new()
+            .with_cryptographic_parameters(gcm_parameters_without_required_lengths()),
         attributes,
     );
 
