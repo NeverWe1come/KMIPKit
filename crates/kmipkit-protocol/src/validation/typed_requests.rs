@@ -226,12 +226,6 @@ impl_crypto_request_validation!(
     "Data",
     "§6.1.11, Table 196"
 );
-impl_validation_with_existing_check!(
-    crate::HashRequest => Hash,
-    validate_multipart_shape,
-    "Data",
-    "§6.1.24, Table 235"
-);
 impl_crypto_request_validation!(
     crate::MacRequest => Mac,
     validate_multipart_shape,
