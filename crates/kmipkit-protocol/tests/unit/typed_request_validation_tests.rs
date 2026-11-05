@@ -339,6 +339,99 @@ fn join_split_key_validation_requires_reference_threshold_context_and_count() {
 }
 
 #[test]
+fn constraints_validation_checks_known_nested_shapes_and_preserves_empty_values() {
+    const CONSTRAINT: u32 = 0x0042_0169;
+    const OBJECT_TYPES: u32 = 0x0042_0167;
+
+    let mut malformed_constraint = kmipkit_ttlv::Structure::new();
+    malformed_constraint
+        .try_push(
+            Item::new(
+                RawTag::new(OBJECT_TYPES)
+                    .expect("Object Types is a valid raw tag")
+                    .try_checked()
+                    .expect("Object Types is an allocated KMIP tag"),
+                Value::integer(7),
+            )
+            .expect("an invalid known nested type remains valid generic TTLV"),
+        )
+        .expect("Constraint fixture is valid generic TTLV");
+    let mut constraints = kmipkit_ttlv::Structure::new();
+    constraints
+        .try_push(
+            Item::new(
+                RawTag::new(CONSTRAINT)
+                    .expect("Constraint is a valid raw tag")
+                    .try_checked()
+                    .expect("Constraint is an allocated KMIP tag"),
+                Value::structure(malformed_constraint),
+            )
+            .expect("nested Constraint is valid generic TTLV"),
+        )
+        .expect("Constraints fixture is valid generic TTLV");
+    let report = SetConstraintsRequest::new(constraints).validate();
+    assert!(!report.is_valid());
+    assert_eq!(
+        report.issues()[0].source().to_string(),
+        "KMIP v2.1 §7.6, Table 357"
+    );
+
+    assert!(
+        SetConstraintsRequest::new(kmipkit_ttlv::Structure::new())
+            .validate()
+            .is_valid()
+    );
+}
+
+#[test]
+fn defaults_validation_checks_required_attribute_container_and_preserves_empty_defaults() {
+    const OBJECT_DEFAULTS: u32 = 0x0042_0153;
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+
+    let mut object_default = kmipkit_ttlv::Structure::new();
+    object_default
+        .try_push(
+            Item::new(
+                RawTag::new(OBJECT_TYPE)
+                    .expect("Object Type is a valid raw tag")
+                    .try_checked()
+                    .expect("Object Type is an allocated KMIP tag"),
+                Value::enumeration(2),
+            )
+            .expect("Object Type value is valid TTLV"),
+        )
+        .expect("Object Defaults fixture is valid generic TTLV");
+    let mut defaults = kmipkit_ttlv::Structure::new();
+    defaults
+        .try_push(
+            Item::new(
+                RawTag::new(OBJECT_DEFAULTS)
+                    .expect("Object Defaults is a valid raw tag")
+                    .try_checked()
+                    .expect("Object Defaults is an allocated KMIP tag"),
+                Value::structure(object_default),
+            )
+            .expect("nested Object Defaults is valid generic TTLV"),
+        )
+        .expect("Defaults Information fixture is valid generic TTLV");
+    let report = SetDefaultsRequest::new()
+        .with_defaults_information(defaults)
+        .validate();
+    assert!(!report.is_valid());
+    assert_eq!(
+        report.issues()[0].source().to_string(),
+        "KMIP v2.1 §7.22, Table 374"
+    );
+
+    assert!(
+        SetDefaultsRequest::new()
+            .with_defaults_information(kmipkit_ttlv::Structure::new())
+            .validate()
+            .is_valid()
+    );
+}
+
+#[test]
 fn create_key_pair_validation_rejects_conflicting_table_191_attributes() {
     const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002a;
     let attributes = |length| {
