@@ -129,9 +129,13 @@ class T102ProfileModelReexportMappingTests(unittest.TestCase):
 
         for (package, export_name), row in rows.items():
             crate = REEXPORT_PACKAGES[package]
-            suffix = export_name.removeprefix(f"{crate}::")
-            client_export = f"{CLIENT_CRATE}::{suffix}"
-            client_row = declarations[("rust-kmipkit-client", client_export)]
+            if export_name.startswith("kmipkit::protocol::"):
+                suffix = export_name.removeprefix("kmipkit::protocol::")
+                client_row = declarations[("rust-kmipkit-protocol", f"kmipkit_protocol::{suffix}")]
+            else:
+                suffix = export_name.removeprefix(f"{crate}::")
+                client_export = f"{CLIENT_CRATE}::{suffix}"
+                client_row = declarations[("rust-kmipkit-client", client_export)]
             expected_mappings = dict(client_row["languageMappings"])
             expected_mappings["rust"] = {"packageId": package, "name": export_name}
             with self.subTest(export_name=export_name):
@@ -250,7 +254,7 @@ class T102ProfileModelReexportMappingTests(unittest.TestCase):
         self.assertEqual("declared", capability["capabilityState"])
         expected_model_exports = {
             f"{crate}::{type_name}{suffix}"
-            for crate in ("kmipkit", "kmipkit_protocol")
+            for crate in ("kmipkit", "kmipkit::protocol", "kmipkit_protocol")
             for type_name, suffixes in MODEL_SUFFIXES.items()
             for suffix in suffixes
         }
