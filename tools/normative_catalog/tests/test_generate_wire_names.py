@@ -33,6 +33,9 @@ OUTPUT_DATA_PATH = "crates/kmipkit-client/src/wire_names_generated.tsv"
 
 
 class WireNameRenderingTests(unittest.TestCase):
+    def test_generated_metadata_does_not_use_unapproved_macros(self) -> None:
+        self.assertNotIn("include_str!", render_rust())
+
     def test_renders_only_assigned_tags_in_numeric_order(self) -> None:
         catalog = {
             "elements": [
