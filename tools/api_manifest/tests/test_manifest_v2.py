@@ -5980,6 +5980,38 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             package_languages,
         )
 
+    def test_0057_wire_encoding_trait_paths_are_reviewed_language_facilities(self) -> None:
+        exclusions = [
+            row for row in self.checked_in_manifest["approvedExclusions"]
+            if row["packageId"] in {"rust-kmipkit-client", "rust-kmipkit-transport"}
+            and re.match(r"<kmipkit_(client|transport)::WireEncoding as .+>::", row["exportName"])
+        ]
+
+        self.assertEqual(len(exclusions), 40)
+        for row in exclusions:
+            with self.subTest(export_name=row["exportName"]):
+                self.assertIn("standard and blanket Rust trait implementations", row["reason"])
+                self.assertEqual(
+                    row["approvalSource"]["path"],
+                    "specs/057-multi-encoding-client-integration/spec.md",
+                )
+
+    def test_0057_encoding_mismatch_transport_variants_remain_blocked(self) -> None:
+        variants = [
+            row for row in self.checked_in_manifest["publicDeclarations"]
+            if row["exportName"].endswith("TransportCauseCategory::EncodingMismatch")
+        ]
+
+        self.assertEqual(
+            {row["packageId"] for row in variants},
+            {"rust-kmipkit", "rust-kmipkit-transport"},
+        )
+        for row in variants:
+            with self.subTest(export_name=row["exportName"]):
+                self.assertEqual(row["declarationState"], "blocked")
+                self.assertIn("KMIPKIT-0057-FR-004", row["requirementIds"])
+                self.assertEqual(row["candidateSpecId"], "KMIPKIT-0057")
+
     def test_checked_in_manifest_inventories_all_rust_public_access_paths(self) -> None:
         rust_packages = EXPECTED_PACKAGES - {"c-kmipkit", "java-kmipkit", "python-kmipkit"}
         declarations = [
