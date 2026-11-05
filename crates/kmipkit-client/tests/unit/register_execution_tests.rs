@@ -311,7 +311,7 @@ fn typed_certificate_register_uses_direct_object_tag_on_fake_transport() {
     assert_eq!(operation, Some(REGISTER_OPERATION));
     assert_eq!(fields, [OBJECT_TYPE, ATTRIBUTES, CERTIFICATE]);
     assert_eq!(
-        nested[1],
+        nested[0],
         [
             CRYPTOGRAPHIC_USAGE_MASK,
             CERTIFICATE_LENGTH,
@@ -319,7 +319,7 @@ fn typed_certificate_register_uses_direct_object_tag_on_fake_transport() {
             CRYPTOGRAPHIC_LENGTH,
         ]
     );
-    assert_eq!(nested[2], [CERTIFICATE_TYPE, CERTIFICATE_VALUE]);
+    assert_eq!(nested[1], [CERTIFICATE_TYPE, CERTIFICATE_VALUE]);
     assert!(
         request
             .windows(b"typed-certificate-value".len())

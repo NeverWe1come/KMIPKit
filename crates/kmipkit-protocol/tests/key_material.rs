@@ -28,6 +28,21 @@ fn unknown_key_format_remains_open_and_raw_preserving() {
 }
 
 #[test]
+fn key_material_reader_preserves_format_and_ttlv_type() {
+    let item = KeyMaterial::byte_string(3, vec![0x91, 0x92])
+        .expect("PKCS #1 material uses a Byte String")
+        .into_item();
+    let material = KeyMaterial::try_from_item(
+        item.try_clone().expect("explicit zeroizing copy"),
+        KeyFormatType::from_raw(3),
+    )
+    .expect("matching key material can be read");
+    assert_eq!(material.format_raw(), 3);
+    assert_eq!(material.item_type(), ItemType::ByteString);
+    assert!(KeyMaterial::try_from_item(item, KeyFormatType::from_raw(7)).is_err());
+}
+
+#[test]
 fn key_value_keeps_optional_attributes_after_required_material() {
     let value = kmipkit_protocol::KeyValue::try_new(
         KeyMaterial::byte_string(1, vec![0xA0]).unwrap(),

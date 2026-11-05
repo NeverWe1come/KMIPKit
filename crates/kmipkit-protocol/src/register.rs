@@ -7,8 +7,8 @@ use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Valu
 
 use crate::cryptographic_operation::{self as common, OwnedResponseTtlv};
 use crate::{
-    AttributeSet, KmipOperationResult, ObjectType, ProtocolCauseCategory, ProtocolError,
-    ProtocolErrorKind, ResponseBatchItemView, ResultMessage, ResultValidationError,
+    AttributeSet, KmipOperationResult, ManagedObject, ObjectType, ProtocolCauseCategory,
+    ProtocolError, ProtocolErrorKind, ResponseBatchItemView, ResultMessage, ResultValidationError,
     UniqueIdentifier,
 };
 
@@ -73,6 +73,13 @@ impl RegisterRequest {
             protection_storage_masks: None,
             opaque_object_context: None,
         }
+    }
+
+    /// Creates a Register request from the typed object and derives its Object Type.
+    #[must_use]
+    pub fn from_managed_object(object: ManagedObject, attributes: AttributeSet) -> Self {
+        let object_type = object.object_type();
+        Self::new(object_type, attributes, object.into_item())
     }
 
     /// Selects local attribute handling for an Opaque Object.

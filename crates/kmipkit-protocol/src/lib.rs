@@ -46,6 +46,9 @@ mod hash;
 mod import;
 mod interop;
 mod join_split_key;
+mod key_block;
+mod key_material;
+mod key_wrapping;
 mod lifecycle;
 mod locate;
 mod log;
@@ -53,6 +56,7 @@ mod login;
 mod logout;
 mod mac;
 mod mac_verify;
+mod managed_object;
 mod message;
 mod modify_attribute;
 mod multipart;
@@ -154,6 +158,13 @@ pub use interop::{InteropError, InteropRequest, InteropResponse};
 pub use join_split_key::{
     JoinSplitKeyError, JoinSplitKeyRequest, JoinSplitKeyResponse, SplitKeyReference,
 };
+pub use key_block::{KeyBlock, KeyBlockValue, KeyValue};
+pub use key_material::{
+    KeyMaterial, TransparentDhPrivateKey, TransparentDhPublicKey, TransparentDsaPrivateKey,
+    TransparentDsaPublicKey, TransparentEcPrivateKey, TransparentEcPublicKey,
+    TransparentRsaPrivateKey, TransparentRsaPublicKey, TransparentSymmetricKey,
+};
+pub use key_wrapping::{EncryptionKeyInformation, KeyWrappingData, MacSignatureKeyInformation};
 pub use locate::{
     LocateError, LocateRequest, LocateResponse, ObjectGroupMember, StorageStatusMask,
 };
@@ -162,6 +173,10 @@ pub use login::{LoginError, LoginRequest, LoginResponse};
 pub use logout::{LogoutError, LogoutRequest, LogoutResponse};
 pub use mac::{MacError, MacRequest, MacResponse};
 pub use mac_verify::{MacVerifyError, MacVerifyRequest, MacVerifyResponse};
+pub use managed_object::{
+    Certificate, CertificateRequest, ManagedObject, ManagedObjectError, OpaqueObject, PgpKey,
+    PrivateKey, PublicKey, SecretData, SplitKey, SymmetricKey,
+};
 pub use message::{
     MessageExtensionView, MessageValidationError, MessageValidationErrorKind, ProtocolVersion,
     RequestBatchItemView, RequestHeaderView, RequestMessage, ResponseBatchItemView,

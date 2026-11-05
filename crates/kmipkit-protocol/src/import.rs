@@ -9,9 +9,9 @@ use kmipkit_ttlv::{
 
 use crate::cryptographic_operation::{self as common, OwnedResponseTtlv};
 use crate::{
-    AttributeSet, KeyWrapType, KmipOperationResult, ObjectType, ProtocolCauseCategory,
-    ProtocolError, ProtocolErrorKind, ResponseBatchItemView, ResultMessage, ResultValidationError,
-    UniqueIdentifier,
+    AttributeSet, KeyWrapType, KmipOperationResult, ManagedObject, ObjectType,
+    ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ResponseBatchItemView, ResultMessage,
+    ResultValidationError, UniqueIdentifier,
 };
 
 const OPERATION: u32 = 0x0000_002A;
@@ -67,6 +67,22 @@ impl ImportRequest {
             attributes,
             object,
         }
+    }
+
+    /// Creates an Import request from a typed object and derives its Object Type.
+    #[must_use]
+    pub fn from_managed_object(
+        unique_identifier: UniqueIdentifier,
+        object: ManagedObject,
+        attributes: AttributeSet,
+    ) -> Self {
+        let object_type = object.object_type();
+        Self::new(
+            unique_identifier,
+            object_type,
+            attributes,
+            object.into_item(),
+        )
     }
 
     /// Sets whether a pre-existing object with this identifier is replaced.
