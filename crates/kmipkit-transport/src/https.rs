@@ -52,6 +52,9 @@ use std::thread::JoinHandle;
 /// negotiated. TLS ALPN is empty and the adapter uses Hyper's HTTP/1 driver.
 /// The default timeout policy comes from the validated configuration, and
 /// [`Self::exchange_with_options`] accepts per-call overrides.
+/// Each exchange uses its selected KMIP encoding's Content-Type for the
+/// request and requires the response to match. Direct calls without an
+/// encoding option use TTLV, including calls on a reused connection.
 ///
 /// `KMIPKit` zeroizes initialized bytes in its staged request owner and partial
 /// response allocation. This does not cover caller-owned input or copies made
@@ -106,7 +109,9 @@ struct HttpsRoute {
     target: String,
 }
 
-struct HttpsConnectionSettings {
+// Rebuilt for each exchange: connection reuse must not retain a previous
+// exchange's media type or timeout overrides.
+struct HttpsExchangeSettings {
     route: HttpsRoute,
     resolver: Resolver,
     client_config: Arc<rustls::ClientConfig>,
@@ -192,7 +197,7 @@ impl HttpsTransport {
         })
     }
 
-    /// Exchanges caller bytes using timeout overrides for this request.
+    /// Exchanges caller bytes using encoding and timeout options for this request.
     ///
     /// Unspecified timeout phases inherit the validated configuration's
     /// [`TimeoutPolicy`]. The response cap is enforced while streaming the
@@ -212,11 +217,7 @@ impl HttpsTransport {
     ) -> Result<TransportResponse, TransportError> {
         let exchange_started = Instant::now();
         let policy = self.configuration.timeouts().with_overrides(options);
-        let content_type = match options.wire_encoding().unwrap_or_default() {
-            WireEncoding::Ttlv => "application/octet-stream",
-            WireEncoding::Json => "application/json",
-            WireEncoding::Xml => "text/xml",
-        };
+        let content_type = content_type_for_encoding(options.wire_encoding().unwrap_or_default());
         if request.len() > self.configuration.max_request_bytes() {
             return Err(safe_error(
                 RequestDeliveryState::NotSent,
@@ -486,7 +487,7 @@ async fn exchange_on_worker(
         });
     }
 
-    let settings = HttpsConnectionSettings {
+    let settings = HttpsExchangeSettings {
         route,
         resolver,
         client_config,
@@ -535,7 +536,7 @@ async fn exchange_on_worker(
 
 async fn acquire_https_connection(
     connection_state: &StdMutex<Option<HttpsConnection>>,
-    settings: &HttpsConnectionSettings,
+    settings: &HttpsExchangeSettings,
     control: &ExchangeControl,
     #[cfg(test)] mut abort_observer: Option<mpsc::SyncSender<()>>,
     #[cfg(test)] mut cleanup_gate: Option<DriverCleanupGateForTest>,
@@ -588,7 +589,7 @@ async fn acquire_https_connection(
 }
 
 async fn connect_https_connection(
-    settings: &HttpsConnectionSettings,
+    settings: &HttpsExchangeSettings,
     control: ExchangeControl,
     #[cfg(test)] abort_observer: Option<mpsc::SyncSender<()>>,
     #[cfg(test)] cleanup_gate: Option<DriverCleanupGateForTest>,
@@ -653,19 +654,20 @@ async fn connect_https_connection(
 async fn execute_https_exchange(
     session: &mut HttpsConnection,
     request_owner: SecretBuffer,
-    settings: &HttpsConnectionSettings,
+    settings: &HttpsExchangeSettings,
     max_response_bytes: usize,
     control: &ExchangeControl,
     #[cfg(test)] response_buffer_observer: Option<ResponseBufferObserver>,
 ) -> Result<TransportResponse, TransportError> {
-    let request = build_http_request(&settings.route, request_owner, settings.content_type)
-        .map_err(|_| {
-            safe_error(
-                RequestDeliveryState::NotSent,
-                TransportCauseCategory::Other,
-                io::Error::other("HTTP request construction failed"),
-            )
-        })?;
+    let route = &settings.route;
+    let content_type = settings.content_type;
+    let request = build_http_request(route, request_owner, content_type).map_err(|_| {
+        safe_error(
+            RequestDeliveryState::NotSent,
+            TransportCauseCategory::Other,
+            io::Error::other("HTTP request construction failed"),
+        )
+    })?;
     let mut request = Some(request);
     let response = send_request_when_ready(
         &mut session.sender,
@@ -678,7 +680,7 @@ async fn execute_https_exchange(
     .map_err(|error| io_error(error, control.delivery_state()))?;
     read_response_body(
         response,
-        settings.content_type,
+        content_type,
         max_response_bytes,
         control,
         #[cfg(test)]
@@ -1236,6 +1238,15 @@ impl Body for RequestBody {
 
     fn size_hint(&self) -> SizeHint {
         SizeHint::with_exact(self.length)
+    }
+}
+
+// OASIS KMIP Profiles v2.1 §§5.3.1–5.3.2; contextual body rule in ADR-0018.
+fn content_type_for_encoding(encoding: WireEncoding) -> &'static str {
+    match encoding {
+        WireEncoding::Ttlv => "application/octet-stream",
+        WireEncoding::Json => "application/json",
+        WireEncoding::Xml => "text/xml",
     }
 }
 

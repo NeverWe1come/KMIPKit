@@ -35,6 +35,41 @@ fn response_wire(media_type: &str, body: &[u8], declared_length: usize) -> Vec<u
 }
 
 #[test]
+fn public_https_adapter_uses_selected_content_type_for_each_wire_format() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    for (encoding, media_type, body) in FORMATS {
+        let public_encoding = match encoding {
+            WireEncoding::Ttlv => kmipkit_transport::WireEncoding::Ttlv,
+            WireEncoding::Json => kmipkit_transport::WireEncoding::Json,
+            WireEncoding::Xml => kmipkit_transport::WireEncoding::Xml,
+        };
+        let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
+        let address = listener.local_addr();
+        let peer = spawn_raw_response_peer(
+            listener.into_inner(),
+            server_config(&pki),
+            response_wire(media_type, body, body.len()),
+        );
+        let mut adapter = public_local_https_adapter(&pki, address);
+        let result = adapter.exchange_with_options(
+            body,
+            body.len(),
+            &kmipkit_transport::RequestOptions::default().with_wire_encoding(public_encoding),
+        );
+        let peer = peer.join().expect("the bounded HTTPS peer completes");
+        let request = peer
+            .request
+            .expect("the peer captured the selected request");
+        assert_eq!(header_values(&request, "content-type"), [media_type]);
+        assert!(
+            request.body == body,
+            "the public adapter preserves wire bytes"
+        );
+        assert!(matches!(result, Ok(response) if response.as_bytes() == body));
+    }
+}
+
+#[test]
 fn selected_encoding_posts_exact_body_and_headers_and_accepts_the_same_format_at_the_byte_cap() {
     let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
     for (encoding, media_type, body) in FORMATS {
@@ -76,9 +111,9 @@ fn selected_encoding_posts_exact_body_and_headers_and_accepts_the_same_format_at
             request.body == body,
             "the selected wire bytes are unchanged"
         );
-        assert!(header_values(&request, "accept-encoding").is_empty());
-        assert!(header_values(&request, "content-encoding").is_empty());
-        assert!(header_values(&request, "transfer-encoding").is_empty());
+        assert_eq!(header_values(&request, "accept-encoding").len(), 0);
+        assert_eq!(header_values(&request, "content-encoding").len(), 0);
+        assert_eq!(header_values(&request, "transfer-encoding").len(), 0);
         assert_eq!(
             peer.protocol_version,
             Some(rustls::ProtocolVersion::TLSv1_3)
@@ -96,6 +131,7 @@ fn selected_encoding_changes_on_a_reused_https_connection() {
     let address = listener.local_addr();
     let responses = FORMATS
         .iter()
+        .chain(std::iter::once(&FORMATS[0]))
         .map(|(_, media_type, body)| {
             response_wire(&format!("{media_type}; version=1"), body, body.len())
         })
@@ -116,13 +152,25 @@ fn selected_encoding_changes_on_a_reused_https_connection() {
                 &RequestOptions::default().with_wire_encoding(encoding),
             )
             .expect("each exchange uses its own encoding on the healthy connection");
-        assert!(response.as_bytes() == body);
+        assert!(response.as_bytes() == body, "response bytes are unchanged");
     }
+    let body = FORMATS[0].2;
+    let response = adapter
+        .exchange(body, body.len())
+        .expect("a direct call after XML restores the default TTLV encoding");
+    assert!(
+        response.as_bytes() == body,
+        "the direct response remains TTLV"
+    );
     let peer = peer.join().expect("the bounded sequence peer completes");
-    assert_eq!(peer.requests.len(), 3);
-    for (request, (_, media_type, body)) in peer.requests.iter().zip(FORMATS) {
+    assert_eq!(peer.requests.len(), 4);
+    for (request, (_, media_type, body)) in peer
+        .requests
+        .iter()
+        .zip(FORMATS.into_iter().chain([FORMATS[0]]))
+    {
         assert_eq!(header_values(request, "content-type"), [media_type]);
-        assert!(request.body == body);
+        assert!(request.body == body, "request bytes are unchanged");
     }
 }
 
