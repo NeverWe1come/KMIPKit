@@ -472,6 +472,12 @@ pub(super) fn validate_nested_with_prefix(
     let descriptor = descriptor(schema);
     let mut report = validate_structure_with_descriptor_and_prefix(structure, &descriptor, prefix);
 
+    if matches!(
+        schema,
+        NestedStructureSchema::CurrentAttribute | NestedStructureSchema::NewAttribute
+    ) {
+        validate_attribute_wrapper(structure, schema, prefix, &mut report);
+    }
     if schema == NestedStructureSchema::ObjectDefaults {
         validate_object_defaults_alternative(structure, prefix, &mut report);
     }
@@ -621,8 +627,36 @@ fn descriptor(schema: NestedStructureSchema) -> RequestSchemaDescriptor {
         NestedStructureSchema::UsageLimits => ("§7.40, Table 392", USAGE_LIMITS_FIELDS),
         NestedStructureSchema::Objects => ("§7.21, Table 373", OBJECTS_FIELDS),
         NestedStructureSchema::Operations => ("§7.25, Table 377", OPERATIONS_FIELDS),
+        NestedStructureSchema::CurrentAttribute => ("§5.6, Table 162", &[] as &[FieldDescriptor]),
+        NestedStructureSchema::NewAttribute => ("§5.7, Table 163", &[] as &[FieldDescriptor]),
     };
     RequestSchemaDescriptor { source, fields }
+}
+
+fn validate_attribute_wrapper(
+    structure: &StructureView<'_>,
+    schema: NestedStructureSchema,
+    prefix: &ValidationPath,
+    report: &mut ValidationReport,
+) {
+    if structure.children().len() == 1 {
+        return;
+    }
+
+    let (rule_id, source) = match schema {
+        NestedStructureSchema::CurrentAttribute => ("KMIPKIT-0051-R248", "§5.6, Table 162"),
+        NestedStructureSchema::NewAttribute => ("KMIPKIT-0051-R247", "§5.7, Table 163"),
+        _ => return,
+    };
+    report.push(ValidationIssue::new(
+        ValidationCode::new(rule_id),
+        prefix.clone().field("Attribute"),
+        ValidationSeverity::Error,
+        ValidationSourceRef::Oasis {
+            document: "KMIP v2.1",
+            reference: source,
+        },
+    ));
 }
 
 fn validate_key_wrapping_information_alternative(

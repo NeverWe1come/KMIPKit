@@ -471,7 +471,7 @@ static ADDATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 1,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::NewAttribute),
     },
 ];
 
@@ -933,7 +933,7 @@ static DELETEATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::CurrentAttribute),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R051",
@@ -1651,7 +1651,7 @@ static MODIFYATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::CurrentAttribute),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R125",
@@ -1660,7 +1660,7 @@ static MODIFYATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 1,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::NewAttribute),
     },
 ];
 
@@ -2094,7 +2094,7 @@ static SETATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 1,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::NewAttribute),
     },
 ];
 

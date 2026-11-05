@@ -21,6 +21,8 @@ remain in the caller's TTLV tree and are not rejected solely for being unknown.
 | `Usage Limits` | §7.40, Table 392 | Required singleton Usage Limits Total and Count Long Integers followed by Usage Limits Unit Enumeration; unknown fields remain available. No numeric range is inferred. | R242–R244 | `validation_schema_tests::rights_schema_recursively_validates_usage_limits_and_preserves_empty_rights` |
 | `Objects` | §7.21, Table 373 | Zero or more Unique Identifier values, each encoded as Integer, Enumeration, or Text String. | R245 | `validation_schema_tests::rights_schema_preserves_empty_and_repeated_rights_and_unknown_extensions` |
 | `Operations` | §7.25, Table 377 | Zero or more Operation Enumeration values; future and vendor values are retained. | R246 | `validation_schema_tests::rights_schema_preserves_empty_and_repeated_rights_and_unknown_extensions` |
+| `Current Attribute` | §5.6, Table 162 | Exactly one attribute Item with any attribute tag and value type; do not infer attribute-specific multiplicity or reject unknown/vendor tags. | R248 | `validation_schema_tests::current_attribute_wrapper_rejects_multiple_attribute_items` |
+| `New Attribute` | §5.7, Table 163 | Exactly one attribute Item with any attribute tag and value type; do not infer attribute-specific multiplicity or reject unknown/vendor tags. | R247 | `validation_schema_tests::attribute_wrappers_require_exactly_one_attribute_item` |
 
 ## Boundaries
 
@@ -49,3 +51,6 @@ families have been reconciled and covered by the operation-family tasks.
 - Rights validation checks only the §7 structure. It does not establish ticket
   authorization or enforce server-specific operation, object, group, or usage
   policy, and it does not impose numeric ranges on Usage Limits values.
+- Attribute wrappers validate only their one-item shape. The child tag selects
+  an attribute, so this generic schema does not infer that attribute's value
+  type or cardinality and preserves future/vendor attributes.

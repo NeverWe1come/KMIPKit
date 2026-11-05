@@ -91,6 +91,10 @@ pub enum NestedStructureSchema {
     Objects,
     /// The §7.25 Operations structure containing Operation enumerations.
     Operations,
+    /// The §5.6 Current Attribute wrapper around one attribute Item.
+    CurrentAttribute,
+    /// The §5.7 New Attribute wrapper around one attribute Item.
+    NewAttribute,
 }
 
 #[derive(Clone, Copy)]

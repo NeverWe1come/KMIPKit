@@ -436,10 +436,7 @@ fn current_attribute_wrapper_rejects_multiple_attribute_items() {
         item(0x0042_00C5, Value::boolean(true)),
         item(HASHING_ALGORITHM, Value::enumeration(1)),
     ]);
-    let payload = structure([item(
-        CURRENT_ATTRIBUTE,
-        Value::structure(current_attribute),
-    )]);
+    let payload = structure([item(CURRENT_ATTRIBUTE, Value::structure(current_attribute))]);
     let report = validate_structure(
         &payload.view(),
         Some(ValidationSchema::RequestPayload(
