@@ -7944,6 +7944,151 @@ cleanup:
     return result;
 }
 
+static int expect_ttlv_decode_error(
+    const uint8_t *wire,
+    uint64_t wire_length,
+    kmipkit_codec_limits_t *limits,
+    uint32_t expected_kind,
+    int32_t expected_status,
+    uint64_t expected_offset) {
+    kmipkit_ttlv_decode_error_v1_t error = {0};
+    kmipkit_ttlv_item_t *item = (kmipkit_ttlv_item_t *)(uintptr_t)1;
+    int32_t status;
+
+    error.struct_size = (uint32_t)sizeof(error);
+    error.abi_version = 1;
+    status = limits == 0
+        ? kmipkit_ttlv_decode(wire, wire_length, &error, &item)
+        : kmipkit_ttlv_decode_with_limits(wire, wire_length, limits, &error, &item);
+    return status == expected_status && item == 0 && error.kind == expected_kind &&
+        error.byte_offset == expected_offset;
+}
+
+int kmipkit_client_abi_c_consumer_extra_ffi_paths(void) {
+    static const uint8_t correlation[] = {0x00, 0xff, 0x80};
+    static const uint8_t bad_integer_length[] = {
+        0x42, 0x00, 0x2a, 0x02, 0x00, 0x00, 0x00, 0x01, 0x7f};
+    static const uint8_t empty_big_integer[] = {
+        0x54, 0x12, 0x34, 0x04, 0x00, 0x00, 0x00, 0x00};
+    static const uint8_t missing_padding[] = {
+        0x54, 0x12, 0x34, 0x08, 0x00, 0x00, 0x00, 0x01, 0xaa};
+    static const uint8_t structure_boundary[] = {
+        0x54, 0x12, 0x34, 0x01, 0x00, 0x00, 0x00, 0x08,
+        0x54, 0x12, 0x35, 0x02, 0x00, 0x00, 0x00, 0x04};
+    static const uint8_t reserved_tag[] = {
+        0x42, 0x00, 0x09, 0x05, 0x00, 0x00, 0x00, 0x04,
+        0x00, 0x00, 0x00, 0x09, 0x00, 0x00, 0x00, 0x00};
+    static const uint8_t unallocated_tag[] = {
+        0x00, 0x00, 0x01, 0x05, 0x00, 0x00, 0x00, 0x04,
+        0x00, 0x00, 0x00, 0x09, 0x00, 0x00, 0x00, 0x00};
+    static const uint8_t nested_structure[] = {
+        0x54, 0x12, 0x34, 0x01, 0x00, 0x00, 0x00, 0x08,
+        0x54, 0x12, 0x35, 0x01, 0x00, 0x00, 0x00, 0x00};
+    kmipkit_cancel_request_t *cancel = (kmipkit_cancel_request_t *)(uintptr_t)1;
+    kmipkit_poll_request_t *poll = (kmipkit_poll_request_t *)(uintptr_t)1;
+    kmipkit_process_request_t *process = (kmipkit_process_request_t *)(uintptr_t)1;
+    kmipkit_query_async_requests_request_t *query = 0;
+    kmipkit_query_async_requests_request_t *filtered =
+        (kmipkit_query_async_requests_request_t *)(uintptr_t)1;
+    kmipkit_ttlv_structure_t *payload = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    kmipkit_codec_limits_t *depth_limits = 0;
+    kmipkit_codec_limits_t *element_limits = 0;
+    kmipkit_byte_span_v1_t bad_span = {0, 1};
+    kmipkit_byte_span_v1_t oversized_span = {correlation, UINT64_MAX};
+    kmipkit_byte_span_v1_t borrowed = {correlation, sizeof(correlation)};
+    uint32_t operation = UINT32_C(0xf1234567);
+    int result = 0;
+
+    if (kmipkit_cancel_request_create(0, 1, &cancel) != T076_ERROR_INVALID_INPUT || cancel != 0) {
+        goto cleanup;
+    }
+    if (kmipkit_poll_request_create(correlation, UINT64_MAX, &poll) !=
+            KMIPKIT_ERROR_RESOURCE_LIMIT || poll != 0) {
+        goto cleanup;
+    }
+    if (kmipkit_process_request_create(0, 1, &process) != T076_ERROR_INVALID_INPUT || process != 0) {
+        goto cleanup;
+    }
+    if (kmipkit_query_async_requests_request_create(&query) != 0 || query == 0) {
+        goto cleanup;
+    }
+    if (kmipkit_query_async_requests_request_with_correlation_values(
+            query, 0, 1, &filtered) != T076_ERROR_INVALID_INPUT || filtered != 0 ||
+        kmipkit_query_async_requests_request_with_correlation_values(
+            query, &bad_span, 1, &filtered) != T076_ERROR_INVALID_INPUT || filtered != 0 ||
+        kmipkit_query_async_requests_request_with_correlation_values(
+            query, &oversized_span, 1, &filtered) != KMIPKIT_ERROR_RESOURCE_LIMIT || filtered != 0 ||
+        kmipkit_query_async_requests_request_with_operations(
+            query, 0, 1, &filtered) != T076_ERROR_INVALID_INPUT || filtered != 0 ||
+        kmipkit_query_async_requests_request_with_operations(
+            (kmipkit_query_async_requests_request_t *)poll, &operation, 1, &filtered) !=
+            T076_ERROR_INVALID_INPUT || filtered != 0 ||
+        kmipkit_query_async_requests_request_to_ttlv_payload(
+            (kmipkit_query_async_requests_request_t *)poll, &payload) !=
+            T076_ERROR_INVALID_INPUT || payload != 0) {
+        goto cleanup;
+    }
+    if (kmipkit_cancel_request_create(correlation, sizeof(correlation), &cancel) != 0 ||
+        kmipkit_poll_request_create(correlation, sizeof(correlation), &poll) != 0 ||
+        kmipkit_cancel_request_asynchronous_correlation_value(
+            (kmipkit_cancel_request_t *)poll, &borrowed) != T076_ERROR_INVALID_INPUT ||
+        kmipkit_poll_request_to_ttlv_payload((kmipkit_poll_request_t *)cancel, &payload) !=
+            T076_ERROR_INVALID_INPUT || payload != 0) {
+        goto cleanup;
+    }
+
+    if (!expect_ttlv_decode_error(
+            bad_integer_length, sizeof(bad_integer_length), 0,
+            KMIPKIT_TTLV_DECODE_ERROR_KIND_INVALID_ITEM_LENGTH,
+            KMIPKIT_ERROR_PROTOCOL, 4) ||
+        !expect_ttlv_decode_error(
+            empty_big_integer, sizeof(empty_big_integer), 0,
+            KMIPKIT_TTLV_DECODE_ERROR_KIND_EMPTY_BIG_INTEGER,
+            KMIPKIT_ERROR_PROTOCOL, 4) ||
+        !expect_ttlv_decode_error(
+            missing_padding, sizeof(missing_padding), 0,
+            KMIPKIT_TTLV_DECODE_ERROR_KIND_INVALID_PADDING_EXTENT,
+            KMIPKIT_ERROR_PROTOCOL, sizeof(missing_padding)) ||
+        !expect_ttlv_decode_error(
+            structure_boundary, sizeof(structure_boundary), 0,
+            KMIPKIT_TTLV_DECODE_ERROR_KIND_STRUCTURE_BOUNDARY,
+            KMIPKIT_ERROR_PROTOCOL, 8) ||
+        !expect_ttlv_decode_error(
+            reserved_tag, sizeof(reserved_tag), 0,
+            KMIPKIT_TTLV_DECODE_ERROR_KIND_RESERVED_TAG,
+            KMIPKIT_ERROR_PROTOCOL, 0) ||
+        !expect_ttlv_decode_error(
+            unallocated_tag, sizeof(unallocated_tag), 0,
+            KMIPKIT_TTLV_DECODE_ERROR_KIND_UNALLOCATED_TAG,
+            KMIPKIT_ERROR_PROTOCOL, 0)) {
+        goto cleanup;
+    }
+    if (kmipkit_codec_limits_create(128, 1, 8, &depth_limits) != 0 || depth_limits == 0 ||
+        !expect_ttlv_decode_error(
+            nested_structure, sizeof(nested_structure), depth_limits,
+            KMIPKIT_TTLV_DECODE_ERROR_KIND_STRUCTURE_DEPTH_EXCEEDED,
+            KMIPKIT_ERROR_RESOURCE_LIMIT, 8) ||
+        kmipkit_codec_limits_create(128, 64, 1, &element_limits) != 0 || element_limits == 0 ||
+        !expect_ttlv_decode_error(
+            nested_structure, sizeof(nested_structure), element_limits,
+            KMIPKIT_TTLV_DECODE_ERROR_KIND_ELEMENT_LIMIT_EXCEEDED,
+            KMIPKIT_ERROR_RESOURCE_LIMIT, 8)) {
+        goto cleanup;
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_cancel_request_release(cancel);
+    kmipkit_poll_request_release(poll);
+    kmipkit_process_request_release(process);
+    kmipkit_query_async_requests_request_release(query);
+    kmipkit_query_async_requests_request_release(filtered);
+    kmipkit_ttlv_structure_release(payload);
+    kmipkit_codec_limits_release(depth_limits);
+    kmipkit_codec_limits_release(element_limits);
+    return result;
+}
+
 int kmipkit_client_abi_c_consumer_validate_register_response(
     kmipkit_client_batch_item_response_t *item,
     const uint8_t *expected_identifier,

@@ -9112,6 +9112,170 @@ fn ffi_creation_requests_reject_missing_attributes_and_malformed_structure_handl
 }
 
 #[test]
+fn client_batch_readback_and_options_cover_valid_and_invalid_states() {
+    let mut batch = ptr::null_mut();
+    assert_eq!(kmipkit_client_batch_create(&mut batch), SUCCESS);
+    assert_eq!(
+        kmipkit_client_batch_set_order_option(batch, 2),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(kmipkit_client_batch_set_order_option(batch, 1), SUCCESS);
+    assert_eq!(
+        kmipkit_client_batch_add_error_continuation_value(batch, 0),
+        SUCCESS
+    );
+    assert_eq!(
+        kmipkit_client_batch_set_asynchronous_indicator(batch, 7),
+        SUCCESS
+    );
+
+    let mut absent = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_at(batch, 0, &raw mut absent),
+        ERROR_INVALID_INPUT
+    );
+    assert!(absent.is_null());
+
+    let identifier = b"batch-item-id".to_vec();
+    let mut item = make_handle(
+        Kind::BatchItem,
+        HandleValue::BatchItem(Box::new(
+            ClientBatchItem::ping().with_unique_batch_item_id(identifier.clone()),
+        )),
+    );
+    assert_eq!(kmipkit_client_batch_add_item(batch, &raw mut item), SUCCESS);
+    assert!(item.is_null(), "adding the request transfers its handle");
+
+    let mut readback = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_at(batch, 0, &raw mut readback),
+        SUCCESS
+    );
+    assert!(!readback.is_null());
+    let mut present = u8::MAX;
+    let mut span = crate::kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length: u64::MAX,
+    };
+    assert_eq!(
+        kmipkit_client_batch_item_unique_batch_item_id(readback, &raw mut present, &raw mut span),
+        SUCCESS
+    );
+    assert_eq!(present, 1);
+    assert_eq!(span.length, identifier.len() as u64);
+    // SAFETY: the view owns its copied metadata until `readback` is released.
+    assert_eq!(
+        unsafe { std::slice::from_raw_parts(span.data, identifier.len()) },
+        identifier
+    );
+
+    let mut out_of_range = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_at(batch, 1, &raw mut out_of_range),
+        ERROR_INVALID_INPUT
+    );
+    assert!(out_of_range.is_null());
+
+    kmipkit_client_batch_item_release(readback);
+    kmipkit_client_batch_release(batch);
+}
+
+#[test]
+fn client_batch_options_reject_wrong_payload_empty_and_poisoned_handles() {
+    let wrong_payload = make_handle(
+        Kind::ClientBatch,
+        HandleValue::RawTag(RawTag::new(0x0042_0001).expect("tag is valid")),
+    );
+    assert_eq!(
+        kmipkit_client_batch_set_order_option(wrong_payload, 0),
+        ERROR_INVALID_INPUT
+    );
+    release(wrong_payload, Kind::ClientBatch);
+
+    let empty = make_handle(
+        Kind::ClientBatch,
+        HandleValue::ClientBatch(Arc::new(Mutex::new(None))),
+    );
+    assert_eq!(
+        kmipkit_client_batch_set_order_option(empty, 0),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        kmipkit_client_batch_add_error_continuation_value(empty, 1),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        kmipkit_client_batch_set_asynchronous_indicator(empty, 1),
+        ERROR_INVALID_INPUT
+    );
+    release(empty, Kind::ClientBatch);
+
+    let poisoned_owner = Arc::new(Mutex::new(Some(ClientBatchBuilder::new())));
+    let poison = Arc::clone(&poisoned_owner);
+    let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        let _guard = poison.lock().expect("lock is initially healthy");
+        panic!("poison the isolated test mutex");
+    }));
+    let poisoned = make_handle(Kind::ClientBatch, HandleValue::ClientBatch(poisoned_owner));
+    assert_eq!(
+        kmipkit_client_batch_set_order_option(poisoned, 0),
+        ERROR_INTERNAL
+    );
+    release(poisoned, Kind::ClientBatch);
+
+    let at_limit = Arc::new(Mutex::new(Some(ClientBatchBuilder::new())));
+    at_limit
+        .lock()
+        .expect("lock is healthy")
+        .as_mut()
+        .expect("builder exists")
+        .batch_error_continuation_values =
+        vec![0; usize::try_from(MAX_TRANSPORT_CONFIG_ITEMS).expect("limit fits usize")];
+    let full = make_handle(Kind::ClientBatch, HandleValue::ClientBatch(at_limit));
+    assert_eq!(
+        kmipkit_client_batch_add_error_continuation_value(full, 1),
+        ERROR_RESOURCE_LIMIT
+    );
+    release(full, Kind::ClientBatch);
+}
+
+#[test]
+fn async_correlation_span_copy_clears_staged_values_on_invalid_or_oversized_input() {
+    let first = b"staged-secret";
+    let invalid_spans = [
+        crate::kmipkit_byte_span_v1_t {
+            data: first.as_ptr(),
+            length: first.len() as u64,
+        },
+        crate::kmipkit_byte_span_v1_t {
+            data: ptr::null(),
+            length: 1,
+        },
+    ];
+    assert!(matches!(
+        copy_async_correlation_spans(&invalid_spans),
+        Err(ERROR_INVALID_INPUT)
+    ));
+
+    let maximum = usize::try_from(MAX_FFI_INPUT_BYTES).expect("configured byte limit fits usize");
+    let large = vec![0xa5; maximum];
+    let too_many_bytes = [
+        crate::kmipkit_byte_span_v1_t {
+            data: large.as_ptr(),
+            length: MAX_FFI_INPUT_BYTES,
+        },
+        crate::kmipkit_byte_span_v1_t {
+            data: first.as_ptr(),
+            length: 1,
+        },
+    ];
+    assert!(matches!(
+        copy_async_correlation_spans(&too_many_bytes),
+        Err(ERROR_RESOURCE_LIMIT)
+    ));
+}
+
+#[test]
 fn ffi_create_request_accepts_protection_storage_masks() {
     let attributes = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
     let masks = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));

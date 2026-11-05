@@ -163,6 +163,9 @@ mod test_handle_helpers;
 mod validate_abi_tests;
 
 #[cfg(test)]
+#[path = "../tests/support/coverage_guard_tests.rs"]
+mod coverage_guard_tests;
+#[cfg(test)]
 #[path = "../tests/support/ffi_error_kind_mapping_tests.rs"]
 mod ffi_error_kind_mapping_tests;
 #[cfg(test)]
