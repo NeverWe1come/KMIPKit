@@ -24,7 +24,7 @@ Provide typed Rust definitions, construction, and reading for each direct KMIP 2
 2. A typed attribute marker identifies an immutable catalog tag and its source-defined TTLV value category.
 3. The typed owned value and borrowed view cover Boolean, Byte String, Date-Time, Enumeration, Integer, Interval, Structure, Text String, RNG Parameters, and Unique Identifier's source-permitted alternatives.
 4. Enumeration wrappers preserve all raw 32-bit values, including values not yet named in 0047.
-5. `AttributeSet` typed queries return every matching occurrence in wire order. Existing `try_new` / `try_push` multiplicity validation remains authoritative.
+5. `AttributeSet` typed queries return every matching occurrence in wire order. Existing `try_new` / `try_push` enforce Item type and Vendor Attribute shape; operation-level cardinality validation remains authoritative for duplicate restrictions.
 6. Typed Current/New wrappers contain exactly one direct Item. Existing constructors stay source-compatible.
 7. Structure payloads remain generic and lossless in this feature; specialized object/key builders belong to 0049.
 8. Manifest reconciliation is explicit and deterministic. No generated Rust or documentation output is hand-edited.

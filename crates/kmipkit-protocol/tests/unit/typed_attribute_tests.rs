@@ -81,15 +81,18 @@ fn typed_attribute_set_keeps_repeated_structures_in_wire_order() {
 }
 
 #[test]
-fn typed_attribute_set_still_rejects_repeated_singleton_attributes() {
+fn typed_attribute_set_preserves_singleton_duplicates_for_operation_validation() {
     let mut attributes = AttributeSet::new();
     attributes
         .try_push_typed(Attribute::<typed::ActivationDate>::new(1).unwrap())
         .unwrap();
 
-    assert!(attributes
+    attributes
         .try_push_typed(Attribute::<typed::ActivationDate>::new(2).unwrap())
-        .is_err());
+        .unwrap();
+
+    assert_eq!(attributes.typed::<typed::ActivationDate>().count(), 2);
+    assert!(attributes.validate_single_instance_cardinality().is_err());
 }
 
 #[test]

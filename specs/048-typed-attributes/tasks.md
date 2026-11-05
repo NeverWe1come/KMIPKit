@@ -10,7 +10,7 @@
 
 - [x] T004 [US1] Add failing tests for the 62 direct definitions, exact tags, encodings, multiplicity, and Certificate Attributes exclusion in `tools/normative_catalog/tests/test_generate_typed_attributes.py`, exercising `tools/normative_catalog/generate_attribute_types.py` (FR-001, FR-002, FR-008; Red commit).
 - [x] T005 [US1] Add failing Rust tests for scalar, enum, byte-string, interval, Structure, RNG Parameters, and Unique Identifier typed values in `crates/kmipkit-protocol/tests/unit/typed_attribute_tests.rs` (FR-002, FR-005, FR-006; Red commit).
-- [x] T006 [US1] Add failing tests for repeated-value order, singleton multiplicity, unknown generic Items, and Structure child preservation in `crates/kmipkit-protocol/tests/unit/typed_attribute_tests.rs` (FR-003, FR-006, FR-007; Red commit).
+- [x] T006 [US1] Add failing tests for repeated-value order, lossless singleton-duplicate collection, operation-level cardinality rejection, unknown generic Items, and Structure child preservation in `crates/kmipkit-protocol/tests/unit/typed_attribute_tests.rs` (FR-003, FR-006, FR-007; Red commit).
 - [x] T007 [US2] Add failing typed Current/New wrapper construction and tag/type mismatch tests in `crates/kmipkit-protocol/tests/unit/typed_attribute_tests.rs` (FR-004, FR-005; Red commit).
 
 ## Phase 3: Green - typed construction and reading

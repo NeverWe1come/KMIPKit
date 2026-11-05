@@ -22,9 +22,11 @@ Text String, Enumeration, and Integer.
 ## Collection and wrapper semantics
 
 `AttributeSet` remains an ordered vector of direct Items. Typed insertions use
-the existing `try_push` validation and mutation rules. Typed queries return
-every matching Item in its original order; they do not collapse multiple
-values into a map. `CurrentAttribute` and `NewAttribute` each contain exactly
+the existing `try_push` validation and retain all duplicates just like generic
+insertion. Typed queries return every matching occurrence in original order;
+they do not collapse multiple values into a map. Existing operation-level
+cardinality validation rejects source-prohibited duplicates when an operation
+requires that check. `CurrentAttribute` and `NewAttribute` each contain exactly
 one direct Item, as specified by KMIP v2.1 §§5.6–5.7, Tables 162–163.
 
 ## Exclusion

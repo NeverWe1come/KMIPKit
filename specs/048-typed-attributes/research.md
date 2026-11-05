@@ -26,6 +26,11 @@ nearly identical methods, keeps the tag/type relationship in the Rust type,
 and makes repeated-value behavior explicit. It leaves existing generic
 `Item` entry points intact.
 
+The existing `AttributeSet::try_new` and `try_push` are intentionally lossless
+and do not reject duplicate singleton tags. Cardinality checks run at the
+operation interpretation boundary. Typed insertion must preserve that contract;
+the new convenience layer must not turn the collection into a validator.
+
 ## Value mapping
 
 - TTLV scalar encodings map to their existing owned `Value` type and borrowed

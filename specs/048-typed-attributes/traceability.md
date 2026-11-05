@@ -12,7 +12,7 @@ exclusion in §4.6/Table 39.
 | Requirement | Normative source | Implementation | Verification |
 |---|---|---|---|
 | KMIPKIT-0048-FR-001, FR-002 | KMIP Specification v2.1 §§4.1–4.63; per-attribute encoding tables in `gap-matrix.md`; §11.56 for tag allocation | generated marker definitions and value-category mapping | exhaustive catalog mapping test and per-category constructor/read tests |
-| KMIPKIT-0048-FR-003 | KMIP Specification v2.1 §§5.1, 5.2, 5.5; Tables 157–158, 161; §4 multiplicity tables | `AttributeSet` typed insertion and ordered typed queries | repeated-value order, single-instance rejection, and generic-preservation tests |
+| KMIPKIT-0048-FR-003 | KMIP Specification v2.1 §§5.1, 5.2, 5.5; Tables 157–158, 161; §4 multiplicity tables | `AttributeSet` typed insertion and ordered typed queries | repeated-value order, lossless duplicate retention, operation-level single-instance rejection, and generic-preservation tests |
 | KMIPKIT-0048-FR-004 | KMIP Specification v2.1 §§5.6–5.7, Tables 162–163 | `CurrentAttribute` and `NewAttribute` typed constructors/views | valid typed wrapper and mismatch negative tests |
 | KMIPKIT-0048-FR-005 | KMIP Specification v2.1 §5; KMIPKit security contract, `AGENTS.md` §8 | typed attribute error conversion | errors contain only fixed categories/tags and no values |
 | KMIPKIT-0048-FR-006 | KMIP Specification v2.1 §§5.1–5.4, §10.1.2 | typed conversion over existing `Item`, `Value`, and `Structure` model | scalar/Structure round-trip and unknown-child preservation tests |

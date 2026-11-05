@@ -35,7 +35,7 @@ As a Rust client author, I can use a typed attribute with `CurrentAttribute` or 
 ### Edge Cases
 
 - Attributes with source-permitted repeated instances retain every occurrence and original order.
-- Single-instance duplicates remain rejected by the existing `AttributeSet` policy.
+- Generic and typed `AttributeSet` collection APIs preserve all inserted duplicates; existing operation-level cardinality validation remains responsible for rejecting source-prohibited duplicates before use.
 - Open Enumeration values preserve unknown and vendor values; typed convenience does not restrict them to known standard constants.
 - A mismatched tag or TTLV type fails with a redacted, payload-free error.
 - Complex Structure-valued attributes expose a typed Structure value category and retain generic child Items; this feature does not synthesize missing child fields or infer object/server policy.
@@ -47,7 +47,7 @@ As a Rust client author, I can use a typed attribute with `CurrentAttribute` or 
 
 - **KMIPKIT-0048-FR-001**: The Rust protocol API MUST expose a typed definition for each of the 62 catalogued direct Object Attributes with a concrete tag and `source_encoding`, including the separately encoded Vendor Attribute Structure.
 - **KMIPKIT-0048-FR-002**: Each typed definition MUST map to the exact tag and TTLV value category in its pinned KMIP Specification v2.1 §4 attribute table. Enumeration values remain open raw `u32` values; this layer MUST NOT reject unknown or vendor values.
-- **KMIPKIT-0048-FR-003**: `AttributeSet` MUST support typed insertion and reading for every definition. Reading MUST preserve all source-permitted repetitions and their original order. Existing generic insertion/iteration APIs remain available.
+- **KMIPKIT-0048-FR-003**: `AttributeSet` MUST support typed insertion and reading for every definition. Reading MUST preserve all matching occurrences and their original order. Typed collection APIs MUST retain the existing lossless insertion behavior; existing operation-level cardinality validation remains authoritative. Generic insertion/iteration APIs remain available.
 - **KMIPKIT-0048-FR-004**: `CurrentAttribute` and `NewAttribute` MUST support typed construction and typed views while preserving their existing generic `Item` constructor and accessor.
 - **KMIPKIT-0048-FR-005**: Typed reads MUST distinguish tag mismatch from TTLV value-type mismatch using a redacted error; `Debug` and error formatting MUST NOT expose attribute values or raw KMIP bodies.
 - **KMIPKIT-0048-FR-006**: Scalar and Structure values MUST round-trip without lossy conversion. Structure-valued attributes retain child order, unknown children, and repetitions through the existing TTLV model.
@@ -64,7 +64,7 @@ The detailed per-attribute matrix is in `gap-matrix.md`; every direct attribute 
 
 - **KMIPKIT-0048-SC-001**: All 62 direct attribute definitions have an exact tag, source section/table, and TTLV value category verified against the pinned catalog and upstream source.
 - **KMIPKIT-0048-SC-002**: Tests cover each generated definition and every TTLV value category, including open Enumeration values, invalid tag/type pairs, and the Certificate Attributes exclusion.
-- **KMIPKIT-0048-SC-003**: Repeated instances permitted by the source are observed in original order; prohibited duplicates continue to fail under the existing policy tests.
+- **KMIPKIT-0048-SC-003**: Repeated instances permitted by the source are observed in original order; the collection retains duplicates losslessly and operation-level validation continues to reject prohibited uses.
 - **KMIPKIT-0048-SC-004**: Existing generic API behavior and serialized TTLV vectors remain unchanged.
 - **KMIPKIT-0048-SC-005**: All public Rust routes are accounted for by exact manifest mappings or justified exclusions, and generation is deterministic.
 - **KMIPKIT-0048-SC-006**: Each applicable normative/API requirement links to source, implementation, and executable verification before review; binding parity is explicitly tracked for 0053.
