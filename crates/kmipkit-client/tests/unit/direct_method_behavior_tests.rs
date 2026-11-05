@@ -38,7 +38,10 @@ impl Transport for NotSentTransport {
     }
 }
 
-fn client(requests: Rc<RefCell<Vec<Vec<u8>>>>, options: Rc<RefCell<Vec<RequestOptions>>>) -> Client {
+fn client(
+    requests: Rc<RefCell<Vec<Vec<u8>>>>,
+    options: Rc<RefCell<Vec<RequestOptions>>>,
+) -> Client {
     Client::for_test_with_options_observer(NotSentTransport(requests), options)
 }
 
@@ -54,8 +57,8 @@ fn assert_direct_matches_batch<Request>(
     ) -> Result<crate::ClientBatchItemResponse, ClientError>,
 ) {
     let limits = CodecLimits::defaults();
-    let options = RequestOptions::default()
-        .with_connect(TimeoutLimit::Bounded(Duration::from_secs(7)));
+    let options =
+        RequestOptions::default().with_connect(TimeoutLimit::Bounded(Duration::from_secs(7)));
     let direct_bytes = Rc::new(RefCell::new(Vec::new()));
     let direct_options = Rc::new(RefCell::new(Vec::new()));
     let direct_error = direct_call(
@@ -76,8 +79,14 @@ fn assert_direct_matches_batch<Request>(
         )
         .expect_err("the fake transport deliberately reports NotSent");
 
-    assert_eq!(direct_error.delivery_state(), Some(RequestDeliveryState::NotSent));
-    assert_eq!(batch_error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(
+        direct_error.delivery_state(),
+        Some(RequestDeliveryState::NotSent)
+    );
+    assert_eq!(
+        batch_error.delivery_state(),
+        Some(RequestDeliveryState::NotSent)
+    );
     assert_eq!(
         direct_bytes.borrow().len(),
         1,
@@ -90,6 +99,7 @@ fn assert_direct_matches_batch<Request>(
 }
 
 #[test]
+#[allow(clippy::too_many_lines)] // Keep the exhaustive 14-method parity matrix in one focused test.
 fn new_direct_methods_match_their_one_item_batch_wire_requests() {
     macro_rules! check {
         ($request:ty, $make:expr, $variant:path, $method:ident) => {
@@ -97,16 +107,14 @@ fn new_direct_methods_match_their_one_item_batch_wire_requests() {
                 stringify!($method),
                 $make,
                 $variant,
-                |client, request, limits, options| {
-                    client.$method(request, limits, options)
-                },
+                |client, request, limits, options| client.$method(request, limits, options),
             );
         };
     }
 
     check!(
         DiscoverVersionsRequest,
-        || DiscoverVersionsRequest::new(),
+        DiscoverVersionsRequest::new,
         ClientRequest::DiscoverVersions,
         discover_versions_with_options
     );
@@ -116,7 +124,12 @@ fn new_direct_methods_match_their_one_item_batch_wire_requests() {
         ClientRequest::DelegatedLogin,
         delegated_login_with_options
     );
-    check!(LoginRequest, || LoginRequest::new(), ClientRequest::Login, login_with_options);
+    check!(
+        LoginRequest,
+        LoginRequest::new,
+        ClientRequest::Login,
+        login_with_options
+    );
     check!(
         LogoutRequest,
         || LogoutRequest::new(
@@ -128,9 +141,8 @@ fn new_direct_methods_match_their_one_item_batch_wire_requests() {
     );
     check!(
         GetRequest,
-        || GetRequest::new().with_unique_identifier(UniqueIdentifier::TextString(
-            "get-id".to_owned(),
-        )),
+        || GetRequest::new()
+            .with_unique_identifier(UniqueIdentifier::TextString("get-id".to_owned(),)),
         ClientRequest::Get,
         get_with_options
     );
@@ -237,9 +249,7 @@ fn existing_option_methods_forward_the_options_to_the_exchange() {
                 stringify!($method),
                 $make,
                 $variant,
-                |client, request, limits, options| {
-                    client.$method(request, limits, options)
-                },
+                |client, request, limits, options| client.$method(request, limits, options),
             );
         };
     }
@@ -247,7 +257,7 @@ fn existing_option_methods_forward_the_options_to_the_exchange() {
     assert_direct_matches_batch(
         "get_constraints_with_options",
         || (),
-        |_| ClientRequest::get_constraints(),
+        |()| ClientRequest::get_constraints(),
         |client, (), limits, options| client.get_constraints_with_options(limits, options),
     );
     check!(
@@ -264,23 +274,21 @@ fn existing_option_methods_forward_the_options_to_the_exchange() {
     );
     check!(
         SetDefaultsRequest,
-        || SetDefaultsRequest::new(),
+        SetDefaultsRequest::new,
         ClientRequest::SetDefaults,
         set_defaults_with_options
     );
     check!(
         GetUsageAllocationRequest,
-        || GetUsageAllocationRequest::new(1).with_unique_identifier(
-            UniqueIdentifier::TextString("object-id".to_owned()),
-        ),
+        || GetUsageAllocationRequest::new(1)
+            .with_unique_identifier(UniqueIdentifier::TextString("object-id".to_owned()),),
         ClientRequest::GetUsageAllocation,
         get_usage_allocation_with_options
     );
     check!(
         ValidateRequest,
-        || ValidateRequest::new().with_unique_identifier(UniqueIdentifier::TextString(
-            "object-id".to_owned(),
-        )),
+        || ValidateRequest::new()
+            .with_unique_identifier(UniqueIdentifier::TextString("object-id".to_owned(),)),
         ClientRequest::Validate,
         validate_with_options
     );

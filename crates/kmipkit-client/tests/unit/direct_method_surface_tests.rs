@@ -9,6 +9,10 @@ use kmipkit_ttlv::codec::CodecLimits;
 
 use crate::{Client, ClientBatchItemResponse, ClientError, ClientOperationOutcome};
 
+type ClientOutcome = Result<ClientOperationOutcome, ClientError>;
+type AsyncControlOptionsMethod<Request> =
+    fn(&mut Client, Request, Option<u32>, &CodecLimits, &RequestOptions) -> ClientOutcome;
+
 macro_rules! assert_item_pair {
     ($method:ident, $with_options:ident, $request:ty) => {{
         let _: fn(
@@ -26,6 +30,7 @@ macro_rules! assert_item_pair {
 }
 
 #[test]
+#[allow(clippy::too_many_lines)] // One explicit inventory keeps all 56 operation symbols reviewable together.
 fn all_client_initiated_operations_have_addressable_direct_methods() {
     let _ = Client::activate;
     let _ = Client::add_attribute;
@@ -106,6 +111,22 @@ fn all_client_initiated_operations_have_addressable_direct_methods() {
         Option<u32>,
         &CodecLimits,
     ) -> Result<ClientOperationOutcome, ClientError> = Client::execute_query_async_requests;
+
+    let _: fn(
+        &mut Client,
+        PollRequest,
+        &CodecLimits,
+        &RequestOptions,
+    ) -> Result<ClientOperationOutcome, ClientError> = Client::execute_poll_with_options;
+    let _: fn(
+        &mut Client,
+        CancelRequest,
+        &CodecLimits,
+        &RequestOptions,
+    ) -> Result<ClientOperationOutcome, ClientError> = Client::execute_cancel_with_options;
+    let _: AsyncControlOptionsMethod<ProcessRequest> = Client::execute_process_with_options;
+    let _: AsyncControlOptionsMethod<QueryAsyncRequestsRequest> =
+        Client::execute_query_async_requests_with_options;
 }
 
 #[test]
