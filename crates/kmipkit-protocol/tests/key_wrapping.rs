@@ -1,7 +1,7 @@
 //! OASIS KMIP 2.1 §3.3, Tables 14–17: typed wrapping metadata.
 
 use kmipkit_protocol::{EncryptionKeyInformation, KeyWrappingData, MacSignatureKeyInformation};
-use kmipkit_ttlv::ValueView;
+use kmipkit_ttlv::{Item, RawTag, Structure, Value, ValueView};
 
 #[test]
 fn key_wrapping_data_emits_method_before_optional_metadata() {
@@ -44,11 +44,32 @@ fn key_wrapping_data_emits_method_before_optional_metadata() {
 fn wrapping_data_retains_raw_metadata_and_never_performs_crypto() {
     let item = KeyWrappingData::try_new(1)
         .expect("valid wrapper")
+        .with_encryption_key_information(
+            EncryptionKeyInformation::try_new("wrapping-key".to_owned())
+                .expect("required Unique Identifier"),
+        )
         .with_iv_counter_nonce(vec![0xA1, 0xA2])
         .with_mac_signature(vec![0xB1, 0xB2])
         .into_item()
         .expect("valid wrapping data");
     assert_eq!(item.tag().raw(), 0x0042_0046);
+}
+
+#[test]
+fn wrapping_data_requires_encryption_or_mac_signature_key_information() {
+    let constructed = KeyWrappingData::try_new(1)
+        .expect("known Wrapping Method")
+        .into_item();
+    assert!(constructed.is_err());
+
+    let mut children = Structure::new();
+    children
+        .try_push(tagged(0x0042_009E, Value::enumeration(1)))
+        .expect("valid Wrapping Method");
+    let parsed = KeyWrappingData::try_from_item(
+        Item::new(tag(0x0042_0046), Value::structure(children)).expect("valid Key Wrapping Data"),
+    );
+    assert!(parsed.is_err());
 }
 
 #[test]
@@ -95,4 +116,15 @@ fn wrapping_reader_checks_required_identifiers_and_keeps_unknown_fields() {
     )
     .expect("valid test structure");
     assert!(KeyWrappingData::try_from_item(malformed).is_err());
+}
+
+fn tagged(raw_tag: u32, value: Value) -> Item {
+    Item::new(tag(raw_tag), value).expect("valid test Item")
+}
+
+fn tag(raw: u32) -> kmipkit_ttlv::Tag {
+    RawTag::new(raw)
+        .expect("tag fits")
+        .try_checked()
+        .expect("assigned tag")
 }
