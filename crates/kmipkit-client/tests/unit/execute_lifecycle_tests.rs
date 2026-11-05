@@ -16,7 +16,9 @@ use std::cell::{Cell, RefCell};
 use std::error::Error;
 use std::rc::Rc;
 
-use kmipkit_protocol::{AttributeSet, CreateRequest, ObjectType, Pkcs11Request};
+use kmipkit_protocol::{
+    AttributeSet, CreateRequest, ObjectType, Pkcs11Request, SetDefaultsRequest,
+};
 use kmipkit_test_support::{ExchangeScript, ScriptedTransport};
 use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
 use kmipkit_ttlv::codec::{CodecLimits, decode};
@@ -359,6 +361,58 @@ fn malformed_pkcs11_function_is_not_sent() {
     let error = client
         .execute(batch, &CodecLimits::defaults())
         .expect_err("malformed PKCS#11 Function is rejected during typed preflight");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(error.category(), ClientErrorCategory::Validation);
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert_eq!(fake.borrow().write_call_count(), 0);
+}
+
+#[test]
+fn malformed_nested_defaults_are_not_sent() {
+    const OBJECT_DEFAULTS: u32 = 0x0042_0153;
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+
+    let mut object_defaults = Structure::new();
+    object_defaults
+        .try_push(
+            Item::new(
+                RawTag::new(OBJECT_TYPE)
+                    .expect("Object Type tag is valid")
+                    .try_checked()
+                    .expect("Object Type is allocated"),
+                Value::enumeration(2),
+            )
+            .expect("Object Type is valid TTLV"),
+        )
+        .expect("Object Defaults fixture is valid generic TTLV");
+    let mut defaults_information = Structure::new();
+    defaults_information
+        .try_push(
+            Item::new(
+                RawTag::new(OBJECT_DEFAULTS)
+                    .expect("Object Defaults tag is valid")
+                    .try_checked()
+                    .expect("Object Defaults is allocated"),
+                Value::structure(object_defaults),
+            )
+            .expect("Object Defaults is a valid Structure"),
+        )
+        .expect("Defaults Information fixture is valid generic TTLV");
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::SetDefaults(
+        SetDefaultsRequest::new().with_defaults_information(defaults_information),
+    )));
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::Success {
+            response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let error = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect_err("missing required nested Attributes is rejected before encoding");
 
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(error.category(), ClientErrorCategory::Validation);
