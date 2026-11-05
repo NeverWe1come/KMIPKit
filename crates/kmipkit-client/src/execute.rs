@@ -3994,7 +3994,177 @@ fn transport_configuration_error(error: TransportConfigError) -> ClientError {
     )
 }
 
+macro_rules! direct_client_operation {
+    ($method:ident, $with_options:ident, $request:ty, $variant:ident, $label:literal) => {
+        #[doc = concat!(
+            "Executes one ",
+            $label,
+            " request in one exchange. This convenience call does not poll or retry automatically.\n\n",
+            "# Errors\n\nReturns a sanitized validation, protocol, or transport error with the strongest available request-delivery evidence."
+        )]
+        pub fn $method(
+            &mut self,
+            request: $request,
+            limits: &CodecLimits,
+        ) -> Result<ClientBatchItemResponse, ClientError> {
+            self.$with_options(request, limits, &RequestOptions::default())
+        }
+
+        #[doc = concat!(
+            "Executes one ",
+            $label,
+            " request with per-exchange transport options. It does not poll or retry automatically.\n\n",
+            "# Errors\n\nReturns a sanitized validation, protocol, or transport error with the strongest available request-delivery evidence."
+        )]
+        pub fn $with_options(
+            &mut self,
+            request: $request,
+            limits: &CodecLimits,
+            request_options: &RequestOptions,
+        ) -> Result<ClientBatchItemResponse, ClientError> {
+            self.execute_one_typed_request(
+                ClientRequest::$variant(request),
+                limits,
+                request_options,
+            )
+        }
+    };
+}
+
+macro_rules! direct_client_operation_options {
+    ($with_options:ident, $request:ty, $constructor:ident, $label:literal) => {
+        #[doc = concat!(
+            "Executes one ",
+            $label,
+            " request with per-exchange transport options. It does not poll or retry automatically.\n\n",
+            "# Errors\n\nReturns a sanitized validation, protocol, or transport error with the strongest available request-delivery evidence."
+        )]
+        pub fn $with_options(
+            &mut self,
+            request: $request,
+            limits: &CodecLimits,
+            request_options: &RequestOptions,
+        ) -> Result<ClientBatchItemResponse, ClientError> {
+            self.execute_one_typed_request(
+                ClientRequest::$constructor(request),
+                limits,
+                request_options,
+            )
+        }
+    };
+}
+
 impl Client {
+    direct_client_operation!(
+        discover_versions,
+        discover_versions_with_options,
+        DiscoverVersionsRequest,
+        DiscoverVersions,
+        "Discover Versions"
+    );
+    direct_client_operation!(
+        delegated_login,
+        delegated_login_with_options,
+        DelegatedLoginRequest,
+        DelegatedLogin,
+        "Delegated Login"
+    );
+    direct_client_operation!(login, login_with_options, LoginRequest, Login, "Login");
+    direct_client_operation!(logout, logout_with_options, LogoutRequest, Logout, "Logout");
+    direct_client_operation!(get, get_with_options, GetRequest, Get, "Get");
+    direct_client_operation!(locate, locate_with_options, LocateRequest, Locate, "Locate");
+    direct_client_operation!(
+        add_attribute,
+        add_attribute_with_options,
+        AddAttributeRequest,
+        AddAttribute,
+        "Add Attribute"
+    );
+    direct_client_operation!(
+        adjust_attribute,
+        adjust_attribute_with_options,
+        AdjustAttributeRequest,
+        AdjustAttribute,
+        "Adjust Attribute"
+    );
+    direct_client_operation!(
+        delete_attribute,
+        delete_attribute_with_options,
+        DeleteAttributeRequest,
+        DeleteAttribute,
+        "Delete Attribute"
+    );
+    direct_client_operation!(
+        modify_attribute,
+        modify_attribute_with_options,
+        ModifyAttributeRequest,
+        ModifyAttribute,
+        "Modify Attribute"
+    );
+    direct_client_operation!(
+        set_attribute,
+        set_attribute_with_options,
+        SetAttributeRequest,
+        SetAttribute,
+        "Set Attribute"
+    );
+    direct_client_operation!(
+        get_attributes,
+        get_attributes_with_options,
+        GetAttributesRequest,
+        GetAttributes,
+        "Get Attributes"
+    );
+    direct_client_operation!(
+        encrypt,
+        encrypt_with_options,
+        EncryptRequest,
+        Encrypt,
+        "Encrypt"
+    );
+    direct_client_operation!(
+        decrypt,
+        decrypt_with_options,
+        DecryptRequest,
+        Decrypt,
+        "Decrypt"
+    );
+
+    direct_client_operation_options!(
+        get_attribute_list_with_options,
+        GetAttributeListRequest,
+        get_attribute_list,
+        "Get Attribute List"
+    );
+    direct_client_operation_options!(
+        set_constraints_with_options,
+        SetConstraintsRequest,
+        set_constraints,
+        "Set Constraints"
+    );
+    direct_client_operation_options!(
+        set_defaults_with_options,
+        SetDefaultsRequest,
+        set_defaults,
+        "Set Defaults"
+    );
+    direct_client_operation_options!(
+        get_usage_allocation_with_options,
+        GetUsageAllocationRequest,
+        get_usage_allocation,
+        "Get Usage Allocation"
+    );
+    direct_client_operation_options!(validate_with_options, ValidateRequest, validate, "Validate");
+    direct_client_operation_options!(
+        rng_retrieve_with_options,
+        RngRetrieveRequest,
+        rng_retrieve,
+        "RNG Retrieve"
+    );
+    direct_client_operation_options!(log_with_options, LogRequest, log, "Log");
+    direct_client_operation_options!(interop_with_options, InteropRequest, interop, "Interop");
+    direct_client_operation_options!(rng_seed_with_options, RngSeedRequest, rng_seed, "RNG Seed");
+
     /// Creates a typed client from its immutable extension configuration and
     /// one validated production transport configuration.
     ///
@@ -5021,6 +5191,20 @@ impl Client {
             limits,
             &RequestOptions::default(),
         )
+    }
+
+    /// Executes one Get Constraints request with per-exchange transport options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn get_constraints_with_options(
+        &mut self,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::get_constraints(), limits, request_options)
     }
 
     /// Executes one Get Attribute List request through one transport exchange.
