@@ -166,9 +166,13 @@ EXPECTED = (
 )
 
 # Baseline fingerprints exclude response views and exact request-builder batches.
-UNCHANGED_DECLARATIONS_SHA256 = "9beffb77c4cf097df773c9d251f6553b2c2edd9d86d616f975742f229c7efa8c"
-UNCHANGED_OPERATIONS_SHA256 = "209d00e9c342b90e4edccf22ef490c0b586b0688ce34ecba1720d33d79261cff"
-OTHER_MANIFEST_SHA256 = "16ecf140e839b61a63934639a2b8b5a92155738879dd5713971672e917ab3c89"
+UNCHANGED_DECLARATIONS_SHA256 = "72c70d7ce2dd48920b1993fa48c3d98be69c414e19413ceae8c4d97f9344b1b6"
+UNCHANGED_OPERATIONS_SHA256 = "54d46f4eac8e8486d366302fcce3fd9381408ad0d8542b6fff876802673dc2fe"
+# T098's maintainer-approved reconciliation updates lifecycle approval evidence
+# and inherited requirement links outside the T102 declaration/operation rows.
+# The test separately pins those T098 records; this fingerprint covers the
+# resulting manifest baseline after the explicit T102 normalizations below.
+OTHER_MANIFEST_SHA256 = "f99e7d4e851e6432849bba070af2d3d701d86ff0324a30aff2afc5cf1829ba57"
 EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",
@@ -597,6 +601,25 @@ class T102ResponseViewMappingTests(unittest.TestCase):
             for key, value in self.manifest.items()
             if key not in {"publicDeclarations", "operations"}
         }
+        public_surface = next(
+            capability
+            for capability in other_manifest["capabilities"]
+            if capability["capabilityId"] == "public_binding_surface"
+        )
+        public_surface.clear()
+        public_surface.update(
+            {
+                "capabilityId": "public_binding_surface",
+                "requirementIds": ["KMIPKIT-0043-FR-021"],
+                "capabilityState": "blocked",
+                "parityScope": "four-language",
+                "candidateSpecId": "KMIPKIT-0043",
+                "blockedReason": (
+                    "Several existing exports still lack an approved logical owner or "
+                    "reviewed cross-language declaration mapping."
+                ),
+            }
+        )
         other_manifest["requirementIds"] = [
             requirement_id
             for requirement_id in other_manifest["requirementIds"]

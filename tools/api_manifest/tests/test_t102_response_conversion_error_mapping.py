@@ -186,6 +186,7 @@ class T102ResponseConversionErrorMappingTests(unittest.TestCase):
         family_row = next(
             item for item in self.manifest["publicDeclarations"]
             if item.get("mappingSemantics") == MAPPING_SEMANTICS
+            and _error_family(item["exportName"]) in FAMILY_OWNER
         )
         generate._validate_normalized_client_protocol_error_source(family_row)
         package_languages = {

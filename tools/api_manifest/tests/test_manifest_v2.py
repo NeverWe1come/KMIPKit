@@ -1081,10 +1081,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_readiness_rejects_duplicate_package_export_declarations(self) -> None:
         manifest = json.loads(json.dumps(self.checked_in_manifest))
-        declaration = next(
-            item for item in manifest["publicDeclarations"]
-            if item["declarationState"] == "blocked"
-        )
+        declaration = manifest["publicDeclarations"][0]
         duplicate = json.loads(json.dumps(declaration))
         duplicate["declarationId"] += ":duplicate"
         manifest["publicDeclarations"].append(duplicate)
@@ -1103,24 +1100,11 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_readiness_rejects_declaration_and_exclusion_overlap(self) -> None:
         manifest = json.loads(json.dumps(self.checked_in_manifest))
+        declaration = manifest["publicDeclarations"][0]
         exclusion = manifest["approvedExclusions"][0]
-        blocked_declarations = [
-            item
-            for item in manifest["publicDeclarations"]
-            if item["declarationState"] == "blocked"
-            and any(
-                candidate["packageId"] == item["packageId"]
-                for candidate in manifest["approvedExclusions"]
-            )
-        ]
-        declaration = blocked_declarations[0]
-        exclusion = next(
-            item
-            for item in manifest["approvedExclusions"]
-            if item["packageId"] == declaration["packageId"]
-        )
         overlapping = json.loads(json.dumps(declaration))
         overlapping["declarationId"] += ":overlap"
+        overlapping["packageId"] = exclusion["packageId"]
         overlapping["exportName"] = exclusion["exportName"]
         manifest["publicDeclarations"].append(overlapping)
 
@@ -6358,6 +6342,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "specs/024-credential-sessions/spec.md",
                 "specs/028-diagnostics-interop/spec.md",
                 "specs/027-rng-operations/spec.md",
+                "specs/018-managed-object-lifecycle/approval-record.md",
             },
         )
 
@@ -6401,7 +6386,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for item in self.checked_in_manifest["approvedExclusions"]
             if item["packageId"] == "rust-kmipkit-protocol"
         ]
-        self.assertEqual(len(rust_exclusions), 4765)
+        self.assertEqual(len(rust_exclusions), 5021)
 
     def test_ttlv_declarations_use_their_approved_shared_spec_owners(self) -> None:
         capabilities = {

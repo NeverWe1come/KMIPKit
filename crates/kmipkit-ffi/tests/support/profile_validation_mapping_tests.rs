@@ -112,7 +112,7 @@ fn c_profile_selection_resolution_fails_closed_with_redacted_profile_details() {
         profile_id_lengths: lengths.as_ptr(),
         profile_id_count: 1,
     };
-    let mut result = 1_usize as *mut kmipkit_profile_validation_result_t;
+    let mut result = ptr::dangling_mut::<kmipkit_profile_validation_result_t>();
 
     assert_eq!(
         unsafe {
@@ -189,7 +189,10 @@ fn c_profile_result_accessors_preserve_ordered_dependency_closed_ids() {
         },
         SUCCESS
     );
-    assert_eq!(profile_count as usize, expected_profiles.len());
+    assert_eq!(
+        profile_count,
+        u64::try_from(expected_profiles.len()).expect("profile count fits the C ABI")
+    );
     for (index, expected) in expected_profiles.iter().enumerate() {
         let mut span = kmipkit_byte_span_v1_t {
             data: ptr::null(),
@@ -218,7 +221,10 @@ fn c_profile_result_accessors_preserve_ordered_dependency_closed_ids() {
         },
         SUCCESS
     );
-    assert_eq!(requirement_count as usize, expected_requirements.len());
+    assert_eq!(
+        requirement_count,
+        u64::try_from(expected_requirements.len()).expect("requirement count fits the C ABI")
+    );
     for (index, expected) in expected_requirements.iter().enumerate() {
         let mut span = kmipkit_byte_span_v1_t {
             data: ptr::null(),
@@ -270,7 +276,7 @@ fn c_profile_result_release_invalidates_result_access_and_borrowed_id_spans() {
 
 #[test]
 fn c_profile_result_validators_reject_null_stale_and_invalid_transport_inputs() {
-    let mut result = 0_usize as *mut kmipkit_profile_validation_result_t;
+    let mut result = ptr::null_mut::<kmipkit_profile_validation_result_t>();
     let mut count = u64::MAX;
     assert_eq!(
         unsafe { kmipkit_profile_validation_result_validate_transport_v1(result, 1) },
@@ -626,18 +632,7 @@ fn c_profile_context_validation_redacts_request_identifiers_and_context_values()
         },
         ERROR_INVALID_INPUT
     );
-    let (error, view) = last_profile_validation_view();
-    let diagnostics = [
-        span_text(view.error_code_data, view.error_code_length),
-        span_text(view.profile_id_data, view.profile_id_length),
-        span_text(view.requirement_id_data, view.requirement_id_length),
-        span_text(view.source_id_data, view.source_id_length),
-        span_text(view.source_locator_data, view.source_locator_length),
-    ]
-    .join(" ");
-    assert!(!diagnostics.contains(REQUEST_IDENTIFIER));
-    assert!(!diagnostics.contains(CONTEXT_IDENTIFIER));
-    kmipkit_profile_validation_error_release(error);
+    assert_last_profile_validation_error_redacts(&[REQUEST_IDENTIFIER, CONTEXT_IDENTIFIER]);
 
     let response = profile_response_with_marker(0x0000_0031, RESPONSE_MARKER);
     let response_tree = response
@@ -655,6 +650,17 @@ fn c_profile_context_validation_redacts_request_identifiers_and_context_values()
         },
         ERROR_INVALID_INPUT
     );
+    assert_last_profile_validation_error_redacts(&[
+        REQUEST_IDENTIFIER,
+        CONTEXT_IDENTIFIER,
+        RESPONSE_MARKER,
+    ]);
+    kmipkit_profile_validation_result_release(result);
+    kmipkit_ttlv_structure_release(request_handle);
+    kmipkit_ttlv_structure_release(response_handle);
+}
+
+fn assert_last_profile_validation_error_redacts(markers: &[&str]) {
     let (error, view) = last_profile_validation_view();
     let diagnostics = [
         span_text(view.error_code_data, view.error_code_length),
@@ -664,13 +670,10 @@ fn c_profile_context_validation_redacts_request_identifiers_and_context_values()
         span_text(view.source_locator_data, view.source_locator_length),
     ]
     .join(" ");
-    assert!(!diagnostics.contains(REQUEST_IDENTIFIER));
-    assert!(!diagnostics.contains(CONTEXT_IDENTIFIER));
-    assert!(!diagnostics.contains(RESPONSE_MARKER));
+    for marker in markers {
+        assert!(!diagnostics.contains(marker));
+    }
     kmipkit_profile_validation_error_release(error);
-    kmipkit_profile_validation_result_release(result);
-    kmipkit_ttlv_structure_release(request_handle);
-    kmipkit_ttlv_structure_release(response_handle);
 }
 
 #[cfg(feature = "coverage-c-consumer")]

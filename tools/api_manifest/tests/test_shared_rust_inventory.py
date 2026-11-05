@@ -83,7 +83,7 @@ class SharedRustInventoryTests(unittest.TestCase):
 
     def test_shared_inventory_report_names_the_rust_audit_it_reads(self) -> None:
         expected_source = (
-            "specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json"
+            "specs/043-public-api-bindings/reports/rust-export-report-2026-11-05.json"
         )
         generated = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
         checked_in = json.loads(
@@ -96,10 +96,10 @@ class SharedRustInventoryTests(unittest.TestCase):
     def test_inventory_accounts_for_exact_approved_rust_exclusions_separately(self) -> None:
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
-        self.assertEqual(inventory["approvedExcludedRustDeclarationCount"], 6459)
+        self.assertEqual(inventory["approvedExcludedRustDeclarationCount"], 7450)
         self.assertEqual(
             sum(record["excludedDeclarationCount"] for record in inventory["crates"]),
-            6459,
+            7450,
         )
         self.assertEqual(
             sum(record["blockedDeclarationCount"] for record in inventory["crates"]),
@@ -121,16 +121,16 @@ class SharedRustInventoryTests(unittest.TestCase):
 
         rust_counts = self.rust_report["counts"]
         self.assertEqual(inventory["observedRustDeclarationCount"], 10463)
-        self.assertEqual(inventory["mappedRustDeclarationCount"], 864)
+        self.assertEqual(inventory["mappedRustDeclarationCount"], 1390)
         self.assertEqual(rust_counts["observed"], 10463)
-        self.assertEqual(rust_counts["matched"], 4004)
-        self.assertEqual(rust_counts["excluded"], 6459)
+        self.assertEqual(rust_counts["matched"], 3013)
+        self.assertEqual(rust_counts["excluded"], 7450)
         self.assertEqual(rust_counts["observed"], rust_counts["matched"] + rust_counts["excluded"])
         self.assertEqual(
             inventory["approvedExcludedRustDeclarationCount"],
             rust_counts["excluded"],
         )
-        self.assertEqual(len(inventory["blockedUnreconciledDeclarations"]), 2)
+        self.assertEqual(len(inventory["blockedUnreconciledDeclarations"]), 0)
         self.assertEqual(set(inventory["draftOwnerGates"]), {"KMIPKIT-0010"})
         self.assertEqual(
             {record["packageId"] for record in inventory["crates"]},
@@ -238,9 +238,10 @@ class SharedRustInventoryTests(unittest.TestCase):
         for language, packages in language_packages.items():
             expected = sorted(
                 {
-                    row["exportName"]
+                    row["languageMappings"][language]["name"]
                     for row in declarations
-                    if row["packageId"] in packages
+                    if language in row.get("languageMappings", {})
+                    and row["languageMappings"][language]["packageId"] in packages
                 }
             )
             self.assertEqual(capability["mappings"][language], expected)
@@ -420,13 +421,13 @@ class SharedRustInventoryTests(unittest.TestCase):
                     f"{declaration['declarationId']} maps {language} to a blocked export",
                 )
 
-    def test_only_unmapped_runtime_namespace_roots_remain_blocked(self) -> None:
+    def test_no_unreconciled_rust_declarations_remain_blocked(self) -> None:
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
         blocked = inventory["blockedUnreconciledDeclarations"]
 
         self.assertEqual(
             {row["exportName"] for row in blocked},
-            {"org.kmipkit.RuntimeMetadata", "kmipkit.metadata"},
+            set(),
         )
         self.assertEqual(
             sum("callable public declaration" in row["blockedReason"] for row in blocked),
@@ -446,32 +447,22 @@ class SharedRustInventoryTests(unittest.TestCase):
             self.assertNotIn("languageMappings", source)
             self.assertNotIn("approvalSource", source)
 
-    def test_runtime_metadata_namespaces_keep_their_candidate_in_blocked_report(self) -> None:
+    def test_runtime_metadata_namespaces_are_exactly_excluded_after_owner_reconciliation(self) -> None:
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
-        blocked = {
-            row["declarationId"]: row
-            for row in inventory["blockedUnreconciledDeclarations"]
-        }
+        self.assertEqual(inventory["blockedUnreconciledDeclarations"], [])
         expected = {
-            "org.kmipkit.RuntimeMetadata:java": "org.kmipkit.RuntimeMetadata",
-            "kmipkit.metadata:python": "kmipkit.metadata",
+            ("java-kmipkit", "org.kmipkit.RuntimeMetadata"),
+            ("python-kmipkit", "kmipkit.metadata"),
         }
-
-        for declaration_id, export_name in expected.items():
-            with self.subTest(declaration=declaration_id):
-                row = blocked[declaration_id]
-                self.assertEqual(row["exportName"], export_name)
+        exclusions = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.manifest["approvedExclusions"]
+        }
+        for package_id, export_name in expected:
+            with self.subTest(package=package_id, export=export_name):
+                row = exclusions[(package_id, export_name)]
                 self.assertEqual(row["candidateSpecId"], "KMIPKIT-0043")
-                self.assertIn("crate root is not an exported declaration", row["blockedReason"])
-
-                source = next(
-                    declaration
-                    for declaration in self.manifest["publicDeclarations"]
-                    if declaration["declarationId"] == declaration_id
-                )
-                self.assertEqual(source["declarationState"], "blocked")
-                self.assertNotIn("languageMappings", source)
-                self.assertNotIn("approvalSource", source)
+                self.assertIn("KMIPKIT-0043-FR-021", row["evidence"])
 
     def test_ready_declaration_with_an_unobserved_rust_mapping_is_rejected(self) -> None:
         altered = json.loads(json.dumps(self.manifest))

@@ -1040,6 +1040,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("--sources", collector)
         self.assertIn("crates/kmipkit-ffi/src/extension_registry.rs", collector)
         self.assertIn("crates/kmipkit-ffi/src/extension_registry/client_abi.rs", collector)
+        self.assertIn("crates/kmipkit-ffi/src/extension_registry/credential_secrets.rs", collector)
         self.assertIn('--output "${report_dir}/coverage.json"', collector)
         self.assertNotIn("Install LLVM 20.1.8 for Linux FFI coverage export", job)
         self.assertNotIn('directory: ${{ runner.temp }}/llvm-20', job)
@@ -1363,40 +1364,32 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("steps.enforce.outcome == 'skipped'", job)
 
 
-    def test_coverage_threshold_waiver_is_limited_to_the_remaining_active_feature_branch(self) -> None:
+    def test_coverage_threshold_gate_enforces_all_selected_scopes(self) -> None:
         job = self.require_job(self.require_workflow(), "coverage-gate")
         enforcement = re.search(
             r"(?ms)^      - name: Enforce coverage thresholds\n(.*?)(?=^      - name: |\Z)",
             job,
         )
         self.assertIsNotNone(enforcement)
-        self.assertRegex(
-            enforcement.group(1),
-            r"(?ms)^        if: >-\s+"
-            r"github\.head_ref != 'feature/KMIPKIT-0043-t076-shared-client-mapping'$",
-        )
-        self.assertIn("Record temporary coverage-threshold waiver", job)
-        self.assertIn("steps.enforce.outcome == 'skipped'", job)
-        self.assertIn("Restore the minimum coverage thresholds", job)
+        self.assertNotRegex(enforcement.group(1), r"(?m)^\s+if:")
+        self.assertIn("scripts/coverage_gate.py aggregate", enforcement.group(1))
+        self.assertIn("--scopes-json", enforcement.group(1))
+        self.assertNotIn("temporary coverage-threshold waiver", job)
 
 
-    def test_normative_generator_threshold_waiver_is_limited_to_the_remaining_feature_branch(self) -> None:
+    def test_normative_generator_coverage_threshold_is_unconditional(self) -> None:
         job = self.require_job(self.require_workflow(), "normative-inventory")
         step = re.search(
             r"(?ms)^      - name: Verify normative generator line coverage\n(.*?)(?=^      - name: |\Z)",
             job,
         )
         self.assertIsNotNone(step)
-        self.assertIn('branch="' + "$" + '{GITHUB_HEAD_REF:-}"', step.group(1))
-        self.assertIn(
-            'if [[ "$branch" == "feature/KMIPKIT-0043-t076-shared-client-mapping" ]]; then',
-            step.group(1),
-        )
+        self.assertNotIn("GITHUB_HEAD_REF", step.group(1))
         self.assertIn("--fail-under=95", step.group(1))
-        self.assertIn("temporary coverage-threshold waiver", step.group(1))
+        self.assertNotIn("temporary coverage-threshold waiver", step.group(1))
 
 
-    def test_python_coverage_threshold_waiver_is_limited_to_the_remaining_feature_branch(self) -> None:
+    def test_python_coverage_threshold_is_unconditional(self) -> None:
         job = self.require_job(self.require_workflow(), "coverage-python")
         step = re.search(
             r"(?ms)^      - name: Run Python coverage suite\n(.*?)(?=^      - name: |\Z)",
@@ -1404,15 +1397,12 @@ class WorkflowContractTests(unittest.TestCase):
         )
         self.assertIsNotNone(step)
         body = step.group(1)
-        self.assertIn('branch="' + "$" + '{GITHUB_HEAD_REF:-}"', body)
-        self.assertIn(
-            'if [[ "$branch" == "feature/KMIPKIT-0043-t076-shared-client-mapping" ]]; then',
-            body,
-        )
-        self.assertIn("coverage_threshold_args+=(--cov-fail-under=0)", body)
+        self.assertNotIn("GITHUB_HEAD_REF", body)
+        self.assertNotIn("--cov-fail-under=0", body)
         self.assertIn("--cov-report=xml:coverage-python/coverage.xml", body)
-        self.assertIn('"' + "$" + '{coverage_threshold_args[@]}"', body)
-        self.assertIn("temporary coverage-threshold waiver", body)
+        self.assertNotIn("temporary coverage-threshold waiver", body)
+        python_config = (REPOSITORY_ROOT / "bindings/python/pyproject.toml").read_text(encoding="utf-8")
+        self.assertRegex(python_config, r"(?m)^fail_under\s*=\s*85$")
 
 
 if __name__ == "__main__":

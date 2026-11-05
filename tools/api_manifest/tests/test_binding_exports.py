@@ -1001,6 +1001,22 @@ class BindingExportAuditTests(unittest.TestCase):
             export_name.removeprefix("org.kmipkit.NativeExtensionRegistry.")
             for export_name in EXPECTED_PROFILE_VALIDATION_BRIDGE_EXPORTS
         )
+        native_members.update(
+            {
+                "PROFILE_CATALOG_CLIENT_PROFILES",
+                "PROFILE_CATALOG_CLIENT_REQUIREMENTS",
+                "PROFILE_CATALOG_PROFILE_TEST_CASES",
+                "profileCatalogRelationCount",
+                "profileCatalogRelationRow",
+                "profileCatalogRow",
+                "profileCatalogTableCount",
+                "profileReadinessBlockerAt",
+                "profileReadinessCreate",
+                "profileReadinessRelease",
+                "profileReadinessView",
+            }
+        )
+        native_members.add("registerRequestWithProtectionStorageMasks")
         expected_native = {
             ("java-kmipkit", f"org.kmipkit.NativeExtensionRegistry.{member}")
             for member in native_members

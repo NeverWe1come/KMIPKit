@@ -75,7 +75,7 @@ fn capability_query_matches_manifest_ready_capabilities() {
     );
     assert_eq!(
         kmipkit::capability_is_available("public_binding_surface"),
-        Ok(false)
+        Ok(true)
     );
     assert_eq!(
         kmipkit::capability_is_available("unknown_capability"),

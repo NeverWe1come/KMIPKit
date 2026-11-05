@@ -88,6 +88,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "nonce_ttlv_parity",
             "opaque_register_context",
             "production_transport",
+            "public_binding_surface",
             "server_generated_creation",
             "ttlv_wire_codec",
             "typed_message_model",
@@ -101,12 +102,10 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "Rust facade omitted ready manifest capability {capability}"
         );
     }
-    for unavailable in ["public_binding_surface", "rust_transport_exchange"] {
-        assert!(
-            matches!(kmipkit::capability_is_available(unavailable), Ok(false)),
-            "Rust facade advertised a capability outside its mapped surface: {unavailable}"
-        );
-    }
+    assert!(matches!(
+        kmipkit::capability_is_available("rust_transport_exchange"),
+        Ok(false)
+    ));
 
     let mut available = u8::MAX;
     let generic_ttlv = b"generic_ttlv_model";
@@ -120,7 +119,18 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
     );
     assert_eq!(available, 1);
 
-    let blocked = b"public_binding_surface";
+    let public_binding_surface = b"public_binding_surface";
+    assert_eq!(
+        kmipkit_capability_is_available(
+            public_binding_surface.as_ptr(),
+            public_binding_surface.len() as u64,
+            &raw mut available,
+        ),
+        SUCCESS
+    );
+    assert_eq!(available, 1);
+
+    let blocked = b"rust_transport_exchange";
     assert_eq!(
         kmipkit_capability_is_available(blocked.as_ptr(), blocked.len() as u64, &raw mut available,),
         SUCCESS

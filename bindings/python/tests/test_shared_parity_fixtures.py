@@ -277,7 +277,8 @@ def test_generic_ttlv_shared_fixture_preserves_open_values_order_and_owner_lifec
     limits = ttlv.codec_limits_defaults()
     structure = _structure_from_shared_ttlv_fixture(structure_input, limits)
 
-    released: list[str] = []
+    released: list[tuple[str, int]] = []
+    root_address = int(_handles.ffi.cast("uintptr_t", structure._pointer()))
     native_library = _handles.lib
 
     class ReleaseRecorder:
@@ -287,7 +288,8 @@ def test_generic_ttlv_shared_fixture_preserves_open_values_order_and_owner_lifec
                 return function
 
             def release(handle: object) -> int:
-                released.append(name)
+                address = int(_handles.ffi.cast("uintptr_t", handle))
+                released.append((name, address))
                 return function(handle)
 
             return release
@@ -298,7 +300,10 @@ def test_generic_ttlv_shared_fixture_preserves_open_values_order_and_owner_lifec
         view = ttlv.ttlv_structure_view(structure)
         del structure
         gc.collect()
-        assert "kmipkit_ttlv_structure_release" not in released
+        assert not any(
+            name == "kmipkit_ttlv_structure_release" and address == root_address
+            for name, address in released
+        )
 
         observed_tags: list[str] = []
         observed_values: list[tuple[str, object]] = []
@@ -350,8 +355,11 @@ def test_generic_ttlv_shared_fixture_preserves_open_values_order_and_owner_lifec
         view.close()
         view.close()
         assert view.closed
-        assert released.count("kmipkit_ttlv_structure_view_release") == 1
-        assert released.count("kmipkit_ttlv_structure_release") == 1
+        assert sum(name == "kmipkit_ttlv_structure_view_release" for name, _ in released) == 1
+        assert sum(
+            name == "kmipkit_ttlv_structure_release" and address == root_address
+            for name, address in released
+        ) == 1
     finally:
         if view is not None:
             view.close()

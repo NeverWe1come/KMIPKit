@@ -57,7 +57,7 @@ def test_crypto_response_parsers_accept_omitted_optional_outputs(
     )
     monkeypatch.setattr(
         client,
-        "_successful_response_ttlv",
+        "_typed_response_ttlv",
         lambda *_arguments: SimpleNamespace(close=lambda: None),
     )
     response = parser(SimpleNamespace(_pointer=lambda: object()))
@@ -1021,7 +1021,7 @@ def test_successful_batch_item_maps_only_its_typed_operation_response(
     monkeypatch.setattr(client, "lib", SimpleNamespace(**fake))
     monkeypatch.setattr(
         client,
-        "_successful_response_ttlv",
+        "_typed_response_ttlv",
         lambda *_arguments: SimpleNamespace(close=lambda: None),
     )
 
@@ -1117,7 +1117,7 @@ def test_successful_mac_batch_item_maps_an_absent_optional_identifier(
     monkeypatch.setattr(client, "lib", SimpleNamespace(**fake))
     monkeypatch.setattr(
         client,
-        "_successful_response_ttlv",
+        "_typed_response_ttlv",
         lambda *_arguments: SimpleNamespace(close=lambda: None),
     )
 

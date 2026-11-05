@@ -13,7 +13,7 @@ MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 
 
 class PublicBindingSurfaceReadinessTests(unittest.TestCase):
-    def test_inventory_capability_is_declared_with_exact_mapping_inventory(self) -> None:
+    def test_inventory_capability_is_verified_with_exact_mapping_inventory(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         capability = next(
             item
@@ -27,10 +27,20 @@ class PublicBindingSurfaceReadinessTests(unittest.TestCase):
             and item.get("declarationState") in {"declared", "verified"}
         ]
 
-        self.assertEqual("declared", capability["capabilityState"])
+        self.assertEqual("verified", capability["capabilityState"])
         self.assertEqual("KMIPKIT-0043", capability["ownerSpecId"])
         self.assertNotIn("candidateSpecId", capability)
         self.assertNotIn("blockedReason", capability)
+        self.assertEqual(
+            {
+                "tests/fixtures/api/shared-capability-parity.json",
+                "crates/kmipkit/tests/runtime_metadata.rs",
+                "crates/kmipkit-ffi/tests/support/metadata_tests.rs",
+                "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+                "bindings/python/tests/test_shared_parity_fixtures.py",
+            },
+            set(capability["parityEvidenceIds"]),
+        )
         generate._validate_approval_source(
             capability["approvalEvidence"], ROOT, feature_id="KMIPKIT-0043"
         )
