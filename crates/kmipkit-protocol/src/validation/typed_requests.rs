@@ -30,6 +30,20 @@ pub trait ValidateKmipRequest {
     fn validate(&self) -> ValidationReport;
 }
 
+fn validate_nested_request_field(
+    structure: &kmipkit_ttlv::Structure,
+    schema: crate::NestedStructureSchema,
+    field: &'static str,
+) -> ValidationReport {
+    super::nested::validate_nested_with_prefix(
+        &structure.view(),
+        schema,
+        &crate::ValidationPath::root()
+            .field("Request Payload")
+            .field(field),
+    )
+}
+
 macro_rules! impl_typed_request_validation {
     ($($request:ty => $schema:ident),+ $(,)?) => {
         $(
@@ -87,12 +101,10 @@ impl ValidateKmipRequest for GetRequest {
         let Some(specification) = self.key_wrapping_specification() else {
             return ValidationReport::default();
         };
-        super::nested::validate_nested_with_prefix(
-            &specification.view(),
+        validate_nested_request_field(
+            specification,
             crate::NestedStructureSchema::KeyWrappingSpecification,
-            &crate::ValidationPath::root()
-                .field("Request Payload")
-                .field("Key Wrapping Specification"),
+            "Key Wrapping Specification",
         )
     }
 }
@@ -103,12 +115,10 @@ impl ValidateKmipRequest for LoginRequest {
     fn validate(&self) -> ValidationReport {
         self.usage_limits()
             .map_or_else(ValidationReport::default, |usage_limits| {
-                super::nested::validate_nested_with_prefix(
-                    &usage_limits.view(),
+                validate_nested_request_field(
+                    usage_limits,
                     crate::NestedStructureSchema::UsageLimits,
-                    &crate::ValidationPath::root()
-                        .field("Request Payload")
-                        .field("Usage Limits"),
+                    "Usage Limits",
                 )
             })
     }
@@ -118,20 +128,16 @@ impl ValidateKmipRequest for DelegatedLoginRequest {
     const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::DelegatedLogin;
 
     fn validate(&self) -> ValidationReport {
-        let mut report = super::nested::validate_nested_with_prefix(
-            &self.rights().view(),
+        let mut report = validate_nested_request_field(
+            self.rights(),
             crate::NestedStructureSchema::Rights,
-            &crate::ValidationPath::root()
-                .field("Request Payload")
-                .field("Rights"),
+            "Rights",
         );
         if let Some(usage_limits) = self.usage_limits() {
-            report.append(super::nested::validate_nested_with_prefix(
-                &usage_limits.view(),
+            report.append(validate_nested_request_field(
+                usage_limits,
                 crate::NestedStructureSchema::UsageLimits,
-                &crate::ValidationPath::root()
-                    .field("Request Payload")
-                    .field("Usage Limits"),
+                "Usage Limits",
             ));
         }
         report
