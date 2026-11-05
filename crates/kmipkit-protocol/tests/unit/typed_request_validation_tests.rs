@@ -8,11 +8,11 @@ use crate::{
     HashRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest, LocateRequest, LogRequest,
     LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest, ModifyAttributeRequest, ObjectType,
     ObtainLeaseRequest, PingRequest, Pkcs11Request, PollRequest, ProcessRequest,
-    QueryAsyncRequestsRequest, QueryRequest, ReProvisionRequest, RecertifyRequest, RecoverRequest,
-    RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest,
-    RngRetrieveRequest, RngSeedRequest, SecretBytes, SetAttributeRequest, SetConstraintsRequest,
-    SetDefaultsRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod, ValidateKmipRequest,
-    ValidateRequest,
+    QueryAsyncRequestsRequest, QueryFunction, QueryRequest, ReProvisionRequest, RecertifyRequest,
+    RecoverRequest, RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason,
+    RevokeRequest, RngRetrieveRequest, RngSeedRequest, SecretBytes, SetAttributeRequest,
+    SetConstraintsRequest, SetDefaultsRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
+    ValidateKmipRequest, ValidateRequest,
 };
 use kmipkit_ttlv::{Item, RawTag, Value};
 
@@ -246,6 +246,35 @@ fn validate_request_validation_rejects_an_empty_chain() {
         report.issues()[0].source().to_string(),
         "KMIP v2.1 §6.1.57, Table 340"
     );
+}
+
+#[test]
+fn query_validation_rejects_an_empty_function_list() {
+    let report = QueryRequest::new([]).validate();
+
+    assert!(!report.is_valid());
+    assert_eq!(report.issues().len(), 1);
+    assert_eq!(
+        report.issues()[0].path().to_string(),
+        "Request Payload.Query Function"
+    );
+    assert_eq!(
+        report.issues()[0].source().to_string(),
+        "KMIP v2.1 §6.1.40, Table 282"
+    );
+}
+
+#[test]
+fn query_validation_rejects_reserved_function_but_preserves_extension_values() {
+    let invalid = QueryRequest::new([QueryFunction::from_raw(15)]).validate();
+    assert!(!invalid.is_valid());
+    assert_eq!(
+        invalid.issues()[0].source().to_string(),
+        "KMIP v2.1 §11.44, Table 476"
+    );
+
+    let extension = QueryRequest::new([QueryFunction::from_raw(0x8000_0042)]).validate();
+    assert!(extension.is_valid());
 }
 
 #[test]
