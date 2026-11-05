@@ -327,28 +327,7 @@ const KEY_WRAPPING_SPECIFICATION_FIELDS: &[FieldDescriptor] = &[
     },
 ];
 
-const ENCRYPTION_KEY_INFORMATION_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R234",
-        name: "Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0094),
-        types: TYPE_TEXT_STRING,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R235",
-        name: "Cryptographic Parameters",
-        tag: FieldTag::Exact(0x0042_002B),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::CryptographicParameters),
-    },
-];
-
-const MAC_SIGNATURE_KEY_INFORMATION_FIELDS: &[FieldDescriptor] = &[
+const KEY_INFORMATION_FIELDS: &[FieldDescriptor] = &[
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R234",
         name: "Unique Identifier",
@@ -531,10 +510,10 @@ fn descriptor(schema: NestedStructureSchema) -> RequestSchemaDescriptor {
             ("§7.18, Table 370", KEY_WRAPPING_SPECIFICATION_FIELDS)
         }
         NestedStructureSchema::EncryptionKeyInformation => {
-            ("§3.3, Table 16", ENCRYPTION_KEY_INFORMATION_FIELDS)
+            ("§3.3, Table 16", KEY_INFORMATION_FIELDS)
         }
         NestedStructureSchema::MacSignatureKeyInformation => {
-            ("§3.3, Table 17", MAC_SIGNATURE_KEY_INFORMATION_FIELDS)
+            ("§3.3, Table 17", KEY_INFORMATION_FIELDS)
         }
     };
     RequestSchemaDescriptor { source, fields }
