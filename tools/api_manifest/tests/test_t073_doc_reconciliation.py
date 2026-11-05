@@ -90,12 +90,14 @@ class T073DocumentationReconciliationTests(unittest.TestCase):
             "en": (
                 "T011",
                 "every observed declaration has a manifest record or an exact approved exclusion",
-                "capability mappings remain incomplete",
+                "the inventory is reconciled",
+                "does not claim KMIP conformance",
             ),
             "es": (
                 "T011",
                 "cada declaración observada tiene un registro en el manifiesto o una exclusión aprobada exacta",
-                "los mapeos de la capacidad siguen incompletos",
+                "el inventario está reconciliado",
+                "no afirma conformidad KMIP",
             ),
         }
 
@@ -106,7 +108,6 @@ class T073DocumentationReconciliationTests(unittest.TestCase):
                 line.lower() for line in guide_text.splitlines() if "public_binding_surface" in line
             )
             with self.subTest(language=language):
-                self.assertIn("blocked", row)
                 for phrase in expected[language]:
                     self.assertIn(phrase.lower(), row)
                 self.assertNotIn("inventory and mappings are not reconciled", row)
