@@ -14,9 +14,30 @@ use crate::{
     SetConstraintsRequest, SetDefaultsRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
     SplitKeyReference, UniqueIdentifier, ValidateKmipRequest, ValidateRequest,
 };
-use kmipkit_ttlv::{Item, RawTag, Value};
+use kmipkit_ttlv::{Item, RawTag, Structure, Value};
 
 fn assert_validate_contract<T: ValidateKmipRequest>() {}
+
+fn schema_item(tag: u32, value: Value) -> Item {
+    Item::new(
+        RawTag::new(tag)
+            .expect("schema fixture tag is valid")
+            .try_checked()
+            .expect("schema fixture tag is allocated"),
+        value,
+    )
+    .expect("schema fixture item is valid TTLV")
+}
+
+fn schema_structure(items: impl IntoIterator<Item = Item>) -> Structure {
+    let mut structure = Structure::new();
+    for value in items {
+        structure
+            .try_push(value)
+            .expect("schema fixture fits the generic Structure limits");
+    }
+    structure
+}
 
 #[test]
 fn every_supported_client_request_implements_borrowed_validation() {
@@ -517,4 +538,85 @@ fn rekey_key_pair_validation_rejects_repeated_single_instance_attribute() {
             .to_string()
             .contains("Table 310")
     );
+}
+
+#[test]
+fn get_validation_checks_the_supplied_key_wrapping_specification() {
+    const WRAPPING_METHOD: u32 = 0x0042_009E;
+
+    let specification = schema_structure([schema_item(
+        WRAPPING_METHOD,
+        Value::text_string("secret-canary".to_owned()),
+    )]);
+    let report = GetRequest::new()
+        .with_key_wrapping_specification(specification)
+        .validate();
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R229"
+            && issue.path().to_string()
+                == "Request Payload.Key Wrapping Specification.Wrapping Method"
+            && issue.source().to_string() == "KMIP v2.1 §7.18, Table 370"
+    }));
+    assert!(!format!("{report:?}").contains("secret-canary"));
+}
+
+#[test]
+fn login_validation_checks_optional_usage_limits_structure() {
+    const USAGE_LIMITS_TOTAL: u32 = 0x0042_0097;
+    const USAGE_LIMITS_COUNT: u32 = 0x0042_0096;
+    const USAGE_LIMITS_UNIT: u32 = 0x0042_0098;
+
+    let usage_limits = schema_structure([
+        schema_item(USAGE_LIMITS_TOTAL, Value::long_integer(10)),
+        schema_item(USAGE_LIMITS_COUNT, Value::long_integer(1)),
+        schema_item(
+            USAGE_LIMITS_UNIT,
+            Value::text_string("secret-canary".to_owned()),
+        ),
+    ]);
+    let report = LoginRequest::new()
+        .with_usage_limits(usage_limits)
+        .validate();
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R244"
+            && issue.path().to_string() == "Request Payload.Usage Limits.Usage Limits Unit"
+            && issue.source().to_string() == "KMIP v2.1 §7.40, Table 392"
+    }));
+    assert!(!format!("{report:?}").contains("secret-canary"));
+}
+
+#[test]
+fn import_validation_recurses_into_the_selected_managed_object() {
+    const SYMMETRIC_KEY: u32 = 0x0042_008F;
+    const KEY_BLOCK: u32 = 0x0042_0040;
+    const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+
+    let key_block = schema_structure([schema_item(
+        KEY_FORMAT_TYPE,
+        Value::text_string("secret-canary".to_owned()),
+    )]);
+    let symmetric_key = schema_item(
+        SYMMETRIC_KEY,
+        Value::structure(schema_structure([schema_item(
+            KEY_BLOCK,
+            Value::structure(key_block),
+        )])),
+    );
+    let attributes = AttributeSet::try_new([]).expect("empty Attributes are valid");
+    let report = ImportRequest::new(
+        UniqueIdentifier::TextString("object-id".to_owned()),
+        ObjectType::from_raw(2),
+        attributes,
+        symmetric_key,
+    )
+    .validate();
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R262"
+            && issue.path().to_string() == "Request Payload.Any Object.Key Block.Key Format Type"
+            && issue.source().to_string() == "KMIP v2.1 §3.1, Table 12"
+    }));
+    assert!(!format!("{report:?}").contains("secret-canary"));
 }
