@@ -159,11 +159,24 @@ typedef uint32_t kmipkit_wire_encoding_t;
 #define KMIPKIT_WIRE_ENCODING_JSON ((kmipkit_wire_encoding_t)1)
 #define KMIPKIT_WIRE_ENCODING_XML ((kmipkit_wire_encoding_t)2)
 
+/* Releases the library-owned kmipkit_client_configuration_t handle. */
+void kmipkit_client_configuration_release(kmipkit_client_configuration_t *handle);
+/* Releases the library-owned kmipkit_client_batch_item_t handle. */
+void kmipkit_client_batch_item_release(kmipkit_client_batch_item_t *handle);
+/* Releases the library-owned kmipkit_codec_limits_t handle. */
+void kmipkit_codec_limits_release(kmipkit_codec_limits_t *handle);
+/* Releases the library-owned kmipkit_ttlv_structure_view_t handle. */
 void kmipkit_ttlv_structure_view_release(kmipkit_ttlv_structure_view_t *handle);
+/* Releases the library-owned kmipkit_register_request_t handle. */
 void kmipkit_register_request_release(kmipkit_register_request_t *handle);
+/* Releases the library-owned kmipkit_client_t handle. */
 void kmipkit_client_release(kmipkit_client_t *handle);
+/* Releases the library-owned kmipkit_client_batch_t handle. */
 void kmipkit_client_batch_release(kmipkit_client_batch_t *handle);
+/* Releases the library-owned kmipkit_client_batch_response_t handle. */
 void kmipkit_client_batch_response_release(kmipkit_client_batch_response_t *handle);
+/* Releases the library-owned kmipkit_transport_config_t handle. */
+void kmipkit_transport_config_release(kmipkit_transport_config_t *handle);
 #define KMIPKIT_ERROR_RESOURCE_LIMIT ((int32_t)6)
 #define KMIPKIT_ERROR_INTERNAL ((int32_t)7)
 

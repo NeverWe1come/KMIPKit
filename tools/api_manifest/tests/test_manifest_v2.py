@@ -1162,6 +1162,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "kmipkit_last_error_clear",
                 "kmipkit_extension_registry_limits_v1_t.struct_size",
                 "kmipkit_extension_registry_limits_v1_t.abi_version",
+                "kmipkit_client_configuration_release",
+                "kmipkit_client_batch_item_release",
+                "kmipkit_codec_limits_release",
+                "kmipkit_transport_config_release",
             },
         )
         for symbol in c_exclusions:
@@ -1298,7 +1302,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
-        self.assertEqual(len(declarations), 388)
+        self.assertEqual(len(declarations), 389)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         batch_item = by_name["org.kmipkit.extensions.ClientBatchItem"]
         self.assertEqual(batch_item["kind"], "type")

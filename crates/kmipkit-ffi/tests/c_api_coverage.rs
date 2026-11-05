@@ -126,13 +126,14 @@ fn public_c_header_constructs_a_batch_and_reaches_the_encoding_override_entrypoi
 
 #[test]
 fn public_c_client_executes_a_valid_json_override_over_mutual_tls() {
-    const JSON_RESPONSE: &[u8] = br#"{"tag":"ResponseMessage","value":[{"tag":"ResponseHeader","value":[{"tag":"ProtocolVersion","value":[{"tag":"ProtocolVersionMajor","type":"Integer","value":2},{"tag":"ProtocolVersionMinor","type":"Integer","value":1}]},{"tag":"TimeStamp","type":"DateTime","value":"1970-01-01T00:00:01Z"},{"tag":"BatchCount","type":"Integer","value":1}]},{"tag":"BatchItem","value":[{"tag":"Operation","type":"Enumeration","value":"DiscoverVersions"},{"tag":"ResultStatus","type":"Enumeration","value":"Success"},{"tag":"ResponsePayload","value":[]}]}]}"#;
+    const JSON_RESPONSE: &[u8] = br#"{"tag":"ResponseMessage","value":[{"tag":"ResponseHeader","value":[{"tag":"ProtocolVersion","value":[{"tag":"ProtocolVersionMajor","type":"Integer","value":2},{"tag":"ProtocolVersionMinor","type":"Integer","value":1}]},{"tag":"TimeStamp","type":"DateTime","value":"1970-01-01T00:00:01Z"},{"tag":"BatchCount","type":"Integer","value":1}]},{"tag":"BatchItem","value":[{"tag":"Operation","type":"Enumeration","value":"DiscoverVersions"},{"tag":"ResultStatus","type":"Enumeration","value":"Success"},{"tag":"ResponsePayload","value":[{"tag":"ProtocolVersion","value":[{"tag":"ProtocolVersionMajor","type":"Integer","value":2},{"tag":"ProtocolVersionMinor","type":"Integer","value":1}]}]}]}]}"#;
 
     let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
     let identity = pki.client_identity();
     let certificates = identity.certificate_chain_der();
-    let listener = TcpListener::bind(("127.0.0.1", 0))
-        .expect("an ephemeral local TLS port is available");
+    let private_key = zeroize::Zeroizing::new(identity.private_key_der().to_vec());
+    let listener =
+        TcpListener::bind(("127.0.0.1", 0)).expect("an ephemeral local TLS port is available");
     let port = listener
         .local_addr()
         .expect("the fake TLS server has a local address")
@@ -158,13 +159,19 @@ fn public_c_client_executes_a_valid_json_override_over_mutual_tls() {
                 Err(error) => return Err(error),
             }
         };
+        stream.set_nonblocking(false)?;
         stream.set_read_timeout(Some(std::time::Duration::from_secs(5)))?;
         stream.set_write_timeout(Some(std::time::Duration::from_secs(5)))?;
         let connection = ServerConnection::new(server_config)
             .expect("the mutual-TLS server configuration is valid");
         let mut tls = StreamOwned::new(connection, stream);
         let request = read_json_document(&mut tls)?;
-        if !request.starts_with(b"{") || !request.windows(22).any(|window| window == b"\"tag\":\"RequestMessage\"") {
+        let request_message_tag = b"\"tag\":\"RequestMessage\"";
+        if !request.starts_with(b"{")
+            || !request
+                .windows(request_message_tag.len())
+                .any(|window| window == request_message_tag)
+        {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
                 "C override did not send a JSON RequestMessage",
@@ -185,17 +192,19 @@ fn public_c_client_executes_a_valid_json_override_over_mutual_tls() {
             u64::try_from(certificates[0].len()).expect("certificate length fits the ABI"),
             certificates[1].as_ptr(),
             u64::try_from(certificates[1].len()).expect("certificate length fits the ABI"),
-            identity.private_key_der().as_ptr(),
-            u64::try_from(identity.private_key_der().len()).expect("key length fits the ABI"),
+            private_key.as_ptr(),
+            u64::try_from(private_key.len()).expect("key length fits the ABI"),
             pki.authority_certificate_der().as_ptr(),
             u64::try_from(pki.authority_certificate_der().len())
                 .expect("trust certificate length fits the ABI"),
         )
     };
-    let peer_result = peer.join().expect("the local JSON TLS peer thread completes");
+    let peer_result = peer
+        .join()
+        .expect("the local JSON TLS peer thread completes");
 
-    assert_eq!(status, 0, "public C construction and JSON exchange succeed");
     peer_result.expect("the peer accepted a JSON request and returned its response");
+    assert_eq!(status, 0, "public C construction and JSON exchange succeed");
 }
 
 fn controlled_mtls_peer(
