@@ -210,10 +210,6 @@ jobs:
         id: check-generated-wire-name-formatting
         run: rustfmt --check crates/kmipkit-client/src/wire_names_generated.rs
 
-      - name: Check generated wire-name source formatting
-        id: check-generated-wire-name-formatting
-        run: rustfmt --check crates/kmipkit-client/src/wire_names_generated.rs
-
       - name: Run Clippy
         id: run-clippy
         run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
@@ -891,8 +887,8 @@ jobs:
         id: verify-generated-ttlv-tag-allocations
         run: python3 -B tools/normative_catalog/generate_ttlv_tags.py --repo-root . --check
 
-      - name: Verify generated wire tag names
-        id: verify-generated-wire-tag-names
+      - name: Verify generated wire-name metadata
+        id: verify-generated-wire-name-metadata
         run: python3 -B tools/normative_catalog/generate_wire_names.py --repo-root . --check
 
       - name: Verify generated result mappings
