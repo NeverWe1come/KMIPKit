@@ -40,3 +40,46 @@ only one of four common categories, with no input/parser-source retention.
 The private codec is not dispatched by the client yet; KMIPKIT-0057 owns that
 integration. No public API manifest or generated API declarations change.
 See traceability.md and the fixture README for normative and provenance detail.
+
+## Refactor and verification
+
+The REFACTOR step separates the bounded writer from parsing and indexes the
+checked-in catalog once in an immutable OnceLock. Indexed lookups avoid
+scanning/normalizing the full catalog for each received Item. The private
+NameKind enum excludes unsupported metadata selector states. The existing
+source inventory audit passes unchanged. A final boundary test accepts 64
+Structures and rejects 65, and an exact wire-byte cap accepts the complete
+emitted document. The pinned fixture's committed bytes retain the official
+SHA-256 under its local -text attribute.
+
+Fresh focused coverage after refactor: 780/820 new production lines covered
+(95.12%), no exclusions. Files: json_encoding.rs 387/410; names.rs 98/102;
+scalars.rs 147/154; writer.rs 139/145; wire_codec_common.rs 9/9.
+The artifact `.superpowers/sdd/0055-json/coverage.json` was produced with:
+`cargo llvm-cov -p kmipkit-client --lib --json --output-path .superpowers/sdd/0055-json/coverage.json -- json_encoding`.
+
+`cargo test -p kmipkit-client --all-features --quiet` passed the complete
+client package (696 passed), including compile-fail boundary tests, integration tests and
+doctests; 3 pre-existing tests remain explicitly ignored. Following refactor,
+the unit suite passed 622/622, and the final focused suite passed 15/15.
+`cargo fmt --all --check`, `cargo clippy -p kmipkit-client --all-targets --all-features -- -D warnings`,
+and `git diff --check` pass. The native AWS-LC build emitted its existing
+stdalign/NASM probe warnings but completed successfully.
+
+Scope self-review: this branch adds only private JSON code/common errors,
+crate-local fixture tests/dev dependencies, and 0055 documentation, plus the
+parent-supplied 0054 generator correction. It changes no client dispatch,
+manifest, public generated API, transport, or upstream source copy. Full
+workspace/cross-language/integration coverage gates belong to the coordinated
+0057 verification; focused coverage is not a workspace coverage claim.
+
+
+The literal normative JSON wire samples embedded in Profiles §5.5.4.1 are now
+pinned separately from the XML semantic descriptor. The codec decodes and emits
+semantic equivalents of both deterministic requests and the ResponseTooLarge
+response, preserving the table's original ProtocolVersion 1.4 and timestamp.
+The comparison independently normalizes only permitted Structure/Integer/date
+representations. The descriptor's successful Query response remains variable
+scenario evidence, without treating historical Template as an assigned 2.1
+name. Fixture provenance, extraction utility, hashes and limitations are in the
+crate-local fixture README; the upstream HTML remains unchanged.

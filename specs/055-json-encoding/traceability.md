@@ -20,7 +20,7 @@ is private `kmipkit-client::json_encoding` over the common Item contract.
 | KMIPKIT-0055-REQ-012 | Profiles §5.5.1.6.11 Date-Time | zoned Gregorian/XSD parser, 64-bit hex | epoch/negative/BCE/leap/fraction/timezone/24:00 cases |
 | KMIPKIT-0055-REQ-013 | Profiles §5.5.1.6.12 Interval | unsigned 32-bit decimal/hex | maximum, hex, negative/overflow rejection |
 | KMIPKIT-0055-REQ-014 | Profiles §5.5.1.6.13 Date Time Extended | safe-number guard and exact 64-bit hex | precision threshold and semantic property |
-| KMIPKIT-0055-REQ-015 | Profiles §5.5.4.1 MSGENC-JSON-M-1-21 | private codec; pinned fixture | four semantic messages replayed with $NOW binding |
+| KMIPKIT-0055-REQ-015 | Profiles §5.5.4.1 MSGENC-JSON-M-1-21 | private codec; pinned fixture | three literal normative JSON wire examples; four descriptor messages with $NOW binding |
 | KMIPKIT-0055-SEC-001 | Approved 0054 common contract | bounded scanner before tree construction; bounded recursive descent | wire-byte, count, Structure depth, malformed object nesting limits |
 | KMIPKIT-0055-SEC-002 | Constitution IV; approved 0054 contract | `WireCodecError`, zeroizing temporary/output owners | redacted malformed cases; direct ownership review |
 

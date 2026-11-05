@@ -5,14 +5,15 @@
 //! creating a second JSON tree. Output uses a counting pass and one reservation
 //! so owned initialized wire bytes never move through a growable allocation.
 use crate::wire_codec_common::{WireCodecError, WireCodecErrorKind};
-use crate::wire_names_generated::WIRE_NAMES;
-use kmipkit_ttlv::{Item, RawTag, Structure, Value, ValueView, codec::CodecLimits};
+use kmipkit_ttlv::{Item, RawTag, Structure, Value, codec::CodecLimits};
 use zeroize::Zeroizing;
 
 mod names;
 mod scalars;
-use names::{family, named_value, normalize, tag_name, tag_value, value_name};
+mod writer;
+use names::{NameKind, family, named_value, tag_value};
 use scalars::{date_time, hex_bytes, hex_u64, signed_number};
+use writer::Writer;
 
 const fn error(kind: WireCodecErrorKind) -> WireCodecError {
     WireCodecError::new(kind)
@@ -369,13 +370,13 @@ fn integer_value(tag: u32, source: &str, string: Option<&str>) -> Result<Value, 
     let invalid = || error(WireCodecErrorKind::InvalidValue);
 
     let n = if let Some(s) = string {
-        if let Some(family) = family(tag, 'M') {
+        if let Some(family) = family(tag, NameKind::Mask) {
             let mut n = 0u32;
             for component in s.split('|') {
                 n |= if component.starts_with("0x") {
                     u32::try_from(hex_u64(component, 4)?).map_err(|_| invalid())?
                 } else {
-                    named_value(family, component, 'B').ok_or_else(invalid)?
+                    named_value(family, component, NameKind::Mask).ok_or_else(invalid)?
                 };
             }
             n
@@ -433,8 +434,8 @@ fn scalar(tag: u32, ty: &str, source: &str) -> Result<Value, WireCodecError> {
                 if s.starts_with("0x") {
                     u32::try_from(hex_u64(s, 4)?).map_err(|_| invalid())?
                 } else {
-                    family(tag, 'F')
-                        .and_then(|f| named_value(f, s, 'E'))
+                    family(tag, NameKind::Enumeration)
+                        .and_then(|f| named_value(f, s, NameKind::Enumeration))
                         .ok_or_else(invalid)?
                 }
             } else {
@@ -475,187 +476,6 @@ fn scalar(tag: u32, ty: &str, source: &str) -> Result<Value, WireCodecError> {
         }),
         _ => return Err(invalid()),
     })
-}
-
-struct Writer<'l> {
-    output: Option<Zeroizing<Vec<u8>>>,
-    length: usize,
-    elements: usize,
-    limits: &'l CodecLimits,
-}
-impl Writer<'_> {
-    fn put(&mut self, bytes: &[u8]) -> Result<(), WireCodecError> {
-        self.length = self
-            .length
-            .checked_add(bytes.len())
-            .ok_or_else(|| error(WireCodecErrorKind::LimitExceeded))?;
-        if self.length > self.limits.max_message_bytes() {
-            return Err(error(WireCodecErrorKind::LimitExceeded));
-        }
-        if let Some(out) = &mut self.output {
-            out.extend_from_slice(bytes);
-        }
-        Ok(())
-    }
-    fn quoted(&mut self, value: &str) -> Result<(), WireCodecError> {
-        self.put(b"\"")?;
-        for ch in value.chars() {
-            match ch {
-                '"' => self.put(b"\\\"")?,
-                '\\' => self.put(b"\\\\")?,
-                '\n' => self.put(b"\\n")?,
-                '\r' => self.put(b"\\r")?,
-                '\t' => self.put(b"\\t")?,
-                c if c < ' ' => {
-                    self.put(b"\\u00")?;
-                    self.hex(&[u8::try_from(u32::from(c))
-                        .map_err(|_| error(WireCodecErrorKind::InvalidValue))?])?;
-                }
-                c => {
-                    let mut encoded = [0; 4];
-                    self.put(c.encode_utf8(&mut encoded).as_bytes())?;
-                }
-            }
-        }
-        self.put(b"\"")
-    }
-    fn hex(&mut self, bytes: &[u8]) -> Result<(), WireCodecError> {
-        const HEX: &[u8; 16] = b"0123456789abcdef";
-        for b in bytes {
-            self.put(&[HEX[usize::from(b >> 4)], HEX[usize::from(b & 15)]])?;
-        }
-        Ok(())
-    }
-    fn hex_value(&mut self, bytes: &[u8], prefix: bool) -> Result<(), WireCodecError> {
-        self.put(b"\"")?;
-        if prefix {
-            self.put(b"0x")?;
-        }
-        self.hex(bytes)?;
-        self.put(b"\"")
-    }
-    fn number(&mut self, number: impl std::fmt::Display) -> Result<(), WireCodecError> {
-        let text = Zeroizing::new(number.to_string());
-        self.put(text.as_bytes())
-    }
-    fn item(&mut self, item: &Item, depth: usize) -> Result<(), WireCodecError> {
-        self.elements = self
-            .elements
-            .checked_add(1)
-            .ok_or_else(|| error(WireCodecErrorKind::LimitExceeded))?;
-        if self.elements > self.limits.max_elements() {
-            return Err(error(WireCodecErrorKind::LimitExceeded));
-        }
-        self.put(b"{\"tag\":")?;
-        let tag = item.tag().raw();
-        if let Some(name) = tag_name(tag) {
-            self.quoted(&normalize(name))?;
-        } else {
-            self.hex_value(&tag.to_be_bytes()[1..], true)?;
-        }
-        self.put(b",\"type\":")?;
-        item.with_value(|v| -> Result<(), WireCodecError> {
-            let ty = match &v {
-                ValueView::Structure(_) => "Structure",
-                ValueView::Integer(_) => "Integer",
-                ValueView::LongInteger(_) => "LongInteger",
-                ValueView::BigInteger(_) => "BigInteger",
-                ValueView::Enumeration(_) => "Enumeration",
-                ValueView::Boolean(_) => "Boolean",
-                ValueView::TextString(_) => "TextString",
-                ValueView::ByteString(_) => "ByteString",
-                ValueView::DateTime(_) => "DateTime",
-                ValueView::Interval(_) => "Interval",
-                ValueView::DateTimeExtended(_) => "DateTimeExtended",
-                _ => return Err(error(WireCodecErrorKind::InvalidValue)),
-            };
-            self.quoted(ty)?;
-            self.put(b",\"value\":")?;
-            match v {
-                ValueView::Structure(s) => {
-                    if depth >= self.limits.max_structure_depth() {
-                        return Err(error(WireCodecErrorKind::LimitExceeded));
-                    }
-                    self.put(b"[")?;
-                    for (i, child) in s.children().iter().enumerate() {
-                        if i > 0 {
-                            self.put(b",")?;
-                        }
-                        self.item(child, depth + 1)?;
-                    }
-                    self.put(b"]")?;
-                }
-                ValueView::Integer(n) => {
-                    if let Some(f) = family(tag, 'M') {
-                        self.mask(f, n.cast_unsigned())?;
-                    } else {
-                        self.number(n)?;
-                    }
-                }
-                ValueView::LongInteger(n) | ValueView::DateTimeExtended(n) => {
-                    if n.unsigned_abs() < (1u64 << 52) {
-                        self.number(n)?;
-                    } else {
-                        self.hex_value(&n.to_be_bytes(), true)?;
-                    }
-                }
-                ValueView::BigInteger(bytes) => {
-                    if bytes.is_empty() || !bytes.len().is_multiple_of(8) {
-                        return Err(error(WireCodecErrorKind::InvalidValue));
-                    }
-                    self.hex_value(bytes, true)?;
-                }
-                ValueView::Enumeration(n) => {
-                    if let Some(name) = family(tag, 'F').and_then(|f| value_name(f, *n, 'E')) {
-                        self.quoted(&normalize(name))?;
-                    } else {
-                        self.hex_value(&n.to_be_bytes(), true)?;
-                    }
-                }
-                ValueView::Boolean(b) => self.put(if *b { b"true" } else { b"false" })?,
-                ValueView::TextString(s) => self.quoted(s)?,
-                ValueView::ByteString(b) => self.hex_value(b, false)?,
-                ValueView::DateTime(n) => self.hex_value(&n.to_be_bytes(), true)?,
-                ValueView::Interval(n) => self.number(n)?,
-                _ => return Err(error(WireCodecErrorKind::InvalidValue)),
-            }
-            Ok(())
-        })?;
-        self.put(b"}")
-    }
-    fn mask(&mut self, family: &str, mut bits: u32) -> Result<(), WireCodecError> {
-        self.put(b"\"")?;
-        let mut any = false;
-        for line in WIRE_NAMES.lines().filter(|line| line.starts_with("B\t")) {
-            let mut fields = line.split('\t');
-            fields.next();
-            if fields.next() != Some(family) {
-                continue;
-            }
-            let Some(raw) = fields.next().and_then(|s| u32::from_str_radix(s, 16).ok()) else {
-                continue;
-            };
-            let Some(name) = fields.next() else {
-                continue;
-            };
-            if raw != 0 && bits & raw == raw {
-                if any {
-                    self.put(b"|")?;
-                }
-                self.put(normalize(name).as_bytes())?;
-                any = true;
-                bits &= !raw;
-            }
-        }
-        if bits != 0 || !any {
-            if any {
-                self.put(b"|")?;
-            }
-            self.put(b"0x")?;
-            self.hex(&bits.to_be_bytes())?;
-        }
-        self.put(b"\"")
-    }
 }
 
 #[cfg(test)]

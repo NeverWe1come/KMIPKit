@@ -191,7 +191,7 @@ fn limits_apply_to_wire_bytes_structure_depth_and_item_count() {
 }
 
 #[test]
-fn official_msgenc_json_m_1_21_replays_all_four_messages() {
+fn official_xml_descriptor_replays_all_four_semantic_messages() {
     // Exact official Profiles §5.5.4.1 XML test description, normalized to JSON
     // with the sole fixture binding $NOW = 1700000000.
     fn convert(node: roxmltree::Node<'_, '_>) -> serde_json::Value {
@@ -234,6 +234,10 @@ fn official_msgenc_json_m_1_21_replays_all_four_messages() {
         let json = serde_json::to_vec(&convert(message)).unwrap();
         let parsed = decode(&json, &CodecLimits::defaults()).unwrap();
         let encoded = encode(&parsed, &CodecLimits::defaults()).unwrap();
+        assert_eq!(
+            serde_json::from_slice::<serde_json::Value>(&encoded).unwrap(),
+            convert(message)
+        );
         assert_eq!(
             wire(&decode(&encoded, &CodecLimits::defaults()).unwrap()),
             String::from_utf8(encoded.to_vec()).unwrap()
@@ -422,5 +426,90 @@ fn profile_edges_cover_null_hex_boolean_and_json_short_escapes() {
     ] {
         let json = format!(r#"{{"tag":"ActivationDate","type":"DateTime","value":"{source}"}}"#);
         assert!(decode(json.as_bytes(), &CodecLimits::defaults()).is_err());
+    }
+}
+
+#[test]
+fn default_depth_boundary_accepts_64_structures_and_rejects_65() {
+    let mut source = r#"{"tag":"BatchCount","type":"Integer","value":1}"#.to_owned();
+    for _ in 0..64 {
+        source = format!(r#"{{"tag":"RequestMessage","value":[{source}]}}"#);
+    }
+    let decoded = decode(source.as_bytes(), &CodecLimits::defaults()).unwrap();
+    assert!(encode(&decoded, &CodecLimits::defaults()).is_ok());
+    let too_deep = format!(r#"{{"tag":"RequestMessage","value":[{source}]}}"#);
+    assert_eq!(
+        decode(too_deep.as_bytes(), &CodecLimits::defaults())
+            .unwrap_err()
+            .kind(),
+        WireCodecErrorKind::LimitExceeded
+    );
+}
+
+#[test]
+fn empty_structure_and_exact_encoder_byte_cap_are_valid() {
+    let decoded = parse(r#"{"tag":"RequestMessage","value":[]}"#);
+    let expected = r#"{"tag":"RequestMessage","type":"Structure","value":[]}"#;
+    let limits = CodecLimits::new(expected.len(), 1, 1).unwrap();
+    assert_eq!(&*encode(&decoded, &limits).unwrap(), expected.as_bytes());
+    assert!(decode(br#"{"tag":"RequestMessage","value":[]}"#, &limits).is_ok());
+    assert!(
+        wire(&parse(
+            r#"{"tag":"CryptographicAlgorithm","type":"Enumeration","value":"DES3"}"#
+        ))
+        .contains(r#""value":"DES3""#)
+    );
+    assert_eq!(
+        wire(&item(0x0042_002c, Value::integer(0x40))),
+        r#"{"tag":"CryptographicUsageMask","type":"Integer","value":"0x00000040"}"#
+    );
+}
+
+#[test]
+fn normative_json_wire_samples_decode_and_emit_equivalent_profile_documents() {
+    // OASIS KMIP Profiles v2.1 §5.5.4.1, literal normative JSON wire table.
+    // Expected projection applies only profile-permitted representation choices:
+    // explicit Structure types, numeric Integers, and hexadecimal DateTime.
+    fn emitted_form(mut value: serde_json::Value) -> serde_json::Value {
+        let object = value.as_object_mut().unwrap();
+        let ty = object
+            .get("type")
+            .and_then(serde_json::Value::as_str)
+            .unwrap_or("Structure");
+        match ty {
+            "Structure" => {
+                let children = object.get_mut("value").unwrap().as_array_mut().unwrap();
+                for child in children {
+                    *child = emitted_form(child.take());
+                }
+                object.insert("type".to_owned(), serde_json::json!("Structure"));
+            }
+            "Integer" => {
+                let source = object["value"].as_str().unwrap();
+                let n = u32::from_str_radix(source.strip_prefix("0x").unwrap(), 16)
+                    .unwrap()
+                    .cast_signed();
+                object.insert("value".to_owned(), serde_json::json!(n));
+            }
+            "DateTime" => {
+                assert_eq!(object["value"], "2016-01-04T11:47:46+00:00");
+                object.insert("value".to_owned(), serde_json::json!("0x00000000568a5be2"));
+            }
+            _ => (),
+        }
+        value
+    }
+    for source in [
+        include_bytes!("../fixtures/json/request-time-0.json").as_slice(),
+        include_bytes!("../fixtures/json/response-time-0.json").as_slice(),
+        include_bytes!("../fixtures/json/request-time-1.json").as_slice(),
+    ] {
+        let reference = serde_json::from_slice(source).unwrap();
+        let decoded = decode(source, &CodecLimits::defaults()).unwrap();
+        let emitted = encode(&decoded, &CodecLimits::defaults()).unwrap();
+        assert_eq!(
+            serde_json::from_slice::<serde_json::Value>(&emitted).unwrap(),
+            emitted_form(reference)
+        );
     }
 }
