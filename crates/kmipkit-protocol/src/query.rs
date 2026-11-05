@@ -111,8 +111,9 @@ pub struct QueryRequest {
 impl QueryRequest {
     /// Creates a Query request with the supplied ordered Query Functions.
     ///
-    /// The list is validated when encoded so an empty request fails through
-    /// the normal client execution path before transmission.
+    /// The list can be checked with [`ValidateKmipRequest::validate`] and is
+    /// validated again when encoded so invalid requests fail before
+    /// transmission.
     #[must_use]
     pub fn new(functions: impl IntoIterator<Item = QueryFunction>) -> Self {
         Self {
