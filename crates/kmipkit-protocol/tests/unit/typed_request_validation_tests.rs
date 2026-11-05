@@ -728,6 +728,34 @@ fn hash_validation_checks_cryptographic_parameter_requirements() {
 }
 
 #[test]
+fn diagnostic_requests_preflight_reject_extensions_that_override_defined_fields() {
+    let interop_report = InteropRequest::new(1, crate::SecretText::new("interop-id".to_owned()))
+        .with_extension(schema_item(
+            0x0042_0160,
+            Value::text_string("secret-canary".to_owned()),
+        ))
+        .validate();
+    assert!(interop_report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-P005"
+            && issue.path().to_string() == "Request Payload.Interop Function"
+            && issue.source().to_string() == "KMIP v2.1 §6.1.26, Table 241"
+    }));
+
+    let log_report = LogRequest::new(crate::SecretText::new("log-message".to_owned()))
+        .with_extension(schema_item(
+            0x0042_0141,
+            Value::text_string("secret-canary".to_owned()),
+        ))
+        .validate();
+    assert!(log_report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-P005"
+            && issue.path().to_string() == "Request Payload.Log Message"
+            && issue.source().to_string() == "KMIP v2.1 §6.1.29, Table 250"
+    }));
+    assert!(!format!("{interop_report:?}{log_report:?}").contains("secret-canary"));
+}
+
+#[test]
 fn derive_key_validation_recurses_into_cryptographic_parameters() {
     let attributes = AttributeSet::try_new([
         schema_item(0x0042_002a, Value::integer(256)),
