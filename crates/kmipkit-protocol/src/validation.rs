@@ -273,12 +273,24 @@ pub(crate) fn request_issue_report(
     field_path: &'static str,
     source: ValidationSourceRef,
 ) -> ValidationReport {
-    let mut report = ValidationReport::default();
-    report.push(ValidationIssue::new(
-        ValidationCode::new(code),
+    issue_report(
+        code,
         ValidationPath::root()
             .field("Request Payload")
             .field(field_path),
+        source,
+    )
+}
+
+pub(crate) fn issue_report(
+    code: &'static str,
+    path: ValidationPath,
+    source: ValidationSourceRef,
+) -> ValidationReport {
+    let mut report = ValidationReport::default();
+    report.push(ValidationIssue::new(
+        ValidationCode::new(code),
+        path,
         ValidationSeverity::Error,
         source,
     ));
