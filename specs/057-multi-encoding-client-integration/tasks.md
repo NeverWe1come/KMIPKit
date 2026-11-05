@@ -40,7 +40,7 @@
   GREEN, and REFACTOR are separate signed commits; final independent review
   found no findings.
 
-## Task 5 — expose equivalent four-language selection [ ]
+## Task 5 — expose equivalent four-language selection [x]
 
 - Add the reviewed `WireEncoding`, configuration default, and per-exchange
   override to `specification/api/public-api.json` and its schema mappings.
@@ -48,6 +48,7 @@
   manifest generator. Never edit generated output by hand.
 - Add ABI, Java, and Python tests for default and override selection; audit
   exports and error/delivery mapping.
+- Evidence: [task5-bindings-evidence.md](task5-bindings-evidence.md).
 
 ## Task 6 — close requirements and release evidence [ ]
 
