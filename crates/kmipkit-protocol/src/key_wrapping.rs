@@ -179,7 +179,7 @@ impl KeyWrappingData {
         let mut wrapping_method = None;
         item.with_value(|value| {
             let ValueView::Structure(structure) = value else {
-                return Err(ManagedObjectError::InvalidStructure);
+                return Err(ManagedObjectError::InvalidStructure); // COVERAGE-EXCLUDE: ItemType::Structure guarantees this ValueView variant.
             };
             for child in structure.children() {
                 let (position, expected) = match child.tag().raw() {
@@ -203,7 +203,7 @@ impl KeyWrappingData {
                 if position == 0 {
                     wrapping_method = child.with_value(|value| match value {
                         ValueView::Enumeration(raw) => Some(*raw),
-                        _ => None,
+                        _ => None, // COVERAGE-EXCLUDE: ItemType::Enumeration guarantees this ValueView variant.
                     });
                 }
                 if position == 1 {
@@ -393,6 +393,6 @@ fn with_structure<R>(
 ) -> Result<R, ManagedObjectError> {
     item.with_value(|value| match value {
         ValueView::Structure(structure) => Ok(callback(structure)),
-        _ => Err(ManagedObjectError::InvalidStructure),
+        _ => Err(ManagedObjectError::InvalidStructure), // COVERAGE-EXCLUDE: callers validate or construct the expected Structure tag and type.
     })
 }

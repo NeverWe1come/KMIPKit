@@ -42,16 +42,16 @@ fn key_wrapping_data_emits_method_before_optional_metadata() {
 
 #[test]
 fn wrapping_data_retains_raw_metadata_and_never_performs_crypto() {
-    let item = KeyWrappingData::try_new(1)
+    let builder = KeyWrappingData::try_new(1)
         .expect("valid wrapper")
         .with_encryption_key_information(
             EncryptionKeyInformation::try_new("wrapping-key".to_owned())
                 .expect("required Unique Identifier"),
         )
         .with_iv_counter_nonce(vec![0xA1, 0xA2])
-        .with_mac_signature(vec![0xB1, 0xB2])
-        .into_item()
-        .expect("valid wrapping data");
+        .with_mac_signature(vec![0xB1, 0xB2]);
+    assert!(builder.with_raw(|_| ()).is_err());
+    let item = builder.into_item().expect("valid wrapping data");
     assert_eq!(item.tag().raw(), 0x0042_0046);
 }
 
@@ -116,6 +116,157 @@ fn wrapping_reader_checks_required_identifiers_and_keeps_unknown_fields() {
     )
     .expect("valid test structure");
     assert!(KeyWrappingData::try_from_item(malformed).is_err());
+}
+
+#[test]
+fn wrapping_reader_covers_optional_fields_and_key_information_variants() {
+    let encryption = EncryptionKeyInformation::try_from_unique_identifier(
+        kmipkit_protocol::UniqueIdentifier::Enumeration(1),
+    )
+    .expect("enumerated identifiers are open")
+    .with_cryptographic_parameters(Structure::new())
+    .expect("optional parameters follow the identifier");
+    let mac = MacSignatureKeyInformation::try_from_unique_identifier(
+        kmipkit_protocol::UniqueIdentifier::Integer(7),
+    )
+    .expect("integer identifiers are open")
+    .with_cryptographic_parameters(Structure::new())
+    .expect("optional parameters follow the identifier");
+    let item = KeyWrappingData::try_new(1)
+        .expect("Wrapping Method")
+        .with_encryption_key_information(encryption)
+        .with_mac_signature_key_information(mac)
+        .with_mac_signature(vec![0xA1])
+        .with_iv_counter_nonce(vec![0xB1])
+        .with_encoding_option(2)
+        .into_item()
+        .expect("valid complete wrapping data");
+    let mut fields = item.with_value(|value| match value {
+        ValueView::Structure(structure) => structure
+            .children()
+            .iter()
+            .map(kmipkit_ttlv::Item::try_clone)
+            .collect::<Result<Vec<_>, _>>()
+            .expect("test-only metadata clone"),
+        _ => Vec::new(),
+    });
+    fields.push(tagged(0x0054_0101, Value::integer(1)));
+    let item = structure_item(0x0042_0046, fields);
+    let encryption_source = key_information(0x0042_0036, 0x0042_0094, Value::enumeration(1));
+    let encryption = EncryptionKeyInformation::try_from_item(encryption_source)
+        .expect("read encryption key information");
+    assert!(encryption.with_raw(|view| view.children().len()).is_ok());
+    let mac_source = key_information(0x0042_004E, 0x0042_0094, Value::integer(7));
+    let mac = MacSignatureKeyInformation::try_from_item(mac_source)
+        .expect("read MAC/Signature key information");
+    assert!(mac.with_raw(|view| view.children().len()).is_ok());
+    let parsed = KeyWrappingData::try_from_item(item).expect("all optional fields parse");
+    assert_eq!(
+        parsed
+            .with_raw(|view| view.children().len())
+            .expect("parsed structure is borrowed"),
+        7
+    );
+    assert_eq!(parsed.into_item().unwrap().tag().raw(), 0x0042_0046);
+}
+
+#[test]
+fn key_information_readers_reject_wrong_tags_types_and_missing_identifiers() {
+    assert!(
+        EncryptionKeyInformation::try_from_item(tagged(0x0042_0036, Value::enumeration(1),))
+            .is_err()
+    );
+    assert!(
+        MacSignatureKeyInformation::try_from_item(tagged(
+            0x0042_0036,
+            Value::structure(Structure::new()),
+        ))
+        .is_err()
+    );
+    assert!(EncryptionKeyInformation::try_from_item(structure_item(0x0042_0036, [])).is_err());
+
+    let wrong_identifier = structure_item(
+        0x0042_0036,
+        [tagged(0x0042_0094, Value::byte_string(vec![1]))],
+    );
+    assert!(EncryptionKeyInformation::try_from_item(wrong_identifier).is_err());
+    let wrong_parameters = structure_item(
+        0x0042_0036,
+        [
+            tagged(0x0042_0094, Value::text_string("id".to_owned())),
+            tagged(0x0042_002B, Value::integer(1)),
+        ],
+    );
+    assert!(EncryptionKeyInformation::try_from_item(wrong_parameters).is_err());
+}
+
+#[test]
+fn wrapping_reader_rejects_bad_outer_schema_and_member_order() {
+    assert!(KeyWrappingData::try_from_item(tagged(0x0042_009E, Value::enumeration(1))).is_err());
+    assert!(KeyWrappingData::try_from_item(tagged(0x0042_0046, Value::enumeration(1))).is_err());
+
+    let missing_method = structure_item(
+        0x0042_0046,
+        [key_information(
+            0x0042_0036,
+            0x0042_0094,
+            Value::text_string("id".to_owned()),
+        )],
+    );
+    assert!(KeyWrappingData::try_from_item(missing_method).is_err());
+
+    let wrong_order = structure_item(
+        0x0042_0046,
+        [
+            key_information(
+                0x0042_0036,
+                0x0042_0094,
+                Value::text_string("id".to_owned()),
+            ),
+            tagged(0x0042_009E, Value::enumeration(1)),
+        ],
+    );
+    assert!(KeyWrappingData::try_from_item(wrong_order).is_err());
+
+    let wrong_field_type = structure_item(
+        0x0042_0046,
+        [
+            tagged(0x0042_009E, Value::enumeration(1)),
+            key_information(
+                0x0042_0036,
+                0x0042_0094,
+                Value::text_string("id".to_owned()),
+            ),
+            tagged(0x0042_004D, Value::integer(1)),
+        ],
+    );
+    assert!(KeyWrappingData::try_from_item(wrong_field_type).is_err());
+
+    let duplicate_method = structure_item(
+        0x0042_0046,
+        [
+            tagged(0x0042_009E, Value::enumeration(1)),
+            tagged(0x0042_009E, Value::enumeration(2)),
+            key_information(
+                0x0042_0036,
+                0x0042_0094,
+                Value::text_string("id".to_owned()),
+            ),
+        ],
+    );
+    assert!(KeyWrappingData::try_from_item(duplicate_method).is_err());
+}
+
+fn structure_item(raw_tag: u32, fields: impl IntoIterator<Item = Item>) -> Item {
+    let mut structure = Structure::new();
+    for field in fields {
+        structure.try_push(field).expect("valid test structure");
+    }
+    tagged(raw_tag, Value::structure(structure))
+}
+
+fn key_information(raw_tag: u32, identifier_tag: u32, identifier: Value) -> Item {
+    structure_item(raw_tag, [tagged(identifier_tag, identifier)])
 }
 
 fn tagged(raw_tag: u32, value: Value) -> Item {

@@ -1,9 +1,10 @@
 //! OASIS KMIP 2.1 §§3.4–3.12, Tables 18–26: transparent key material.
 
 use kmipkit_protocol::{
-    TransparentDhPrivateKey, TransparentDhPublicKey, TransparentDsaPrivateKey,
-    TransparentDsaPublicKey, TransparentEcPrivateKey, TransparentEcPublicKey,
-    TransparentRsaPrivateKey, TransparentRsaPublicKey, TransparentSymmetricKey,
+    KeyFormatType, KeyMaterial, TransparentDhPrivateKey, TransparentDhPublicKey,
+    TransparentDsaPrivateKey, TransparentDsaPublicKey, TransparentEcPrivateKey,
+    TransparentEcPublicKey, TransparentRsaPrivateKey, TransparentRsaPublicKey,
+    TransparentSymmetricKey,
 };
 use kmipkit_ttlv::{ItemType, ValueView};
 
@@ -127,6 +128,35 @@ fn transparent_rsa_private_supports_only_source_defined_alternatives() {
             (0x0042_0061, ItemType::BigInteger),
         ]
     );
+
+    let complete = TransparentRsaPrivateKey::try_from_components(
+        vec![1],
+        Some(vec![2]),
+        Some(vec![3]),
+        Some(vec![4]),
+        Some(vec![5]),
+        Some(vec![6]),
+        Some(vec![7]),
+        Some(vec![8]),
+    )
+    .expect("all source-defined RSA private components are retained")
+    .into_item();
+    assert_eq!(
+        field_tags(&complete)
+            .into_iter()
+            .map(|(tag, _)| tag)
+            .collect::<Vec<_>>(),
+        [
+            0x0042_0052,
+            0x0042_006C,
+            0x0042_0063,
+            0x0042_005E,
+            0x0042_0071,
+            0x0042_0060,
+            0x0042_0061,
+            0x0042_0027,
+        ]
+    );
 }
 
 #[test]
@@ -218,5 +248,93 @@ fn transparent_ec_private_and_public_preserve_curve_and_material() {
             (0x0042_0075, ItemType::Enumeration),
             (0x0042_0072, ItemType::ByteString),
         ]
+    );
+}
+
+#[test]
+fn every_transparent_reader_round_trips_and_redacts_key_bytes() {
+    macro_rules! round_trip {
+        ($value:expr, $format:expr, $model:ty, $label:literal) => {{
+            let item = $value.into_item();
+            let generic = KeyMaterial::try_from_item(
+                item.try_clone().expect("explicit secret-owner clone"),
+                KeyFormatType::from_raw($format),
+            )
+            .expect("format-aware generic Key Material reader");
+            assert_eq!(generic.item_type(), ItemType::Structure);
+            let parsed = <$model>::try_from_item(item).expect($label);
+            let debug = format!("{parsed:?}");
+            assert!(!debug.contains("D1"));
+            assert_eq!(parsed.into_item().tag().raw(), 0x0042_0043);
+        }};
+    }
+
+    round_trip!(
+        TransparentSymmetricKey::try_new(vec![0xD1]).expect("symmetric key"),
+        7,
+        TransparentSymmetricKey,
+        "read symmetric key"
+    );
+    round_trip!(
+        TransparentDsaPrivateKey::try_new(vec![1], vec![2], vec![3], vec![4])
+            .expect("DSA private key"),
+        8,
+        TransparentDsaPrivateKey,
+        "read DSA private key"
+    );
+    round_trip!(
+        TransparentDsaPublicKey::try_new(vec![1], vec![2], vec![3], vec![4])
+            .expect("DSA public key"),
+        9,
+        TransparentDsaPublicKey,
+        "read DSA public key"
+    );
+    round_trip!(
+        TransparentRsaPrivateKey::try_from_components(
+            vec![1],
+            Some(vec![2]),
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+        )
+        .expect("RSA private key"),
+        10,
+        TransparentRsaPrivateKey,
+        "read RSA private key"
+    );
+    round_trip!(
+        TransparentRsaPublicKey::try_new(vec![1], vec![2]).expect("RSA public key"),
+        11,
+        TransparentRsaPublicKey,
+        "read RSA public key"
+    );
+    round_trip!(
+        TransparentDhPrivateKey::try_new(vec![1], vec![2], vec![3], None, None)
+            .expect("DH private key"),
+        12,
+        TransparentDhPrivateKey,
+        "read DH private key"
+    );
+    round_trip!(
+        TransparentDhPublicKey::try_new(vec![1], vec![2], vec![3], None, None)
+            .expect("DH public key"),
+        13,
+        TransparentDhPublicKey,
+        "read DH public key"
+    );
+    round_trip!(
+        TransparentEcPrivateKey::try_new(1, vec![2]).expect("EC private key"),
+        14,
+        TransparentEcPrivateKey,
+        "read EC private key"
+    );
+    round_trip!(
+        TransparentEcPublicKey::try_new(1, vec![3]).expect("EC public key"),
+        15,
+        TransparentEcPublicKey,
+        "read EC public key"
     );
 }

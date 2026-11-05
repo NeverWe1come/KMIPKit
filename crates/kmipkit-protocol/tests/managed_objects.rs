@@ -149,6 +149,7 @@ fn every_known_object_type_dispatches_only_its_matching_structure_tag() {
         )
         .expect("known Object Type maps to the matching object Item tag");
         assert_eq!(typed.object_type().raw(), object_type);
+        assert!(format!("{typed:?}").contains("item_tag"));
         assert_eq!(typed.into_item().tag().raw(), item.tag().raw());
     }
 }
@@ -347,4 +348,91 @@ fn split_key_prime_field_size_precedes_key_block_in_table_nine_order() {
             ],
         )
     );
+}
+
+#[test]
+fn typed_object_accessors_and_raw_views_cover_all_managed_object_models() {
+    let certificate = Certificate::try_new(0x8000_0001, vec![0xD1, 0xD2]).expect("Certificate");
+    assert_eq!(certificate.certificate_type(), Some(0x8000_0001));
+    assert_eq!(certificate.with_certificate_value(<[u8]>::len), Some(2));
+    assert!(!format!("{certificate:?}").contains("D1"));
+    assert!(certificate.with_raw(|view| view.children().len()).is_ok());
+
+    let request = CertificateRequest::try_new(2, vec![0xD3]).expect("Certificate Request");
+    assert_eq!(request.request_type(), Some(2));
+    assert!(request.with_raw(|view| view.children().len()).is_ok());
+
+    let opaque = OpaqueObject::try_new(3, vec![0xD4]).expect("Opaque Object");
+    assert_eq!(opaque.opaque_data_type(), Some(3));
+    assert!(opaque.with_raw(|view| view.children().len()).is_ok());
+
+    let pgp = PgpKey::try_new(7, key_block()).expect("PGP Key");
+    assert_eq!(pgp.pgp_key_version(), Some(7));
+    assert!(pgp.with_raw(|view| view.children().len()).is_ok());
+
+    let private = PrivateKey::try_new(key_block()).expect("Private Key");
+    assert!(private.with_raw(|view| view.children().len()).is_ok());
+    let public = PublicKey::try_new(key_block()).expect("Public Key");
+    assert!(public.with_raw(|view| view.children().len()).is_ok());
+    let secret = SecretData::try_new(4, key_block()).expect("Secret Data");
+    assert_eq!(secret.secret_data_type(), Some(4));
+    assert!(secret.with_raw(|view| view.children().len()).is_ok());
+    let split = SplitKey::try_new(key_block(), 1, SplitKeyMethod::from_raw(1), 2, 2, None)
+        .expect("Split Key");
+    assert!(split.with_raw(|view| view.children().len()).is_ok());
+    let symmetric = SymmetricKey::try_new(key_block()).expect("Symmetric Key");
+    assert!(symmetric.with_raw(|view| view.children().len()).is_ok());
+
+    let typed = ManagedObject::try_from_item(ObjectType::from_raw(1), certificate.into_item())
+        .expect("typed dispatch");
+    assert_eq!(typed.object_type().raw(), 1);
+    assert!(format!("{typed:?}").contains("item_tag"));
+    assert_eq!(typed.into_item().tag().raw(), 0x0042_0013);
+}
+
+#[test]
+fn object_schema_readers_reject_wrong_order_duplicates_types_and_missing_fields() {
+    let enum_type = || Item::new(tag(0x0042_001D), Value::enumeration(1)).expect("type field");
+    let bytes = || Item::new(tag(0x0042_001E), Value::byte_string(vec![1])).expect("value field");
+
+    assert!(Certificate::try_from_item(structure_item(0x0042_0013, [])).is_err());
+    assert!(
+        Certificate::try_from_item(structure_item(0x0042_0013, [bytes(), enum_type()])).is_err()
+    );
+    assert!(
+        Certificate::try_from_item(structure_item(0x0042_0013, [enum_type(), enum_type()]))
+            .is_err()
+    );
+    assert!(
+        Certificate::try_from_item(structure_item(
+            0x0042_0013,
+            [Item::new(tag(0x0042_001D), Value::integer(1)).expect("wrong type")],
+        ))
+        .is_err()
+    );
+    assert!(
+        Certificate::try_from_item(structure_item(0x0042_0018, [enum_type(), bytes()])).is_err()
+    );
+
+    let known_tag_unknown_type = Certificate::try_new(1, vec![1]).unwrap().into_item();
+    assert!(
+        ManagedObject::try_from_item(ObjectType::from_raw(99), known_tag_unknown_type).is_err()
+    );
+    assert!(
+        ManagedObject::unknown(ObjectType::from_raw(1), structure_item(0x0054_0101, []),).is_err()
+    );
+    assert!(
+        ManagedObject::unknown(
+            ObjectType::from_raw(99),
+            Item::new(tag(0x0054_0101), Value::integer(1)).expect("non-structure"),
+        )
+        .is_err()
+    );
+}
+
+fn tag(raw: u32) -> kmipkit_ttlv::Tag {
+    RawTag::new(raw)
+        .expect("tag fits")
+        .try_checked()
+        .expect("assigned tag")
 }

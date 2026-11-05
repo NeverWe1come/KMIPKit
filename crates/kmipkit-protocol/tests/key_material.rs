@@ -43,6 +43,34 @@ fn key_material_reader_preserves_format_and_ttlv_type() {
 }
 
 #[test]
+fn key_material_accessors_and_safe_formatting_cover_both_ttlv_forms() {
+    let bytes = KeyMaterial::byte_string(1, vec![0xA1, 0xB2]).expect("Raw bytes");
+    assert_eq!(bytes.format_raw(), 1);
+    assert_eq!(bytes.item_type(), ItemType::ByteString);
+    let debug = format!("{bytes:?}");
+    assert!(!debug.contains("A1") && !debug.contains("B2"));
+    assert!(bytes.with_raw(|value| matches!(value, ValueView::ByteString(_))));
+
+    let symmetric = kmipkit_protocol::TransparentSymmetricKey::try_new(vec![0xC1])
+        .expect("valid transparent symmetric material")
+        .into_item();
+    let structure = KeyMaterial::try_from_item(
+        symmetric.try_clone().expect("explicit secret-owner clone"),
+        KeyFormatType::from_raw(7),
+    )
+    .expect("transparent structure matches its format");
+    assert_eq!(structure.item_type(), ItemType::Structure);
+    assert!(structure.with_raw(|value| matches!(value, ValueView::Structure(_))));
+    assert!(KeyMaterial::try_from_item(symmetric, KeyFormatType::from_raw(1)).is_err());
+
+    let wrong_tag =
+        Item::new(tag(0x0042_0042), Value::byte_string(vec![1])).expect("valid wrong-tag item");
+    assert!(KeyMaterial::try_from_item(wrong_tag, KeyFormatType::from_raw(1)).is_err());
+    assert!(KeyMaterial::structure(7, Structure::new()).is_err());
+    assert!(KeyMaterial::structure(1, Structure::new()).is_err());
+}
+
+#[test]
 fn key_material_rejects_malformed_known_transparent_structures() {
     let empty = Item::new(tag(0x0042_0043), Value::structure(Structure::new()))
         .expect("valid empty Key Material structure");

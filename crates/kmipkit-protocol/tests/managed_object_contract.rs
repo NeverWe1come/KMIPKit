@@ -1,6 +1,6 @@
 //! Conversion contracts for the open, lossless managed-object API.
 
-use kmipkit_protocol::{Certificate, ManagedObject, ObjectType};
+use kmipkit_protocol::{Certificate, ManagedObject, ManagedObjectError, ObjectType};
 use kmipkit_ttlv::{Item, RawTag, Structure, Value, ValueView};
 
 fn item(raw_tag: u32, value: Value) -> Item {
@@ -66,4 +66,23 @@ fn typed_and_generic_conversion_preserves_unknown_descendants_and_order() {
         _ => Vec::new(),
     });
     assert_eq!(tags, [0x0042_001D, 0x0054_0101, 0x0042_001E]);
+}
+
+#[test]
+fn every_managed_object_error_has_a_payload_free_display() {
+    let errors = [
+        ManagedObjectError::InvalidStructure,
+        ManagedObjectError::MissingRequiredField,
+        ManagedObjectError::DuplicateField,
+        ManagedObjectError::IncorrectFieldType,
+        ManagedObjectError::IncorrectFieldOrder,
+        ManagedObjectError::InvalidFieldCombination,
+        ManagedObjectError::MismatchedObjectType,
+        ManagedObjectError::TtlvModelLimit,
+    ];
+    for error in errors {
+        let display = error.to_string();
+        assert_ne!(display, "");
+        assert!(!format!("{error:?}").contains("secret"));
+    }
 }

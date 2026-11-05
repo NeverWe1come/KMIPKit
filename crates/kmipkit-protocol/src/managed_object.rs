@@ -119,7 +119,7 @@ pub(crate) fn validate_structure(
 
     item.with_value(|value| {
         let ValueView::Structure(structure) = value else {
-            return Err(ManagedObjectError::InvalidStructure);
+            return Err(ManagedObjectError::InvalidStructure); // COVERAGE-EXCLUDE: ItemType::Structure guarantees this ValueView variant.
         };
         let mut present = vec![false; schema.len()];
         let mut last_position = None;
@@ -198,7 +198,7 @@ fn with_item<R>(
 ) -> Option<R> {
     item.with_value(|value| {
         let ValueView::Structure(structure) = value else {
-            return None;
+            return None; // COVERAGE-EXCLUDE: callers pass only typed, validated managed-object Structures.
         };
         structure
             .children()
@@ -211,7 +211,7 @@ fn with_item<R>(
 fn integer_field(item: &Item, tag: u32) -> Result<i32, ManagedObjectError> {
     with_field(item, tag, |value| match value {
         ValueView::Integer(raw) => Some(*raw),
-        _ => None,
+        _ => None, // COVERAGE-EXCLUDE: validated schema requires ItemType::Integer for this field.
     })
     .flatten()
     .ok_or(ManagedObjectError::IncorrectFieldType)
@@ -220,7 +220,7 @@ fn integer_field(item: &Item, tag: u32) -> Result<i32, ManagedObjectError> {
 fn enumeration_field(item: &Item, tag: u32) -> Result<u32, ManagedObjectError> {
     with_field(item, tag, |value| match value {
         ValueView::Enumeration(raw) => Some(*raw),
-        _ => None,
+        _ => None, // COVERAGE-EXCLUDE: validated schema requires ItemType::Enumeration for this field.
     })
     .flatten()
     .ok_or(ManagedObjectError::IncorrectFieldType)
@@ -240,7 +240,7 @@ pub(crate) fn with_structure<R>(
 ) -> Result<R, ManagedObjectError> {
     item.with_value(|value| match value {
         ValueView::Structure(structure) => Ok(callback(structure)),
-        _ => Err(ManagedObjectError::InvalidStructure),
+        _ => Err(ManagedObjectError::InvalidStructure), // COVERAGE-EXCLUDE: typed callers retain only validated Structure Items.
     })
 }
 
@@ -251,7 +251,7 @@ pub(crate) fn with_field<R>(
 ) -> Option<R> {
     item.with_value(|value| {
         let ValueView::Structure(structure) = value else {
-            return None;
+            return None; // COVERAGE-EXCLUDE: typed callers retain only validated Structure Items.
         };
         structure
             .children()
@@ -369,7 +369,7 @@ impl Certificate {
     pub fn certificate_type(&self) -> Option<u32> {
         with_field(&self.item, CERTIFICATE_TYPE, |value| match value {
             ValueView::Enumeration(raw) => Some(*raw),
-            _ => None,
+            _ => None, // COVERAGE-EXCLUDE: Certificate validation fixes this field as Enumeration.
         })
         .flatten()
     }
@@ -381,7 +381,7 @@ impl Certificate {
     ) -> Option<R> {
         with_field(&self.item, CERTIFICATE_VALUE, |value| match value {
             ValueView::ByteString(bytes) => Some(callback(bytes)),
-            _ => None,
+            _ => None, // COVERAGE-EXCLUDE: Certificate validation fixes this field as ByteString.
         })
         .flatten()
     }
@@ -404,7 +404,7 @@ impl CertificateRequest {
     pub fn request_type(&self) -> Option<u32> {
         with_field(&self.item, CERTIFICATE_REQUEST_TYPE, |value| match value {
             ValueView::Enumeration(raw) => Some(*raw),
-            _ => None,
+            _ => None, // COVERAGE-EXCLUDE: CertificateRequest validation fixes this field as Enumeration.
         })
         .flatten()
     }
@@ -427,7 +427,7 @@ impl OpaqueObject {
     pub fn opaque_data_type(&self) -> Option<u32> {
         with_field(&self.item, OPAQUE_DATA_TYPE, |value| match value {
             ValueView::Enumeration(raw) => Some(*raw),
-            _ => None,
+            _ => None, // COVERAGE-EXCLUDE: OpaqueObject validation fixes this field as Enumeration.
         })
         .flatten()
     }
@@ -450,7 +450,7 @@ impl PgpKey {
     pub fn pgp_key_version(&self) -> Option<i32> {
         with_field(&self.item, PGP_KEY_VERSION, |value| match value {
             ValueView::Integer(value) => Some(*value),
-            _ => None,
+            _ => None, // COVERAGE-EXCLUDE: PgpKey validation fixes this field as Integer.
         })
         .flatten()
     }
@@ -496,7 +496,7 @@ impl SecretData {
     pub fn secret_data_type(&self) -> Option<u32> {
         with_field(&self.item, SECRET_DATA_TYPE, |value| match value {
             ValueView::Enumeration(raw) => Some(*raw),
-            _ => None,
+            _ => None, // COVERAGE-EXCLUDE: SecretData validation fixes this field as Enumeration.
         })
         .flatten()
     }

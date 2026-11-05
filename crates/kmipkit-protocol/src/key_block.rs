@@ -123,7 +123,7 @@ impl KeyBlock {
                     .iter()
                     .find(|child| child.tag().raw() == KEY_VALUE)
                     .map(Item::item_type),
-                _ => None,
+                _ => None, // COVERAGE-EXCLUDE: raw_item is stored only after parse_key_block validates its Structure type.
             });
         }
         self.key_value.as_ref().map(|value| match value {
@@ -143,7 +143,7 @@ impl KeyBlock {
             .ok_or(ManagedObjectError::InvalidStructure)?;
         item.with_value(|value| match value {
             ValueView::Structure(structure) => Ok(callback(structure)),
-            _ => Err(ManagedObjectError::InvalidStructure),
+            _ => Err(ManagedObjectError::InvalidStructure), // COVERAGE-EXCLUDE: raw_item can only be stored after Structure validation.
         })
     }
 
@@ -265,7 +265,7 @@ fn parse_key_block(item: &Item) -> Result<ParsedKeyBlock, ManagedObjectError> {
     }
     item.with_value(|value| {
         let ValueView::Structure(structure) = value else {
-            return Err(ManagedObjectError::InvalidStructure);
+            return Err(ManagedObjectError::InvalidStructure); // COVERAGE-EXCLUDE: ItemType::Structure guarantees this ValueView variant.
         };
         let mut present = [false; 6];
         let mut last_position = None;
@@ -295,7 +295,7 @@ fn parse_key_block(item: &Item) -> Result<ParsedKeyBlock, ManagedObjectError> {
                 (0, ItemType::Enumeration) => {
                     key_format_type = child.with_value(|value| match value {
                         ValueView::Enumeration(raw) => Some(KeyFormatType::from_raw(*raw)),
-                        _ => None,
+                        _ => None, // COVERAGE-EXCLUDE: ItemType::Enumeration guarantees this ValueView variant.
                     });
                     true
                 }
@@ -304,7 +304,7 @@ fn parse_key_block(item: &Item) -> Result<ParsedKeyBlock, ManagedObjectError> {
                         ValueView::Enumeration(raw) => {
                             Some(crate::KeyCompressionType::from_raw(*raw))
                         }
-                        _ => None,
+                        _ => None, // COVERAGE-EXCLUDE: ItemType::Enumeration guarantees this ValueView variant.
                     });
                     true
                 }
@@ -315,14 +315,14 @@ fn parse_key_block(item: &Item) -> Result<ParsedKeyBlock, ManagedObjectError> {
                 (3, ItemType::Enumeration) => {
                     cryptographic_algorithm = child.with_value(|value| match value {
                         ValueView::Enumeration(raw) => Some(*raw),
-                        _ => None,
+                        _ => None, // COVERAGE-EXCLUDE: ItemType::Enumeration guarantees this ValueView variant.
                     });
                     true
                 }
                 (4, ItemType::Integer) => {
                     cryptographic_length = child.with_value(|value| match value {
                         ValueView::Integer(raw) => Some(*raw),
-                        _ => None,
+                        _ => None, // COVERAGE-EXCLUDE: ItemType::Integer guarantees this ValueView variant.
                     });
                     true
                 }
@@ -432,7 +432,7 @@ impl KeyValue {
         let mut found_attributes = false;
         item.with_value(|value| {
             let ValueView::Structure(structure) = value else {
-                return Err(ManagedObjectError::InvalidStructure);
+                return Err(ManagedObjectError::InvalidStructure); // COVERAGE-EXCLUDE: ItemType::Structure guarantees this ValueView variant.
             };
             let mut seen_material = false;
             for child in structure.children() {
@@ -482,7 +482,7 @@ impl KeyValue {
     ) -> Result<R, ManagedObjectError> {
         self.item.with_value(|value| match value {
             ValueView::Structure(structure) => Ok(callback(structure)),
-            _ => Err(ManagedObjectError::InvalidStructure),
+            _ => Err(ManagedObjectError::InvalidStructure), // COVERAGE-EXCLUDE: KeyValue is constructed or parsed only as a Structure.
         })
     }
 
@@ -496,7 +496,7 @@ impl KeyValue {
                 .children()
                 .first()
                 .map_or(ItemType::Structure, Item::item_type),
-            _ => ItemType::Structure,
+            _ => ItemType::Structure, // COVERAGE-EXCLUDE: the private KeyValue item is invariantly a Structure.
         })
     }
 
