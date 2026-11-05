@@ -24,6 +24,17 @@ fn assert_http_response_error(error: crate::TransportError) {
     );
 }
 
+fn assert_encoding_mismatch(error: crate::TransportError) {
+    assert_eq!(
+        error.cause_category(),
+        crate::TransportCauseCategory::EncodingMismatch
+    );
+    assert_eq!(
+        error.delivery_state(),
+        crate::RequestDeliveryState::ResponseStarted
+    );
+}
+
 #[test]
 fn response_content_type_validation_accepts_octet_stream_with_parameters() {
     let mut headers = HeaderMap::new();
@@ -43,7 +54,7 @@ fn response_content_type_validation_accepts_octet_stream_with_parameters() {
 }
 
 #[test]
-fn response_content_type_validation_rejects_missing_duplicate_invalid_and_unsupported_values() {
+fn response_content_type_validation_distinguishes_mismatch_from_invalid_metadata() {
     let control = response_started_control();
 
     let missing = HeaderMap::new();
@@ -79,9 +90,9 @@ fn response_content_type_validation_rejects_missing_duplicate_invalid_and_unsupp
 
     let mut unsupported = HeaderMap::new();
     unsupported.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
-    assert_http_response_error(
+    assert_encoding_mismatch(
         validate_response_content_type(&unsupported, "application/octet-stream", &control)
-            .expect_err("unsupported media types are rejected"),
+            .expect_err("a different supported media type is an encoding mismatch"),
     );
 }
 

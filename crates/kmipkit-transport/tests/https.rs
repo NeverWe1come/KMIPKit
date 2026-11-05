@@ -747,7 +747,7 @@ fn https_rejects_invalid_status_response_headers_and_encodings() {
             b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 8\r\nContent-Length: 9\r\n\r\nresponse",
         ),
         (
-            "invalid media type",
+            "cross-format media type",
             b"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 8\r\n\r\nresponse",
         ),
         (
@@ -784,13 +784,19 @@ fn https_rejects_invalid_status_response_headers_and_encodings() {
 
     for (name, response) in cases {
         let result = exchange_raw_response(&pki, response, 64);
+        let expected_cause = if name == "cross-format media type" {
+            TransportCauseCategory::EncodingMismatch
+        } else {
+            TransportCauseCategory::Http
+        };
         match result {
             Err(error)
                 if error.delivery_state() == RequestDeliveryState::ResponseStarted
-                    && error.cause_category() == TransportCauseCategory::Http => {}
+                    && error.cause_category() == expected_cause => {}
             Err(error) => failures.push(format!(
-                "{name}: rejected with delivery state {:?}",
-                error.delivery_state()
+                "{name}: rejected as {:?} with delivery state {:?}",
+                error.cause_category(),
+                error.delivery_state(),
             )),
             Ok(_) => failures.push(format!("{name}: unexpectedly accepted the response")),
         }
@@ -856,7 +862,7 @@ fn public_https_adapter_rejects_non_ascii_content_type() {
 }
 
 #[test]
-fn public_https_adapter_rejects_unsupported_media_type() {
+fn public_https_adapter_classifies_another_supported_encoding() {
     let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
     let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
     let address = listener.local_addr();
@@ -875,9 +881,12 @@ fn public_https_adapter_rejects_unsupported_media_type() {
     let peer = peer.join().expect("the HTTP peer completes");
     assert!(peer.accepted, "the production adapter connects to the peer");
     assert!(peer.request.is_some(), "the peer captures the HTTP request");
-    let error = result.expect_err("unsupported media types are rejected");
+    let error = result.expect_err("a response using another KMIP encoding is rejected");
 
-    assert_eq!(error.cause_category(), TransportCauseCategory::Http);
+    assert_eq!(
+        error.cause_category(),
+        TransportCauseCategory::EncodingMismatch
+    );
     assert_eq!(
         error.delivery_state(),
         RequestDeliveryState::ResponseStarted
