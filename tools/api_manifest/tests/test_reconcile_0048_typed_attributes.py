@@ -126,6 +126,36 @@ class Reconcile0048TypedAttributesTests(unittest.TestCase):
         self.assertEqual(manifest, self.manifest)
         self.assertEqual(report, self.report)
 
+    def test_preserves_reviewed_manifest_order_for_existing_rows(self) -> None:
+        manifest = copy.deepcopy(self.manifest)
+        second_declaration = copy.deepcopy(manifest["publicDeclarations"][0])
+        second_declaration["declarationId"] = "reviewed-second"
+        second_declaration["exportName"] = "kmipkit::protocol::ZExisting"
+        second_capability = {
+            "capabilityId": "reviewed-second",
+            "requirementIds": ["KMIPKIT-0047-FR-001"],
+            "capabilityState": "declared",
+            "parityScope": "four-language",
+            "mappings": {"rust": ["kmipkit::protocol::ZExisting"]},
+        }
+        first_exclusion = {
+            "packageId": "rust-kmipkit",
+            "exportName": "first-reviewed-exclusion",
+            "reason": "Reviewed first.",
+            "approvalSource": {"kind": "feature-specification", "path": "spec.md", "status": "Approved", "evidence": "Approved"},
+            "evidence": "first",
+        }
+        second_exclusion = {**first_exclusion, "exportName": "second-reviewed-exclusion", "evidence": "second"}
+        manifest["publicDeclarations"].append(second_declaration)
+        manifest["capabilities"].append(second_capability)
+        manifest["approvedExclusions"] = [first_exclusion, second_exclusion]
+
+        result = reconcile(manifest, {"missingFromManifest": []})
+
+        self.assertEqual(result["publicDeclarations"][:2], manifest["publicDeclarations"])
+        self.assertEqual(result["capabilities"][:2], manifest["capabilities"])
+        self.assertEqual(result["approvedExclusions"], manifest["approvedExclusions"])
+
     def test_unknown_export_fails_closed(self) -> None:
         report = copy.deepcopy(self.report)
         report["missingFromManifest"].append({
