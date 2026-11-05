@@ -805,7 +805,10 @@ fn key_block_recursively_checks_key_wrapping_data_members() {
     const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 
     let wrapping_data = structure([
-        item(WRAPPING_METHOD, Value::text_string("secret-canary".to_owned())),
+        item(
+            WRAPPING_METHOD,
+            Value::text_string("secret-canary".to_owned()),
+        ),
         item(
             ENCRYPTION_KEY_INFORMATION,
             Value::structure(structure([item(
@@ -834,10 +837,7 @@ fn key_block_recursively_checks_key_wrapping_data_members() {
 
 #[test]
 fn key_value_structure_requires_key_material() {
-    let key_value = structure([item(
-        0x0054_0001,
-        Value::byte_string(vec![0xCA, 0xFE]),
-    )]);
+    let key_value = structure([item(0x0054_0001, Value::byte_string(vec![0xCA, 0xFE]))]);
     let key_block = structure([
         item(KEY_FORMAT_TYPE, Value::enumeration(0x8000_0001)),
         item(0x0042_0045, Value::structure(key_value)),

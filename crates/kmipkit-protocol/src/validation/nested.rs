@@ -743,10 +743,22 @@ pub(super) fn validate_nested_with_prefix(
         report.append(validate_key_block_requirements(structure, prefix));
     }
     if schema == NestedStructureSchema::KeyWrappingSpecification {
-        validate_key_wrapping_information_alternative(structure, prefix, &mut report);
+        validate_one_key_information_alternative(
+            structure,
+            prefix,
+            &mut report,
+            "KMIPKIT-0051-R236",
+            "§7.18, Table 370",
+        );
     }
     if schema == NestedStructureSchema::KeyWrappingData {
-        validate_key_wrapping_data_information_alternative(structure, prefix, &mut report);
+        validate_one_key_information_alternative(
+            structure,
+            prefix,
+            &mut report,
+            "KMIPKIT-0051-R277",
+            "§3.3, Table 15",
+        );
     }
 
     report
@@ -1006,10 +1018,12 @@ fn validate_attribute_wrapper(
     ));
 }
 
-fn validate_key_wrapping_information_alternative(
+fn validate_one_key_information_alternative(
     structure: &StructureView<'_>,
     prefix: &ValidationPath,
     report: &mut ValidationReport,
+    rule_id: &'static str,
+    source: &'static str,
 ) {
     const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
     const MAC_SIGNATURE_KEY_INFORMATION: u32 = 0x0042_004E;
@@ -1021,37 +1035,12 @@ fn validate_key_wrapping_information_alternative(
     }
 
     report.push(ValidationIssue::new(
-        ValidationCode::new("KMIPKIT-0051-R236"),
+        ValidationCode::new(rule_id),
         prefix.clone().field("Encryption Key Information"),
         ValidationSeverity::Error,
         ValidationSourceRef::Oasis {
             document: "KMIP v2.1",
-            reference: "§7.18, Table 370",
-        },
-    ));
-}
-
-fn validate_key_wrapping_data_information_alternative(
-    structure: &StructureView<'_>,
-    prefix: &ValidationPath,
-    report: &mut ValidationReport,
-) {
-    const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
-    const MAC_SIGNATURE_KEY_INFORMATION: u32 = 0x0042_004E;
-
-    if has_tag(structure, ENCRYPTION_KEY_INFORMATION)
-        || has_tag(structure, MAC_SIGNATURE_KEY_INFORMATION)
-    {
-        return;
-    }
-
-    report.push(ValidationIssue::new(
-        ValidationCode::new("KMIPKIT-0051-R277"),
-        prefix.clone().field("Encryption Key Information"),
-        ValidationSeverity::Error,
-        ValidationSourceRef::Oasis {
-            document: "KMIP v2.1",
-            reference: "§3.3, Table 15",
+            reference: source,
         },
     ));
 }

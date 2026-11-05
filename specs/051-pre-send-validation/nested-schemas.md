@@ -34,6 +34,8 @@ remain in the caller's TTLV tree and are not rejected solely for being unknown.
 | `Key Block` | §3.1, Table 12 | Required Key Format Type; optional Key Compression Type, Key Value, Cryptographic Algorithm, Cryptographic Length, and Key Wrapping Data in table order. Key Value may be Byte String or Structure. If either Cryptographic Algorithm or Cryptographic Length is present, the other is required. | R262–R267 | `validation_schema_tests::register_schema_recursively_checks_key_block_fields`; `validation_schema_tests::key_block_requires_length_when_algorithm_is_present` |
 | Key-bearing managed-object wrapper | §2.4–§2.9, Tables 5–10 | PGP Key, Private Key, Public Key, Secret Data, Split Key, and Symmetric Key contain one required Key Block; source reference is selected by object tag. | R268 | `validation_schema_tests::register_schema_recursively_checks_key_block_fields` |
 | `Opaque Object` | §2.3, Table 4 | Required Opaque Data Type Enumeration and Opaque Data Value Byte String in table order; unknown enum values remain open. | R269–R270 | `validation_schema_tests::register_schema_checks_both_required_opaque_object_fields` |
+| `Key Wrapping Data` | §3.3, Tables 14–15 | Required Wrapping Method; optional key-information structures, MAC/Signature, IV/Counter/Nonce, and Encoding Option in table order; at least one Encryption Key Information or MAC/Signature Key Information is required, and both are allowed. | R271–R277 | `validation_schema_tests::key_block_recursively_checks_key_wrapping_data_members` |
+| `Key Value` | §3.2, Table 13 | Required Key Material as Byte String or Structure, followed by optional Attributes Structure. Unknown members remain preserved. | R278–R279 | `validation_schema_tests::key_value_structure_requires_key_material` |
 
 ## Boundaries
 
@@ -72,6 +74,7 @@ families have been reconciled and covered by the operation-family tasks.
   bytes remain open values; this structural layer checks only their TTLV type,
   order, and cardinality.
 - Managed-object recursion is selected by the standard object Structure tag.
-  The Key Block checks its own table-defined shape but does not inspect wrapped
-  Key Value bytes, infer key material format, parse transparent-key semantics,
-  or decide server-side key policy.
+  Key Block recursion validates plaintext Key Value and Key Wrapping Data
+  structures. Wrapped Key Value bytes remain opaque. The current nested checks
+  require Key Material but do not select a transparent-key schema by Key Format
+  Type, parse transparent-key semantics, or decide server-side key policy.
