@@ -99,6 +99,14 @@ pub enum NestedStructureSchema {
     Certificate,
     /// The §2.2 Certificate Request object structure.
     CertificateRequest,
+    /// The §7.1 Asynchronous Correlation Values structure.
+    AsynchronousCorrelationValues,
+    /// The §7.39 Ticket structure.
+    Ticket,
+    /// The §9.16 Protocol Version structure.
+    ProtocolVersion,
+    /// The §4.47 Revocation Reason structure.
+    RevocationReason,
 }
 
 #[derive(Clone, Copy)]

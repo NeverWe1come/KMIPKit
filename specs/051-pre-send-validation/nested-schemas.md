@@ -25,6 +25,10 @@ remain in the caller's TTLV tree and are not rejected solely for being unknown.
 | `New Attribute` | §5.7, Table 163 | Exactly one attribute Item with any attribute tag and value type; do not infer attribute-specific multiplicity or reject unknown/vendor tags. | R247 | `validation_schema_tests::attribute_wrappers_require_exactly_one_attribute_item` |
 | `Certificate` | §2.1, Table 2 | Exactly one Certificate Type Enumeration followed by one Certificate Value Byte String; leave DER/X.509 semantic parsing outside pre-send structural validation. | R249–R250 | `validation_schema_tests::validate_request_recursively_checks_certificate_structure_without_parsing_der` |
 | `Certificate Request` | §2.2, Table 3 | Exactly one Certificate Request Type Enumeration followed by one Certificate Request Value Byte String; leave CSR semantic parsing outside pre-send structural validation. | R251–R252 | `validation_schema_tests::reprovision_request_checks_certificate_request_members` |
+| `Ticket` | §7.39, Table 391 | Required Ticket Type Enumeration followed by Ticket Value Byte String; ticket type values remain open. | R253–R254 | `validation_schema_tests::logout_recursively_checks_ticket_value` |
+| `Protocol Version` | §9.16, Table 421 | Required Protocol Version Major and Minor Integer values in table order; do not reject future version numbers at this structural layer. | R255–R256 | `validation_schema_tests::discover_versions_recursively_checks_protocol_version_members` |
+| `Revocation Reason` | §4.47, Table 123 | Required Revocation Reason Code Enumeration followed by optional Revocation Message Text String. | R257–R258 | `validation_schema_tests::revoke_recursively_checks_revocation_reason_code_type` |
+| `Asynchronous Correlation Values` | §7.1, Table 352 | Zero or more Asynchronous Correlation Value Byte Strings; the individual values remain opaque. | R259 | `validation_schema_tests::query_async_requests_recursively_checks_correlation_value_type` |
 
 ## Boundaries
 
@@ -59,3 +63,6 @@ families have been reconciled and covered by the operation-family tasks.
 - Certificate and Certificate Request schemas validate only their KMIP
   Structure members. They do not parse certificate or CSR bytes or infer
   certificate authority, trust, identity, or validation policy.
+- Ticket type values, protocol version numbers, and asynchronous correlation
+  bytes remain open values; this structural layer checks only their TTLV type,
+  order, and cardinality.

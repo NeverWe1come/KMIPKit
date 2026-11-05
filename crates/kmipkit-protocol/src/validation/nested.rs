@@ -493,6 +493,64 @@ const CERTIFICATE_REQUEST_FIELDS: &[FieldDescriptor] = &[
     ),
 ];
 
+const ASYNC_CORRELATION_VALUES_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
+    rule_id: "KMIPKIT-0051-R259",
+    name: "Asynchronous Correlation Value",
+    tag: FieldTag::Exact(0x0042_0006),
+    types: TYPE_BYTE_STRING,
+    min_count: 0,
+    max_count: None,
+    nested_schema: None,
+}];
+
+const TICKET_FIELDS: &[FieldDescriptor] = &[
+    required_singleton_field!(
+        "KMIPKIT-0051-R253",
+        "Ticket Type",
+        0x0042_014A,
+        TYPE_ENUMERATION
+    ),
+    required_singleton_field!(
+        "KMIPKIT-0051-R254",
+        "Ticket Value",
+        0x0042_014B,
+        TYPE_BYTE_STRING
+    ),
+];
+
+const PROTOCOL_VERSION_FIELDS: &[FieldDescriptor] = &[
+    required_singleton_field!(
+        "KMIPKIT-0051-R255",
+        "Protocol Version Major",
+        0x0042_006A,
+        TYPE_INTEGER
+    ),
+    required_singleton_field!(
+        "KMIPKIT-0051-R256",
+        "Protocol Version Minor",
+        0x0042_006B,
+        TYPE_INTEGER
+    ),
+];
+
+const REVOCATION_REASON_FIELDS: &[FieldDescriptor] = &[
+    required_singleton_field!(
+        "KMIPKIT-0051-R257",
+        "Revocation Reason Code",
+        0x0042_0082,
+        TYPE_ENUMERATION
+    ),
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R258",
+        name: "Revocation Message",
+        tag: FieldTag::Exact(0x0042_0080),
+        types: TYPE_TEXT_STRING,
+        min_count: 0,
+        max_count: Some(1),
+        nested_schema: None,
+    },
+];
+
 const BLOCK_CIPHER_MODE: u32 = 0x0042_0011;
 const IV_LENGTH: u32 = 0x0042_00CD;
 const TAG_LENGTH: u32 = 0x0042_00CE;
@@ -675,6 +733,12 @@ fn descriptor(schema: NestedStructureSchema) -> RequestSchemaDescriptor {
         NestedStructureSchema::NewAttribute => ("§5.7, Table 163", &[] as &[FieldDescriptor]),
         NestedStructureSchema::Certificate => ("§2.1, Table 2", CERTIFICATE_FIELDS),
         NestedStructureSchema::CertificateRequest => ("§2.2, Table 3", CERTIFICATE_REQUEST_FIELDS),
+        NestedStructureSchema::AsynchronousCorrelationValues => {
+            ("§7.1, Table 352", ASYNC_CORRELATION_VALUES_FIELDS)
+        }
+        NestedStructureSchema::Ticket => ("§7.39, Table 391", TICKET_FIELDS),
+        NestedStructureSchema::ProtocolVersion => ("§9.16, Table 421", PROTOCOL_VERSION_FIELDS),
+        NestedStructureSchema::RevocationReason => ("§4.47, Table 123", REVOCATION_REASON_FIELDS),
     };
     RequestSchemaDescriptor { source, fields }
 }
