@@ -19,6 +19,8 @@ import org.kmipkit.ClientOperationException;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.ProfileValidationException;
+import org.kmipkit.ResourceLimitException;
+import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.CodecLimits;
 
 final class ProfileValidationMappingTest {
@@ -72,6 +74,108 @@ final class ProfileValidationMappingTest {
         assertThrows(InvalidInputException.class, () ->
                 NativeExtensionRegistry.clientExecuteWithProfiles(
                         0, 0, null, null, null, null, null, null, null, null, null));
+    }
+
+    @Test
+    void jniProfileReadinessRejectsMalformedNativeInputs() {
+        NativeExtensionRegistry.ensureLoaded();
+
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.profileReadinessCreate(null, new String[0], new boolean[0]));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.profileReadinessCreate("baseline_client", null, new boolean[0]));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.profileReadinessCreate("baseline_client", new String[0], null));
+        assertThrows(ResourceLimitException.class,
+                () -> NativeExtensionRegistry.profileReadinessCreate(
+                        "baseline_client", new String[] {"requirement"}, new boolean[0]));
+        assertThrows(ResourceLimitException.class,
+                () -> NativeExtensionRegistry.profileReadinessCreate(
+                        "x".repeat(4_097), new String[0], new boolean[0]));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.profileReadinessCreate(
+                        "baseline_client", new String[] {null}, new boolean[] {true}));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.profileReadinessCreate(
+                        "baseline_client", new String[] {"\ud800"}, new boolean[] {true}));
+        assertThrows(ResourceLimitException.class,
+                () -> NativeExtensionRegistry.profileReadinessCreate(
+                        "baseline_client", new String[] {"x".repeat(16_777_217)}, new boolean[] {true}));
+
+        String[] tooManyRequirements = new String[100_001];
+        boolean[] tooManyResults = new boolean[tooManyRequirements.length];
+        assertThrows(ResourceLimitException.class,
+                () -> NativeExtensionRegistry.profileReadinessCreate(
+                        "baseline_client", tooManyRequirements, tooManyResults));
+    }
+
+    @Test
+    void jniProfileReadinessRoundTripsAValidEvidenceRecord() {
+        NativeExtensionRegistry.ensureLoaded();
+        long readiness = NativeExtensionRegistry.profileReadinessCreate(
+                "KMIPKIT-PROFILE-BASELINE-CLIENT",
+                new String[] {"KMIPKIT-REQ-SPEC-14.1-001"}, new boolean[] {false});
+        try {
+            String[] view = NativeExtensionRegistry.profileReadinessView(readiness);
+            assertEquals(7, view.length);
+            assertEquals("KMIPKIT-PROFILE-BASELINE-CLIENT", view[0]);
+        } finally {
+            NativeExtensionRegistry.profileReadinessRelease(readiness);
+        }
+    }
+
+    @Test
+    void jniProfileSelectionRejectsMalformedNativeInputs() {
+        NativeExtensionRegistry.ensureLoaded();
+
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.profileValidationSelectionValidate(null));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.profileValidationSelectionValidate(new String[] {null}));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.profileValidationSelectionValidate(new String[] {"\ud800"}));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.profileValidationSelectionValidate(new String[] {"x".repeat(4_097)}));
+
+        String[] tooManyProfiles = new String[4_097];
+        java.util.Arrays.fill(tooManyProfiles, "baseline_client");
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.profileValidationSelectionValidate(tooManyProfiles));
+    }
+
+    @Test
+    void jniProfileValidationResultMethodsRejectInvalidNativeHandles() {
+        NativeExtensionRegistry.ensureLoaded();
+        long[] noIndexes = new long[0];
+        String[] noIdentifiers = new String[0];
+        int[] noKnownFields = new int[0];
+        int[] noBooleanValues = new int[0];
+        long[] noUsageTotals = new long[0];
+        long[] noUsageCounts = new long[0];
+
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.profileValidationResultProfileIdCount(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.profileValidationResultProfileIdAt(0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.profileValidationResultRequirementIdCount(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.profileValidationResultRequirementIdAt(0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.profileValidationResultValidateTransport(0, 1));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.profileValidationResultValidateRequest(0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.profileValidationResultValidateRequestWithContext(
+                        0, 0, noIndexes, noIdentifiers, noKnownFields,
+                        noBooleanValues, noUsageTotals, noUsageCounts));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.profileValidationResultValidateResponse(0, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.profileValidationResultValidateResponseWithContext(
+                        0, 0, 0, noIndexes, noIdentifiers, noKnownFields,
+                        noBooleanValues, noUsageTotals, noUsageCounts));
+        NativeExtensionRegistry.profileValidationResultRelease(0);
     }
 
     @Test
@@ -193,8 +297,10 @@ final class ProfileValidationMappingTest {
                             .build();
                     Client client = Client.create(configuration, transport);
                     ClientBatch batch = ClientBatch.create();
-                    ClientBatch unknownBatch = ClientBatch.create()) {
+                    ClientBatch unknownBatch = ClientBatch.create();
+                    ClientBatch contextBatch = ClientBatch.create()) {
                 batch.add(ClientBatchItem.discoverVersions());
+                contextBatch.add(ClientBatchItem.discoverVersions());
                 ClientOperationException failure = assertThrows(ClientOperationException.class,
                         () -> client.executeWithProfiles(batch, CodecLimits.defaults(),
                                 new ProfileValidationSelection(
@@ -209,6 +315,25 @@ final class ProfileValidationMappingTest {
                 assertFalse(details.sourceGapId().isPresent());
                 assertFalse(details.batchItemIndex().isPresent());
                 assertFalse(failure.getMessage().contains("KMIPKIT-PROFILE-BASELINE-CLIENT"));
+
+                ProfileValidationContext context = new ProfileValidationContext().withObjectState(
+                        0, new ProfileObjectState("object-7")
+                                .withOriginalCreationDatePresent(false)
+                                .withUsageLimitsPresent(true)
+                                .withProtectionUseStarted(false)
+                                .withGetUsageAllocationPerformed(true)
+                                .withGetUsageAllocationChangedCount(false)
+                                .withUsageLimitsTotal(9L)
+                                .withUsageLimitsCount(3L));
+                ClientOperationException contextFailure = assertThrows(
+                        ClientOperationException.class,
+                        () -> client.executeWithProfilesAndContext(contextBatch,
+                                CodecLimits.defaults(),
+                                new ProfileValidationSelection(
+                                        List.of("KMIPKIT-PROFILE-BASELINE-CLIENT")), context));
+                assertEquals("profile_unavailable",
+                        contextFailure.profileValidation().orElseThrow().errorCode());
+                assertFalse(context.toString().contains("object-7"));
 
                 unknownBatch.add(ClientBatchItem.discoverVersions());
                 String unknownSelector = "unpublished-profile-selector-sentinel";
@@ -227,6 +352,29 @@ final class ProfileValidationMappingTest {
                 assertFalse(unknownDetails.sourceGapLocator().isPresent());
                 assertFalse(unknownDetails.batchItemIndex().isPresent());
                 assertFalse(unknownFailure.getMessage().contains(unknownSelector));
+
+                long clientHandle = rawClientHandle(client);
+                assertThrows(InvalidInputException.class,
+                        () -> NativeExtensionRegistry.clientExecuteWithProfiles(
+                                clientHandle, NativeExtensionRegistry.clientBatchCreate(),
+                                NativeExtensionRegistry.codecLimitValues(CodecLimits.defaults()),
+                                new String[] {"KMIPKIT-PROFILE-BASELINE-CLIENT"},
+                                new long[] {0}, new String[] {"object-7"}, new int[0],
+                                new int[] {0}, new long[] {0}, new long[] {0}, new long[0]));
+                assertThrows(InvalidInputException.class,
+                        () -> NativeExtensionRegistry.clientExecuteWithProfiles(
+                                clientHandle, NativeExtensionRegistry.clientBatchCreate(),
+                                NativeExtensionRegistry.codecLimitValues(CodecLimits.defaults()),
+                                new String[] {"KMIPKIT-PROFILE-BASELINE-CLIENT"},
+                                new long[0], null, null, null, null, null, new long[0]));
+                long[] invalidTimeouts = new long[12];
+                invalidTimeouts[0] = 3;
+                assertThrows(InvalidInputException.class,
+                        () -> NativeExtensionRegistry.clientExecuteWithProfiles(
+                                clientHandle, NativeExtensionRegistry.clientBatchCreate(),
+                                NativeExtensionRegistry.codecLimitValues(CodecLimits.defaults()),
+                                new String[] {"KMIPKIT-PROFILE-BASELINE-CLIENT"},
+                                null, null, null, null, null, null, invalidTimeouts));
             }
 
             assertFalse(accepted.get(2, TimeUnit.SECONDS),
@@ -243,6 +391,12 @@ final class ProfileValidationMappingTest {
             directory = directory.getParent();
         }
         throw new IllegalStateException("the shared deterministic mTLS fixture is missing");
+    }
+
+    private static long rawClientHandle(Client client) throws ReflectiveOperationException {
+        var field = Client.class.getDeclaredField("handle");
+        field.setAccessible(true);
+        return ((NativeHandle) field.get(client)).get();
     }
 
     private static class StubProfileValidationBridge implements ProfileValidationResult.Bridge {

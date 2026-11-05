@@ -64,9 +64,13 @@ final class MessageModelTest {
         RequestMessage request = RequestMessage.fromTtlv(requestWithExtension());
         RequestHeaderView header = request.header();
         RequestBatchItemView item = request.batchItemAt(0);
+        TtlvStructure original = request.ttlv();
         request.close();
 
-        try (header; item) {
+        try (header; item; original) {
+            try (TtlvStructureView originalView = original.view()) {
+                assertEquals(2, originalView.itemCount());
+            }
             assertEquals(2, header.protocolVersion().major());
             assertEquals(1, header.protocolVersion().minor());
             assertEquals(1, header.batchCount());
@@ -111,8 +115,13 @@ final class MessageModelTest {
     @Test
     void responseViewsPreserveTimestampAndUnknownResultStatus() {
         try (ResponseMessage response = ResponseMessage.fromTtlv(responseMessage());
+                TtlvStructure original = response.ttlv();
                 ResponseHeaderView header = response.header();
                 ResponseBatchItemView item = response.batchItemAt(0)) {
+            try (TtlvStructureView originalView = original.view()) {
+                assertEquals(2, originalView.itemCount());
+            }
+            assertEquals(1, item.extensionCount());
             assertEquals(2, header.protocolVersion().major());
             assertEquals(1, header.protocolVersion().minor());
             assertEquals(123456789L, header.timeStamp());
@@ -203,7 +212,11 @@ final class MessageModelTest {
                 enumeration(RESULT_REASON, RAW_UNKNOWN),
                 text(RESULT_MESSAGE, "result-message"),
                 byteString(ASYNCHRONOUS_CORRELATION_VALUE, new byte[] {0, 3, 1}),
-                nested(RESPONSE_PAYLOAD, payload));
+                nested(RESPONSE_PAYLOAD, payload),
+                nested(MESSAGE_EXTENSION, structure(
+                        text(VENDOR_IDENTIFICATION, "response_vendor"),
+                        bool(CRITICALITY_INDICATOR, false),
+                        nested(VENDOR_EXTENSION, structure(integer(VENDOR_TAG, 53))))));
         return message(RESPONSE_HEADER, header, item);
     }
 

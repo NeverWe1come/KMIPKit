@@ -94,6 +94,12 @@ final class NativeBridgeCoverageTest {
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemResponseExport(0));
         assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseGetAttributeList(0, -1, 1));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseGetAttributeList(0, 1, -1));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseGetAttributeList(0, 1, 1));
+        assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemResponseDeriveKey(0));
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemResponseCreateKeyPair(0));
@@ -192,6 +198,149 @@ final class NativeBridgeCoverageTest {
                 () -> NativeExtensionRegistry.clientBatchResponseItemAt(0, -1));
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.usageAllocationContextCreate(0, 1, 0));
+    }
+
+    @Test
+    void nativeAttributeRequestBridgesRejectMalformedReferenceArrays() {
+        NativeExtensionRegistry.ensureLoaded();
+
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemGetAttributes(
+                        0, null, 0, new int[] {1}, new long[0], new byte[0][], new byte[0][]));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemGetAttributes(
+                        0, null, 0, new int[] {1}, new long[] {-1},
+                        new byte[][] {null}, new byte[][] {null}));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemGetAttributes(
+                        0, null, 0, new int[] {2}, new long[] {0},
+                        new byte[][] {null}, new byte[][] {"Comment".getBytes(StandardCharsets.UTF_8)}));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemGetAttributes(
+                        0, null, 0, new int[] {99}, new long[] {0},
+                        new byte[][] {null}, new byte[][] {null}));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemGetAttributes(
+                        0, null, 0, new int[] {1}, new long[] {0x1_0000_0000L},
+                        new byte[][] {null}, new byte[][] {null}));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemGetAttributes(
+                        0, null, 0, new int[] {2}, new long[] {1},
+                        new byte[][] {"KMIPKit".getBytes(StandardCharsets.UTF_8)},
+                        new byte[][] {"Comment".getBytes(StandardCharsets.UTF_8)}));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemGetAttributes(
+                        0, null, 0, new int[] {2}, new long[] {0},
+                        new byte[][] {new byte[] {(byte) 0xff}},
+                        new byte[][] {"Comment".getBytes(StandardCharsets.UTF_8)}));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemGetAttributes(
+                        99, null, 0, new int[0], new long[0], new byte[0][], new byte[0][]));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemGetAttributes(
+                        0, null, 0, null, new long[0], new byte[0][], new byte[0][]));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemGetAttributes(
+                        2, null, 1, new int[0], new long[0], new byte[0][], new byte[0][]));
+        int[] tooManyKinds = new int[100_001];
+        long[] tooManyTags = new long[tooManyKinds.length];
+        byte[][] tooManyVendors = new byte[tooManyKinds.length][];
+        byte[][] tooManyNames = new byte[tooManyKinds.length][];
+        assertThrows(ResourceLimitException.class,
+                () -> NativeExtensionRegistry.clientBatchItemGetAttributes(
+                        0, null, 0, tooManyKinds, tooManyTags, tooManyVendors, tooManyNames));
+    }
+
+    @Test
+    void nativeAttributeRequestCreateRejectsInvalidOperationsAndFields() {
+        NativeExtensionRegistry.ensureLoaded();
+
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.attributeRequestCreate(
+                        99, 0, null, 0, 0, 0, 0, 0, null, null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.attributeRequestCreate(
+                        0, 99, null, 0, 0, 1, 0, 0, null, null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.attributeRequestCreate(
+                        0, 0, null, 0, 0, 0, 0, 0, null, null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.attributeRequestCreate(
+                        1, 0, null, 0, 0, 0, 0, 0, null, null, 0x1_0000_0000L, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.attributeRequestCreate(
+                        0, 0, null, 0, 0, 1, 0, 0, null, null, 1, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.attributeRequestCreate(
+                        1, 0, null, 0, 0, 0, 0, 0, null, null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.attributeRequestCreate(
+                        2, 0, null, 0, 0, 1, 0, 0, null, null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.attributeRequestCreate(
+                        3, 0, null, 0, 0, 1, 1, 1, null, null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.attributeRequestCreate(
+                        4, 0, null, 0, 1, 1, 0, 0, null, null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.attributeRequestCreate(
+                        2, 2, null, 1, 0, 0, 0, 0, null, null, 0, 0));
+    }
+
+    @Test
+    void nativeNamedAttributeAdjustAndDeleteReachTheirAbiValidationPaths() {
+        NativeExtensionRegistry.ensureLoaded();
+        byte[] vendor = "KMIPKit".getBytes(StandardCharsets.UTF_8);
+        byte[] name = "Comment".getBytes(StandardCharsets.UTF_8);
+
+        long adjusted = NativeExtensionRegistry.clientBatchItemAdjustAttribute(
+                0, null, 0, 2, 0, vendor, name, 1, 0);
+        assertNotEquals(0, adjusted);
+        NativeExtensionRegistry.release(NativeExtensionRegistry.BATCH_ITEM, adjusted);
+
+        long deleted = NativeExtensionRegistry.clientBatchItemDeleteAttribute(
+                0, null, 0, 0, 2, 0, vendor, name);
+        assertNotEquals(0, deleted);
+        NativeExtensionRegistry.release(NativeExtensionRegistry.BATCH_ITEM, deleted);
+
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemAdjustAttribute(
+                        0, null, 0, 99, 0, null, null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemAdjustAttribute(
+                        0, null, 0, 1, -1, null, null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemAdjustAttribute(
+                        0, null, 0, 1, 0, null, null, 0x1_0000_0000L, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemAdjustAttribute(
+                        0, null, 0, 1, 0, null, name, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemAdjustAttribute(
+                        99, null, 0, 2, 0, vendor, name, 1, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemAdjustAttribute(
+                        2, null, 1, 2, 0, vendor, name, 1, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemAdjustAttribute(
+                        0, null, 0, 2, 0, new byte[] {(byte) 0xff}, name, 1, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemDeleteAttribute(
+                        0, null, 0, 0, 99, 0, null, null));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemDeleteAttribute(
+                        0, null, 0, 0, 1, 0, vendor, null));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemDeleteAttribute(
+                        2, null, 1, 0, 0, 0, null, null));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemDeleteAttribute(
+                        99, null, 0, 0, 2, 0, vendor, name));
+
+        long deletedTag = NativeExtensionRegistry.clientBatchItemDeleteAttribute(
+                0, null, 0, 0, 1, 0x0042_000a, null, null);
+        assertNotEquals(0, deletedTag);
+        NativeExtensionRegistry.release(NativeExtensionRegistry.BATCH_ITEM, deletedTag);
     }
 
     @Test

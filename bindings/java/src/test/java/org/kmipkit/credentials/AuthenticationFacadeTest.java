@@ -39,6 +39,7 @@ final class AuthenticationFacadeTest {
             List<CredentialView> credentials = authentication.credentials();
             assertEquals(List.of(firstType, secondType), credentials.stream()
                     .map(CredentialView::credentialTypeRaw).toList());
+            assertEquals(secondType, credentials.get(1).credentialType().raw());
             assertEquals(List.of(CREDENTIAL_TYPE_TAG, CREDENTIAL_VALUE_TAG),
                     credentials.get(0).withTtlv(AuthenticationFacadeTest::readTags));
             assertThrows(InvalidInputException.class, authentication::intoTtlv,

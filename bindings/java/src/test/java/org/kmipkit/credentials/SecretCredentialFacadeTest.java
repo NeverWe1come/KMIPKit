@@ -74,4 +74,15 @@ final class SecretCredentialFacadeTest {
         assertThrows(InvalidInputException.class, () -> SecretText.fromString("\ud800"));
         secret.close();
     }
+
+    @Test
+    void secretTextMovesIntoATextStringTtlvValue() {
+        SecretText secret = SecretText.fromString("native-text-sentinel");
+
+        try (TtlvValue value = secret.intoTtlvValue(); TtlvValueView view = value.view()) {
+            assertEquals(TtlvItemType.TextString, view.itemType());
+            assertEquals("SecretText[redacted]", secret.toString());
+        }
+        secret.close();
+    }
 }
