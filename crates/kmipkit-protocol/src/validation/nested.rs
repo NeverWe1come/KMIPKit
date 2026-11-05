@@ -639,15 +639,15 @@ fn validate_attribute_wrapper(
     prefix: &ValidationPath,
     report: &mut ValidationReport,
 ) {
-    if structure.children().len() == 1 {
-        return;
-    }
-
     let (rule_id, source) = match schema {
         NestedStructureSchema::CurrentAttribute => ("KMIPKIT-0051-R248", "§5.6, Table 162"),
         NestedStructureSchema::NewAttribute => ("KMIPKIT-0051-R247", "§5.7, Table 163"),
         _ => return,
     };
+    if structure.children().len() == 1 {
+        return;
+    }
+
     report.push(ValidationIssue::new(
         ValidationCode::new(rule_id),
         prefix.clone().field("Attribute"),
