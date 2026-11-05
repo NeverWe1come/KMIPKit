@@ -23,6 +23,7 @@ static TEMP_DIRECTORY_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 #[link(name = "kmipkit_extension_registry_c_consumer", kind = "static")]
 unsafe extern "C" {
     fn kmipkit_extension_registry_c_consumer_main(argc: i32, argv: *mut *mut c_char) -> i32;
+    fn kmipkit_public_client_surface_probe() -> i32;
 }
 
 #[link(name = "kmipkit_ffi")]
@@ -102,6 +103,14 @@ fn existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process() {
 
     assert_eq!(result, 0, "the existing C ABI behavior suite must pass");
     peer.join().expect("the loopback TLS peer completes");
+}
+
+#[test]
+fn public_c_header_constructs_a_batch_and_reaches_the_encoding_override_entrypoint() {
+    // SAFETY: the C probe owns and releases its temporary handles and passes
+    // only null client inputs to the override entry point, so it performs no I/O.
+    let status = unsafe { kmipkit_public_client_surface_probe() };
+    assert_eq!(status, 0, "public C declarations and ABI calls must agree");
 }
 
 fn controlled_mtls_peer(
