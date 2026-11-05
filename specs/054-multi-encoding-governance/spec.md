@@ -79,10 +79,12 @@ interpretation. It does not change OASIS text or claim official clarification.
   ordered `kmipkit-ttlv::Item` semantic model. A repository-owned offline
   generator MUST produce private Rust tables of assigned tag names,
   Enumeration families and values, assigned Bit Mask families and values,
-  and tag-to-family mappings from the reviewed catalog; codec specifications
-  consume them for profile-specific symbolic normalization. The codecs MUST
-  preserve unknown allocation-valid tags, raw Enumeration values, bitmask
-  bits, and extension values represented by the model.
+  and tag-to-family mappings from the reviewed catalog. Mappings MUST cover
+  direct Enumeration-typed tags as well as structure members, message fields,
+  and operation structures, using explicit catalog type relationships;
+  codecs consume them for profile-specific symbolic normalization. The codecs
+  MUST preserve unknown allocation-valid tags, raw Enumeration values,
+  bitmask bits, and extension values represented by the model.
 - **KMIPKIT-0054-FR-004**: The common contract MUST define shared limits,
   payload-free/redacted error behavior, and the conversion boundary needed by
   codecs, without exposing a new public encoding API.

@@ -4,7 +4,7 @@
 |---|---|---|---|
 | KMIPKIT-0054-FR-001 | Approved project scope | Constitution, `AGENTS.md`, project definition, ADR-0018 | Cross-document scope review |
 | KMIPKIT-0054-FR-002 | Maintainer decision | ADR-0002 supersession note, ADR-0018 | ADR index and supersession review |
-| KMIPKIT-0054-FR-003 | OASIS KMIP Specification v2.1 §§10.1–10.2.3; Profiles §§5.4.1.1–5.4.1.3, 5.4.1.6.4, 5.4.1.6.7, 5.5.1.1–5.5.1.3, 5.5.1.6.4, 5.5.1.6.7 | 0054 common `Item` model and generated tag/Enumeration/Bit Mask/family tables | Catalog generator tests; codec round-trip suites |
+| KMIPKIT-0054-FR-003 | OASIS KMIP Specification v2.1 §§10.1–10.2.3; Profiles §§5.4.1.1–5.4.1.3, 5.4.1.6.4, 5.4.1.6.7, 5.5.1.1–5.5.1.3, 5.5.1.6.4, 5.5.1.6.7 | 0054 common `Item` model and generated tag/Enumeration/Bit Mask/family tables, including direct Enumeration-typed tag mappings | Catalog generator tests cover explicit type parents, same-name families, and ambiguity rejection; codec round-trip suites |
 | KMIPKIT-0054-FR-004 | AGENTS.md §8; ADR-0012; ADR-0014 | 0054 common codec contract | Limit/error/owner tests in codec and integration specs |
 | KMIPKIT-0054-FR-005 | Profiles §§5.4.1.1–5.4.1.3, 5.4.1.6.7, 5.5.1.1–5.5.1.3, 5.5.1.6.7; ADR-0004 | Catalog-derived tag/Enumeration/family metadata contract | Offline deterministic lookup tests in 0055/0056 |
 | KMIPKIT-0054-FR-006 | ADR-0004; KMIPKIT-0043 manifest contract | 0054–0056 exclusions; 0057 API integration | Diff ownership and generator check in 0057 |
