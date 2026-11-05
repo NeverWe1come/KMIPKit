@@ -130,7 +130,7 @@ fn builder_emits_all_table_59_members_in_normative_order() {
         Some(0x8FFF_0002)
     );
     assert_eq!(
-        parameters.with_p_source(|bytes| bytes.to_vec()),
+        parameters.with_p_source(<[u8]>::to_vec),
         Some(vec![0x80, 0x01, 0xFE])
     );
     assert_eq!(parameters.trailer_field(), Some(18));
@@ -156,7 +156,8 @@ fn parser_preserves_unknown_fields_and_future_enumerations_losslessly() {
     assert_eq!(parameters.block_cipher_mode(), Some(0x8ABC_DEF0));
     assert_eq!(parameters.cryptographic_algorithm(), Some(0x8ABC_DEF1));
     let roundtrip = parameters.into_ttlv();
-    let fields = roundtrip.view().children();
+    let roundtrip_view = roundtrip.view();
+    let fields = roundtrip_view.children();
     assert_eq!(
         fields
             .iter()
@@ -169,14 +170,14 @@ fn parser_preserves_unknown_fields_and_future_enumerations_losslessly() {
             VENDOR_EXTENSION
         ]
     );
-    assert!(matches!(
-        fields[0].with_value(|value| value),
+    assert!(fields[0].with_value(|value| matches!(
+        value,
         ValueView::ByteString(bytes) if bytes == [0x80, 0xAA]
-    ));
-    assert!(matches!(
-        fields[3].with_value(|value| value),
+    )));
+    assert!(fields[3].with_value(|value| matches!(
+        value,
         ValueView::TextString(value) if value == "vendor-tail"
-    ));
+    )));
 }
 
 #[test]
