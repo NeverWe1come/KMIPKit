@@ -33,5 +33,6 @@ position = 0
 for filename in ["request-time-0.json", "response-time-0.json", "request-time-1.json"]:
     position = plain.index("{", position)
     _, length = decoder.raw_decode(plain[position:])
-    Path(__file__).with_name(filename).write_bytes((plain[position:position+length] + "\n").encode("utf-8"))
+    snippet = "\n".join(line.rstrip() for line in plain[position:position+length].splitlines())
+    Path(__file__).with_name(filename).write_bytes((snippet + "\n").encode("utf-8"))
     position += length
