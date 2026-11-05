@@ -579,7 +579,7 @@ static CERTIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::Attributes),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R014",
@@ -648,7 +648,7 @@ static CREATE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 1,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::Attributes),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R021",
@@ -669,7 +669,7 @@ static CREATEKEYPAIR_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::Attributes),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R023",
@@ -678,7 +678,7 @@ static CREATEKEYPAIR_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::Attributes),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R024",
@@ -687,7 +687,7 @@ static CREATEKEYPAIR_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::Attributes),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R025",
@@ -780,7 +780,7 @@ static CREATESPLITKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 1,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::Attributes),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R035",
@@ -990,7 +990,7 @@ static DERIVEKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 1,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::Attributes),
     },
 ];
 
@@ -1331,7 +1331,7 @@ static IMPORT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 1,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::Attributes),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R092",
@@ -1400,7 +1400,7 @@ static JOINSPLITKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::Attributes),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R099",
@@ -1457,7 +1457,7 @@ static LOCATE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 1,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::Attributes),
     },
 ];
 
@@ -1752,7 +1752,7 @@ static QUERY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::ObjectGroups),
     },
 ];
 
@@ -1773,7 +1773,7 @@ static QUERYASYNCREQUESTS_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE | TYPE_ENUMERATION,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::Operations),
     },
 ];
 
@@ -1851,7 +1851,7 @@ static RECERTIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::Attributes),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R151",
@@ -1891,7 +1891,7 @@ static REGISTER_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 1,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::Attributes),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R140",
@@ -1939,7 +1939,7 @@ static REKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::Attributes),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R155",
@@ -1978,7 +1978,7 @@ static REKEYKEYPAIR_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::Attributes),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R159",
@@ -1987,7 +1987,7 @@ static REKEYKEYPAIR_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::Attributes),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R160",
@@ -1996,7 +1996,7 @@ static REKEYKEYPAIR_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::Attributes),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R161",
