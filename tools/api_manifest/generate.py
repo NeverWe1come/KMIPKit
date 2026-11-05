@@ -3017,6 +3017,12 @@ def render_c_header(
             lines.append(" */")
         lines.append(f"/* Approved exact C-only exclusion: {exclusion['exportName']} */")
         lines.append(_c_declaration({"c": c_function}))
+    if not include_blocked and any(
+        capability.get("capabilityId") == "named_protocol_values"
+        and capability.get("capabilityState") in {"declared", "verified"}
+        for capability in manifest.get("capabilities", [])
+    ):
+        lines.append('#include "kmipkit_named_value_helpers_generated.h"')
     lines.extend(["", "#ifdef __cplusplus", "}", "#endif", f"#endif /* {header_guard} */", ""])
     return "\n".join(lines)
 

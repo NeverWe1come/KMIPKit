@@ -48,6 +48,10 @@ set_target_properties(kmipkit_vendor_extension_example PROPERTIES
     BUILD_RPATH "${KMIPKIT_TARGET_DIR}"
 )
 
+add_executable(kmipkit_named_values_consumer tests/named_values.c)
+target_compile_features(kmipkit_named_values_consumer PRIVATE c_std_11)
+target_include_directories(kmipkit_named_values_consumer PRIVATE include)
+
 add_test(
     NAME kmipkit_extension_registry_consumer
     COMMAND kmipkit_extension_registry_consumer
@@ -61,4 +65,9 @@ add_test(
 add_test(
     NAME kmipkit_vendor_extension_example
     COMMAND kmipkit_vendor_extension_example
+)
+
+add_test(
+    NAME kmipkit_named_values_consumer
+    COMMAND kmipkit_named_values_consumer
 )
