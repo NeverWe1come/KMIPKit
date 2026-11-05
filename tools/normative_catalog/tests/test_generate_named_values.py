@@ -71,6 +71,7 @@ class NamedValueGeneratorTests(unittest.TestCase):
         self.assertIn("/// `AESKeyWrapPadding`;", rust)
         self.assertNotIn("match raw {\n                    _ => None", rust)
         self.assertNotIn("match raw {\n                None", rust)
+        self.assertIn("pub const fn name(_raw: u32)", rust)
 
     def test_duplicate_names_and_values_are_rejected(self) -> None:
         catalog: dict[str, Any] = {
