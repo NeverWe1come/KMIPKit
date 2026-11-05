@@ -39,6 +39,10 @@ fn schema_structure(items: impl IntoIterator<Item = Item>) -> Structure {
     structure
 }
 
+fn gcm_parameters_without_required_lengths() -> Structure {
+    schema_structure([schema_item(0x0042_0011, Value::enumeration(9))])
+}
+
 #[test]
 fn every_supported_client_request_implements_borrowed_validation() {
     assert_validate_contract::<ActivateRequest>();
@@ -619,4 +623,46 @@ fn import_validation_recurses_into_the_selected_managed_object() {
             && issue.source().to_string() == "KMIP v2.1 §3.1, Table 12"
     }));
     assert!(!format!("{report:?}").contains("secret-canary"));
+}
+
+#[test]
+fn cryptographic_requests_validate_supplied_parameter_structures() {
+    let reports = [
+        EncryptRequest::new(None, None)
+            .with_cryptographic_parameters(gcm_parameters_without_required_lengths())
+            .validate(),
+        DecryptRequest::new(None, None)
+            .with_cryptographic_parameters(gcm_parameters_without_required_lengths())
+            .validate(),
+        MacRequest::new()
+            .with_cryptographic_parameters(gcm_parameters_without_required_lengths())
+            .validate(),
+        MacVerifyRequest::new()
+            .with_cryptographic_parameters(gcm_parameters_without_required_lengths())
+            .validate(),
+        SignRequest::new()
+            .with_cryptographic_parameters(gcm_parameters_without_required_lengths())
+            .validate(),
+        SignatureVerifyRequest::new()
+            .with_cryptographic_parameters(gcm_parameters_without_required_lengths())
+            .validate(),
+    ];
+
+    for report in reports {
+        assert!(report.issues().iter().any(|issue| {
+            issue.code().as_str() == "KMIPKIT-0051-R219"
+                && issue
+                    .path()
+                    .to_string()
+                    .ends_with("Cryptographic Parameters.IV Length")
+                && issue.source().to_string() == "KMIP v2.1 §4.16, Table 59"
+        }));
+        assert!(report.issues().iter().any(|issue| {
+            issue.code().as_str() == "KMIPKIT-0051-R220"
+                && issue
+                    .path()
+                    .to_string()
+                    .ends_with("Cryptographic Parameters.Tag Length")
+        }));
+    }
 }
