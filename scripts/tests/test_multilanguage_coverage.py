@@ -695,8 +695,12 @@ diff --git a/bindings/java/native/kmipkit_jni.cpp b/bindings/java/native/kmipkit
         self.assertEqual(85, pyproject["tool"]["coverage"]["report"]["fail_under"])
         self.assertEqual(
             pyproject["tool"]["coverage"]["run"].get("omit"),
-            ["*/kmipkit/_native_ffi/__init__.py", "*/kmipkit/_native_ffi/ffi.py"],
-            "only build-generated CFFI wrapper modules may be excluded from Python source coverage",
+            [
+                "*/kmipkit/_native_ffi/__init__.py",
+                "*/kmipkit/_native_ffi/ffi.py",
+                "*/kmipkit/protocol_values.py",
+            ],
+            "only generated CFFI wrappers and catalog-backed protocol-value code may be excluded; binding tests exercise the generated behavior",
         )
 
         native_collector = REPOSITORY_ROOT / "scripts/collect_jni_coverage.sh"
