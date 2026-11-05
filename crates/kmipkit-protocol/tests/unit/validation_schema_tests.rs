@@ -798,6 +798,64 @@ fn key_block_requires_length_when_algorithm_is_present() {
 }
 
 #[test]
+fn key_block_recursively_checks_key_wrapping_data_members() {
+    const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
+    const WRAPPING_METHOD: u32 = 0x0042_009E;
+    const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+
+    let wrapping_data = structure([
+        item(WRAPPING_METHOD, Value::text_string("secret-canary".to_owned())),
+        item(
+            ENCRYPTION_KEY_INFORMATION,
+            Value::structure(structure([item(
+                UNIQUE_IDENTIFIER,
+                Value::text_string("key-id".to_owned()),
+            )])),
+        ),
+    ]);
+    let key_block = structure([
+        item(KEY_FORMAT_TYPE, Value::enumeration(0x8000_0001)),
+        item(KEY_WRAPPING_DATA, Value::structure(wrapping_data)),
+    ]);
+
+    let report = validate_structure(
+        &key_block.view(),
+        Some(ValidationSchema::Nested(NestedStructureSchema::KeyBlock)),
+    );
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R271"
+            && issue.path().to_string() == "Key Wrapping Data.Wrapping Method"
+            && issue.source().to_string() == "KMIP v2.1 §3.3, Table 14"
+    }));
+    assert!(!format!("{report:?}").contains("secret-canary"));
+}
+
+#[test]
+fn key_value_structure_requires_key_material() {
+    let key_value = structure([item(
+        0x0054_0001,
+        Value::byte_string(vec![0xCA, 0xFE]),
+    )]);
+    let key_block = structure([
+        item(KEY_FORMAT_TYPE, Value::enumeration(0x8000_0001)),
+        item(0x0042_0045, Value::structure(key_value)),
+    ]);
+
+    let report = validate_structure(
+        &key_block.view(),
+        Some(ValidationSchema::Nested(NestedStructureSchema::KeyBlock)),
+    );
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R278"
+            && issue.path().to_string() == "Key Value.Key Material"
+            && issue.source().to_string() == "KMIP v2.1 §3.2, Table 13"
+    }));
+}
+
+#[test]
 fn generic_structure_without_identity_does_not_guess_an_operation_schema() {
     let mut structure = Structure::new();
     structure
