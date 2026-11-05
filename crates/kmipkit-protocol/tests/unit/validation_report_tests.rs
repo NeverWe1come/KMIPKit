@@ -29,10 +29,7 @@ fn issue_exposes_stable_code_path_and_source_metadata() {
 
     assert_eq!(issue.code().as_str(), "KMIPKIT-0051-R001");
     assert_eq!(issue.path().to_string(), "Request Payload[0]");
-    assert_eq!(
-        issue.source().to_string(),
-        "KMIP v2.1 §6.1.36, Table 271"
-    );
+    assert_eq!(issue.source().to_string(), "KMIP v2.1 §6.1.36, Table 271");
 }
 
 #[test]
