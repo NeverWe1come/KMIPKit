@@ -2,19 +2,42 @@ package org.kmipkit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.security.cert.X509Certificate;
+import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
+import javax.net.ssl.SSLServerSocket;
 
 import org.junit.jupiter.api.Test;
+import org.kmipkit.extensions.Client;
+import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
+import org.kmipkit.extensions.ClientBatchItemResult;
+import org.kmipkit.extensions.ClientBatchResponse;
+import org.kmipkit.extensions.AttributeReference;
+import org.kmipkit.extensions.ClientConfiguration;
 import org.kmipkit.extensions.ClientExtensionRegistry;
 import org.kmipkit.extensions.ClientRequestMessageExtension;
+import org.kmipkit.extensions.ProfileObjectState;
+import org.kmipkit.extensions.ProfileValidationContext;
+import org.kmipkit.extensions.ProfileValidationSelection;
 import org.kmipkit.extensions.Compatibility;
 import org.kmipkit.extensions.Discriminator;
 import org.kmipkit.extensions.DuplicateExtensionKeyException;
@@ -24,6 +47,10 @@ import org.kmipkit.extensions.ExtensionDefinition;
 import org.kmipkit.extensions.ExtensionIdentity;
 import org.kmipkit.extensions.ExtensionRegistryLimits;
 import org.kmipkit.extensions.ExtensionSchema;
+import org.kmipkit.extensions.ProtocolVersion;
+import org.kmipkit.extensions.SplitKeyReference;
+import org.kmipkit.extensions.TransportConfiguration;
+import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.extensions.InvalidExtensionIdentityException;
 import org.kmipkit.extensions.RegisteredExtensionValue;
 import org.kmipkit.extensions.TtlvPath;
@@ -43,6 +70,8 @@ final class NativeBridgeCoverageTest {
     };
     private static final int CRITICALITY_EXTENSION_TAG = 0x420001;
     private static final CodecLimits DEFAULT_CODEC_LIMITS = CodecLimits.defaults();
+
+    private record ResponseGetter(String name, Function<ClientBatchItemResult, Optional<?>> invoke) {}
 
     @Test
     void nativeAbiVersionMatchesTheExpectedVersion() {
@@ -136,6 +165,308 @@ final class NativeBridgeCoverageTest {
                     }
                 }
             }
+        }
+    }
+
+    @Test
+    void nativeOperationSpecificResponseBridgesMapLiveTypedResponses() throws Exception {
+        byte[] serverCertificate = (byte[]) invokeTlsFixture(
+                "testFixture", new Class<?>[] {String.class}, "server-cert.pem");
+        byte[] serverPrivateKey = (byte[]) invokeTlsFixture(
+                "testFixture", new Class<?>[] {String.class}, "server-key.pem");
+        byte[] clientCertificate = (byte[]) invokeTlsFixture(
+                "testFixture", new Class<?>[] {String.class}, "client-cert.pem");
+        byte[] clientPrivateKey = (byte[]) invokeTlsFixture(
+                "testFixture", new Class<?>[] {String.class}, "client-key.pem");
+        X509Certificate parsedClientCertificate = (X509Certificate) invokeTlsFixture(
+                "testCertificate", new Class<?>[] {byte[].class}, (Object) clientCertificate);
+        SSLServerSocket listener = (SSLServerSocket) invokeTlsFixture(
+                "deterministicMtlsListener",
+                new Class<?>[] {byte[].class, byte[].class, X509Certificate.class},
+                serverCertificate, serverPrivateKey, parsedClientCertificate);
+        byte[] discoverVersionsResponse = (byte[]) invokeTlsFixture(
+                "discoverVersionsResponseMessage", new Class<?>[] {int.class}, 1);
+        byte[] getAttributeListResponse = (byte[]) invokeTlsFixture(
+                "getAttributeListResponseMessage", new Class<?>[0]);
+        byte[] joinSplitKeyResponse = (byte[]) invokeTlsFixture(
+                "joinSplitKeyResponseMessage", new Class<?>[0]);
+        byte[] getAttributesResponse = (byte[]) invokeTlsFixture("getAttributesResponseMessage", new Class<?>[0]);
+        byte[] locateResponse = (byte[]) invokeTlsFixture("locateResponseMessage",
+                new Class<?>[] {int.class}, 2);
+        byte[] recertifyResponse = (byte[]) invokeTlsFixture("recertifyResponseMessage", new Class<?>[0]);
+        byte[] obtainLeaseResponse = (byte[]) invokeTlsFixture("obtainLeaseResponseMessage", new Class<?>[0]);
+        byte[] rekeyResponse = (byte[]) invokeTlsFixture("rekeyResponseMessage", new Class<?>[0]);
+        FutureTask<?> peer = new FutureTask<>(() -> invokeTlsFixture(
+                "serveResponses", new Class<?>[] {SSLServerSocket.class, byte[][].class},
+                listener, (Object) new byte[][] {discoverVersionsResponse, getAttributeListResponse,
+                        joinSplitKeyResponse, getAttributesResponse, locateResponse,
+                        recertifyResponse, obtainLeaseResponse, rekeyResponse}));
+        Thread peerThread = new Thread(peer, "kmipkit-native-response-mapper-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration configuration = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityPem(new byte[][] {clientCertificate}, clientPrivateKey)
+                        .trustCertificatesPem(new byte[][] {serverCertificate})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                        .build();
+                Client client = Client.create(configuration, transport)) {
+            try (ClientBatch batch = ClientBatch.create()) {
+                batch.add(ClientBatchItem.discoverVersions()
+                        .withUniqueBatchItemId((byte[]) invokeTlsFixture(
+                                "uniqueBatchItemId", new Class<?>[] {int.class}, 0)));
+                try (ClientBatchResponse response = client.execute(batch, DEFAULT_CODEC_LIMITS);
+                        ClientBatchItemResult result = response.itemAt(0)) {
+                    assertEquals(List.of(new ProtocolVersion(2, 1)), result.supportedVersions().orElseThrow());
+                    assertResponseMappers(result, "supportedVersions");
+                }
+            }
+
+            try (ClientBatch batch = ClientBatch.create()) {
+                batch.add(ClientBatchItem.getAttributeList(UniqueIdentifier.textString("attribute-list-object"))
+                        .withUniqueBatchItemId((byte[]) invokeTlsFixture(
+                                "uniqueBatchItemId", new Class<?>[] {int.class}, 0)));
+                try (ClientBatchResponse response = client.execute(batch, DEFAULT_CODEC_LIMITS);
+                        ClientBatchItemResult result = response.itemAt(0);
+                        ClientBatchItemResult.GetAttributeListResponse typed =
+                                result.getAttributeListResponse().orElseThrow()) {
+                    assertEquals("attribute-list-object", typed.uniqueIdentifier().text());
+                    assertEquals(2, typed.attributeReferences().size());
+                    assertResponseMappers(result, "getAttributeListResponse");
+                }
+            }
+
+            try (SplitKeyReference reference = new SplitKeyReference(
+                            UniqueIdentifier.textString("source-fragment"), 1);
+                    ClientBatch batch = ClientBatch.create()) {
+                batch.add(ClientBatchItem.joinSplitKey(4, List.of(reference))
+                        .withUniqueBatchItemId(batchItemId(0)));
+                try (ClientBatchResponse response = client.execute(batch, DEFAULT_CODEC_LIMITS);
+                        ClientBatchItemResult result = response.itemAt(0)) {
+                    assertResponseMappers(result, "joinSplitKeyResponse");
+                }
+            }
+
+            try (ClientBatch batch = ClientBatch.create()) {
+                batch.add(ClientBatchItem.getAttributes(UniqueIdentifier.textString("object-7"),
+                        List.of(AttributeReference.tag(0x42002f))));
+                try (ClientBatchResponse response = client.execute(batch, DEFAULT_CODEC_LIMITS);
+                        ClientBatchItemResult result = response.itemAt(0)) {
+                    assertResponseMappers(result, "getAttributesResponse");
+                }
+            }
+
+            try (TtlvStructure attributes = TtlvStructure.create();
+                    ClientBatch batch = ClientBatch.create()) {
+                batch.add(ClientBatchItem.locate(null, null, null, null, attributes));
+                try (ClientBatchResponse response = client.execute(batch, DEFAULT_CODEC_LIMITS);
+                        ClientBatchItemResult result = response.itemAt(0)) {
+                    assertResponseMappers(result, "locateResponse");
+                }
+            }
+
+            try (ClientBatch batch = ClientBatch.create()) {
+                batch.add(ClientBatchItem.recertify(UniqueIdentifier.textString("certificate-to-recertify"),
+                        null, null, null, null, null, null).withUniqueBatchItemId(batchItemId(0)));
+                try (ClientBatchResponse response = client.execute(batch, DEFAULT_CODEC_LIMITS);
+                        ClientBatchItemResult result = response.itemAt(0)) {
+                    assertResponseMappers(result, "recertifyResponse");
+                }
+            }
+
+            try (ClientBatch batch = ClientBatch.create()) {
+                batch.add(ClientBatchItem.obtainLease(UniqueIdentifier.textString("lease-request-id"))
+                        .withUniqueBatchItemId(batchItemId(0)));
+                try (ClientBatchResponse response = client.execute(batch, DEFAULT_CODEC_LIMITS);
+                        ClientBatchItemResult result = response.itemAt(0)) {
+                    assertResponseMappers(result, "obtainLeaseResponse");
+                }
+            }
+
+            try (ClientBatch batch = ClientBatch.create()) {
+                batch.asynchronousIndicator(1)
+                        .add(ClientBatchItem.rekey(UniqueIdentifier.textString("existing-success"),
+                                null, null, null).withUniqueBatchItemId(batchItemId(0)))
+                        .add(ClientBatchItem.rekey(UniqueIdentifier.textString("existing-failure"),
+                                null, null, null).withUniqueBatchItemId(batchItemId(1)))
+                        .add(ClientBatchItem.rekey(UniqueIdentifier.textString("existing-pending"),
+                                null, null, null).withUniqueBatchItemId(batchItemId(2)));
+                try (ClientBatchResponse response = client.execute(batch, DEFAULT_CODEC_LIMITS);
+                        ClientBatchItemResult success = response.itemAt(0);
+                        ClientBatchItemResult failure = response.itemAt(1);
+                        ClientBatchItemResult pending = response.itemAt(2)) {
+                    assertResponseMappers(success, "rekeyResponse");
+                    assertResponseMappers(failure, null);
+                    assertResponseMappers(pending, null);
+                }
+            }
+            assertEquals(8, ((List<?>) peer.get(12, TimeUnit.SECONDS)).size());
+        } finally {
+            listener.close();
+        }
+    }
+
+    @Test
+    void clientExecuteWithProfilesRejectsMalformedTextBeforeOpeningTransport() throws Exception {
+        byte[] clientCertificate = (byte[]) invokeTlsFixture(
+                "testFixture", new Class<?>[] {String.class}, "client-cert.pem");
+        byte[] clientPrivateKey = (byte[]) invokeTlsFixture(
+                "testFixture", new Class<?>[] {String.class}, "client-key.pem");
+        byte[] serverCertificate = (byte[]) invokeTlsFixture(
+                "testFixture", new Class<?>[] {String.class}, "server-cert.pem");
+        ProfileValidationSelection surrogateSelection =
+                new ProfileValidationSelection(List.of("\ud800"));
+        ProfileValidationSelection validSelection =
+                new ProfileValidationSelection(List.of("KMIPKIT-PROFILE-BASELINE-CLIENT"));
+        ProfileValidationContext surrogateContext = new ProfileValidationContext().withObjectState(
+                0, new ProfileObjectState("\ud800"));
+        ProfileValidationContext oversizedContext = new ProfileValidationContext().withObjectState(
+                0, new ProfileObjectState("x".repeat(4_097)));
+
+        try (ServerSocket listener = new ServerSocket(0, 1, InetAddress.getByName("127.0.0.1"))) {
+            listener.setSoTimeout(1_000);
+            FutureTask<Boolean> accepted = new FutureTask<>(() -> {
+                try (Socket ignored = listener.accept()) {
+                    return true;
+                } catch (SocketTimeoutException timeout) {
+                    return false;
+                }
+            });
+            Thread observer = new Thread(accepted, "kmipkit-profile-jni-no-connect-observer");
+            observer.setDaemon(true);
+            observer.start();
+
+            try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                            List.of(), ExtensionRegistryLimits.defaults());
+                    ClientConfiguration configuration = ClientConfiguration.create(registry);
+                    TransportConfiguration transport = TransportConfiguration.builder()
+                            .rawTls("127.0.0.1", listener.getLocalPort())
+                            .clientIdentityPem(new byte[][] {clientCertificate}, clientPrivateKey)
+                            .trustCertificatesPem(new byte[][] {serverCertificate})
+                            .build();
+                    Client client = Client.create(configuration, transport);
+                    ClientBatch selectionBatch = ClientBatch.create();
+                    ClientBatch surrogateContextBatch = ClientBatch.create();
+                    ClientBatch oversizedContextBatch = ClientBatch.create()) {
+                selectionBatch.add(ClientBatchItem.discoverVersions());
+                surrogateContextBatch.add(ClientBatchItem.discoverVersions());
+                oversizedContextBatch.add(ClientBatchItem.discoverVersions());
+
+                assertThrows(InvalidInputException.class,
+                        () -> client.executeWithProfiles(selectionBatch, DEFAULT_CODEC_LIMITS,
+                                surrogateSelection));
+                assertThrows(InvalidInputException.class,
+                        () -> client.executeWithProfilesAndContext(surrogateContextBatch,
+                                DEFAULT_CODEC_LIMITS, validSelection, surrogateContext));
+                assertThrows(InvalidInputException.class,
+                        () -> client.executeWithProfilesAndContext(oversizedContextBatch,
+                                DEFAULT_CODEC_LIMITS, validSelection, oversizedContext));
+                assertFalse(accepted.get(2, TimeUnit.SECONDS),
+                        "invalid profile text must be rejected before opening the transport");
+            }
+        }
+    }
+
+    private static Object invokeTlsFixture(String name, Class<?>[] parameterTypes, Object... arguments)
+            throws Exception {
+        Method method = ClientFacadeTlsIntegrationTest.class.getDeclaredMethod(name, parameterTypes);
+        if (!method.trySetAccessible()) {
+            throw new IllegalStateException("TLS test fixture is inaccessible: " + name);
+        }
+        try {
+            return method.invoke(null, arguments);
+        } catch (InvocationTargetException exception) {
+            Throwable cause = exception.getCause();
+            if (cause instanceof Exception checked) throw checked;
+            if (cause instanceof Error error) throw error;
+            throw new IllegalStateException("TLS test fixture failed: " + name, cause);
+        }
+    }
+
+    private static byte[] batchItemId(int index) throws Exception {
+        return (byte[]) invokeTlsFixture("uniqueBatchItemId", new Class<?>[] {int.class}, index);
+    }
+
+    private static void assertResponseMappers(ClientBatchItemResult result, String expectedGetter)
+            throws Exception {
+        for (ResponseGetter getter : responseGetters()) {
+            Optional<?> mapped = getter.invoke().apply(result);
+            if (mapped.isPresent()) {
+                assertEquals(expectedGetter, getter.name(), "unexpected response mapping through " + getter.name());
+            }
+            if (getter.name().equals(expectedGetter)) {
+                assertTrue(mapped.isPresent(), "response must map through " + getter.name());
+            }
+            closeMappedResponse(mapped);
+        }
+    }
+
+    private static List<ResponseGetter> responseGetters() {
+        return List.of(
+                new ResponseGetter("supportedVersions", result -> result.supportedVersions()),
+                new ResponseGetter("createResponse", result -> result.createResponse()),
+                new ResponseGetter("certifyResponse", result -> result.certifyResponse()),
+                new ResponseGetter("recertifyResponse", result -> result.recertifyResponse()),
+                new ResponseGetter("rekeyResponse", result -> result.rekeyResponse()),
+                new ResponseGetter("rekeyKeyPairResponse", result -> result.rekeyKeyPairResponse()),
+                new ResponseGetter("reprovisionResponse", result -> result.reprovisionResponse()),
+                new ResponseGetter("registerResponse", result -> result.registerResponse()),
+                new ResponseGetter("activateResponse", result -> result.activateResponse()),
+                new ResponseGetter("archiveResponse", result -> result.archiveResponse()),
+                new ResponseGetter("destroyResponse", result -> result.destroyResponse()),
+                new ResponseGetter("recoverResponse", result -> result.recoverResponse()),
+                new ResponseGetter("revokeResponse", result -> result.revokeResponse()),
+                new ResponseGetter("rngRetrieveResponse", result -> result.rngRetrieveResponse()),
+                new ResponseGetter("rngSeedResponse", result -> result.rngSeedResponse()),
+                new ResponseGetter("checkResponse", result -> result.checkResponse()),
+                new ResponseGetter("delegatedLoginResponse", result -> result.delegatedLoginResponse()),
+                new ResponseGetter("loginResponse", result -> result.loginResponse()),
+                new ResponseGetter("pingResponse", result -> result.pingResponse()),
+                new ResponseGetter("logoutResponse", result -> result.logoutResponse()),
+                new ResponseGetter("queryResponse", result -> result.queryResponse()),
+                new ResponseGetter("getUsageAllocationResponse", result -> result.getUsageAllocationResponse()),
+                new ResponseGetter("getAttributeListResponse", result -> result.getAttributeListResponse()),
+                new ResponseGetter("getAttributesResponse", result -> result.getAttributesResponse()),
+                new ResponseGetter("addAttributeResponse", result -> result.addAttributeResponse()),
+                new ResponseGetter("adjustAttributeResponse", result -> result.adjustAttributeResponse()),
+                new ResponseGetter("deleteAttributeResponse", result -> result.deleteAttributeResponse()),
+                new ResponseGetter("modifyAttributeResponse", result -> result.modifyAttributeResponse()),
+                new ResponseGetter("setAttributeResponse", result -> result.setAttributeResponse()),
+                new ResponseGetter("obtainLeaseResponse", result -> result.obtainLeaseResponse()),
+                new ResponseGetter("importResponse", result -> result.importResponse()),
+                new ResponseGetter("joinSplitKeyResponse", result -> result.joinSplitKeyResponse()),
+                new ResponseGetter("getResponse", result -> result.getResponse()),
+                new ResponseGetter("locateResponse", result -> result.locateResponse()),
+                new ResponseGetter("getConstraintsResponse", result -> result.getConstraintsResponse()),
+                new ResponseGetter("setConstraintsResponse", result -> result.setConstraintsResponse()),
+                new ResponseGetter("setDefaultsResponse", result -> result.setDefaultsResponse()),
+                new ResponseGetter("validateResponse", result -> result.validateResponse()),
+                new ResponseGetter("interopResponse", result -> result.interopResponse()),
+                new ResponseGetter("pkcs11Response", result -> result.pkcs11Response()),
+                new ResponseGetter("logResponse", result -> result.logResponse()),
+                new ResponseGetter("exportResponse", result -> result.exportResponse()),
+                new ResponseGetter("deriveKeyResponse", result -> result.deriveKeyResponse()),
+                new ResponseGetter("createKeyPairResponse", result -> result.createKeyPairResponse()),
+                new ResponseGetter("createSplitKeyUniqueIdentifiers", result -> result.createSplitKeyUniqueIdentifiers()),
+                new ResponseGetter("encryptResponse", result -> result.encryptResponse()),
+                new ResponseGetter("decryptResponse", result -> result.decryptResponse()),
+                new ResponseGetter("hashResponse", result -> result.hashResponse()),
+                new ResponseGetter("macResponse", result -> result.macResponse()),
+                new ResponseGetter("macVerifyResponse", result -> result.macVerifyResponse()),
+                new ResponseGetter("signResponse", result -> result.signResponse()),
+                new ResponseGetter("signatureVerifyResponse", result -> result.signatureVerifyResponse()));
+    }
+
+    private static void closeMappedResponse(Optional<?> mapped) throws Exception {
+        if (mapped.isPresent() && mapped.get() instanceof AutoCloseable closeable) {
+            closeable.close();
         }
     }
 

@@ -1,6 +1,38 @@
 use super::*;
 
 #[test]
+fn standalone_poll_request_exposes_its_owned_correlation_bytes() {
+    let expected_correlation = [0x00, 0xff, 0x80, 0x13, 0x00];
+    let mut request = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_poll_request_create(
+            expected_correlation.as_ptr(),
+            u64::try_from(expected_correlation.len()).expect("correlation length fits ABI"),
+            &raw mut request,
+        ),
+        SUCCESS
+    );
+    assert!(!request.is_null());
+
+    let mut observed = kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length: u64::MAX,
+    };
+    assert_eq!(
+        client_abi::kmipkit_poll_request_asynchronous_correlation_value(request, &raw mut observed,),
+        SUCCESS
+    );
+    assert_eq!(observed.length, expected_correlation.len() as u64);
+    assert!(!observed.data.is_null());
+    // SAFETY: the borrowed span remains valid while the live Poll request handle is retained.
+    let observed_bytes =
+        unsafe { std::slice::from_raw_parts(observed.data, expected_correlation.len()) };
+    assert_eq!(observed_bytes, expected_correlation);
+
+    client_abi::kmipkit_poll_request_release(request);
+}
+
+#[test]
 fn poll_execution_clears_output_before_rejecting_an_invalid_correlation_span() {
     let mut output = ptr::dangling_mut::<crate::kmipkit_client_async_operation_outcome_t>();
 

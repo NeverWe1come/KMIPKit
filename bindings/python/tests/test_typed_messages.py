@@ -52,6 +52,7 @@ _CRITICALITY_INDICATOR = 0x0042_0026
 _VENDOR_EXTENSION = 0x0042_009C
 _SERVER_HASHED_PASSWORD = 0x0042_0155
 _CLIENT_CORRELATION_VALUE = 0x0042_0105
+_AUTHENTICATION = 0x0042_000C
 _ROOT = Path(__file__).resolve().parents[3]
 _SHARED_PARITY_FIXTURE = _ROOT / "tests" / "fixtures" / "api" / "shared-capability-parity.json"
 _TYPED_MESSAGE_CASE_ID = "typed-message.ordered-open-values-and-lifetime.v1"
@@ -719,3 +720,218 @@ def test_message_child_views_remain_readable_after_parent_close() -> None:
     finally:
         item.close()
         header.close()
+
+
+def test_message_native_output_helpers_reject_invalid_presence_and_null_handles(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def invalid_presence(_handle: object, present: object, _value: object) -> int:
+        present[0] = 2  # type: ignore[index]
+        return 0
+
+    handle = SimpleNamespace(_pointer=lambda: messages.ffi.NULL)
+    with pytest.raises(messages.errors.InvalidInputError):
+        messages._optional_scalar_pair(invalid_presence, handle, "uint32_t")
+
+    with pytest.raises(messages.errors.InvalidInputError):
+        messages._optional_index(
+            lambda _handle, present, _value: present.__setitem__(0, 3) or 0,
+            messages.ffi.NULL,
+        )
+
+    with pytest.raises(messages.errors.InvalidInputError):
+        messages._out_handle(
+            "kmipkit_request_header_view_t",
+            lambda _handle, output: output.__setitem__(0, messages.ffi.NULL) or 0,
+            messages.ffi.NULL,
+        )
+
+
+def test_message_native_call_error_restores_consumed_input_ownership() -> None:
+    original = _request_tree()
+
+    def fail_constructor(*_arguments: object) -> int:
+        raise TypeError("native bridge rejected the arguments")
+
+    with pytest.raises(messages.errors.InvalidInputError):
+        messages._consume_and_validate_message(
+            original,
+            handle_type="kmipkit_request_message_t",
+            wrapper=messages.RequestMessage,
+            constructor=fail_constructor,
+            error_release=lambda _handle: None,
+            message_release=lambda _handle: None,
+        )
+
+    assert not original.closed
+    with ttlv.ttlv_structure_view(original) as view:
+        assert ttlv.ttlv_structure_view_item_count(view) == 2
+    original.close()
+
+
+@pytest.mark.parametrize(
+    ("mode", "expected_releases"),
+    [
+        ("inconsistent-validation", ["validation", "message"]),
+        ("status-with-output", ["message"]),
+        ("success-with-null-output", []),
+    ],
+)
+def test_message_constructor_releases_inconsistent_native_outputs(
+    mode: str,
+    expected_releases: list[str],
+) -> None:
+    original = _request_tree()
+    message_pointer = messages.ffi.cast("kmipkit_request_message_t *", 1)
+    validation_pointer = messages.ffi.cast("kmipkit_message_validation_error_t *", 2)
+    released: list[str] = []
+
+    def constructor(source: object, output: object, validation_error: object) -> int:
+        messages.lib.kmipkit_ttlv_structure_release(source)
+        if mode == "inconsistent-validation":
+            output[0] = message_pointer  # type: ignore[index]
+            validation_error[0] = validation_pointer  # type: ignore[index]
+            return 0
+        if mode == "status-with-output":
+            output[0] = message_pointer  # type: ignore[index]
+            return 4
+        return 0
+
+    with pytest.raises(messages.errors.InvalidInputError):
+        messages._consume_and_validate_message(
+            original,
+            handle_type="kmipkit_request_message_t",
+            wrapper=messages.RequestMessage,
+            constructor=constructor,
+            error_release=lambda _handle: released.append("validation"),
+            message_release=lambda _handle: released.append("message"),
+        )
+
+    assert original.closed
+    assert released == expected_releases
+
+
+@pytest.mark.parametrize(
+    ("item_type", "accessor_name", "expected"),
+    [
+        (ttlv.ItemType.Integer, "ttlv_value_view_integer", -4),
+        (ttlv.ItemType.LongInteger, "ttlv_value_view_long_integer", -8),
+        (ttlv.ItemType.Enumeration, "ttlv_value_view_enumeration", 23),
+        (ttlv.ItemType.Boolean, "ttlv_value_view_boolean", True),
+        (ttlv.ItemType.DateTime, "ttlv_value_view_date_time", 123),
+        (ttlv.ItemType.Interval, "ttlv_value_view_interval", 45),
+        (ttlv.ItemType.DateTimeExtended, "ttlv_value_view_date_time_extended", -123),
+    ],
+)
+def test_materialize_value_dispatches_scalar_ttlv_types(
+    monkeypatch: pytest.MonkeyPatch,
+    item_type: ttlv.ItemType,
+    accessor_name: str,
+    expected: object,
+) -> None:
+    monkeypatch.setattr(ttlv, "ttlv_value_view_type", lambda _view: item_type)
+    monkeypatch.setattr(ttlv, accessor_name, lambda _view: expected)
+
+    assert messages._materialize_value(object()) == expected
+
+
+@pytest.mark.parametrize(
+    ("item_type", "data", "expected"),
+    [
+        (ttlv.ItemType.BigInteger, b"\x00\x80", b"\x00\x80"),
+        (ttlv.ItemType.TextString, b"hello", "hello"),
+        (ttlv.ItemType.ByteString, b"\x00\xff", b"\x00\xff"),
+    ],
+)
+def test_materialize_value_copies_byte_backed_ttlv_types(
+    monkeypatch: pytest.MonkeyPatch,
+    item_type: ttlv.ItemType,
+    data: bytes,
+    expected: object,
+) -> None:
+    monkeypatch.setattr(ttlv, "ttlv_value_view_type", lambda _view: item_type)
+    monkeypatch.setattr(ttlv, "ttlv_value_view_byte_length", lambda _view: len(data))
+    monkeypatch.setattr(ttlv, "ttlv_value_view_byte_at", lambda _view, index: data[index])
+
+    assert messages._materialize_value(object()) == expected
+
+
+def test_materialize_value_rejects_oversized_and_invalid_utf8_text(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    value_view = object()
+    monkeypatch.setattr(ttlv, "ttlv_value_view_type", lambda _view: ttlv.ItemType.ByteString)
+    monkeypatch.setattr(
+        ttlv, "ttlv_value_view_byte_length", lambda _view: messages._MAX_MESSAGE_BYTES + 1
+    )
+    with pytest.raises(messages.errors.ResourceLimitError):
+        messages._materialize_value(value_view)
+
+    monkeypatch.setattr(ttlv, "ttlv_value_view_type", lambda _view: ttlv.ItemType.TextString)
+    monkeypatch.setattr(ttlv, "ttlv_value_view_byte_length", lambda _view: 1)
+    monkeypatch.setattr(ttlv, "ttlv_value_view_byte_at", lambda _view, _index: 0xFF)
+    with pytest.raises(messages.errors.InvalidInputError):
+        messages._materialize_value(value_view)
+
+
+def test_duplicate_typed_structure_fields_close_all_owned_child_views() -> None:
+    limits = _limits()
+    duplicate = _structure(
+        [
+            (_AUTHENTICATION, _nested([], limits)),
+            (_AUTHENTICATION, _nested([], limits)),
+        ],
+        limits,
+    )
+    pointer, owner = duplicate._take()
+
+    def copy_duplicate(_handle: object, output: object) -> int:
+        output[0] = messages.ffi.cast("kmipkit_ttlv_structure_t *", pointer)  # type: ignore[index]
+        return 0
+
+    try:
+        with pytest.raises(messages.errors.InvalidInputError):
+            messages._field_value(
+                copy_duplicate,
+                SimpleNamespace(_pointer=lambda: messages.ffi.NULL),
+                _AUTHENTICATION,
+            )
+    finally:
+        limits.close()
+        del owner
+
+
+def test_field_materialization_failure_closes_value_view_and_ttlv_copy(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    limits = _limits()
+    source = _structure([(_CLIENT_CORRELATION_VALUE, _text(b"correlation", limits))], limits)
+    pointer, owner = source._take()
+    closed_views: list[bool] = []
+    close = ttlv.TtlvValueView.close
+
+    def track_close(value_view: ttlv.TtlvValueView) -> None:
+        close(value_view)
+        closed_views.append(value_view.closed)
+
+    def copy_source(_handle: object, output: object) -> int:
+        output[0] = messages.ffi.cast("kmipkit_ttlv_structure_t *", pointer)  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(ttlv.TtlvValueView, "close", track_close)
+    monkeypatch.setattr(
+        messages, "_materialize_value", lambda _value: (_ for _ in ()).throw(RuntimeError())
+    )
+    try:
+        with pytest.raises(RuntimeError):
+            messages._field_values(
+                copy_source,
+                SimpleNamespace(_pointer=lambda: messages.ffi.NULL),
+                _CLIENT_CORRELATION_VALUE,
+            )
+    finally:
+        limits.close()
+        del owner
+
+    assert closed_views
+    assert all(closed_views)

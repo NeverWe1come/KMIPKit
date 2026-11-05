@@ -6454,9 +6454,7 @@ static int async_item_value_at(
     kmipkit_ttlv_item_view_t **out_item,
     kmipkit_ttlv_value_view_t **out_value) {
     kmipkit_ttlv_item_view_t *item = 0;
-    kmipkit_ttlv_item_view_t *child_item = 0;
     kmipkit_ttlv_value_view_t *value = 0;
-    kmipkit_ttlv_value_view_t *child_value = 0;
     uint32_t actual_tag = 0;
     uint8_t actual_type = 0;
     if (view == 0 || out_item == 0 || out_value == 0 ||

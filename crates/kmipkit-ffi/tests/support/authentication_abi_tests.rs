@@ -55,6 +55,22 @@ fn authentication_consumes_ordered_credentials_and_keeps_views_owner_backed() {
     assert!(reference_handle(first, Kind::Credential).is_err());
     assert!(reference_handle(second, Kind::Credential).is_err());
 
+    let mut authentication_ttlv_view = ptr::null_mut();
+    assert_eq!(
+        kmipkit_authentication_ttlv_view(authentication, &raw mut authentication_ttlv_view),
+        SUCCESS
+    );
+    let mut authentication_item_count = 0;
+    assert_eq!(
+        kmipkit_ttlv_structure_view_item_count(
+            authentication_ttlv_view,
+            &raw mut authentication_item_count,
+        ),
+        SUCCESS
+    );
+    assert_eq!(authentication_item_count, 2);
+    kmipkit_ttlv_structure_view_release(authentication_ttlv_view);
+
     let mut count = u64::MAX;
     assert_eq!(
         kmipkit_authentication_credential_count(authentication, &raw mut count),

@@ -2,9 +2,9 @@ use std::fmt;
 use std::fmt::Write as _;
 
 use super::{
-    CLIENT_REQUIREMENTS, PROFILE_CONTEXT_INDEX_COMPARISONS, ProfileEvidenceRecord,
-    ProfileObjectState, ProfileReadiness, ProfileReadinessBlocker, ProfileTransport,
-    ProfileValidationContext, ProfileValidationError, ProfileValidationErrorCode,
+    CLIENT_REQUIREMENTS, PROFILE_CONTEXT_INDEX_COMPARISONS, ProfileBatchItemIndex,
+    ProfileEvidenceRecord, ProfileObjectState, ProfileReadiness, ProfileReadinessBlocker,
+    ProfileTransport, ProfileValidationContext, ProfileValidationError, ProfileValidationErrorCode,
     ProfileValidationResult, ProfileValidationSelection, RuleConstraint, RuleEvaluator,
     RuleTestEvidence, RuleTestKind, TYPED_RULE_MAPPINGS, TypedRuleMapping, UsageTotalMutation,
     bound_object_state, client_add_attribute_random_number_generator_is_well_formed,
@@ -26576,6 +26576,24 @@ fn profile_state_context_lookup_work_is_bounded_for_large_contexts() {
     assert!(
         lookup_steps <= ENTRY_COUNT * 32,
         "profile context lookup used {lookup_steps} index comparisons for {ENTRY_COUNT} states"
+    );
+}
+
+#[test]
+fn profile_batch_item_index_implements_equality_and_partial_order() {
+    let first = ProfileBatchItemIndex(3);
+    let equal = ProfileBatchItemIndex(3);
+    let later = ProfileBatchItemIndex(8);
+    PROFILE_CONTEXT_INDEX_COMPARISONS.with(|count| count.set(0));
+
+    assert_eq!(first, equal);
+    assert_eq!(first.partial_cmp(&later), Some(std::cmp::Ordering::Less));
+    assert_eq!(later.partial_cmp(&first), Some(std::cmp::Ordering::Greater));
+    assert_ne!(first, later);
+    assert_eq!(
+        PROFILE_CONTEXT_INDEX_COMPARISONS.with(std::cell::Cell::get),
+        4,
+        "equality and partial ordering should both use the counted comparison paths"
     );
 }
 

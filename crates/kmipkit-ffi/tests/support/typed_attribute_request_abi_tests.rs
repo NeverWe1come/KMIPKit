@@ -20,6 +20,35 @@ fn standalone_adjust_attribute_model_serializes_and_enters_a_batch() {
         SUCCESS
     );
 
+    let mut identifier_copy = empty_unique_identifier_output_v1();
+    assert_eq!(
+        client_abi::kmipkit_adjust_attribute_request_unique_identifier(
+            request,
+            &raw mut identifier_copy,
+        ),
+        SUCCESS
+    );
+    assert_eq!(
+        identifier_copy.kind,
+        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING
+    );
+    assert_eq!(identifier_copy.text_length, identifier.len() as u64);
+    assert!(!identifier_copy.text_data.is_null());
+
+    let mut adjustment_present = u8::MAX;
+    let mut adjustment_value_copy = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_adjust_attribute_request_adjustment_value(
+            request,
+            &raw mut adjustment_present,
+            &raw mut adjustment_value_copy,
+        ),
+        SUCCESS
+    );
+    assert_eq!(adjustment_present, 1);
+    assert!(!adjustment_value_copy.is_null());
+    kmipkit_ttlv_value_release(adjustment_value_copy);
+
     let mut payload_handle_ptr = ptr::null_mut();
     assert_eq!(
         client_abi::kmipkit_adjust_attribute_request_to_ttlv_payload(
@@ -75,6 +104,21 @@ fn standalone_delete_attribute_model_preserves_both_optional_selectors() {
         ),
         SUCCESS
     );
+
+    let mut identifier_copy = empty_unique_identifier_output_v1();
+    assert_eq!(
+        client_abi::kmipkit_delete_attribute_request_unique_identifier(
+            request,
+            &raw mut identifier_copy,
+        ),
+        SUCCESS
+    );
+    assert_eq!(
+        identifier_copy.kind,
+        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING
+    );
+    assert_eq!(identifier_copy.text_length, identifier.len() as u64);
+    assert!(!identifier_copy.text_data.is_null());
 
     let mut current_present = 0;
     let mut current_copy = ptr::null_mut();
@@ -162,6 +206,21 @@ fn standalone_modify_attribute_model_keeps_current_and_new_items_distinct() {
         SUCCESS
     );
 
+    let mut identifier_copy = empty_unique_identifier_output_v1();
+    assert_eq!(
+        client_abi::kmipkit_modify_attribute_request_unique_identifier(
+            request,
+            &raw mut identifier_copy,
+        ),
+        SUCCESS
+    );
+    assert_eq!(
+        identifier_copy.kind,
+        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING
+    );
+    assert_eq!(identifier_copy.text_length, identifier.len() as u64);
+    assert!(!identifier_copy.text_data.is_null());
+
     let mut current_present = 0;
     let mut current_copy = ptr::null_mut();
     assert_eq!(
@@ -238,6 +297,32 @@ fn standalone_set_attribute_model_serializes_and_enters_a_batch() {
         ),
         SUCCESS
     );
+
+    let mut identifier_copy = empty_unique_identifier_output_v1();
+    assert_eq!(
+        client_abi::kmipkit_set_attribute_request_unique_identifier(
+            request,
+            &raw mut identifier_copy,
+        ),
+        SUCCESS
+    );
+    assert_eq!(
+        identifier_copy.kind,
+        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING
+    );
+    assert_eq!(identifier_copy.text_length, identifier.len() as u64);
+    assert!(!identifier_copy.text_data.is_null());
+
+    let mut new_attribute_copy = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_set_attribute_request_new_attribute(
+            request,
+            &raw mut new_attribute_copy,
+        ),
+        SUCCESS
+    );
+    assert!(!new_attribute_copy.is_null());
+    kmipkit_ttlv_item_release(new_attribute_copy);
 
     let mut payload_handle_ptr = ptr::null_mut();
     assert_eq!(
@@ -440,6 +525,20 @@ fn text_identifier_record(identifier: &'static [u8]) -> kmipkit_unique_identifie
         reserved: 0,
         text_data: identifier.as_ptr(),
         text_length: u64::try_from(identifier.len()).expect("fixture length fits the ABI"),
+        enumeration_value: 0,
+        integer_value: 0,
+    }
+}
+
+fn empty_unique_identifier_output_v1() -> kmipkit_unique_identifier_v1_t {
+    kmipkit_unique_identifier_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_unique_identifier_v1_t>())
+            .expect("identifier record size fits ABI"),
+        abi_version: 1,
+        kind: 0,
+        reserved: 0,
+        text_data: ptr::null(),
+        text_length: 0,
         enumeration_value: 0,
         integer_value: 0,
     }

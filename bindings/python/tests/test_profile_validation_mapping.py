@@ -3,6 +3,7 @@ from __future__ import annotations
 import socket
 import threading
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -18,6 +19,152 @@ from kmipkit import (
 )
 
 _TLS_FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
+
+
+def _install_profile_validation_error_stub(
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    error_code: bytes | None = b"profile_error",
+    profile_id: bytes | None = None,
+    requirement_id: bytes | None = None,
+    source_id: bytes | None = None,
+    source_locator: bytes | None = None,
+    source_kind: int = 0,
+    index_present: int = 0,
+    batch_item_index: int = 0,
+    get_status: int = 0,
+    view_status: int = 0,
+    null_handle: bool = False,
+) -> list[object]:
+    released: list[object] = []
+    owners: list[object] = []
+    handle_type = client.ffi.typeof("kmipkit_profile_validation_error_t *")
+    handle = client.ffi.NULL if null_handle else client.ffi.cast(handle_type, 1)
+
+    def get_error(output: object) -> int:
+        output[0] = handle  # type: ignore[index]
+        return get_status
+
+    def view_error(_handle: object, output: object) -> int:
+        if view_status != 0:
+            return view_status
+
+        def span(data: bytes | None) -> tuple[object, int]:
+            if data is None:
+                return client.ffi.NULL, 0
+            owner = client.ffi.new("uint8_t[]", data)
+            owners.append(owner)
+            pointer = client.ffi.cast("const uint8_t *", owner)
+            return pointer, len(data)
+
+        for prefix, data in (
+            ("error_code", error_code),
+            ("profile_id", profile_id),
+            ("requirement_id", requirement_id),
+            ("source_id", source_id),
+            ("source_locator", source_locator),
+        ):
+            pointer, length = span(data)
+            setattr(output[0], f"{prefix}_data", pointer)  # type: ignore[index]
+            setattr(output[0], f"{prefix}_length", length)  # type: ignore[index]
+        output[0].source_kind = source_kind  # type: ignore[index,attr-defined]
+        output[0].batch_item_index_present = index_present  # type: ignore[index,attr-defined]
+        output[0].batch_item_index = batch_item_index  # type: ignore[index,attr-defined]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_last_error_profile_validation_error_get_v1=get_error,
+            kmipkit_profile_validation_error_view_get_v1=view_error,
+            kmipkit_profile_validation_error_release=lambda error: released.append(error),
+        ),
+    )
+    return released
+
+
+@pytest.mark.parametrize(
+    ("source_kind", "source_id", "source_locator", "expected_clause", "expected_gap"),
+    [
+        (0, None, None, None, None),
+        (1, b"clause-1", None, "clause-1", None),
+        (2, b"gap-1", b"docs/gap-1", None, "gap-1"),
+    ],
+)
+def test_profile_validation_error_view_converts_all_source_kinds_and_releases(
+    monkeypatch: pytest.MonkeyPatch,
+    source_kind: int,
+    source_id: bytes | None,
+    source_locator: bytes | None,
+    expected_clause: str | None,
+    expected_gap: str | None,
+) -> None:
+    released = _install_profile_validation_error_stub(
+        monkeypatch,
+        profile_id=b"profile-1",
+        requirement_id=b"requirement-1",
+        source_id=source_id,
+        source_locator=source_locator,
+        source_kind=source_kind,
+        index_present=1,
+        batch_item_index=7,
+    )
+
+    result = client._read_profile_validation_details()
+
+    assert result == errors.ProfileValidationDetails(
+        error_code="profile_error",
+        profile_id="profile-1",
+        requirement_id="requirement-1",
+        source_clause_id=expected_clause,
+        source_gap_id=expected_gap,
+        source_gap_locator=source_locator.decode() if source_locator else None,
+        batch_item_index=7,
+    )
+    assert len(released) == 1
+
+
+@pytest.mark.parametrize(
+    "record",
+    [
+        {"source_kind": 0, "source_id": b"unexpected"},
+        {"source_kind": 1},
+        {"source_kind": 1, "source_id": b"clause", "source_locator": b"unexpected"},
+        {"source_kind": 2, "source_locator": b"locator"},
+        {"source_kind": 2, "source_id": b"gap"},
+        {"source_kind": 3},
+        {"index_present": 2},
+        {"index_present": 0, "batch_item_index": 1},
+        {"error_code": None},
+        {"error_code": b"\xff"},
+        {"profile_id": b""},
+    ],
+)
+def test_profile_validation_error_view_rejects_malformed_metadata_and_releases(
+    monkeypatch: pytest.MonkeyPatch,
+    record: dict[str, object],
+) -> None:
+    released = _install_profile_validation_error_stub(monkeypatch, **record)
+
+    assert client._read_profile_validation_details() is None
+    assert len(released) == 1
+
+
+def test_profile_validation_error_view_handles_absent_error_and_failed_view(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    released = _install_profile_validation_error_stub(monkeypatch, get_status=1)
+    assert client._read_profile_validation_details() is None
+    assert released == []
+
+    released = _install_profile_validation_error_stub(monkeypatch, null_handle=True)
+    assert client._read_profile_validation_details() is None
+    assert released == []
+
+    released = _install_profile_validation_error_stub(monkeypatch, view_status=1)
+    assert client._read_profile_validation_details() is None
+    assert len(released) == 1
 
 
 def test_profile_transport_values_are_closed_and_match_the_abi() -> None:

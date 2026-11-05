@@ -258,6 +258,134 @@ fn registry_validate_and_inspect_preserve_matching_and_unrecognized_values() {
     kmipkit_extension_definition_release(definition);
 }
 
+fn assert_registry_validate_rejects_null_arguments() {
+    let mut registered = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_extension_registry_validate(
+            ptr::null_mut(),
+            ptr::null_mut(),
+            ptr::null_mut(),
+            ptr::null_mut(),
+            &raw mut registered,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(registered.is_null());
+    assert_eq!(
+        kmipkit_client_extension_registry_validate(
+            ptr::null_mut(),
+            ptr::null_mut(),
+            ptr::null_mut(),
+            ptr::null_mut(),
+            ptr::null_mut(),
+        ),
+        ERROR_INVALID_INPUT
+    );
+}
+
+fn assert_registry_inspect_rejects_invalid_inputs(
+    registry: *mut kmipkit_client_extension_registry_t,
+    value: *mut kmipkit_ttlv_structure_t,
+    limits: *mut kmipkit_codec_limits_t,
+) {
+    let invalid_utf8 = [0xff];
+    let mut recognition = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_extension_registry_inspect(
+            registry,
+            invalid_utf8.as_ptr(),
+            1,
+            value,
+            &raw mut recognition,
+            limits,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(recognition.is_null());
+    assert_eq!(
+        kmipkit_client_extension_registry_inspect(
+            registry,
+            ptr::null(),
+            1,
+            value,
+            &raw mut recognition,
+            limits,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(recognition.is_null());
+    assert_eq!(
+        kmipkit_client_extension_registry_inspect(
+            registry,
+            b"example.vendor".as_ptr(),
+            14,
+            ptr::null_mut(),
+            &raw mut recognition,
+            limits,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(recognition.is_null());
+    assert_eq!(
+        kmipkit_client_extension_registry_inspect(
+            registry,
+            b"example.vendor".as_ptr(),
+            14,
+            value,
+            ptr::null_mut(),
+            limits,
+        ),
+        ERROR_INVALID_INPUT
+    );
+}
+
+fn assert_registry_validate_rejects_invalid_value(
+    registry: *mut kmipkit_client_extension_registry_t,
+    identity: *mut kmipkit_extension_identity_t,
+    limits: *mut kmipkit_codec_limits_t,
+) {
+    let mut registered = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_extension_registry_validate(
+            registry,
+            identity,
+            ptr::null_mut(),
+            limits,
+            &raw mut registered,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(registered.is_null());
+}
+
+#[test]
+fn registry_validate_and_inspect_preflight_rejects_invalid_arguments() {
+    assert_registry_validate_rejects_null_arguments();
+    let definition = definition_handle();
+    let mut definitions = [definition];
+    let (status, registry) = call_registry_create(&mut definitions, 2);
+    assert_eq!(status, SUCCESS);
+    assert!(!registry.is_null());
+    let mut identity = ptr::null_mut();
+    assert_eq!(
+        kmipkit_extension_definition_identity(definition, &raw mut identity),
+        SUCCESS
+    );
+    let limits = make_handle(
+        Kind::CodecLimits,
+        HandleValue::CodecLimits(Arc::new(CodecLimits::defaults())),
+    );
+    let value = marker_extension_structure(Value::text_string("marker".to_owned()));
+    assert_registry_inspect_rejects_invalid_inputs(registry, value, limits);
+    assert_registry_validate_rejects_invalid_value(registry, identity, limits);
+
+    kmipkit_ttlv_structure_release(value);
+    kmipkit_codec_limits_release(limits);
+    kmipkit_extension_identity_release(identity);
+    kmipkit_client_extension_registry_release(registry);
+    kmipkit_extension_definition_release(definition);
+}
+
 fn assert_matching_extension_is_registered(
     registry: *mut kmipkit_client_extension_registry_t,
     identity: *mut kmipkit_extension_identity_t,

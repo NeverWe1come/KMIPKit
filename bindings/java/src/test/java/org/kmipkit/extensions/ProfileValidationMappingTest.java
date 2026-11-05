@@ -212,6 +212,38 @@ final class ProfileValidationMappingTest {
     }
 
     @Test
+    void jniProfileValidationContextRejectsMalformedArraysAndIdentifiersBeforeHandleValidation() {
+        NativeExtensionRegistry.ensureLoaded();
+        long[] itemIndexes = {0};
+        String[] uniqueIdentifiers = {"object-7"};
+        int[] knownFields = {1};
+        int[] booleanValues = {0};
+        long[] usageLimitsTotals = {0};
+        long[] usageLimitsCounts = {0};
+
+        try (TtlvStructure request = TtlvStructure.create();
+                TtlvStructure response = TtlvStructure.create()) {
+            long wrongKindResult = request.handle();
+            long requestHandle = request.handle();
+            long responseHandle = response.handle();
+
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.profileValidationResultValidateRequestWithContext(
+                            wrongKindResult, requestHandle, new long[0], uniqueIdentifiers,
+                            knownFields, booleanValues, usageLimitsTotals, usageLimitsCounts));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.profileValidationResultValidateRequestWithContext(
+                            wrongKindResult, requestHandle, itemIndexes, new String[] {null},
+                            knownFields, booleanValues, usageLimitsTotals, usageLimitsCounts));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.profileValidationResultValidateResponseWithContext(
+                            wrongKindResult, requestHandle, responseHandle, itemIndexes,
+                            new String[] {"\ud800"}, knownFields, booleanValues,
+                            usageLimitsTotals, usageLimitsCounts));
+        }
+    }
+
+    @Test
     void selectionValidationFailsClosedWithRedactedSourceBackedDetails() {
         String selectedBaseline = "KMIPKIT-PROFILE-BASELINE-CLIENT";
         ProfileValidationException failure = assertThrows(
