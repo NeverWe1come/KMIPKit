@@ -67,7 +67,6 @@ impl_typed_request_validation! {
     GetUsageAllocationRequest => GetUsageAllocation,
     ImportRequest => Import,
     InteropRequest => Interop,
-    JoinSplitKeyRequest => JoinSplitKey,
     LocateRequest => Locate,
     LogRequest => Log,
     LoginRequest => Login,
@@ -184,6 +183,36 @@ impl ValidateKmipRequest for QueryRequest {
             )
         } else {
             ValidationReport::default()
+        }
+    }
+}
+
+impl ValidateKmipRequest for JoinSplitKeyRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::JoinSplitKey;
+
+    fn validate(&self) -> ValidationReport {
+        match self.validate_request_shape() {
+            Ok(()) => ValidationReport::default(),
+            Err(crate::join_split_key::JoinSplitKeyValidationFailure::Attributes) => {
+                crate::validation::request_issue_report(
+                    "KMIPKIT-0051-P005",
+                    "Attributes",
+                    crate::ValidationSourceRef::Oasis {
+                        document: "KMIP v2.1",
+                        reference: "§4, Table 46; §6.1.27, Table 244",
+                    },
+                )
+            }
+            Err(crate::join_split_key::JoinSplitKeyValidationFailure::References) => {
+                crate::validation::request_issue_report(
+                    "KMIPKIT-0051-P005",
+                    "Unique Identifier",
+                    crate::ValidationSourceRef::Oasis {
+                        document: "KMIP v2.1",
+                        reference: "§6.1.27, Table 244; §2.8, Table 9",
+                    },
+                )
+            }
         }
     }
 }
