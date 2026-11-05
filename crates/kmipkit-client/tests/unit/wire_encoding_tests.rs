@@ -6,10 +6,14 @@
 
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::io;
 use std::sync::Arc;
 
 use kmipkit_protocol::ProtocolCauseCategory;
-use kmipkit_transport::{RequestDeliveryState, TimeoutLimit};
+use kmipkit_transport::{
+    RequestDeliveryState, TimeoutLimit, Transport, TransportCauseCategory, TransportError,
+    TransportResponse,
+};
 use kmipkit_ttlv::codec::{CodecLimits, decode_with_limits};
 use kmipkit_ttlv::{Item, ValueView};
 
@@ -220,6 +224,51 @@ fn mismatched_response_formats_return_redacted_protocol_errors_without_retry_or_
             }
         }
     }
+}
+
+struct EncodingMismatchTransport;
+
+impl Transport for EncodingMismatchTransport {
+    fn exchange(
+        &mut self,
+        _request: &[u8],
+        _max_response_bytes: usize,
+    ) -> Result<TransportResponse, TransportError> {
+        Err(TransportError::new(
+            RequestDeliveryState::ResponseStarted,
+            TransportCauseCategory::EncodingMismatch,
+            io::Error::other("private response media type"),
+        ))
+    }
+}
+
+#[test]
+fn transport_encoding_mismatch_becomes_a_redacted_protocol_error() {
+    let mut client = Client::for_test_with_configuration(
+        EncodingMismatchTransport,
+        configuration().with_wire_encoding(WireEncoding::Json),
+    );
+
+    let error = client
+        .execute(batch(), &CodecLimits::defaults())
+        .expect_err("a response encoded differently from the request is rejected");
+
+    assert_eq!(
+        error.category(),
+        crate::ClientErrorCategory::Protocol
+    );
+    assert_eq!(
+        error.cause_category(),
+        Some(ClientCauseCategory::Protocol(
+            ProtocolCauseCategory::InvalidEncoding
+        ))
+    );
+    assert_eq!(
+        error.delivery_state(),
+        Some(RequestDeliveryState::ResponseStarted)
+    );
+    assert!(!error.to_string().contains("private response media type"));
+    assert!(!format!("{error:?}").contains("private response media type"));
 }
 
 #[test]
