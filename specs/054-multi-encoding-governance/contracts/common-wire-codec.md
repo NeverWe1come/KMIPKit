@@ -38,8 +38,9 @@ client selector and common dispatch are introduced only by KMIPKIT-0057.
   tag-to-Enumeration-family mappings from the private metadata generated
   offline by `tools/normative_catalog/generate_wire_names.py` from the reviewed
   catalog; builds never scrape or download OASIS sources. The generated Rust
-  module includes a TSV resource rather than expanding every catalog row into
-  repeated Rust tuple syntax. Records use `T<TAB>tag-hex<TAB>tag-name`,
+  module embeds a TSV document in one raw string literal rather than expanding
+  every catalog row into repeated Rust tuple syntax or an unsupported macro.
+  Records use `T<TAB>tag-hex<TAB>tag-name`,
   `F<TAB>tag-hex<TAB>enumeration-family`, or
   `E<TAB>enumeration-family<TAB>value-hex<TAB>value-name`, in that order and
   sorted within each record type. Hex values are uppercase and fixed-width.
