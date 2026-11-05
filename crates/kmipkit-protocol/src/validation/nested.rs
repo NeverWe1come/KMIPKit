@@ -279,6 +279,96 @@ const DERIVATION_PARAMETERS_FIELDS: &[FieldDescriptor] = &[
     },
 ];
 
+const KEY_WRAPPING_SPECIFICATION_FIELDS: &[FieldDescriptor] = &[
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R229",
+        name: "Wrapping Method",
+        tag: FieldTag::Exact(0x0042_009E),
+        types: TYPE_ENUMERATION,
+        min_count: 1,
+        max_count: Some(1),
+        nested_schema: None,
+    },
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R230",
+        name: "Encryption Key Information",
+        tag: FieldTag::Exact(0x0042_0036),
+        types: TYPE_STRUCTURE,
+        min_count: 0,
+        max_count: Some(1),
+        nested_schema: Some(NestedStructureSchema::EncryptionKeyInformation),
+    },
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R231",
+        name: "MAC/Signature Key Information",
+        tag: FieldTag::Exact(0x0042_004E),
+        types: TYPE_STRUCTURE,
+        min_count: 0,
+        max_count: Some(1),
+        nested_schema: Some(NestedStructureSchema::MacSignatureKeyInformation),
+    },
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R232",
+        name: "Attribute Name",
+        tag: FieldTag::Exact(0x0042_000A),
+        types: TYPE_TEXT_STRING,
+        min_count: 0,
+        max_count: None,
+        nested_schema: None,
+    },
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R233",
+        name: "Encoding Option",
+        tag: FieldTag::Exact(0x0042_00A3),
+        types: TYPE_ENUMERATION,
+        min_count: 0,
+        max_count: Some(1),
+        nested_schema: None,
+    },
+];
+
+const ENCRYPTION_KEY_INFORMATION_FIELDS: &[FieldDescriptor] = &[
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R234",
+        name: "Unique Identifier",
+        tag: FieldTag::Exact(0x0042_0094),
+        types: TYPE_TEXT_STRING,
+        min_count: 1,
+        max_count: Some(1),
+        nested_schema: None,
+    },
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R235",
+        name: "Cryptographic Parameters",
+        tag: FieldTag::Exact(0x0042_002B),
+        types: TYPE_STRUCTURE,
+        min_count: 0,
+        max_count: Some(1),
+        nested_schema: Some(NestedStructureSchema::CryptographicParameters),
+    },
+];
+
+const MAC_SIGNATURE_KEY_INFORMATION_FIELDS: &[FieldDescriptor] = &[
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R234",
+        name: "Unique Identifier",
+        tag: FieldTag::Exact(0x0042_0094),
+        types: TYPE_TEXT_STRING,
+        min_count: 1,
+        max_count: Some(1),
+        nested_schema: None,
+    },
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R235",
+        name: "Cryptographic Parameters",
+        tag: FieldTag::Exact(0x0042_002B),
+        types: TYPE_STRUCTURE,
+        min_count: 0,
+        max_count: Some(1),
+        nested_schema: Some(NestedStructureSchema::CryptographicParameters),
+    },
+];
+
 const BLOCK_CIPHER_MODE: u32 = 0x0042_0011;
 const IV_LENGTH: u32 = 0x0042_00CD;
 const TAG_LENGTH: u32 = 0x0042_00CE;
@@ -307,6 +397,9 @@ pub(super) fn validate_nested_with_prefix(
     }
     if schema == NestedStructureSchema::CryptographicParameters {
         validate_cryptographic_parameter_requirements(structure, prefix, &mut report);
+    }
+    if schema == NestedStructureSchema::KeyWrappingSpecification {
+        validate_key_wrapping_information_alternative(structure, prefix, &mut report);
     }
 
     report
@@ -434,8 +527,42 @@ fn descriptor(schema: NestedStructureSchema) -> RequestSchemaDescriptor {
         NestedStructureSchema::DerivationParameters => {
             ("§7.12, Table 364", DERIVATION_PARAMETERS_FIELDS)
         }
+        NestedStructureSchema::KeyWrappingSpecification => {
+            ("§7.18, Table 370", KEY_WRAPPING_SPECIFICATION_FIELDS)
+        }
+        NestedStructureSchema::EncryptionKeyInformation => {
+            ("§3.3, Table 16", ENCRYPTION_KEY_INFORMATION_FIELDS)
+        }
+        NestedStructureSchema::MacSignatureKeyInformation => {
+            ("§3.3, Table 17", MAC_SIGNATURE_KEY_INFORMATION_FIELDS)
+        }
     };
     RequestSchemaDescriptor { source, fields }
+}
+
+fn validate_key_wrapping_information_alternative(
+    structure: &StructureView<'_>,
+    prefix: &ValidationPath,
+    report: &mut ValidationReport,
+) {
+    const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
+    const MAC_SIGNATURE_KEY_INFORMATION: u32 = 0x0042_004E;
+
+    if has_tag(structure, ENCRYPTION_KEY_INFORMATION)
+        || has_tag(structure, MAC_SIGNATURE_KEY_INFORMATION)
+    {
+        return;
+    }
+
+    report.push(ValidationIssue::new(
+        ValidationCode::new("KMIPKIT-0051-R236"),
+        prefix.clone().field("Encryption Key Information"),
+        ValidationSeverity::Error,
+        ValidationSourceRef::Oasis {
+            document: "KMIP v2.1",
+            reference: "§7.18, Table 370",
+        },
+    ));
 }
 
 fn validate_cryptographic_parameter_requirements(

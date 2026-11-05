@@ -75,6 +75,12 @@ pub enum NestedStructureSchema {
     CryptographicParameters,
     /// The §7.12 Derivation Parameters structure.
     DerivationParameters,
+    /// The §7.18 Key Wrapping Specification structure.
+    KeyWrappingSpecification,
+    /// The §3.3 Encryption Key Information structure.
+    EncryptionKeyInformation,
+    /// The §3.3 MAC/Signature Key Information structure.
+    MacSignatureKeyInformation,
 }
 
 #[derive(Clone, Copy)]

@@ -1133,7 +1133,7 @@ static EXPORT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::KeyWrappingSpecification),
     },
 ];
 
@@ -1181,7 +1181,7 @@ static GET_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::KeyWrappingSpecification),
     },
 ];
 

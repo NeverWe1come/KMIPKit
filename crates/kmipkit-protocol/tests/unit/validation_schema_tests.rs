@@ -12,6 +12,8 @@ const KEY_WRAPPING_SPECIFICATION: u32 = 0x0042_0047;
 const WRAPPING_METHOD: u32 = 0x0042_009E;
 const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+const MAC_SIGNATURE_KEY_INFORMATION: u32 = 0x0042_004E;
+const ATTRIBUTE_NAME: u32 = 0x0042_000A;
 
 fn item(tag: u32, value: Value) -> Item {
     let raw_tag = RawTag::new(tag).expect("fixture tag fits the TTLV tag field");
@@ -255,6 +257,69 @@ fn get_payload_recursively_validates_key_wrapping_specification() {
         })
         .expect("wrong Wrapping Method TTLV type is reported recursively");
     assert_eq!(issue.source().to_string(), "KMIP v2.1 §7.18, Table 370");
+}
+
+#[test]
+fn key_wrapping_specification_requires_key_information_but_allows_both_forms() {
+    let missing_information = structure([item(WRAPPING_METHOD, Value::enumeration(1))]);
+    let missing_report = validate_structure(
+        &missing_information.view(),
+        Some(ValidationSchema::Nested(
+            NestedStructureSchema::KeyWrappingSpecification,
+        )),
+    );
+    assert!(missing_report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R236"
+            && issue.path().to_string() == "Encryption Key Information"
+    }));
+
+    let encryption_information = structure([item(
+        UNIQUE_IDENTIFIER,
+        Value::text_string("encryption-key".to_owned()),
+    )]);
+    let mac_information = structure([item(
+        UNIQUE_IDENTIFIER,
+        Value::text_string("mac-key".to_owned()),
+    )]);
+    let wrapping = structure([
+        item(WRAPPING_METHOD, Value::enumeration(1)),
+        item(
+            ENCRYPTION_KEY_INFORMATION,
+            Value::structure(encryption_information),
+        ),
+        item(
+            MAC_SIGNATURE_KEY_INFORMATION,
+            Value::structure(mac_information),
+        ),
+        item(ATTRIBUTE_NAME, Value::text_string("Name".to_owned())),
+        item(ATTRIBUTE_NAME, Value::text_string("Comment".to_owned())),
+    ]);
+    let both_report = validate_structure(
+        &wrapping.view(),
+        Some(ValidationSchema::Nested(
+            NestedStructureSchema::KeyWrappingSpecification,
+        )),
+    );
+    assert!(
+        both_report.is_valid(),
+        "both key-information alternatives are allowed"
+    );
+}
+
+#[test]
+fn key_information_requires_text_string_unique_identifier() {
+    let information = structure([item(UNIQUE_IDENTIFIER, Value::enumeration(7))]);
+    let report = validate_structure(
+        &information.view(),
+        Some(ValidationSchema::Nested(
+            NestedStructureSchema::EncryptionKeyInformation,
+        )),
+    );
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.path().to_string() == "Unique Identifier"
+            && issue.source().to_string() == "KMIP v2.1 §3.3, Table 16"
+    }));
 }
 
 #[test]
