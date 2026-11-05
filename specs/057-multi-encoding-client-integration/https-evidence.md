@@ -34,3 +34,23 @@ No production code was changed before this run.
 
 Cargo reports existing AWS-LC build diagnostics about the optional stdalign
 compiler probe and missing NASM; the Rust target builds and runs the tests.
+
+## GREEN
+
+The HTTPS exchange resolves `RequestOptions::wire_encoding()` once, with TTLV
+for `None`, and carries the matching static media type through its worker.
+Request construction and response validation consume that same value.
+Response type rejection happens before the KMIPKit body allocation. The
+existing framing, byte limits, zeroizing owners, delivery tracking, and
+connection cleanup continue to apply to every format.
+
+```text
+cargo fmt --all
+cargo test -p kmipkit-transport --test https encoding_tests -- --nocapture
+cargo test -p kmipkit-transport --all-features
+```
+
+Results: all commands exit 0. The six focused encoding tests pass. The full
+transport crate suite passes 624 unit/integration tests and 5 doc tests,
+including 115 tests in the HTTPS target. The existing AWS-LC build diagnostics
+described above remain present.

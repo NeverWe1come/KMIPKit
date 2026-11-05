@@ -32,7 +32,14 @@ fn response_content_type_validation_accepts_octet_stream_with_parameters() {
         HeaderValue::from_static("Application/Octet-Stream; version=1"),
     );
 
-    assert!(validate_response_content_type(&headers, &response_started_control()).is_ok());
+    assert!(
+        validate_response_content_type(
+            &headers,
+            "application/octet-stream",
+            &response_started_control()
+        )
+        .is_ok()
+    );
 }
 
 #[test]
@@ -41,7 +48,8 @@ fn response_content_type_validation_rejects_missing_duplicate_invalid_and_unsupp
 
     let missing = HeaderMap::new();
     assert_http_response_error(
-        validate_response_content_type(&missing, &control).expect_err("Content-Type is required"),
+        validate_response_content_type(&missing, "application/octet-stream", &control)
+            .expect_err("Content-Type is required"),
     );
 
     let mut duplicate = HeaderMap::new();
@@ -54,7 +62,7 @@ fn response_content_type_validation_rejects_missing_duplicate_invalid_and_unsupp
         HeaderValue::from_static("application/octet-stream"),
     );
     assert_http_response_error(
-        validate_response_content_type(&duplicate, &control)
+        validate_response_content_type(&duplicate, "application/octet-stream", &control)
             .expect_err("duplicate Content-Type fields are rejected"),
     );
 
@@ -65,14 +73,14 @@ fn response_content_type_validation_rejects_missing_duplicate_invalid_and_unsupp
             .expect("HTTP header values preserve obs-text octets"),
     );
     assert_http_response_error(
-        validate_response_content_type(&invalid, &control)
+        validate_response_content_type(&invalid, "application/octet-stream", &control)
             .expect_err("non-ASCII Content-Type is rejected"),
     );
 
     let mut unsupported = HeaderMap::new();
     unsupported.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
     assert_http_response_error(
-        validate_response_content_type(&unsupported, &control)
+        validate_response_content_type(&unsupported, "application/octet-stream", &control)
             .expect_err("unsupported media types are rejected"),
     );
 }
