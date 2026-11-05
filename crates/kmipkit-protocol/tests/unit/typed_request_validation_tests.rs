@@ -12,7 +12,7 @@ use crate::{
     RecoverRequest, RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason,
     RevokeRequest, RngRetrieveRequest, RngSeedRequest, SecretBytes, SetAttributeRequest,
     SetConstraintsRequest, SetDefaultsRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
-    ValidateKmipRequest, ValidateRequest,
+    SplitKeyReference, UniqueIdentifier, ValidateKmipRequest, ValidateRequest,
 };
 use kmipkit_ttlv::{Item, RawTag, Value};
 
@@ -275,6 +275,41 @@ fn query_validation_rejects_reserved_function_but_preserves_extension_values() {
 
     let extension = QueryRequest::new([QueryFunction::from_raw(0x8000_0042)]).validate();
     assert!(extension.is_valid());
+}
+
+#[test]
+fn join_split_key_validation_checks_references_and_attribute_multiplicity() {
+    let missing_references = JoinSplitKeyRequest::new(ObjectType::from_raw(7), Vec::new());
+    let report = missing_references.validate();
+    assert!(!report.is_valid());
+    assert_eq!(
+        report.issues()[0].source().to_string(),
+        "KMIP v2.1 §6.1.27, Table 244; §2.8, Table 9"
+    );
+
+    let comment = RawTag::new(0x0042_00fd)
+        .expect("Comment is a valid raw tag")
+        .try_checked()
+        .expect("Comment is an allocated KMIP tag");
+    let attributes = AttributeSet::try_new([
+        Item::new(comment, Value::text_string("first".to_owned()))
+            .expect("first Comment is valid TTLV"),
+        Item::new(comment, Value::text_string("second".to_owned()))
+            .expect("second Comment is valid TTLV"),
+    ])
+    .expect("generic AttributeSet preserves operation-level multiplicity violations");
+    let reference = || {
+        SplitKeyReference::new(UniqueIdentifier::TextString("split-key".to_owned()))
+            .with_split_key_threshold(1)
+    };
+    let request = JoinSplitKeyRequest::new(ObjectType::from_raw(7), vec![reference(), reference()])
+        .with_attributes(attributes);
+    let report = request.validate();
+    assert!(!report.is_valid());
+    assert_eq!(
+        report.issues()[0].source().to_string(),
+        "KMIP v2.1 §4, Table 46; §6.1.27, Table 244"
+    );
 }
 
 #[test]
