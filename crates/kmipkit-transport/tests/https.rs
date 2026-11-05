@@ -42,6 +42,9 @@ mod tls;
 #[allow(dead_code)]
 mod worker;
 
+#[path = "unit/https_encoding_tests.rs"]
+mod encoding_tests;
+
 pub use config::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestOptions,
     RevocationListInput, TimeoutLimit, TimeoutPolicy, TransportConfig, TransportConfigBuilder,
@@ -1732,6 +1735,18 @@ fn spawn_retry_probe_peer(
     listener: TcpListener,
     configuration: Arc<ServerConfig>,
 ) -> JoinHandle<RetryPeerObservation> {
+    spawn_retry_probe_peer_with_response(
+        listener,
+        configuration,
+        b"HTTP/1.1 503 Service Unavailable\r\nContent-Type: application/octet-stream\r\nContent-Length: 0\r\nConnection: close\r\n\r\n".to_vec(),
+    )
+}
+
+fn spawn_retry_probe_peer_with_response(
+    listener: TcpListener,
+    configuration: Arc<ServerConfig>,
+    response: Vec<u8>,
+) -> JoinHandle<RetryPeerObservation> {
     thread::spawn(move || {
         let _ = listener.set_nonblocking(true);
         let accept_deadline = Instant::now() + Duration::from_millis(750);
@@ -1771,8 +1786,7 @@ fn spawn_retry_probe_peer(
             }
             if let Some(request) = read_request(&mut tls) {
                 observation.requests.push(request);
-                let response = b"HTTP/1.1 503 Service Unavailable\r\nContent-Type: application/octet-stream\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
-                let _ = tls.write_all(response);
+                let _ = tls.write_all(&response);
                 tls.conn.send_close_notify();
                 let _ = tls.flush();
             }
