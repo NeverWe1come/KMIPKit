@@ -91,6 +91,49 @@ class WireNameRenderingTests(unittest.TestCase):
         )
         self.assertNotIn("Extensions", rendered)
 
+    def test_maps_enum_typed_tag_to_same_named_enumeration_family(self) -> None:
+        catalog = {
+            "elements": [
+                {
+                    "kind": "tag",
+                    "allocation": "assigned",
+                    "wire_value": "420074",
+                    "name": "Query Function",
+                    "parent_element_ids": ["ENUMERATION-TAG"],
+                },
+                {
+                    "kind": "enumeration",
+                    "element_id": "ENUMERATION-TAG",
+                    "name": "Tag",
+                },
+                {
+                    "kind": "enumeration",
+                    "element_id": "ENUM-QUERY-FUNCTION",
+                    "name": "Query Function",
+                },
+                {
+                    "kind": "enumeration_value",
+                    "allocation": "assigned",
+                    "parent_element_ids": ["ENUM-QUERY-FUNCTION"],
+                    "wire_value": "00000001",
+                    "name": "Query Operations",
+                },
+            ]
+        }
+
+        self.assertEqual(_tag_enumeration_families(catalog), [(0x420074, "Query Function")])
+
+    def test_same_named_tag_without_enumeration_type_parent_is_not_inferred(self) -> None:
+        catalog = {
+            "elements": [
+                {"kind": "tag", "allocation": "assigned", "wire_value": "420074", "name": "Query Function"},
+                {"kind": "enumeration", "element_id": "ENUMERATION-TAG", "name": "Tag"},
+                {"kind": "enumeration", "element_id": "ENUM-QUERY-FUNCTION", "name": "Query Function"},
+            ]
+        }
+
+        self.assertEqual(_tag_enumeration_families(catalog), [])
+
     def test_renders_mask_families_and_assigned_flags_in_stable_order(self) -> None:
         catalog = {
             "elements": [
@@ -247,6 +290,7 @@ class WireNameRenderingTests(unittest.TestCase):
         self.assertEqual(sum(line.startswith("M\t") for line in rendered), 3)
         self.assertEqual(sum(line.startswith("B\t") for line in rendered), 33)
         self.assertFalse(any("\tExtensions" in line for line in rendered))
+        self.assertIn((0x420074, "Query Function"), _tag_enumeration_families(catalog))
 
     def test_renders_catalog_metadata_inside_a_raw_rust_literal(self) -> None:
         catalog = {"elements": [{"kind": "tag", "allocation": "assigned", "wire_value": "420001", "name": "Activation Date"}]}
