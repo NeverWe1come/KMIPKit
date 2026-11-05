@@ -740,7 +740,9 @@ fn register_schema_recursively_checks_key_block_fields() {
 
     let report = validate_structure(
         &payload.view(),
-        Some(ValidationSchema::RequestPayload(RequestPayloadSchema::Register)),
+        Some(ValidationSchema::RequestPayload(
+            RequestPayloadSchema::Register,
+        )),
     );
 
     assert!(report.issues().iter().any(|issue| {
@@ -763,14 +765,35 @@ fn register_schema_checks_both_required_opaque_object_fields() {
 
     let report = validate_structure(
         &payload.view(),
-        Some(ValidationSchema::RequestPayload(RequestPayloadSchema::Register)),
+        Some(ValidationSchema::RequestPayload(
+            RequestPayloadSchema::Register,
+        )),
     );
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R269"
+        issue.code().as_str() == "KMIPKIT-0051-R270"
             && issue.path().to_string()
                 == "Request Payload.Any Object (Section 2).Opaque Data Value"
             && issue.source().to_string() == "KMIP v2.1 §2.3, Table 4"
+    }));
+}
+
+#[test]
+fn key_block_requires_length_when_algorithm_is_present() {
+    let key_block = structure([
+        item(KEY_FORMAT_TYPE, Value::enumeration(0x8000_0001)),
+        item(0x0042_0028, Value::enumeration(0x8000_0002)),
+    ]);
+
+    let report = validate_structure(
+        &key_block.view(),
+        Some(ValidationSchema::Nested(NestedStructureSchema::KeyBlock)),
+    );
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R266"
+            && issue.path().to_string() == "Cryptographic Length"
+            && issue.source().to_string() == "KMIP v2.1 §3.1, Table 12"
     }));
 }
 
