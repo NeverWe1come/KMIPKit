@@ -24,6 +24,17 @@ static TEMP_DIRECTORY_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 unsafe extern "C" {
     fn kmipkit_extension_registry_c_consumer_main(argc: i32, argv: *mut *mut c_char) -> i32;
     fn kmipkit_public_client_surface_probe() -> i32;
+    fn kmipkit_public_client_execute_json_override(
+        port: u16,
+        leaf_certificate: *const u8,
+        leaf_certificate_length: u64,
+        intermediate_certificate: *const u8,
+        intermediate_certificate_length: u64,
+        private_key: *const u8,
+        private_key_length: u64,
+        trust_root: *const u8,
+        trust_root_length: u64,
+    ) -> i32;
 }
 
 #[link(name = "kmipkit_ffi")]
@@ -111,6 +122,80 @@ fn public_c_header_constructs_a_batch_and_reaches_the_encoding_override_entrypoi
     // only null client inputs to the override entry point, so it performs no I/O.
     let status = unsafe { kmipkit_public_client_surface_probe() };
     assert_eq!(status, 0, "public C declarations and ABI calls must agree");
+}
+
+#[test]
+fn public_c_client_executes_a_valid_json_override_over_mutual_tls() {
+    const JSON_RESPONSE: &[u8] = br#"{"tag":"ResponseMessage","value":[{"tag":"ResponseHeader","value":[{"tag":"ProtocolVersion","value":[{"tag":"ProtocolVersionMajor","type":"Integer","value":2},{"tag":"ProtocolVersionMinor","type":"Integer","value":1}]},{"tag":"TimeStamp","type":"DateTime","value":"1970-01-01T00:00:01Z"},{"tag":"BatchCount","type":"Integer","value":1}]},{"tag":"BatchItem","value":[{"tag":"Operation","type":"Enumeration","value":"DiscoverVersions"},{"tag":"ResultStatus","type":"Enumeration","value":"Success"},{"tag":"ResponsePayload","value":[]}]}]}"#;
+
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
+    let identity = pki.client_identity();
+    let certificates = identity.certificate_chain_der();
+    let listener = TcpListener::bind(("127.0.0.1", 0))
+        .expect("an ephemeral local TLS port is available");
+    let port = listener
+        .local_addr()
+        .expect("the fake TLS server has a local address")
+        .port();
+    listener
+        .set_nonblocking(true)
+        .expect("the fake TLS peer can bound its accept wait");
+    let server_config = mtls_server_config(&pki);
+    let peer = thread::spawn(move || -> io::Result<()> {
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(3);
+        let (stream, _) = loop {
+            match listener.accept() {
+                Ok(accepted) => break accepted,
+                Err(error) if error.kind() == io::ErrorKind::WouldBlock => {
+                    if std::time::Instant::now() >= deadline {
+                        return Err(io::Error::new(
+                            io::ErrorKind::TimedOut,
+                            "the public C client did not connect",
+                        ));
+                    }
+                    thread::sleep(std::time::Duration::from_millis(5));
+                }
+                Err(error) => return Err(error),
+            }
+        };
+        stream.set_read_timeout(Some(std::time::Duration::from_secs(5)))?;
+        stream.set_write_timeout(Some(std::time::Duration::from_secs(5)))?;
+        let connection = ServerConnection::new(server_config)
+            .expect("the mutual-TLS server configuration is valid");
+        let mut tls = StreamOwned::new(connection, stream);
+        let request = read_json_document(&mut tls)?;
+        if !request.starts_with(b"{") || !request.windows(22).any(|window| window == b"\"tag\":\"RequestMessage\"") {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "C override did not send a JSON RequestMessage",
+            ));
+        }
+        tls.write_all(JSON_RESPONSE)?;
+        tls.flush()?;
+        let _ = tls.get_ref().shutdown(Shutdown::Both);
+        Ok(())
+    });
+
+    // SAFETY: every pointer refers to immutable certificate/key bytes owned by
+    // `pki` and remains live throughout the synchronous C call.
+    let status = unsafe {
+        kmipkit_public_client_execute_json_override(
+            port,
+            certificates[0].as_ptr(),
+            u64::try_from(certificates[0].len()).expect("certificate length fits the ABI"),
+            certificates[1].as_ptr(),
+            u64::try_from(certificates[1].len()).expect("certificate length fits the ABI"),
+            identity.private_key_der().as_ptr(),
+            u64::try_from(identity.private_key_der().len()).expect("key length fits the ABI"),
+            pki.authority_certificate_der().as_ptr(),
+            u64::try_from(pki.authority_certificate_der().len())
+                .expect("trust certificate length fits the ABI"),
+        )
+    };
+    let peer_result = peer.join().expect("the local JSON TLS peer thread completes");
+
+    assert_eq!(status, 0, "public C construction and JSON exchange succeed");
+    peer_result.expect("the peer accepted a JSON request and returned its response");
 }
 
 fn controlled_mtls_peer(
@@ -294,6 +379,52 @@ fn read_ttlv_frame(stream: &mut impl Read) -> io::Result<Vec<u8>> {
     frame.extend_from_slice(&header);
     frame.extend_from_slice(&body);
     Ok(frame)
+}
+
+fn read_json_document(stream: &mut impl Read) -> io::Result<Vec<u8>> {
+    let mut document = Vec::new();
+    let mut depth = 0_i32;
+    let mut in_string = false;
+    let mut escaped = false;
+    loop {
+        let mut next = [0_u8; 1];
+        stream.read_exact(&mut next)?;
+        let byte = next[0];
+        document.push(byte);
+        if document.len() > MAX_TEST_TTLV_VALUE_BYTES {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "the JSON request exceeded the test limit",
+            ));
+        }
+        if in_string {
+            if escaped {
+                escaped = false;
+            } else if byte == b'\\' {
+                escaped = true;
+            } else if byte == b'"' {
+                in_string = false;
+            }
+            continue;
+        }
+        match byte {
+            b'"' => in_string = true,
+            b'{' | b'[' => depth += 1,
+            b'}' | b']' => {
+                depth -= 1;
+                if depth == 0 {
+                    return Ok(document);
+                }
+                if depth < 0 {
+                    return Err(io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        "the JSON request had unbalanced delimiters",
+                    ));
+                }
+            }
+            _ => {}
+        }
+    }
 }
 
 #[test]
