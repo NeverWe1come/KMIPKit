@@ -15,6 +15,7 @@ from types import SimpleNamespace
 import pytest
 
 from kmipkit import client, errors, extensions, ttlv
+from kmipkit.encoding import WireEncoding
 
 
 def test_python_package_advertises_inline_typing_support() -> None:
@@ -736,6 +737,47 @@ def test_client_execute_consumes_batch_and_returns_owned_empty_response(
     )
     try:
         result = handle.execute(batch, limits)
+        assert batch.closed
+        assert result.items == ()
+        result.close()
+    finally:
+        limits.close()
+        batch.close()
+        handle.close()
+
+
+def test_client_execute_with_options_forwards_encoding_and_consumes_batch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    client_pointer, _client_storage = _opaque("kmipkit_client_t")
+    batch_pointer, _batch_storage = _opaque("kmipkit_client_batch_t")
+    response_pointer, _response_storage = _opaque("kmipkit_client_batch_response_t")
+    handle = client.Client(client_pointer)
+    batch = client.Batch(batch_pointer)
+    limits = ttlv.codec_limits_defaults()
+    encodings: list[int] = []
+
+    def execute(_client: object, batch_slot: object, _limits: object,
+                encoding: int, output: object) -> int:
+        encodings.append(encoding)
+        batch_slot[0] = client.ffi.NULL  # type: ignore[index]
+        output[0] = response_pointer  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_execute_with_options=execute,
+            kmipkit_client_batch_response_item_count=lambda _response, count: count.__setitem__(0, 0) or 0,
+            kmipkit_client_batch_response_release=lambda _ptr: None,
+            kmipkit_client_release=lambda _ptr: None,
+            kmipkit_client_batch_release=lambda _ptr: None,
+        ),
+    )
+    try:
+        result = handle.execute(batch, limits, wire_encoding=WireEncoding.JSON)
+        assert encodings == [int(WireEncoding.JSON)]
         assert batch.closed
         assert result.items == ()
         result.close()
