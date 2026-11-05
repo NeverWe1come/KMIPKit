@@ -342,7 +342,8 @@
           "enum": [
             "fixed-width-value",
             "enum",
-            "opaque-handle"
+            "opaque-handle",
+            "record"
           ]
         },
         "visibility": {
@@ -388,6 +389,22 @@
             "preserve-raw",
             "reject-unsupported"
           ]
+        },
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["name", "type"],
+            "properties": {
+              "name": {"$ref": "#/$defs/identifier"},
+              "type": {
+                "type": "string",
+                "pattern": "^(const )?(u?int(8|16|32|64)_t|kmipkit_[a-z0-9_]+_t)( \\*)?$"
+              }
+            },
+            "additionalProperties": false
+          }
         }
       },
       "allOf": [
@@ -464,6 +481,15 @@
               ]
             }
           }
+        }
+        ,
+        {
+          "if": {
+            "properties": {"kind": {"const": "record"}},
+            "required": ["kind"]
+          },
+          "then": {"required": ["fields"]},
+          "else": {"not": {"required": ["fields"]}}
         }
       ],
       "additionalProperties": false
@@ -554,6 +580,28 @@
           "required": [
             "name",
             "kind",
+            "type"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "enum-value"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t$",
+              "description": "A value of a declared fixed-width C enum type."
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
             "type",
             "direction",
             "ownership"
@@ -583,6 +631,32 @@
                 "borrowed",
                 "none"
               ]
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "ownership"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "handle-slot"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t \\*\\*$",
+              "description": "A writable pointer-to-handle slot consumed by the call on successful handle validation."
+            },
+            "ownership": {
+              "const": "consumed"
             }
           },
           "additionalProperties": false
@@ -1850,7 +1924,10 @@
         },
         "condition": {
           "type": "object",
-          "required": ["subjectBindings", "predicates"],
+          "required": [
+            "subjectBindings",
+            "predicates"
+          ],
           "properties": {
             "subjectBindings": {
               "type": "object",
@@ -1869,10 +1946,19 @@
                 "oneOf": [
                   {
                     "type": "object",
-                    "required": ["kind", "subject", "lifetime"],
+                    "required": [
+                      "kind",
+                      "subject",
+                      "lifetime"
+                    ],
                     "properties": {
-                      "kind": {"const": "outlives"},
-                      "subject": {"type": "string", "minLength": 1},
+                      "kind": {
+                        "const": "outlives"
+                      },
+                      "subject": {
+                        "type": "string",
+                        "minLength": 1
+                      },
                       "lifetime": {
                         "type": "string",
                         "pattern": "^'(?:static|[A-Za-z_][A-Za-z0-9_]*)$"
@@ -1882,20 +1968,42 @@
                   },
                   {
                     "type": "object",
-                    "required": ["kind", "subject", "traitPath", "arguments", "modifier"],
+                    "required": [
+                      "kind",
+                      "subject",
+                      "traitPath",
+                      "arguments",
+                      "modifier"
+                    ],
                     "properties": {
-                      "kind": {"const": "traitBound"},
-                      "subject": {"type": "string", "minLength": 1},
+                      "kind": {
+                        "const": "traitBound"
+                      },
+                      "subject": {
+                        "type": "string",
+                        "minLength": 1
+                      },
                       "traitPath": {
                         "type": "array",
                         "minItems": 1,
-                        "items": {"type": "string", "minLength": 1}
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
                       },
                       "arguments": {
                         "type": "array",
-                        "items": {"type": "string", "minLength": 1}
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
                       },
-                      "modifier": {"enum": ["none", "maybe"]}
+                      "modifier": {
+                        "enum": [
+                          "none",
+                          "maybe"
+                        ]
+                      }
                     },
                     "additionalProperties": false
                   }
@@ -1963,14 +2071,21 @@
           "if": {
             "properties": {
               "declarationState": {
-                "enum": ["declared", "verified"]
+                "enum": [
+                  "declared",
+                  "verified"
+                ]
               }
             },
-            "required": ["declarationState"]
+            "required": [
+              "declarationState"
+            ]
           },
           "then": {
             "not": {
-              "required": ["condition"]
+              "required": [
+                "condition"
+              ]
             }
           }
         },
@@ -2025,7 +2140,10 @@
                 "const": "rust-only-adr"
               },
               "declarationState": {
-                "enum": ["declared", "verified"]
+                "enum": [
+                  "declared",
+                  "verified"
+                ]
               }
             }
           },
@@ -2054,7 +2172,9 @@
             }
           },
           "then": {
-            "required": ["parityEvidenceIds"]
+            "required": [
+              "parityEvidenceIds"
+            ]
           }
         }
       ]
@@ -2226,10 +2346,26 @@
             ],
             "not": {
               "anyOf": [
-                {"required": ["featureSpecId"]},
-                {"required": ["approvalEvidence"]},
-                {"required": ["declarations"]},
-                {"required": ["parityEvidenceIds"]}
+                {
+                  "required": [
+                    "featureSpecId"
+                  ]
+                },
+                {
+                  "required": [
+                    "approvalEvidence"
+                  ]
+                },
+                {
+                  "required": [
+                    "declarations"
+                  ]
+                },
+                {
+                  "required": [
+                    "parityEvidenceIds"
+                  ]
+                }
               ]
             }
           }
@@ -2238,7 +2374,10 @@
           "if": {
             "properties": {
               "apiState": {
-                "enum": ["declared", "verified"]
+                "enum": [
+                  "declared",
+                  "verified"
+                ]
               }
             }
           },
@@ -2250,11 +2389,18 @@
             ],
             "properties": {
               "declarations": {
-                "required": ["rust", "c", "java", "python"]
+                "required": [
+                  "rust",
+                  "c",
+                  "java",
+                  "python"
+                ]
               }
             },
             "not": {
-              "required": ["candidateSpecId"]
+              "required": [
+                "candidateSpecId"
+              ]
             }
           }
         },
@@ -2267,7 +2413,9 @@
             }
           },
           "then": {
-            "required": ["parityEvidenceIds"]
+            "required": [
+              "parityEvidenceIds"
+            ]
           }
         }
       ]
@@ -2422,15 +2570,41 @@
             }
           },
           "then": {
-            "required": ["blockedReason"],
+            "required": [
+              "blockedReason"
+            ],
             "not": {
               "anyOf": [
-                {"required": ["ownerSpecId"]},
-                {"required": ["ownerAdrId"]},
-                {"required": ["approvalEvidence"]},
-                {"required": ["acceptedEvidence"]},
-                {"required": ["mappings"]},
-                {"required": ["parityEvidenceIds"]}
+                {
+                  "required": [
+                    "ownerSpecId"
+                  ]
+                },
+                {
+                  "required": [
+                    "ownerAdrId"
+                  ]
+                },
+                {
+                  "required": [
+                    "approvalEvidence"
+                  ]
+                },
+                {
+                  "required": [
+                    "acceptedEvidence"
+                  ]
+                },
+                {
+                  "required": [
+                    "mappings"
+                  ]
+                },
+                {
+                  "required": [
+                    "parityEvidenceIds"
+                  ]
+                }
               ]
             }
           }
@@ -2439,79 +2613,163 @@
           "if": {
             "properties": {
               "capabilityState": {
-                "enum": ["declared", "verified"]
+                "enum": [
+                  "declared",
+                  "verified"
+                ]
               }
             }
           },
           "then": {
-            "required": ["mappings"],
+            "required": [
+              "mappings"
+            ],
             "oneOf": [
               {
-                "required": ["ownerSpecId", "approvalEvidence"],
+                "required": [
+                  "ownerSpecId",
+                  "approvalEvidence"
+                ],
                 "properties": {
                   "approvalEvidence": {
                     "properties": {
-                      "kind": {"const": "feature-specification"},
-                      "status": {"enum": ["Approved", "Accepted"]}
+                      "kind": {
+                        "const": "feature-specification"
+                      },
+                      "status": {
+                        "enum": [
+                          "Approved",
+                          "Accepted"
+                        ]
+                      }
                     }
                   }
                 },
-                "not": {"anyOf": [{"required": ["ownerAdrId"]}, {"required": ["acceptedEvidence"]}]}
+                "not": {
+                  "anyOf": [
+                    {
+                      "required": [
+                        "ownerAdrId"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "acceptedEvidence"
+                      ]
+                    }
+                  ]
+                }
               },
               {
-                "required": ["ownerAdrId", "acceptedEvidence"],
+                "required": [
+                  "ownerAdrId",
+                  "acceptedEvidence"
+                ],
                 "properties": {
                   "acceptedEvidence": {
                     "properties": {
-                      "kind": {"const": "accepted-adr"},
-                      "status": {"const": "Accepted"}
+                      "kind": {
+                        "const": "accepted-adr"
+                      },
+                      "status": {
+                        "const": "Accepted"
+                      }
                     }
                   }
                 },
-                "not": {"anyOf": [{"required": ["ownerSpecId"]}, {"required": ["approvalEvidence"]}]}
+                "not": {
+                  "anyOf": [
+                    {
+                      "required": [
+                        "ownerSpecId"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "approvalEvidence"
+                      ]
+                    }
+                  ]
+                }
               }
             ],
-            "not": {"required": ["candidateSpecId"]}
+            "not": {
+              "required": [
+                "candidateSpecId"
+              ]
+            }
           }
         },
         {
           "if": {
             "properties": {
-              "capabilityState": {"const": "verified"}
+              "capabilityState": {
+                "const": "verified"
+              }
             }
           },
           "then": {
-            "required": ["parityEvidenceIds"]
+            "required": [
+              "parityEvidenceIds"
+            ]
           }
         },
         {
           "if": {
             "properties": {
-              "parityScope": {"const": "four-language"},
-              "capabilityState": {"enum": ["declared", "verified"]}
-            }
-          },
-          "then": {
-            "properties": {
-              "mappings": {"required": ["rust", "c", "java", "python"]}
-            }
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "parityScope": {"const": "rust-only-adr"},
-              "capabilityState": {"enum": ["declared", "verified"]}
+              "parityScope": {
+                "const": "four-language"
+              },
+              "capabilityState": {
+                "enum": [
+                  "declared",
+                  "verified"
+                ]
+              }
             }
           },
           "then": {
             "properties": {
               "mappings": {
-                "required": ["rust"],
-                "propertyNames": {"const": "rust"}
+                "required": [
+                  "rust",
+                  "c",
+                  "java",
+                  "python"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "parityScope": {
+                "const": "rust-only-adr"
+              },
+              "capabilityState": {
+                "enum": [
+                  "declared",
+                  "verified"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "mappings": {
+                "required": [
+                  "rust"
+                ],
+                "propertyNames": {
+                  "const": "rust"
+                }
               }
             },
-            "required": ["ownerAdrId", "acceptedEvidence"]
+            "required": [
+              "ownerAdrId",
+              "acceptedEvidence"
+            ]
           }
         }
       ]

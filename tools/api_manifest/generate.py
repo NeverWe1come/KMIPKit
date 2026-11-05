@@ -1193,6 +1193,32 @@ def _validate_references(manifest: dict[str, Any]) -> None:
         for record in manifest["types"]
         if record["c"]["kind"] == "opaque-handle"
     }
+    c_record_names = {
+        record["c"]["name"]: record
+        for record in manifest["types"]
+        if record["c"]["kind"] == "record"
+    }
+    c_type_names = set(c_handle_names) | set(c_record_names) | {
+        record["c"]["name"]
+        for record in manifest["types"]
+        if record["c"]["kind"] in {"enum", "fixed-width-value"}
+    }
+    for record in c_record_names.values():
+        fields = record["c"]["fields"]
+        field_names = [field["name"] for field in fields]
+        if len(set(field_names)) != len(field_names):
+            raise ManifestError("C record field names must be unique")
+        for field in fields:
+            field_type = field["type"]
+            match = re.fullmatch(
+                r"(const )?(uint8_t|uint16_t|uint32_t|uint64_t|int32_t|int64_t|kmipkit_[a-z0-9_]+_t)( \*)?",
+                field_type,
+            )
+            if match is None:
+                raise ManifestError("C record field type is not a supported fixed-width field")
+            base_name = field_type.removeprefix("const ").removesuffix(" *")
+            if base_name.startswith("kmipkit_") and base_name not in c_type_names:
+                raise ManifestError("C record field references an unknown manifest type")
     for record in manifest["functions"]:
         for language in ("c", "java", "python"):
             function_errors = set(record[language]["errorCategories"])
@@ -1225,6 +1251,10 @@ def _validate_references(manifest: dict[str, Any]) -> None:
                 handle_name = param["type"].split()[0].strip()
                 if handle_name not in c_handle_names:
                     raise ManifestError("function output references an unknown opaque type")
+            elif param["kind"] == "versioned-value-pointer":
+                value_name = param["type"].removeprefix("const ").removesuffix(" *")
+                if value_name not in c_record_names:
+                    raise ManifestError("versioned value pointer references an unknown C record")
         if any(parameter["kind"] in {"handle", "handle-array"} for parameter in params):
             if any(
                 "invalid_input" not in record[language]["errorCategories"]
@@ -1327,6 +1357,12 @@ def render_rust_ffi(manifest: dict[str, Any]) -> str:
             for limit in manifest["limits"]:
                 lines.append(f"    pub {limit['cField']}: u64,")
             lines.append("}")
+        elif c_type["kind"] == "record":
+            lines.extend(["#[repr(C)]", f"pub struct {name} {{"])
+            for field in c_type["fields"]:
+                field_type = _rust_c_type(field["type"])
+                lines.append(f"    pub {field['name']}: {field_type},")
+            lines.append("}")
         lines.append("")
     lines.extend(["unsafe extern \"C\" {"])
     for declaration in manifest["types"]:
@@ -1421,6 +1457,11 @@ def render_c_header(
                 lines.extend(["    uint32_t struct_size;", "    uint32_t abi_version;"])
             for field in ready_fields:
                 lines.append(f"    uint64_t {field};")
+            lines.append(f"}} {name};")
+        elif c_type["kind"] == "record":
+            lines.append("typedef struct {")
+            for field in c_type["fields"]:
+                lines.append(f"    {field['type']} {field['name']};")
             lines.append(f"}} {name};")
         lines.append("")
     for declaration in manifest["types"]:
