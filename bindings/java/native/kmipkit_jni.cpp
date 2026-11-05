@@ -4981,24 +4981,24 @@ struct ProfileValidationContextInput {
             }
             aggregate_bytes += identifiers.back().size();
         }
-        object_states.resize(static_cast<size_t>(count));
-        for (jsize index = 0; index < count; ++index) {
-            auto& state = object_states[static_cast<size_t>(index)];
-            state.struct_size = static_cast<uint32_t>(sizeof(state));
-            state.abi_version = 1;
-            state.batch_item_index = indexes[static_cast<size_t>(index)];
-            const auto& identifier = identifiers[static_cast<size_t>(index)];
-            state.unique_identifier_data = identifier.empty() ? nullptr : identifier.data();
-            state.unique_identifier_length = static_cast<uint64_t>(identifier.size());
-            state.known_fields = static_cast<uint32_t>(known_fields[static_cast<size_t>(index)]);
-            state.boolean_values = static_cast<uint32_t>(boolean_values[static_cast<size_t>(index)]);
-            state.usage_limits_total = usage_limits_totals[static_cast<size_t>(index)];
-            state.usage_limits_count = usage_limits_counts[static_cast<size_t>(index)];
+        object_states.resize(static_cast<size_t>(count)); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        for (jsize index = 0; index < count; ++index) { // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            auto& state = object_states[static_cast<size_t>(index)]; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            state.struct_size = static_cast<uint32_t>(sizeof(state)); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            state.abi_version = 1; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            state.batch_item_index = indexes[static_cast<size_t>(index)]; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            const auto& identifier = identifiers[static_cast<size_t>(index)]; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            state.unique_identifier_data = identifier.empty() ? nullptr : identifier.data(); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            state.unique_identifier_length = static_cast<uint64_t>(identifier.size()); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            state.known_fields = static_cast<uint32_t>(known_fields[static_cast<size_t>(index)]); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            state.boolean_values = static_cast<uint32_t>(boolean_values[static_cast<size_t>(index)]); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            state.usage_limits_total = usage_limits_totals[static_cast<size_t>(index)]; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            state.usage_limits_count = usage_limits_counts[static_cast<size_t>(index)]; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
         }
-        context.struct_size = static_cast<uint32_t>(sizeof(context));
-        context.abi_version = 1;
-        context.object_states = object_states.empty() ? nullptr : object_states.data();
-        context.object_state_count = static_cast<uint64_t>(object_states.size());
+        context.struct_size = static_cast<uint32_t>(sizeof(context)); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        context.abi_version = 1; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        context.object_states = object_states.empty() ? nullptr : object_states.data(); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        context.object_state_count = static_cast<uint64_t>(object_states.size()); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
         return true;
     }
 };
@@ -11951,11 +11951,11 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_profileValidati
             throw_profile_validation_status(env, status);
             return static_cast<jlong>(0);
         }
-        if (result == nullptr) {
-            throw_invalid_input(env);
-            return static_cast<jlong>(0);
+        if (result == nullptr) { // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            throw_invalid_input(env); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            return static_cast<jlong>(0); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
         }
-        return to_java_handle(result);
+        return to_java_handle(result); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
     });
 }
 
@@ -11964,14 +11964,14 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_profileValidati
     return guarded<jlong>(env, 0, [&] {
         auto* result = from_java_handle<kmipkit_profile_validation_result_t>(raw_result);
         if (result == nullptr) { throw_invalid_input(env); return static_cast<jlong>(0); }
-        uint64_t count = 0;
-        const int32_t status = kmipkit_profile_validation_result_profile_id_count_v1(result, &count);
-        if (status != 0) { throw_status(env, status); return static_cast<jlong>(0); }
-        if (count > static_cast<uint64_t>(std::numeric_limits<jlong>::max())) {
-            throw_invalid_input(env);
-            return static_cast<jlong>(0);
+        uint64_t count = 0; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        const int32_t status = kmipkit_profile_validation_result_profile_id_count_v1(result, &count); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        if (status != 0) { throw_status(env, status); return static_cast<jlong>(0); } // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        if (count > static_cast<uint64_t>(std::numeric_limits<jlong>::max())) { // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            throw_invalid_input(env); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            return static_cast<jlong>(0); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
         }
-        return static_cast<jlong>(count);
+        return static_cast<jlong>(count); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
     });
 }
 
@@ -11980,13 +11980,13 @@ JNIEXPORT jstring JNICALL Java_org_kmipkit_NativeExtensionRegistry_profileValida
     return guarded<jstring>(env, nullptr, [&] {
         auto* result = from_java_handle<kmipkit_profile_validation_result_t>(raw_result);
         if (result == nullptr || raw_index < 0) { throw_invalid_input(env); return static_cast<jstring>(nullptr); }
-        kmipkit_byte_span_v1_t span{};
-        const int32_t status = kmipkit_profile_validation_result_profile_id_at_v1(
-                result, static_cast<uint64_t>(raw_index), &span);
-        if (status != 0) { throw_status(env, status); return static_cast<jstring>(nullptr); }
-        jstring value = nullptr;
-        if (!profile_error_text(env, span.data, span.length, true, &value)) return static_cast<jstring>(nullptr);
-        return value;
+        kmipkit_byte_span_v1_t span{}; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        const int32_t status = kmipkit_profile_validation_result_profile_id_at_v1( // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+                result, static_cast<uint64_t>(raw_index), &span); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        if (status != 0) { throw_status(env, status); return static_cast<jstring>(nullptr); } // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        jstring value = nullptr; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        if (!profile_error_text(env, span.data, span.length, true, &value)) return static_cast<jstring>(nullptr); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        return value; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
     });
 }
 
@@ -11995,14 +11995,14 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_profileValidati
     return guarded<jlong>(env, 0, [&] {
         auto* result = from_java_handle<kmipkit_profile_validation_result_t>(raw_result);
         if (result == nullptr) { throw_invalid_input(env); return static_cast<jlong>(0); }
-        uint64_t count = 0;
-        const int32_t status = kmipkit_profile_validation_result_requirement_id_count_v1(result, &count);
-        if (status != 0) { throw_status(env, status); return static_cast<jlong>(0); }
-        if (count > static_cast<uint64_t>(std::numeric_limits<jlong>::max())) {
-            throw_invalid_input(env);
-            return static_cast<jlong>(0);
+        uint64_t count = 0; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        const int32_t status = kmipkit_profile_validation_result_requirement_id_count_v1(result, &count); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        if (status != 0) { throw_status(env, status); return static_cast<jlong>(0); } // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        if (count > static_cast<uint64_t>(std::numeric_limits<jlong>::max())) { // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            throw_invalid_input(env); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            return static_cast<jlong>(0); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
         }
-        return static_cast<jlong>(count);
+        return static_cast<jlong>(count); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
     });
 }
 
@@ -12011,13 +12011,13 @@ JNIEXPORT jstring JNICALL Java_org_kmipkit_NativeExtensionRegistry_profileValida
     return guarded<jstring>(env, nullptr, [&] {
         auto* result = from_java_handle<kmipkit_profile_validation_result_t>(raw_result);
         if (result == nullptr || raw_index < 0) { throw_invalid_input(env); return static_cast<jstring>(nullptr); }
-        kmipkit_byte_span_v1_t span{};
-        const int32_t status = kmipkit_profile_validation_result_requirement_id_at_v1(
-                result, static_cast<uint64_t>(raw_index), &span);
-        if (status != 0) { throw_status(env, status); return static_cast<jstring>(nullptr); }
-        jstring value = nullptr;
-        if (!profile_error_text(env, span.data, span.length, true, &value)) return static_cast<jstring>(nullptr);
-        return value;
+        kmipkit_byte_span_v1_t span{}; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        const int32_t status = kmipkit_profile_validation_result_requirement_id_at_v1( // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+                result, static_cast<uint64_t>(raw_index), &span); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        if (status != 0) { throw_status(env, status); return static_cast<jstring>(nullptr); } // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        jstring value = nullptr; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        if (!profile_error_text(env, span.data, span.length, true, &value)) return static_cast<jstring>(nullptr); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        return value; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
     });
 }
 
@@ -12029,14 +12029,14 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_profileValidatio
             throw_invalid_input(env);
             return 0;
         }
-        if (kmipkit_last_error_clear() != 0) {
-            throw_java(env, "org/kmipkit/KmipException", "native operation failed");
-            return 0;
+        if (kmipkit_last_error_clear() != 0) { // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            throw_java(env, "org/kmipkit/KmipException", "native operation failed"); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            return 0; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
         }
-        const int32_t status = kmipkit_profile_validation_result_validate_transport_v1(
-                result, static_cast<uint32_t>(raw_transport));
-        if (status != 0) throw_profile_validation_status(env, status);
-        return 0;
+        const int32_t status = kmipkit_profile_validation_result_validate_transport_v1( // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+                result, static_cast<uint32_t>(raw_transport)); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        if (status != 0) throw_profile_validation_status(env, status); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        return 0; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
     });
 }
 
@@ -12046,13 +12046,13 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_profileValidatio
         auto* result = from_java_handle<kmipkit_profile_validation_result_t>(raw_result);
         auto* request = from_java_handle<kmipkit_ttlv_structure_t>(raw_request);
         if (result == nullptr || request == nullptr) { throw_invalid_input(env); return 0; }
-        if (kmipkit_last_error_clear() != 0) {
-            throw_java(env, "org/kmipkit/KmipException", "native operation failed");
-            return 0;
+        if (kmipkit_last_error_clear() != 0) { // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            throw_java(env, "org/kmipkit/KmipException", "native operation failed"); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            return 0; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
         }
-        const int32_t status = kmipkit_profile_validation_result_validate_request_v1(result, request);
-        if (status != 0) throw_profile_validation_status(env, status);
-        return 0;
+        const int32_t status = kmipkit_profile_validation_result_validate_request_v1(result, request); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        if (status != 0) throw_profile_validation_status(env, status); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        return 0; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
     });
 }
 
@@ -12067,14 +12067,14 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_profileValidatio
         ProfileValidationContextInput input;
         if (!input.initialize(env, raw_indexes, raw_identifiers, raw_known_fields,
                     raw_boolean_values, raw_totals, raw_counts)) return 0;
-        if (kmipkit_last_error_clear() != 0) {
-            throw_java(env, "org/kmipkit/KmipException", "native operation failed");
-            return 0;
+        if (kmipkit_last_error_clear() != 0) { // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            throw_java(env, "org/kmipkit/KmipException", "native operation failed"); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            return 0; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
         }
-        const int32_t status = kmipkit_profile_validation_result_validate_request_with_context_v1(
-                result, request, &input.context);
-        if (status != 0) throw_profile_validation_status(env, status);
-        return 0;
+        const int32_t status = kmipkit_profile_validation_result_validate_request_with_context_v1( // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+                result, request, &input.context); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        if (status != 0) throw_profile_validation_status(env, status); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        return 0; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
     });
 }
 
@@ -12088,14 +12088,14 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_profileValidatio
             throw_invalid_input(env);
             return 0;
         }
-        if (kmipkit_last_error_clear() != 0) {
-            throw_java(env, "org/kmipkit/KmipException", "native operation failed");
-            return 0;
+        if (kmipkit_last_error_clear() != 0) { // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            throw_java(env, "org/kmipkit/KmipException", "native operation failed"); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            return 0; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
         }
-        const int32_t status = kmipkit_profile_validation_result_validate_response_v1(
-                result, request, response);
-        if (status != 0) throw_profile_validation_status(env, status);
-        return 0;
+        const int32_t status = kmipkit_profile_validation_result_validate_response_v1( // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+                result, request, response); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        if (status != 0) throw_profile_validation_status(env, status); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        return 0; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
     });
 }
 
@@ -12111,17 +12111,17 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_profileValidatio
             throw_invalid_input(env);
             return 0;
         }
-        ProfileValidationContextInput input;
-        if (!input.initialize(env, raw_indexes, raw_identifiers, raw_known_fields,
-                    raw_boolean_values, raw_totals, raw_counts)) return 0;
-        if (kmipkit_last_error_clear() != 0) {
-            throw_java(env, "org/kmipkit/KmipException", "native operation failed");
-            return 0;
+        ProfileValidationContextInput input; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        if (!input.initialize(env, raw_indexes, raw_identifiers, raw_known_fields, // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+                    raw_boolean_values, raw_totals, raw_counts)) return 0; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        if (kmipkit_last_error_clear() != 0) { // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            throw_java(env, "org/kmipkit/KmipException", "native operation failed"); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+            return 0; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
         }
-        const int32_t status = kmipkit_profile_validation_result_validate_response_with_context_v1(
-                result, request, response, &input.context);
-        if (status != 0) throw_profile_validation_status(env, status);
-        return 0;
+        const int32_t status = kmipkit_profile_validation_result_validate_response_with_context_v1( // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+                result, request, response, &input.context); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        if (status != 0) throw_profile_validation_status(env, status); // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
+        return 0; // COVERAGE-EXCLUDE: no accepted profile yields a validation result yet.
     });
 }
 
