@@ -214,6 +214,114 @@ fn secret_data_rejects_key_block_algorithm_and_length_fields() {
 }
 
 #[test]
+fn split_key_reader_rejects_invalid_numeric_and_conditional_fields() {
+    let invalid_identifier = split_key_item(5, 6, 3, 1, false);
+    assert!(SplitKey::try_from_item(invalid_identifier).is_err());
+
+    let missing_prime_field = split_key_item(3, 1, 2, 3, false);
+    assert!(SplitKey::try_from_item(missing_prime_field).is_err());
+}
+
+#[test]
+fn secret_data_reader_rejects_cryptographic_properties_in_key_block() {
+    let block = key_block()
+        .with_cryptographic_properties(Some(3), Some(256))
+        .try_into_item()
+        .expect("paired Key Block cryptographic fields are structurally valid");
+    let secret = structure_item(
+        0x0042_0085,
+        [
+            Item::new(
+                RawTag::new(0x0042_0086)
+                    .expect("tag fits")
+                    .try_checked()
+                    .expect("assigned tag"),
+                Value::enumeration(1),
+            )
+            .expect("valid Secret Data Type"),
+            block,
+        ],
+    );
+    assert!(SecretData::try_from_item(secret).is_err());
+}
+
+fn split_key_item(
+    parts: i32,
+    identifier: i32,
+    threshold: i32,
+    method: u32,
+    include_prime_field_size: bool,
+) -> Item {
+    let mut fields = vec![
+        Item::new(
+            RawTag::new(0x0042_008B)
+                .expect("tag fits")
+                .try_checked()
+                .expect("assigned tag"),
+            Value::integer(parts),
+        )
+        .expect("valid parts"),
+        Item::new(
+            RawTag::new(0x0042_0044)
+                .expect("tag fits")
+                .try_checked()
+                .expect("assigned tag"),
+            Value::integer(identifier),
+        )
+        .expect("valid identifier"),
+        Item::new(
+            RawTag::new(0x0042_008C)
+                .expect("tag fits")
+                .try_checked()
+                .expect("assigned tag"),
+            Value::integer(threshold),
+        )
+        .expect("valid threshold"),
+        Item::new(
+            RawTag::new(0x0042_008A)
+                .expect("tag fits")
+                .try_checked()
+                .expect("assigned tag"),
+            Value::enumeration(method),
+        )
+        .expect("valid method"),
+    ];
+    if include_prime_field_size {
+        fields.push(
+            Item::new(
+                RawTag::new(0x0042_0062)
+                    .expect("tag fits")
+                    .try_checked()
+                    .expect("assigned tag"),
+                Value::big_integer(vec![0x11]),
+            )
+            .expect("valid prime field size"),
+        );
+    }
+    fields.push(
+        key_block()
+            .try_into_item()
+            .expect("valid Key Block is required"),
+    );
+    structure_item(0x0042_0089, fields)
+}
+
+fn structure_item(tag: u32, fields: impl IntoIterator<Item = Item>) -> Item {
+    let mut structure = kmipkit_ttlv::Structure::new();
+    for field in fields {
+        structure.try_push(field).expect("valid nested test field");
+    }
+    Item::new(
+        RawTag::new(tag)
+            .expect("tag fits")
+            .try_checked()
+            .expect("assigned tag"),
+        Value::structure(structure),
+    )
+    .expect("valid test Structure")
+}
+
+#[test]
 fn split_key_prime_field_size_precedes_key_block_in_table_nine_order() {
     let item = SplitKey::try_new(
         key_block(),
