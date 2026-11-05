@@ -78,7 +78,6 @@ impl_typed_request_validation! {
     Pkcs11Request => Pkcs11,
     PollRequest => Poll,
     ProcessRequest => Process,
-    QueryRequest => Query,
     QueryAsyncRequestsRequest => QueryAsyncRequests,
     ReProvisionRequest => ReProvision,
     RecoverRequest => Recover,
@@ -160,3 +159,31 @@ impl_validation_with_existing_check!(
     "Object",
     "§6.1.43, Tables 291 and 293"
 );
+
+impl ValidateKmipRequest for QueryRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Query;
+
+    fn validate(&self) -> ValidationReport {
+        if !self.has_query_functions() {
+            crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Query Function",
+                crate::ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.40, Table 282",
+                },
+            )
+        } else if !self.has_valid_query_function_values() {
+            crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Query Function",
+                crate::ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§11.44, Table 476",
+                },
+            )
+        } else {
+            ValidationReport::default()
+        }
+    }
+}

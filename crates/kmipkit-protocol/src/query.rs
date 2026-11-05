@@ -145,6 +145,16 @@ impl QueryRequest {
         self.object_groups.as_deref()
     }
 
+    pub(crate) fn has_query_functions(&self) -> bool {
+        !self.functions.is_empty()
+    }
+
+    pub(crate) fn has_valid_query_function_values(&self) -> bool {
+        self.functions
+            .iter()
+            .all(|function| function.is_valid_request_value())
+    }
+
     /// Builds the Request Payload Structure from §6.1.40, Table 282.
     ///
     /// # Errors
@@ -152,12 +162,7 @@ impl QueryRequest {
     /// Returns a sanitized error for an empty function list, a reserved Query
     /// Function value, or an invalid local TTLV model.
     pub fn to_ttlv_payload(&self) -> Result<Structure, ProtocolError> {
-        if self.functions.is_empty()
-            || self
-                .functions
-                .iter()
-                .any(|function| !function.is_valid_request_value())
-        {
+        if !self.has_query_functions() || !self.has_valid_query_function_values() {
             return Err(ProtocolError::categorized(
                 ProtocolErrorKind::InvalidInput,
                 ProtocolCauseCategory::InvalidValue,
