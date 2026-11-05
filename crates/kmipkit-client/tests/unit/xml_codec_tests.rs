@@ -582,3 +582,28 @@ fn datetime_property(seconds: i64) -> bool {
     equal(&root, &parse(&xml(&root)));
     true
 }
+
+#[test]
+fn declaration_grammar_is_checked_and_valid_utf8_bom_is_accepted() {
+    for input in [
+        "<?xml version='1.0' standalone='maybe'?><RequestPayload/>",
+        "<?xml version='1.0' ignored='x'?><RequestPayload/>",
+        "<?xml version='1.0' version='1.0'?><RequestPayload/>",
+        "<?xml version='1.0' standalone='yes' encoding='UTF-8'?><RequestPayload/>",
+    ] {
+        assert!(decode(input.as_bytes(), &CodecLimits::defaults()).is_err(), "accepted {input}");
+    }
+    equal(&parse("\u{FEFF}<?xml version='1.0' encoding='UTF-8' standalone='yes'?><RequestPayload/>"), &parse("<RequestPayload/>"));
+}
+
+#[test]
+fn normalized_initial_digits_and_xml_text_escape_combinations_roundtrip() {
+    let algorithm = item(0x0042_0028, Value::enumeration(2));
+    assert_eq!(xml(&algorithm), "<CryptographicAlgorithm type=\"Enumeration\" value=\"DES3\"/>");
+    equal(&algorithm, &parse(&xml(&algorithm)));
+    let text = item(0x0054_0001, Value::text_string("<>\"'&".into()));
+    equal(&text, &parse(&xml(&text)));
+    let false_value = item(0x0054_0001, Value::boolean(false));
+    assert!(xml(&false_value).contains("value=\"false\""));
+    equal(&false_value, &parse(&xml(&false_value)));
+}
