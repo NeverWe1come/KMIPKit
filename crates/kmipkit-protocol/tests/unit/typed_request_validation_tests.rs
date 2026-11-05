@@ -697,3 +697,21 @@ fn derive_key_validation_recurses_into_cryptographic_parameters() {
                 == "Request Payload.Derivation Parameters.Cryptographic Parameters.Tag Length"
     }));
 }
+
+#[test]
+fn reprovision_validation_checks_supplied_certificate_object_shapes() {
+    let malformed_request = schema_structure([schema_item(
+        0x0042_0019,
+        Value::enumeration(1),
+    )]);
+    let request = ReProvisionRequest::new().with_certificate_request(malformed_request);
+
+    let report = request.validate();
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R252"
+            && issue.path().to_string()
+                == "Request Payload.Certificate Request.Certificate Request Value"
+            && issue.source().to_string() == "KMIP v2.1 §2.2, Table 3"
+    }));
+}
