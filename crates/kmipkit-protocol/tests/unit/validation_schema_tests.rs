@@ -271,12 +271,16 @@ fn nested_object_types_schema_checks_known_members_and_preserves_vendor_fields()
     );
 
     assert!(!report.is_valid());
-    assert_eq!(report.issues()[0].path().to_string(), "Object Type");
+    assert_eq!(report.issues()[0].path().to_string(), "Object Type[0]");
     assert_eq!(
         report.issues()[0].source().to_string(),
         "KMIP v2.1 §7.24, Table 376"
     );
-    assert_eq!(report.issues().len(), 1, "the unknown vendor child is retained");
+    assert_eq!(
+        report.issues().len(),
+        1,
+        "the unknown vendor child is retained"
+    );
 }
 
 #[test]
@@ -313,6 +317,45 @@ fn nested_object_defaults_enforces_alternative_and_required_attributes() {
         )
         .is_valid()
     );
+}
+
+#[test]
+fn request_payload_schema_recurses_into_known_nested_payloads() {
+    const DEFAULTS_INFORMATION: u32 = 0x0042_0152;
+    const OBJECT_DEFAULTS: u32 = 0x0042_0153;
+
+    let mut object_defaults = Structure::new();
+    object_defaults
+        .try_push(item(OBJECT_TYPE, Value::enumeration(2)))
+        .expect("Object Type is a valid Enumeration");
+    let mut defaults_information = Structure::new();
+    defaults_information
+        .try_push(item(
+            OBJECT_DEFAULTS,
+            Value::structure(object_defaults),
+        ))
+        .expect("Object Defaults is a valid Structure");
+    let mut request_payload = Structure::new();
+    request_payload
+        .try_push(item(
+            DEFAULTS_INFORMATION,
+            Value::structure(defaults_information),
+        ))
+        .expect("Defaults Information is a valid Structure");
+
+    let report = validate_structure(
+        &request_payload.view(),
+        Some(ValidationSchema::RequestPayload(
+            RequestPayloadSchema::SetDefaults,
+        )),
+    );
+
+    assert!(!report.is_valid());
+    assert!(report.issues().iter().any(|issue| {
+        issue.path().to_string()
+            == "Request Payload.Defaults Information.Object Defaults[0].Attributes"
+            && issue.source().to_string() == "KMIP v2.1 §7.22, Table 374"
+    }));
 }
 
 #[test]
