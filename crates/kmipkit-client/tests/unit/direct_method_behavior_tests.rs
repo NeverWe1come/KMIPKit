@@ -7,6 +7,7 @@
 use std::cell::RefCell;
 use std::io;
 use std::rc::Rc;
+use std::time::Duration;
 
 use kmipkit_protocol::*;
 use kmipkit_transport::{
@@ -42,6 +43,7 @@ fn client(requests: Rc<RefCell<Vec<Vec<u8>>>>, options: Rc<RefCell<Vec<RequestOp
 }
 
 fn assert_direct_matches_batch<Request>(
+    method: &str,
     make_request: impl Fn() -> Request,
     to_client_request: impl Fn(Request) -> ClientRequest,
     direct_call: impl FnOnce(
@@ -52,7 +54,8 @@ fn assert_direct_matches_batch<Request>(
     ) -> Result<crate::ClientBatchItemResponse, ClientError>,
 ) {
     let limits = CodecLimits::defaults();
-    let options = RequestOptions::default().with_connect(TimeoutLimit::Unbounded);
+    let options = RequestOptions::default()
+        .with_connect(TimeoutLimit::Bounded(Duration::from_secs(7)));
     let direct_bytes = Rc::new(RefCell::new(Vec::new()));
     let direct_options = Rc::new(RefCell::new(Vec::new()));
     let direct_error = direct_call(
@@ -75,7 +78,11 @@ fn assert_direct_matches_batch<Request>(
 
     assert_eq!(direct_error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(batch_error.delivery_state(), Some(RequestDeliveryState::NotSent));
-    assert_eq!(direct_bytes.borrow().len(), 1);
+    assert_eq!(
+        direct_bytes.borrow().len(),
+        1,
+        "{method} direct wrapper error: {direct_error:?}"
+    );
     assert_eq!(batch_bytes.borrow().len(), 1);
     assert_eq!(*direct_bytes.borrow(), *batch_bytes.borrow());
     assert_eq!(*direct_options.borrow(), vec![options]);
@@ -87,6 +94,7 @@ fn new_direct_methods_match_their_one_item_batch_wire_requests() {
     macro_rules! check {
         ($request:ty, $make:expr, $variant:path, $method:ident) => {
             assert_direct_matches_batch(
+                stringify!($method),
                 $make,
                 $variant,
                 |client, request, limits, options| {
@@ -118,7 +126,14 @@ fn new_direct_methods_match_their_one_item_batch_wire_requests() {
         ClientRequest::Logout,
         logout_with_options
     );
-    check!(GetRequest, || GetRequest::new(), ClientRequest::Get, get_with_options);
+    check!(
+        GetRequest,
+        || GetRequest::new().with_unique_identifier(UniqueIdentifier::TextString(
+            "get-id".to_owned(),
+        )),
+        ClientRequest::Get,
+        get_with_options
+    );
     check!(
         LocateRequest,
         || LocateRequest::new(AttributeSet::new()),
@@ -128,8 +143,11 @@ fn new_direct_methods_match_their_one_item_batch_wire_requests() {
     check!(
         AddAttributeRequest,
         || AddAttributeRequest::new(
-            None,
-            NewAttribute::new(test_item(0x0042_0001, Value::date_time(0))),
+            Some("object-id".to_owned()),
+            NewAttribute::new(test_item(
+                0x0054_0001,
+                Value::text_string("test".to_owned()),
+            )),
         ),
         ClientRequest::AddAttribute,
         add_attribute_with_options
@@ -137,8 +155,8 @@ fn new_direct_methods_match_their_one_item_batch_wire_requests() {
     check!(
         AdjustAttributeRequest,
         || AdjustAttributeRequest::new(
-            None,
-            AttributeReference::tag(0x0042_0001),
+            Some("object-id".to_owned()),
+            AttributeReference::tag(0x0054_0001),
             AdjustmentType::INCREMENT,
             None,
         ),
@@ -148,9 +166,9 @@ fn new_direct_methods_match_their_one_item_batch_wire_requests() {
     check!(
         DeleteAttributeRequest,
         || DeleteAttributeRequest::new(
+            Some("object-id".to_owned()),
             None,
-            None,
-            Some(AttributeReference::tag(0x0042_0001)),
+            Some(AttributeReference::tag(0x0054_0001)),
         ),
         ClientRequest::DeleteAttribute,
         delete_attribute_with_options
@@ -158,9 +176,12 @@ fn new_direct_methods_match_their_one_item_batch_wire_requests() {
     check!(
         ModifyAttributeRequest,
         || ModifyAttributeRequest::new(
+            Some("object-id".to_owned()),
             None,
-            None,
-            NewAttribute::new(test_item(0x0042_0001, Value::date_time(0))),
+            NewAttribute::new(test_item(
+                0x0054_0001,
+                Value::text_string("test".to_owned()),
+            )),
         ),
         ClientRequest::ModifyAttribute,
         modify_attribute_with_options
@@ -168,29 +189,123 @@ fn new_direct_methods_match_their_one_item_batch_wire_requests() {
     check!(
         SetAttributeRequest,
         || SetAttributeRequest::new(
-            None,
-            NewAttribute::new(test_item(0x0042_0001, Value::date_time(0))),
+            Some("object-id".to_owned()),
+            NewAttribute::new(test_item(
+                0x0054_0001,
+                Value::text_string("test".to_owned()),
+            )),
         ),
         ClientRequest::SetAttribute,
         set_attribute_with_options
     );
     check!(
         GetAttributesRequest,
-        || GetAttributesRequest::try_new(None, [])
+        || GetAttributesRequest::try_new(Some("object-id".to_owned()), [])
             .expect("empty Get Attributes references are valid"),
         ClientRequest::GetAttributes,
         get_attributes_with_options
     );
     check!(
         EncryptRequest,
-        || EncryptRequest::new(None, None),
+        || {
+            EncryptRequest::new(
+                Some(UniqueIdentifier::TextString("object-id".to_owned())),
+                Some(OperationData::ByteString(SecretBytes::new(Vec::new()))),
+            )
+        },
         ClientRequest::Encrypt,
         encrypt_with_options
     );
     check!(
         DecryptRequest,
-        || DecryptRequest::new(None, None),
+        || {
+            DecryptRequest::new(
+                Some(UniqueIdentifier::TextString("object-id".to_owned())),
+                Some(OperationData::ByteString(SecretBytes::new(Vec::new()))),
+            )
+        },
         ClientRequest::Decrypt,
         decrypt_with_options
+    );
+}
+
+#[test]
+fn existing_option_methods_forward_the_options_to_the_exchange() {
+    macro_rules! check {
+        ($request:ty, $make:expr, $variant:path, $method:ident) => {
+            assert_direct_matches_batch(
+                stringify!($method),
+                $make,
+                $variant,
+                |client, request, limits, options| {
+                    client.$method(request, limits, options)
+                },
+            );
+        };
+    }
+
+    assert_direct_matches_batch(
+        "get_constraints_with_options",
+        || (),
+        |_| ClientRequest::get_constraints(),
+        |client, (), limits, options| client.get_constraints_with_options(limits, options),
+    );
+    check!(
+        GetAttributeListRequest,
+        || GetAttributeListRequest::new(Some("object-id".to_owned())),
+        ClientRequest::GetAttributeList,
+        get_attribute_list_with_options
+    );
+    check!(
+        SetConstraintsRequest,
+        || SetConstraintsRequest::new(Structure::new()),
+        ClientRequest::SetConstraints,
+        set_constraints_with_options
+    );
+    check!(
+        SetDefaultsRequest,
+        || SetDefaultsRequest::new(),
+        ClientRequest::SetDefaults,
+        set_defaults_with_options
+    );
+    check!(
+        GetUsageAllocationRequest,
+        || GetUsageAllocationRequest::new(1).with_unique_identifier(
+            UniqueIdentifier::TextString("object-id".to_owned()),
+        ),
+        ClientRequest::GetUsageAllocation,
+        get_usage_allocation_with_options
+    );
+    check!(
+        ValidateRequest,
+        || ValidateRequest::new().with_unique_identifier(UniqueIdentifier::TextString(
+            "object-id".to_owned(),
+        )),
+        ClientRequest::Validate,
+        validate_with_options
+    );
+    check!(
+        RngRetrieveRequest,
+        || RngRetrieveRequest::new(8),
+        ClientRequest::RngRetrieve,
+        rng_retrieve_with_options
+    );
+    check!(
+        LogRequest,
+        || LogRequest::new(SecretText::new("test".to_owned())),
+        ClientRequest::Log,
+        log_with_options
+    );
+    check!(
+        InteropRequest,
+        || InteropRequest::new(1, SecretText::new("test".to_owned())),
+        ClientRequest::Interop,
+        interop_with_options
+    );
+    check!(
+        RngSeedRequest,
+        || RngSeedRequest::new(SecretBytes::new(Vec::new())),
+        ClientRequest::RngSeed,
+        rng_seed_with_options
     );
 }

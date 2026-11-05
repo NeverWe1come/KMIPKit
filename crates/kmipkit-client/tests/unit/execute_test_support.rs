@@ -1,5 +1,8 @@
 //! Shared, deterministic TTLV fixtures for client execution tests.
 
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use kmipkit_transport::{RequestOptions, Transport, TransportError, TransportResponse};
 use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Item, RawTag, Structure, StructureView, Tag, Value, ValueView};
@@ -116,20 +119,39 @@ pub(crate) fn assert_lifecycle_outcome_surface(
     );
 }
 
-pub(crate) struct TestTransport(Box<dyn Transport>);
+pub(crate) struct TestTransport {
+    transport: Box<dyn Transport>,
+    observed_options: Option<Rc<RefCell<Vec<RequestOptions>>>>,
+}
 
 impl TestTransport {
     pub(crate) fn new<T: Transport + 'static>(transport: T) -> Self {
-        Self(Box::new(transport))
+        Self {
+            transport: Box::new(transport),
+            observed_options: None,
+        }
+    }
+
+    pub(crate) fn with_options_observer<T: Transport + 'static>(
+        transport: T,
+        observed_options: Rc<RefCell<Vec<RequestOptions>>>,
+    ) -> Self {
+        Self {
+            transport: Box::new(transport),
+            observed_options: Some(observed_options),
+        }
     }
 
     pub(crate) fn exchange_with_options(
         &mut self,
         request: &[u8],
         max_response_bytes: usize,
-        _options: &RequestOptions,
+        options: &RequestOptions,
     ) -> Result<TransportResponse, TransportError> {
-        self.0.exchange(request, max_response_bytes)
+        if let Some(observed_options) = &self.observed_options {
+            observed_options.borrow_mut().push(*options);
+        }
+        self.transport.exchange(request, max_response_bytes)
     }
 }
 

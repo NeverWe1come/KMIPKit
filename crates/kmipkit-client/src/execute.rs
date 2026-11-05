@@ -6558,6 +6558,23 @@ impl Client {
     }
 
     #[cfg(test)]
+    pub(super) fn for_test_with_options_observer<T: Transport + 'static>(
+        transport: T,
+        observed_options: std::rc::Rc<std::cell::RefCell<Vec<RequestOptions>>>,
+    ) -> Self {
+        Self {
+            transport: ClientTransport::Test(TestTransport::with_options_observer(
+                transport,
+                observed_options,
+            )),
+            configuration: empty_test_configuration(),
+            request_owner_observer: None,
+            pending_owner_observer: None,
+            limits_identity_observer: None,
+        }
+    }
+
+    #[cfg(test)]
     pub(super) fn for_test_with_configuration<T: Transport + 'static>(
         transport: T,
         configuration: ClientConfiguration,
