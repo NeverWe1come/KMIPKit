@@ -155,8 +155,71 @@ pub(crate) fn validate_structure(
         {
             return Err(ManagedObjectError::MissingRequiredField);
         }
+        validate_object_constraints(item, expected_tag)?;
         Ok(())
     })
+}
+
+fn validate_object_constraints(item: &Item, expected_tag: u32) -> Result<(), ManagedObjectError> {
+    match expected_tag {
+        SECRET_DATA => {
+            let key_block = structure_child(item, KEY_BLOCK)?;
+            if KeyBlock::try_from_item(key_block)?.has_cryptographic_properties() {
+                return Err(ManagedObjectError::InvalidFieldCombination);
+            }
+        }
+        SPLIT_KEY => {
+            let parts = integer_field(item, SPLIT_KEY_PARTS)?;
+            let identifier = integer_field(item, KEY_PART_IDENTIFIER)?;
+            let threshold = integer_field(item, SPLIT_KEY_THRESHOLD)?;
+            let method = enumeration_field(item, SPLIT_KEY_METHOD)?;
+            let has_prime_field_size = with_field(item, PRIME_FIELD_SIZE, |_| ()).is_some();
+            if parts < 1
+                || identifier < 1
+                || identifier > parts
+                || threshold < 2
+                || threshold > parts
+                || (method == 3 && !has_prime_field_size)
+            {
+                return Err(ManagedObjectError::InvalidFieldCombination);
+            }
+        }
+        _ => {}
+    }
+    Ok(())
+}
+
+fn structure_child(item: &Item, tag: u32) -> Result<Item, ManagedObjectError> {
+    item.with_value(|value| {
+        let ValueView::Structure(structure) = value else {
+            return Err(ManagedObjectError::InvalidStructure);
+        };
+        structure
+            .children()
+            .iter()
+            .find(|child| child.tag().raw() == tag)
+            .ok_or(ManagedObjectError::MissingRequiredField)?
+            .try_clone()
+            .map_err(ManagedObjectError::from)
+    })
+}
+
+fn integer_field(item: &Item, tag: u32) -> Result<i32, ManagedObjectError> {
+    with_field(item, tag, |value| match value {
+        ValueView::Integer(raw) => Some(*raw),
+        _ => None,
+    })
+    .flatten()
+    .ok_or(ManagedObjectError::IncorrectFieldType)
+}
+
+fn enumeration_field(item: &Item, tag: u32) -> Result<u32, ManagedObjectError> {
+    with_field(item, tag, |value| match value {
+        ValueView::Enumeration(raw) => Some(*raw),
+        _ => None,
+    })
+    .flatten()
+    .ok_or(ManagedObjectError::IncorrectFieldType)
 }
 
 pub(crate) fn validate_any_structure(item: &Item) -> Result<(), ManagedObjectError> {
