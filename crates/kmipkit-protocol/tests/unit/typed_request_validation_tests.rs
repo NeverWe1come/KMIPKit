@@ -74,3 +74,69 @@ fn every_supported_client_request_implements_borrowed_validation() {
     assert_validate_contract::<SignatureVerifyRequest>();
     assert_validate_contract::<ValidateRequest>();
 }
+
+fn assert_schema<T: ValidateKmipRequest>(expected: crate::RequestPayloadSchema) {
+    assert_eq!(T::SCHEMA, expected);
+}
+
+#[test]
+fn every_typed_request_maps_to_its_exact_payload_schema() {
+    use crate::RequestPayloadSchema as Schema;
+
+    assert_schema::<ActivateRequest>(Schema::Activate);
+    assert_schema::<AddAttributeRequest>(Schema::AddAttribute);
+    assert_schema::<AdjustAttributeRequest>(Schema::AdjustAttribute);
+    assert_schema::<ArchiveRequest>(Schema::Archive);
+    assert_schema::<CancelRequest>(Schema::Cancel);
+    assert_schema::<CertifyRequest>(Schema::Certify);
+    assert_schema::<CheckRequest>(Schema::Check);
+    assert_schema::<CreateRequest>(Schema::Create);
+    assert_schema::<CreateKeyPairRequest>(Schema::CreateKeyPair);
+    assert_schema::<CreateSplitKeyRequest>(Schema::CreateSplitKey);
+    assert_schema::<DecryptRequest>(Schema::Decrypt);
+    assert_schema::<DelegatedLoginRequest>(Schema::DelegatedLogin);
+    assert_schema::<DeleteAttributeRequest>(Schema::DeleteAttribute);
+    assert_schema::<DeriveKeyRequest>(Schema::DeriveKey);
+    assert_schema::<DestroyRequest>(Schema::Destroy);
+    assert_schema::<DiscoverVersionsRequest>(Schema::DiscoverVersions);
+    assert_schema::<EncryptRequest>(Schema::Encrypt);
+    assert_schema::<ExportRequest>(Schema::Export);
+    assert_schema::<GetRequest>(Schema::Get);
+    assert_schema::<GetAttributeListRequest>(Schema::GetAttributeList);
+    assert_schema::<GetAttributesRequest>(Schema::GetAttributes);
+    assert_schema::<GetConstraintsRequest>(Schema::GetConstraints);
+    assert_schema::<GetUsageAllocationRequest>(Schema::GetUsageAllocation);
+    assert_schema::<HashRequest>(Schema::Hash);
+    assert_schema::<ImportRequest>(Schema::Import);
+    assert_schema::<InteropRequest>(Schema::Interop);
+    assert_schema::<JoinSplitKeyRequest>(Schema::JoinSplitKey);
+    assert_schema::<LocateRequest>(Schema::Locate);
+    assert_schema::<LogRequest>(Schema::Log);
+    assert_schema::<LoginRequest>(Schema::Login);
+    assert_schema::<LogoutRequest>(Schema::Logout);
+    assert_schema::<MacRequest>(Schema::Mac);
+    assert_schema::<MacVerifyRequest>(Schema::MacVerify);
+    assert_schema::<ModifyAttributeRequest>(Schema::ModifyAttribute);
+    assert_schema::<ObtainLeaseRequest>(Schema::ObtainLease);
+    assert_schema::<PingRequest>(Schema::Ping);
+    assert_schema::<Pkcs11Request>(Schema::Pkcs11);
+    assert_schema::<PollRequest>(Schema::Poll);
+    assert_schema::<ProcessRequest>(Schema::Process);
+    assert_schema::<QueryRequest>(Schema::Query);
+    assert_schema::<QueryAsyncRequestsRequest>(Schema::QueryAsyncRequests);
+    assert_schema::<ReProvisionRequest>(Schema::ReProvision);
+    assert_schema::<RecertifyRequest>(Schema::Recertify);
+    assert_schema::<RecoverRequest>(Schema::Recover);
+    assert_schema::<RegisterRequest>(Schema::Register);
+    assert_schema::<RekeyRequest>(Schema::Rekey);
+    assert_schema::<RekeyKeyPairRequest>(Schema::RekeyKeyPair);
+    assert_schema::<RevokeRequest>(Schema::Revoke);
+    assert_schema::<RngRetrieveRequest>(Schema::RngRetrieve);
+    assert_schema::<RngSeedRequest>(Schema::RngSeed);
+    assert_schema::<SetAttributeRequest>(Schema::SetAttribute);
+    assert_schema::<SetConstraintsRequest>(Schema::SetConstraints);
+    assert_schema::<SetDefaultsRequest>(Schema::SetDefaults);
+    assert_schema::<SignRequest>(Schema::Sign);
+    assert_schema::<SignatureVerifyRequest>(Schema::SignatureVerify);
+    assert_schema::<ValidateRequest>(Schema::Validate);
+}
