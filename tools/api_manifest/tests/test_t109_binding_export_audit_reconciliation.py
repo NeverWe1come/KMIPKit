@@ -65,6 +65,7 @@ JAVA_INTERNAL_EXPORTS = {
         f"org.kmipkit.extensions.ProfileEvidenceRecord.{member}"
         for member in ("<init>", "equals", "hashCode", "toString")
     },
+    "org.kmipkit.extensions.ProfileEvidenceRecord.requirementId",
     *{
         f"org.kmipkit.extensions.ProfileReadinessBlocker.{member}"
         for member in ("<init>", "equals", "hashCode", "toString")
@@ -73,7 +74,6 @@ JAVA_INTERNAL_EXPORTS = {
 
 JAVA_PROFILE_VALUE_EXPORTS = {
     "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.value",
-    "org.kmipkit.extensions.ProfileEvidenceRecord.requirementId",
 }
 
 
@@ -126,9 +126,31 @@ class T109BindingExportAuditReconciliationTests(unittest.TestCase):
                 self.assertTrue(row.get("reason"))
                 self.assertIn("KMIPKIT-0043-FR-021", row.get("evidence", ""))
                 self.assertEqual(
-                    "specs/010-profile-conformance/spec.md",
+                    "specs/043-public-api-bindings/spec.md",
                     row["approvalSource"]["path"],
                 )
+        input_field = exclusions["org.kmipkit.extensions.ProfileEvidenceRecord.requirementId"]
+        self.assertIn("KMIPKIT-0010-FR-017", input_field["evidence"])
+        self.assertIn("input-only", input_field["reason"])
+
+    def test_java_passed_overload_splits_factory_mapping_from_input_readback(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "java-kmipkit"
+        }
+        export_name = "org.kmipkit.extensions.ProfileEvidenceRecord.passed"
+        self.assertEqual(
+            ["public static org.kmipkit.extensions.ProfileEvidenceRecord passed(java.lang.String)"],
+            declarations[export_name].get("javaSignatures"),
+        )
+        exclusions = [
+            row for row in self.manifest["approvedExclusions"]
+            if row.get("packageId") == "java-kmipkit" and row.get("exportName") == export_name
+        ]
+        self.assertEqual(1, len(exclusions))
+        self.assertEqual(["public boolean passed()"], exclusions[0].get("javaSignatures"))
+        self.assertIn("KMIPKIT-0010-FR-017", exclusions[0]["evidence"])
 
     def test_java_overloads_declare_all_audited_signatures(self) -> None:
         rows = {
@@ -136,15 +158,20 @@ class T109BindingExportAuditReconciliationTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "java-kmipkit"
         }
-        for export_name in (
-            "org.kmipkit.extensions.ClientBatchItem.pkcs11",
-            "org.kmipkit.extensions.ProfileEvidenceRecord.passed",
-        ):
+        expected_signatures = {
+            "org.kmipkit.extensions.ClientBatchItem.pkcs11": [
+                "public static org.kmipkit.extensions.ClientBatchItem pkcs11(org.kmipkit.ttlv.TtlvStructure, org.kmipkit.ttlv.TtlvStructure, byte[], org.kmipkit.ttlv.TtlvStructure)",
+                "public static org.kmipkit.extensions.ClientBatchItem pkcs11(org.kmipkit.ttlv.TtlvStructure, org.kmipkit.ttlv.TtlvStructure, byte[], org.kmipkit.ttlv.TtlvStructure, java.util.List<org.kmipkit.ttlv.TtlvItem>)",
+            ],
+            "org.kmipkit.extensions.ProfileEvidenceRecord.passed": [
+                "public boolean passed()",
+                "public static org.kmipkit.extensions.ProfileEvidenceRecord passed(java.lang.String)",
+            ],
+        }
+        for export_name, expected in expected_signatures.items():
             with self.subTest(export=export_name):
                 self.assertIn(export_name, rows)
-                signatures = rows[export_name].get("javaSignatures", [])
-                self.assertEqual(2, len(signatures))
-                self.assertEqual(signatures, sorted(set(signatures)))
+                self.assertEqual(expected, rows[export_name].get("javaSignatures"))
 
 
 if __name__ == "__main__":

@@ -1368,6 +1368,48 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertFalse(missing["matchesManifest"])
         self.assertIn("java-overload-signatures-not-declared", {row["reason"] for row in missing["issues"]})
 
+    def test_java_overload_signatures_can_split_mapping_and_exact_exclusion(self):
+        output = """
+            public class org.example.Evidence {
+              public static org.example.Evidence passed(java.lang.String);
+              public boolean passed();
+            }
+        """
+        report = AUDIT.inventory_javap_outputs({"Evidence.class": output})
+        export_name = "org.example.Evidence.passed"
+        factory = "public static org.example.Evidence passed(java.lang.String)"
+        accessor = "public boolean passed()"
+        declaration = {
+            "packageId": "java-kmipkit",
+            "exportName": export_name,
+            "kind": "java-member",
+            "javaSignatures": [factory],
+        }
+        exclusion = {
+            "packageId": "java-kmipkit",
+            "exportName": export_name,
+            "javaSignatures": [accessor],
+            "reason": "caller input readback is not an independent cross-language capability",
+        }
+        manifest = {
+            "publicDeclarations": [{
+                "packageId": "java-kmipkit",
+                "exportName": "org.example.Evidence",
+                "kind": "type",
+            }, declaration],
+            "approvedExclusions": [exclusion],
+        }
+
+        result = AUDIT.compare(report, manifest, "java-kmipkit")
+
+        self.assertTrue(result["matchesManifest"], result["issues"])
+        self.assertEqual(2, result["counts"]["exactMatches"])
+
+        exclusion["javaSignatures"] = [factory]
+        overlap = AUDIT.compare(report, manifest, "java-kmipkit")
+        self.assertFalse(overlap["matchesManifest"])
+        self.assertIn("java-signature-partition-mismatch", {row["reason"] for row in overlap["issues"]})
+
     def test_c_audit_counts_blocked_stable_error_code_as_accounted(self):
         name = "KMIPKIT_ERROR_INTERNAL"
         manifest = {
