@@ -241,6 +241,7 @@ impl RegisteredExtensionValue {
 /// without rebuilding or sharing registry state between clients.
 pub struct ClientConfiguration {
     extension_registry: Arc<ClientExtensionRegistry>,
+    wire_encoding: crate::WireEncoding,
 }
 
 /// A registry-validated extension and its caller-selected request criticality.
@@ -308,6 +309,7 @@ impl ClientConfiguration {
     pub fn new(extension_registry: ClientExtensionRegistry) -> Self {
         Self {
             extension_registry: Arc::new(extension_registry),
+            wire_encoding: crate::WireEncoding::Ttlv,
         }
     }
 
@@ -315,7 +317,25 @@ impl ClientConfiguration {
     #[doc(hidden)]
     #[must_use]
     pub fn from_shared_registry(extension_registry: Arc<ClientExtensionRegistry>) -> Self {
-        Self { extension_registry }
+        Self {
+            extension_registry,
+            wire_encoding: crate::WireEncoding::Ttlv,
+        }
+    }
+
+    /// Sets the immutable default encoding for requests and their responses.
+    ///
+    /// A per-exchange [`crate::RequestOptions`] override takes precedence.
+    #[must_use]
+    pub fn with_wire_encoding(mut self, encoding: crate::WireEncoding) -> Self {
+        self.wire_encoding = encoding;
+        self
+    }
+
+    /// Returns the configured encoding, which defaults to TTLV.
+    #[must_use]
+    pub const fn wire_encoding(&self) -> crate::WireEncoding {
+        self.wire_encoding
     }
 
     /// Returns the registry owned by this client configuration.
@@ -337,6 +357,7 @@ impl fmt::Debug for ClientConfiguration {
         formatter
             .debug_struct("ClientConfiguration")
             .field("extension_registry", &self.extension_registry)
+            .field("wire_encoding", &self.wire_encoding)
             .finish()
     }
 }

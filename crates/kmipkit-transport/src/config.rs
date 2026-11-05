@@ -652,16 +652,46 @@ impl Default for TimeoutPolicy {
     }
 }
 
-/// Optional per-exchange timeout overrides shared by typed and direct adapter calls.
+/// KMIP 2.1 wire representation used for one request and its response.
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+#[non_exhaustive]
+pub enum WireEncoding {
+    /// Binary Tag-Type-Length-Value encoding (the compatibility default).
+    #[default]
+    Ttlv,
+    /// JSON message encoding from OASIS KMIP Profiles v2.1 §5.5.
+    Json,
+    /// XML message encoding from OASIS KMIP Profiles v2.1 §5.4.
+    Xml,
+}
+
+/// Optional per-exchange encoding and timeout overrides.
+///
+/// Typed clients resolve the encoding override against their immutable default
+/// and pass the selected encoding to the adapter in these options.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct RequestOptions {
     connect: Option<TimeoutLimit>,
     write: Option<TimeoutLimit>,
     read: Option<TimeoutLimit>,
     total: Option<TimeoutLimit>,
+    wire_encoding: Option<WireEncoding>,
 }
 
 impl RequestOptions {
+    /// Selects the encoding for one request and its response.
+    #[must_use]
+    pub const fn with_wire_encoding(mut self, value: WireEncoding) -> Self {
+        self.wire_encoding = Some(value);
+        self
+    }
+
+    /// Returns this call's encoding override, or `None` to inherit the client default.
+    #[must_use]
+    pub const fn wire_encoding(&self) -> Option<WireEncoding> {
+        self.wire_encoding
+    }
+
     /// Overrides the connect deadline for one exchange.
     #[must_use]
     pub const fn with_connect(mut self, value: TimeoutLimit) -> Self {

@@ -894,6 +894,17 @@ impl BoundaryAudit {
         self.is_source_root(Path::new("execute.rs"))
     }
 
+    fn is_codec_dispatch_call(&self, segments: &[String]) -> bool {
+        self.is_source_root(Path::new("wire_encoder.rs"))
+            && self.current_function.as_deref() == Some("encode_for_execute")
+            && self.current_impl_type.is_none()
+            && matches!(segments,
+                [root, codec, function]
+                if root == "crate"
+                    && matches!(codec.as_str(), "json_encoding" | "xml_codec")
+                    && function == "encode")
+    }
+
     fn is_source_root(&self, source_path: &Path) -> bool {
         self.current_source_path.as_deref() == Some(source_path)
             && self.current_inline_modules.is_empty()
@@ -1338,7 +1349,9 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
             } else if path_mentions_permit(&segments) {
                 self.reject("OperationEncodingPermit is constructed outside mint");
             }
-            if is_writer_target(&segments) {
+            if self.is_codec_dispatch_call(&segments) {
+                self.record_repeatable_sensitive_call();
+            } else if is_writer_target(&segments) {
                 self.writer_calls += 1;
                 self.record_repeatable_sensitive_call();
                 if !is_writer_call(&segments) {
@@ -3277,7 +3290,15 @@ fn production_source_inventory_is_complete_and_execute_owns_the_only_writer_perm
         .iter()
         .filter_map(|(path, _)| path.file_name().and_then(|name| name.to_str()))
         .collect::<HashSet<_>>();
-    for expected in ["lib.rs", "error.rs", "execute.rs", "wire_encoder.rs"] {
+    for expected in [
+        "lib.rs",
+        "error.rs",
+        "execute.rs",
+        "wire_encoder.rs",
+        "json_encoding.rs",
+        "xml_codec.rs",
+        "wire_codec_common.rs",
+    ] {
         assert!(
             paths.contains(expected),
             "production source missing from audit: {expected}"
