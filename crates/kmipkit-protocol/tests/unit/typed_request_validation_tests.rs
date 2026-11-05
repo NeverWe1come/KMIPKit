@@ -10,8 +10,10 @@ use crate::{
     ProcessRequest, QueryAsyncRequestsRequest, QueryRequest, ReProvisionRequest, RecertifyRequest,
     RecoverRequest, RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevokeRequest,
     RngRetrieveRequest, RngSeedRequest, SetAttributeRequest, SetConstraintsRequest,
-    SetDefaultsRequest, SignRequest, SignatureVerifyRequest, ValidateKmipRequest, ValidateRequest,
+    AttributeSet, ObjectType, SetDefaultsRequest, SignRequest, SignatureVerifyRequest,
+    ValidateKmipRequest, ValidateRequest,
 };
+use kmipkit_ttlv::{Item, RawTag, Value};
 
 fn assert_validate_contract<T: ValidateKmipRequest>() {}
 
@@ -139,4 +141,29 @@ fn every_typed_request_maps_to_its_exact_payload_schema() {
     assert_schema::<SignRequest>(Schema::Sign);
     assert_schema::<SignatureVerifyRequest>(Schema::SignatureVerify);
     assert_schema::<ValidateRequest>(Schema::Validate);
+}
+
+#[test]
+fn create_validation_borrows_and_reports_duplicate_single_instance_attributes() {
+    let comment = RawTag::new(0x0042_00fd)
+        .expect("Comment is a valid raw tag")
+        .try_checked()
+        .expect("Comment is an allocated KMIP tag");
+    let attributes = AttributeSet::try_new([
+        Item::new(comment, Value::text_string("first".to_owned()))
+            .expect("first Comment is valid TTLV"),
+        Item::new(comment, Value::text_string("second".to_owned()))
+            .expect("second Comment is valid TTLV"),
+    ])
+    .expect("generic attribute sets preserve operation-level cardinality violations");
+    let request = CreateRequest::new(ObjectType::from_raw(7), attributes);
+
+    let report = request.validate();
+
+    assert!(!report.is_valid());
+    assert_eq!(report.issues().len(), 1);
+    assert_eq!(report.issues()[0].path().to_string(), "Request Payload.Attributes");
+    assert_eq!(report.issues()[0].source().to_string(), "KMIP v2.1 §4, Table 46");
+    assert!(!format!("{report:?}").contains("first"));
+    assert!(!format!("{report:?}").contains("second"));
 }
