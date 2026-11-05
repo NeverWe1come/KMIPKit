@@ -55,4 +55,12 @@ The Red tests cover all nine object tags and fields, the §3.1–§3.3 key struc
 
 ## Remaining evidence
 
-T043 will record the draft pull request URL, base, and head after terminal-based publication. Hosted cross-platform coverage aggregation and CI remain outstanding; the PR is not merge-ready and the phase has not been declared complete.
+## Pull request
+
+- T043 completed through terminal-based `gh pr create`.
+- Draft PR: https://github.com/NeverWe1come/KMIPKit/pull/116
+- Verified state: `OPEN`, `isDraft: true`.
+- Base: `feature/KMIPKIT-0048-typed-attributes` (PR #115).
+- Head: `feature/KMIPKIT-0049-managed-objects`, commit `ed22113a260b4d01ad9163f2729890c47c85eece`.
+
+Hosted cross-platform coverage aggregation and CI remain outstanding; the PR is not merge-ready and the phase has not been declared complete.

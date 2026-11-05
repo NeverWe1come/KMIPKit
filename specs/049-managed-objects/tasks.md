@@ -107,7 +107,7 @@
 - [x] T040 Run the applicable Windows workspace coverage gates, including protocol, changed-line, and global thresholds; document generated-code exclusions and exact results in `specs/049-managed-objects/implementation-evidence.md`. Windows-local results pass: protocol 96.24%, Rust workspace 94.01%, changed production code 95.78%. Cross-platform aggregate evidence remains outstanding.
 - [x] T041 Review the final diff against the spec, contracts, pinned OASIS tables, and every traceability row; resolve all findings and record the Red/Green/Refactor commit hashes in `specs/049-managed-objects/implementation-evidence.md`.
 - [x] T042 Run a security-focused diff review and an acceptance-criteria QA review; record scope, findings, and remediation evidence in `specs/049-managed-objects/implementation-evidence.md`.
-- [ ] T043 Open the stacked draft PR from `feature/KMIPKIT-0049-managed-objects` to `feature/KMIPKIT-0048-typed-attributes` using `gh`; verify its state, base, head, and URL in the evidence file. Keep it draft while any required control is missing.
+- [x] T043 Open the stacked draft PR from `feature/KMIPKIT-0049-managed-objects` to `feature/KMIPKIT-0048-typed-attributes` using `gh`; verify its state, base, head, and URL in the evidence file. Keep it draft while any required control is missing. PR #116 is open in draft; hosted cross-platform controls remain outstanding.
 
 ## Dependencies and execution order
 
