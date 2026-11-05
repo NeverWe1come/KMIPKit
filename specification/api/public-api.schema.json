@@ -2378,7 +2378,7 @@
         },
         "javaSignatures": {
           "type": "array",
-          "minItems": 2,
+          "minItems": 1,
           "uniqueItems": true,
           "items": {
             "type": "string",
@@ -2740,6 +2740,16 @@
         "exportName": {
           "type": "string",
           "minLength": 1
+        },
+        "javaSignatures": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Exact javap signatures excluded from an overloaded Java export path when sibling overloads remain mapped."
         },
         "reason": {
           "type": "string",

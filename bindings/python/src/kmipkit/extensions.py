@@ -581,7 +581,7 @@ class RegisterRequest(NativeHandle):
         handle = _make_handle(
             "kmipkit_register_request_t",
             "kmipkit_register_request_with_protection_storage_masks",
-            (self, masks),
+            (self, _native_structure(masks, required=True)),
             consumed_indices=(0,),
         )
         return _wrap_owned_handle(RegisterRequest, handle)

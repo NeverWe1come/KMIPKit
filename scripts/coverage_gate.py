@@ -69,12 +69,13 @@ _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS = frozenset(
         # Generated API manifests contain metadata, not handwritten behavior.
         "bindings/java/src/main/java/org/kmipkit/generated/ExtensionRegistryApi.java",
         "bindings/java/src/main/java/org/kmipkit/generated/PublicApi.java",
-        # These package declarations only apply the NullMarked default.
+        # These package declarations apply the NullMarked default only.
         "bindings/java/src/main/java/org/kmipkit/package-info.java",
         "bindings/java/src/main/java/org/kmipkit/internal/package-info.java",
         "bindings/java/src/main/java/org/kmipkit/ttlv/package-info.java",
         "bindings/java/src/main/java/org/kmipkit/generated/package-info.java",
         "bindings/java/src/main/java/org/kmipkit/extensions/package-info.java",
+        "bindings/java/src/main/java/org/kmipkit/message/package-info.java",
     }
 )
 

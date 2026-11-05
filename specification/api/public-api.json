@@ -75553,9 +75553,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -75622,9 +75622,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -75799,9 +75799,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -75922,9 +75922,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -75991,9 +75991,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -77216,9 +77216,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -77286,9 +77286,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -77466,9 +77466,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -77591,9 +77591,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -77661,9 +77661,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -89437,9 +89437,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -89506,9 +89506,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -89683,9 +89683,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -89806,9 +89806,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -89875,9 +89875,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -100196,9 +100196,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -100267,9 +100267,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -100450,9 +100450,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -100577,9 +100577,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -100648,9 +100648,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -107567,6 +107567,9 @@
       "exportName": "kmipkit_client::Client::activate_with_options",
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-ACTIVATE",
       "requirementIds": [
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0007-FR-013",
         "KMIPKIT-0018-FR-001",
         "KMIPKIT-0018-FR-002",
         "KMIPKIT-0018-FR-003",
@@ -107596,9 +107599,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -107694,6 +107697,9 @@
       "exportName": "kmipkit_client::Client::archive_with_options",
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-ARCHIVE",
       "requirementIds": [
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0007-FR-013",
         "KMIPKIT-0018-FR-001",
         "KMIPKIT-0018-FR-002",
         "KMIPKIT-0018-FR-003",
@@ -107724,9 +107730,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -107821,6 +107827,9 @@
       "exportName": "kmipkit_client::Client::destroy_with_options",
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-DESTROY",
       "requirementIds": [
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0007-FR-013",
         "KMIPKIT-0018-FR-001",
         "KMIPKIT-0018-FR-002",
         "KMIPKIT-0018-FR-003",
@@ -107850,9 +107859,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -107949,6 +107958,9 @@
       "exportName": "kmipkit_client::Client::recover_with_options",
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-RECOVER",
       "requirementIds": [
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0007-FR-013",
         "KMIPKIT-0018-FR-001",
         "KMIPKIT-0018-FR-002",
         "KMIPKIT-0018-FR-003",
@@ -107980,9 +107992,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -111347,9 +111359,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -111417,9 +111429,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -111488,9 +111500,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -111557,9 +111569,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -114059,9 +114071,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -114129,9 +114141,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -114198,9 +114210,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -114269,9 +114281,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -119317,6 +119329,9 @@
       "exportName": "kmipkit::Client::activate_with_options",
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-ACTIVATE",
       "requirementIds": [
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0007-FR-013",
         "KMIPKIT-0018-FR-001",
         "KMIPKIT-0018-FR-002",
         "KMIPKIT-0018-FR-003",
@@ -119346,9 +119361,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -119444,6 +119459,9 @@
       "exportName": "kmipkit::Client::archive_with_options",
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-ARCHIVE",
       "requirementIds": [
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0007-FR-013",
         "KMIPKIT-0018-FR-001",
         "KMIPKIT-0018-FR-002",
         "KMIPKIT-0018-FR-003",
@@ -119474,9 +119492,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -119571,6 +119589,9 @@
       "exportName": "kmipkit::Client::destroy_with_options",
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-DESTROY",
       "requirementIds": [
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0007-FR-013",
         "KMIPKIT-0018-FR-001",
         "KMIPKIT-0018-FR-002",
         "KMIPKIT-0018-FR-003",
@@ -119600,9 +119621,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -119699,6 +119720,9 @@
       "exportName": "kmipkit::Client::recover_with_options",
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-RECOVER",
       "requirementIds": [
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0007-FR-013",
         "KMIPKIT-0018-FR-001",
         "KMIPKIT-0018-FR-002",
         "KMIPKIT-0018-FR-003",
@@ -119730,9 +119754,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -123298,9 +123322,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -123368,9 +123392,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -123439,9 +123463,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -123508,9 +123532,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
@@ -267467,6 +267491,10 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/Pkcs11MappingTest.java",
         "bindings/python/tests/test_pkcs11_operation.py"
+      ],
+      "javaSignatures": [
+        "public static org.kmipkit.extensions.ClientBatchItem pkcs11(org.kmipkit.ttlv.TtlvStructure, org.kmipkit.ttlv.TtlvStructure, byte[], org.kmipkit.ttlv.TtlvStructure)",
+        "public static org.kmipkit.extensions.ClientBatchItem pkcs11(org.kmipkit.ttlv.TtlvStructure, org.kmipkit.ttlv.TtlvStructure, byte[], org.kmipkit.ttlv.TtlvStructure, java.util.List<org.kmipkit.ttlv.TtlvItem>)"
       ]
     },
     {
@@ -280783,9 +280811,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -280852,9 +280880,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -280921,9 +280949,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -280990,9 +281018,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -281059,9 +281087,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -281128,9 +281156,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -281197,9 +281225,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -281266,9 +281294,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -281335,9 +281363,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -281404,9 +281432,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -281474,9 +281502,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -281544,9 +281572,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -281614,9 +281642,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -281684,9 +281712,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -281754,9 +281782,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -281824,9 +281852,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -281894,9 +281922,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -281964,9 +281992,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -282034,9 +282062,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -282104,9 +282132,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -282173,9 +282201,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -282242,9 +282270,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -282311,9 +282339,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -282380,9 +282408,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -282449,9 +282477,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -282518,9 +282546,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -282587,9 +282615,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -282656,9 +282684,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -282725,9 +282753,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -282794,9 +282822,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -282865,9 +282893,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -282936,9 +282964,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -283007,9 +283035,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -283078,9 +283106,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -283149,9 +283177,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -283220,9 +283248,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -283291,9 +283319,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -283362,9 +283390,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -283433,9 +283461,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -283504,9 +283532,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/018-managed-object-lifecycle/spec.md",
+        "path": "specs/018-managed-object-lifecycle/approval-record.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation; independent review remains pending"
+        "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       },
       "languageMappings": {
         "rust": {
@@ -364377,7 +364405,10 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.profile_readiness.ProfileEvidenceRecord.passed"
         }
-      }
+      },
+      "javaSignatures": [
+        "public static org.kmipkit.extensions.ProfileEvidenceRecord passed(java.lang.String)"
+      ]
     },
     {
       "declarationId": "T102:java:org_kmipkit_extensions_ProfileReadiness",
@@ -365181,7 +365212,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ClientProfile_applicability",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ClientProfile.applicability",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -365228,7 +365259,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ClientProfile_claim_state",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ClientProfile.claim_state",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -365275,7 +365306,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ClientProfile_dependency_profile_ids",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ClientProfile.dependency_profile_ids",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -365322,7 +365353,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ClientProfile_direct_source_clause_ids",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ClientProfile.direct_source_clause_ids",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -365369,7 +365400,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ClientProfile_encoding_requirements",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ClientProfile.encoding_requirements",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -365416,7 +365447,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ClientProfile_name",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ClientProfile.name",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -365463,7 +365494,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ClientProfile_profile_id",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ClientProfile.profile_id",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -365510,7 +365541,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ClientProfile_requirement_ids",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ClientProfile.requirement_ids",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -365557,7 +365588,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ClientProfile_selected_target",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ClientProfile.selected_target",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -365604,7 +365635,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ClientProfile_source_clause_ids",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ClientProfile.source_clause_ids",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -365651,7 +365682,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ClientProfile_test_cases",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ClientProfile.test_cases",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -365698,7 +365729,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ClientProfile_transport_requirements",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ClientProfile.transport_requirements",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -365745,7 +365776,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ClientProfile_unresolved_scope_obligations",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ClientProfile.unresolved_scope_obligations",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -365839,7 +365870,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ClientRequirement_has_accepted_deviation",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ClientRequirement.has_accepted_deviation",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -365886,7 +365917,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ClientRequirement_official_test_case_ids",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ClientRequirement.official_test_case_ids",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -365933,7 +365964,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ClientRequirement_profile_ids",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ClientRequirement.profile_ids",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -365980,7 +366011,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ClientRequirement_requirement_id",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ClientRequirement.requirement_id",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -366027,7 +366058,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ClientRequirement_scope_state",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ClientRequirement.scope_state",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -366074,7 +366105,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ClientRequirement_source_clause_ids",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ClientRequirement.source_clause_ids",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -366121,7 +366152,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ClientRequirement_source_force",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ClientRequirement.source_force",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -366168,7 +366199,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ClientRequirement_source_gap_id",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ClientRequirement.source_gap_id",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -366215,7 +366246,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ClientRequirement_source_keyword",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ClientRequirement.source_keyword",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -366262,7 +366293,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ClientRequirement_source_locator",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ClientRequirement.source_locator",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -366309,7 +366340,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ClientRequirement_verification_category",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ClientRequirement.verification_category",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -366403,7 +366434,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ProfileScopeBlocker_requirement_id",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ProfileScopeBlocker.requirement_id",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -366450,7 +366481,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ProfileScopeBlocker_scope_state",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ProfileScopeBlocker.scope_state",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -366497,7 +366528,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ProfileScopeBlocker_source_clause_id",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ProfileScopeBlocker.source_clause_id",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -366591,7 +366622,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ProfileTestCase_fixture_availability",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ProfileTestCase.fixture_availability",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -366638,7 +366669,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ProfileTestCase_mandatory_status",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ProfileTestCase.mandatory_status",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -366685,7 +366716,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ProfileTestCase_official_case_id",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ProfileTestCase.official_case_id",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -366732,7 +366763,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_catalog_ProfileTestCase_test_id",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_catalog.ProfileTestCase.test_id",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -367390,7 +367421,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_readiness_ProfileReadiness_blockers",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_readiness.ProfileReadiness.blockers",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -367437,7 +367468,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_readiness_ProfileReadiness_effective_state",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_readiness.ProfileReadiness.effective_state",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -367531,7 +367562,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_readiness_ProfileReadiness_profile_id",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_readiness.ProfileReadiness.profile_id",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -367578,7 +367609,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_readiness_ProfileReadiness_published_claim",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_readiness.ProfileReadiness.published_claim",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -367625,7 +367656,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_readiness_ProfileReadiness_requirement_records_complete",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_readiness.ProfileReadiness.requirement_records_complete",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -367672,7 +367703,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_readiness_ProfileReadiness_runtime_validation_available",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_readiness.ProfileReadiness.runtime_validation_available",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -367719,7 +367750,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_readiness_ProfileReadiness_target_selected",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_readiness.ProfileReadiness.target_selected",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -367813,7 +367844,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_readiness_ProfileReadinessBlocker_kind",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_readiness.ProfileReadinessBlocker.kind",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -367860,7 +367891,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_readiness_ProfileReadinessBlocker_message",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_readiness.ProfileReadinessBlocker.message",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -367907,7 +367938,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_readiness_ProfileReadinessBlocker_profile_id",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_readiness.ProfileReadinessBlocker.profile_id",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -367954,7 +367985,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_readiness_ProfileReadinessBlocker_requirement_id",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_readiness.ProfileReadinessBlocker.requirement_id",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -368001,7 +368032,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_readiness_ProfileReadinessBlocker_source_clause_id",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_readiness.ProfileReadinessBlocker.source_clause_id",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -368048,7 +368079,7 @@
     {
       "declarationId": "T102:python:kmipkit_profile_readiness_ProfileReadinessBlocker_test_id",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.profile_readiness.ProfileReadinessBlocker.test_id",
       "capabilityId": "client_profile_readiness",
       "requirementIds": [
@@ -371156,6 +371187,56 @@
         "bindings/java/src/test/java/org/kmipkit/extensions/Pkcs11MappingTest.java",
         "bindings/python/tests/test_pkcs11_operation.py",
         "tools/api_manifest/tests/test_t102_pkcs11_request_extension_mapping.py"
+      ]
+    },
+    {
+      "declarationId": "T109:java:org_kmipkit_extensions_ProfileCatalog_VerificationCategory_value",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.value",
+      "capabilityId": "client_profile_readiness",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-001",
+        "KMIPKIT-0010-FR-002",
+        "KMIPKIT-0010-FR-003",
+        "KMIPKIT-0010-FR-010",
+        "KMIPKIT-0010-FR-011",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::profiles_generated::GeneratedVerificationCategory"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_catalog_row_view_v1_t.verification_category"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.value"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.profile_catalog.VerificationCategory"
+        }
+      },
+      "parityEvidenceIds": [
+        "tools/api_manifest/tests/test_t109_binding_export_audit_reconciliation.py"
       ]
     }
   ],
@@ -481337,6 +481418,501 @@
         "status": "Approved",
         "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
       }
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileEvidenceRecord.requirementId",
+      "reason": "This Java record accessor exposes a caller-supplied, input-only ProfileEvidenceRecord field and is not a supported cross-language readback capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against accepted KMIPKIT-0010-FR-017 and KMIPKIT-0043-FR-021. The Rust ProfileEvidenceRecord has no public field getter, and the caller-supplied record is consumed as input by all four evaluation surfaces. This exclusion covers attribute readback only."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileEvidenceRecord.passed",
+      "reason": "This Java record accessor exposes a caller-supplied, input-only ProfileEvidenceRecord field and is not a supported cross-language readback capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against accepted KMIPKIT-0010-FR-017 and KMIPKIT-0043-FR-021. The Rust ProfileEvidenceRecord has no public field getter, and the caller-supplied record is consumed as input by all four evaluation surfaces. This exclusion covers attribute readback only.",
+      "javaSignatures": [
+        "public boolean passed()"
+      ]
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.PROFILE_CATALOG_CLIENT_PROFILES",
+      "reason": "This exact public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies this member as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md defines the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.PROFILE_CATALOG_CLIENT_REQUIREMENTS",
+      "reason": "This exact public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies this member as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md defines the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.PROFILE_CATALOG_PROFILE_TEST_CASES",
+      "reason": "This exact public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies this member as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md defines the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.profileCatalogRelationCount",
+      "reason": "This exact public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies this member as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md defines the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.profileCatalogRelationRow",
+      "reason": "This exact public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies this member as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md defines the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.profileCatalogRow",
+      "reason": "This exact public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies this member as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md defines the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.profileCatalogTableCount",
+      "reason": "This exact public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies this member as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md defines the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.profileReadinessBlockerAt",
+      "reason": "This exact public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies this member as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md defines the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.profileReadinessCreate",
+      "reason": "This exact public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies this member as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md defines the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.profileReadinessRelease",
+      "reason": "This exact public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies this member as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md defines the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.profileReadinessView",
+      "reason": "This exact public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies this member as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md defines the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.registerRequestWithProtectionStorageMasks",
+      "reason": "This exact public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies this member as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md defines the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileCatalog",
+      "reason": "This exact public Java type is a static catalog namespace that groups separately mapped profile accessors and has no independent product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The static clientProfiles, clientRequirements, and profileTestCases accessors remain declared individually; this exclusion covers only the namespace container."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileCatalog.ClientProfile.<init>",
+      "reason": "This exact public record constructor creates a local metadata value; callers obtain catalog snapshots through the mapped catalog API, and constructing this value does not add an independent capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The org.kmipkit.extensions.ProfileCatalog.ClientProfile type and its supported fields or factories remain mapped; this exclusion covers only direct construction of a local metadata value."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileCatalog.ClientProfile.equals",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding org.kmipkit.extensions.ProfileCatalog.ClientProfile record remains mapped as a public facade value; only the compiler-generated member is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileCatalog.ClientProfile.hashCode",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding org.kmipkit.extensions.ProfileCatalog.ClientProfile record remains mapped as a public facade value; only the compiler-generated member is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileCatalog.ClientProfile.toString",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding org.kmipkit.extensions.ProfileCatalog.ClientProfile record remains mapped as a public facade value; only the compiler-generated member is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileCatalog.ClientRequirement.<init>",
+      "reason": "This exact public record constructor creates a local metadata value; callers obtain catalog snapshots through the mapped catalog API, and constructing this value does not add an independent capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The org.kmipkit.extensions.ProfileCatalog.ClientRequirement type and its supported fields or factories remain mapped; this exclusion covers only direct construction of a local metadata value."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileCatalog.ClientRequirement.equals",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding org.kmipkit.extensions.ProfileCatalog.ClientRequirement record remains mapped as a public facade value; only the compiler-generated member is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileCatalog.ClientRequirement.hashCode",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding org.kmipkit.extensions.ProfileCatalog.ClientRequirement record remains mapped as a public facade value; only the compiler-generated member is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileCatalog.ClientRequirement.toString",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding org.kmipkit.extensions.ProfileCatalog.ClientRequirement record remains mapped as a public facade value; only the compiler-generated member is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileCatalog.ProfileScopeBlocker.<init>",
+      "reason": "This exact public record constructor creates a local metadata value; callers obtain catalog snapshots through the mapped catalog API, and constructing this value does not add an independent capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The org.kmipkit.extensions.ProfileCatalog.ProfileScopeBlocker type and its supported fields or factories remain mapped; this exclusion covers only direct construction of a local metadata value."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileCatalog.ProfileScopeBlocker.equals",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding org.kmipkit.extensions.ProfileCatalog.ProfileScopeBlocker record remains mapped as a public facade value; only the compiler-generated member is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileCatalog.ProfileScopeBlocker.hashCode",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding org.kmipkit.extensions.ProfileCatalog.ProfileScopeBlocker record remains mapped as a public facade value; only the compiler-generated member is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileCatalog.ProfileScopeBlocker.toString",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding org.kmipkit.extensions.ProfileCatalog.ProfileScopeBlocker record remains mapped as a public facade value; only the compiler-generated member is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileCatalog.ProfileTestCase.<init>",
+      "reason": "This exact public record constructor creates a local metadata value; callers obtain catalog snapshots through the mapped catalog API, and constructing this value does not add an independent capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The org.kmipkit.extensions.ProfileCatalog.ProfileTestCase type and its supported fields or factories remain mapped; this exclusion covers only direct construction of a local metadata value."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileCatalog.ProfileTestCase.equals",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding org.kmipkit.extensions.ProfileCatalog.ProfileTestCase record remains mapped as a public facade value; only the compiler-generated member is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileCatalog.ProfileTestCase.hashCode",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding org.kmipkit.extensions.ProfileCatalog.ProfileTestCase record remains mapped as a public facade value; only the compiler-generated member is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileCatalog.ProfileTestCase.toString",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding org.kmipkit.extensions.ProfileCatalog.ProfileTestCase record remains mapped as a public facade value; only the compiler-generated member is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.valueOf",
+      "reason": "This exact Java member is compiler-provided enum lookup boilerplate; the enum type and its declared values carry the product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. org.kmipkit.extensions.ProfileCatalog.VerificationCategory remains mapped as a public facade value; only the compiler-generated enum helper is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.values",
+      "reason": "This exact Java member is compiler-provided enum lookup boilerplate; the enum type and its declared values carry the product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. org.kmipkit.extensions.ProfileCatalog.VerificationCategory remains mapped as a public facade value; only the compiler-generated enum helper is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileEvidenceRecord.<init>",
+      "reason": "This exact public record constructor creates a local metadata value; callers obtain catalog snapshots through the mapped catalog API, and constructing this value does not add an independent capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The org.kmipkit.extensions.ProfileEvidenceRecord type and its supported fields or factories remain mapped; this exclusion covers only direct construction of a local metadata value."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileEvidenceRecord.equals",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding org.kmipkit.extensions.ProfileEvidenceRecord record remains mapped as a public facade value; only the compiler-generated member is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileEvidenceRecord.hashCode",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding org.kmipkit.extensions.ProfileEvidenceRecord record remains mapped as a public facade value; only the compiler-generated member is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileEvidenceRecord.toString",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding org.kmipkit.extensions.ProfileEvidenceRecord record remains mapped as a public facade value; only the compiler-generated member is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileReadinessBlocker.<init>",
+      "reason": "This exact public record constructor creates a local metadata value; callers obtain catalog snapshots through the mapped catalog API, and constructing this value does not add an independent capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-010 and KMIPKIT-0043-FR-021. The org.kmipkit.extensions.ProfileReadinessBlocker type and its supported fields or factories remain mapped; this exclusion covers only direct construction of a local metadata value."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileReadinessBlocker.equals",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding org.kmipkit.extensions.ProfileReadinessBlocker record remains mapped as a public facade value; only the compiler-generated member is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileReadinessBlocker.hashCode",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding org.kmipkit.extensions.ProfileReadinessBlocker record remains mapped as a public facade value; only the compiler-generated member is excluded."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ProfileReadinessBlocker.toString",
+      "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the Java declaration inventory. The corresponding org.kmipkit.extensions.ProfileReadinessBlocker record remains mapped as a public facade value; only the compiler-generated member is excluded."
     }
   ],
   "apiLevels": [
@@ -481394,27 +481970,27 @@
       ],
       "declarations": {
         "rust": [
-          "rust-observed-09525accf39d35fed02d",
           "rust-observed-229e9890b6de5281d693",
-          "rust-observed-341fb8e57278dbf19734",
-          "rust-observed-4e77cd82f13163be6c38",
           "rust-observed-541706c47bcf8bcaf9b5",
           "rust-observed-5aacdd6b55c95d262b62",
-          "rust-observed-5d1091dcc216a2503a8d",
           "rust-observed-5d482d184b66dffd69b8",
+          "rust-observed-8556a115b08240d1bebb",
+          "rust-observed-90b78d8ac8583bcc4943",
+          "rust-observed-9d25622dfefc0c513474",
+          "rust-observed-9e17a1f6a4b6e75f9c80",
+          "rust-observed-aa4b192087168981006d",
+          "rust-observed-b16687c9a55fd331a011",
+          "rust-observed-09525accf39d35fed02d",
+          "rust-observed-341fb8e57278dbf19734",
+          "rust-observed-4e77cd82f13163be6c38",
+          "rust-observed-5d1091dcc216a2503a8d",
           "rust-observed-6e7be4a615ad38daaf6b",
           "rust-observed-79719ea69daa92e8cb68",
           "rust-observed-7caaa87029c5323314e6",
           "rust-observed-838360aa7bbb16466903",
-          "rust-observed-8556a115b08240d1bebb",
-          "rust-observed-90b78d8ac8583bcc4943",
           "rust-observed-9961cbf6ca6cee53fe6e",
-          "rust-observed-9d25622dfefc0c513474",
-          "rust-observed-9e17a1f6a4b6e75f9c80",
           "rust-observed-a279b255a82fbde40f69",
-          "rust-observed-aa4b192087168981006d",
           "rust-observed-ab71809c42042bffc933",
-          "rust-observed-b16687c9a55fd331a011",
           "rust-observed-b5c53d31a2187476aff6",
           "rust-observed-b6413ad7f5222debd1c9",
           "rust-observed-ba217631338ca8fee7b9",
@@ -481598,34 +482174,34 @@
       ],
       "declarations": {
         "rust": [
+          "rust-observed-23cf1e5aee2254590605",
+          "rust-observed-2651c70d2686727da2a3",
+          "rust-observed-364975b97cf524df2468",
+          "rust-observed-5976c7012d021f45ecb7",
+          "rust-observed-76cf6caa6372c5d3b6b6",
+          "rust-observed-78ff050eceb39bf6b35b",
+          "rust-observed-79b04e404e17d32263a8",
+          "rust-observed-a01af4ff7b56e78406f3",
+          "rust-observed-a68cb97d0238cac375ac",
+          "rust-observed-d9baa60b08787756b93d",
           "rust-observed-1c20ec6821d1df1d3e01",
           "rust-observed-1ee29d37ed95f846b2fb",
           "rust-observed-2030b0132c64653d184e",
           "rust-observed-237adf99e27621ab6400",
-          "rust-observed-23cf1e5aee2254590605",
-          "rust-observed-2651c70d2686727da2a3",
-          "rust-observed-364975b97cf524df2468",
           "rust-observed-4a5286ee8acad9c1f6d2",
           "rust-observed-4b073f5bee369cb2164b",
           "rust-observed-4b963a2492761eaa78c9",
           "rust-observed-4e3d34f4c574b342403e",
-          "rust-observed-5976c7012d021f45ecb7",
           "rust-observed-606a252a5ef645d9cdc3",
           "rust-observed-6ee109834fbbf6dd9ad1",
           "rust-observed-6ef303e52f2e7a0eeb66",
-          "rust-observed-76cf6caa6372c5d3b6b6",
-          "rust-observed-78ff050eceb39bf6b35b",
-          "rust-observed-79b04e404e17d32263a8",
           "rust-observed-8d90a704e02f1f46859b",
-          "rust-observed-a01af4ff7b56e78406f3",
-          "rust-observed-a68cb97d0238cac375ac",
           "rust-observed-aac050f5fb653116abe9",
           "rust-observed-b633aa75fd8bfcf01429",
           "rust-observed-c42c929051d67afe0dfa",
           "rust-observed-c50a960642a4ebda3a74",
           "rust-observed-c73beac47064efcc7358",
           "rust-observed-ce5f6c5bdc0b7bea8a6d",
-          "rust-observed-d9baa60b08787756b93d",
           "rust-observed-da363426da2a94c568fb",
           "rust-observed-dd1c75550a7099e029da",
           "rust-observed-ee7af9e32555430d59a9",
@@ -482441,38 +483017,38 @@
       ],
       "declarations": {
         "rust": [
-          "rust-observed-0199443241a45f024368",
           "rust-observed-20fc548e9638845c1f34",
+          "rust-observed-450066d6809ae4bd3455",
+          "rust-observed-4a4ec36bb63983b11e0a",
+          "rust-observed-7151a65f73983fb98b2b",
+          "rust-observed-771cbe1ee6a6e8e9a157",
+          "rust-observed-a003f7aa6826064f2120",
+          "rust-observed-bf0e06ca937d004f79c0",
+          "rust-observed-deba1050b5cd524f7460",
+          "rust-observed-ec12287492bc1bb12209",
+          "rust-observed-f280144843782c4d736f",
+          "rust-observed-0199443241a45f024368",
           "rust-observed-2c4c8a3508fff609409e",
           "rust-observed-2ecfacd675d07bb601cf",
           "rust-observed-3f76b27a7d2d3bcd80f1",
-          "rust-observed-450066d6809ae4bd3455",
-          "rust-observed-4a4ec36bb63983b11e0a",
           "rust-observed-4e82ed71f57f8fa25f75",
           "rust-observed-512514838ce7a523120e",
           "rust-observed-53f011334d58d4b0c2fd",
           "rust-observed-56a34863f8934e99b338",
           "rust-observed-666ef59528c2d4f489d2",
           "rust-observed-6f9ba698d2e6bec39ba5",
-          "rust-observed-7151a65f73983fb98b2b",
           "rust-observed-7566c41cf533b7fc8bda",
           "rust-observed-7703a22dba151c60bc79",
-          "rust-observed-771cbe1ee6a6e8e9a157",
           "rust-observed-7dd54e6b68db52e492f1",
           "rust-observed-876771e227a9a5100b85",
           "rust-observed-9dc9527bc56e20f08dba",
-          "rust-observed-a003f7aa6826064f2120",
           "rust-observed-b3a866ca3d48d484b658",
           "rust-observed-bb12b4f66784e4f1b13e",
-          "rust-observed-bf0e06ca937d004f79c0",
           "rust-observed-c4caa8d965656453dfe2",
           "rust-observed-c6952882ae920c17e0c5",
           "rust-observed-cacfb50033486d0fe36d",
           "rust-observed-d26adf21e89e182862ad",
           "rust-observed-dd46dd6b9765c5963dcc",
-          "rust-observed-deba1050b5cd524f7460",
-          "rust-observed-ec12287492bc1bb12209",
-          "rust-observed-f280144843782c4d736f",
           "rust-observed-f44480fe9a0e808b2b13"
         ],
         "c": [
@@ -484408,36 +484984,36 @@
       ],
       "declarations": {
         "rust": [
-          "rust-observed-127ae579af7ab83b6fe0",
           "rust-observed-1e3dfb0e29e835524f0a",
-          "rust-observed-32a1f1164430180b3d38",
-          "rust-observed-35b02435a5ab698de9ba",
-          "rust-observed-364d0bced08a3814b02b",
           "rust-observed-45233981a2c94cc46330",
-          "rust-observed-53ff035fc93490583569",
           "rust-observed-5732501948b613a3731e",
-          "rust-observed-58b2a0a0005b01cd915b",
-          "rust-observed-5d53cf1acbd89eaa0928",
           "rust-observed-729b99f7e6b68fe5b653",
-          "rust-observed-7361403d2e865963519b",
           "rust-observed-7d45dc49aa26c99383fb",
-          "rust-observed-815110c057f8dd73b43f",
-          "rust-observed-826adfd9ad3f56e408c1",
           "rust-observed-87d8bbafa321debc5e3f",
           "rust-observed-93aa38af51c9952e80de",
           "rust-observed-940ee0e7ef99f506ef0e",
+          "rust-observed-cc8efd51b584bc555a9e",
+          "rust-observed-f3a5082c1fb80778f58c",
+          "rust-observed-127ae579af7ab83b6fe0",
+          "rust-observed-32a1f1164430180b3d38",
+          "rust-observed-35b02435a5ab698de9ba",
+          "rust-observed-364d0bced08a3814b02b",
+          "rust-observed-53ff035fc93490583569",
+          "rust-observed-58b2a0a0005b01cd915b",
+          "rust-observed-5d53cf1acbd89eaa0928",
+          "rust-observed-7361403d2e865963519b",
+          "rust-observed-815110c057f8dd73b43f",
+          "rust-observed-826adfd9ad3f56e408c1",
           "rust-observed-b1cfefac15dea563f20e",
           "rust-observed-bc342735c312caa8c9b2",
           "rust-observed-c7c0901feaea6d95ec87",
           "rust-observed-c916e96a921ad748a81a",
-          "rust-observed-cc8efd51b584bc555a9e",
           "rust-observed-db952324954464cf7b2e",
           "rust-observed-e1c29dda28e11eea00db",
           "rust-observed-f1838ff84bd8e7c71636",
           "rust-observed-f2ba09702e433fb24c09",
           "rust-observed-f2e0498fbf86c10d2a60",
           "rust-observed-f335dbcf6407fd8c9a52",
-          "rust-observed-f3a5082c1fb80778f58c",
           "rust-observed-f3c239de3d924d2df610",
           "rust-observed-f97f28d5c4bdb2131702",
           "rust-observed-fda7d5ea8de0f7217fb6"
@@ -487736,10 +488312,36 @@
       "requirementIds": [
         "KMIPKIT-0043-FR-021"
       ],
-      "capabilityState": "blocked",
+      "capabilityState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "Several existing exports still lack an approved logical owner or reviewed cross-language declaration mapping."
+      "ownerSpecId": "KMIPKIT-0043",
+      "approvalEvidence": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "parityEvidenceIds": [
+        "tests/fixtures/api/shared-capability-parity.json",
+        "crates/kmipkit/tests/runtime_metadata.rs",
+        "crates/kmipkit-ffi/tests/support/metadata_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/python/tests/test_shared_parity_fixtures.py"
+      ],
+      "mappings": {
+        "rust": [
+          "kmipkit_ttlv::codec::CodecLimits"
+        ],
+        "c": [
+          "kmipkit_codec_limits_release"
+        ],
+        "java": [
+          "org.kmipkit.ttlv.CodecLimits"
+        ],
+        "python": [
+          "kmipkit.ttlv.CodecLimits.close"
+        ]
+      }
     },
     {
       "capabilityId": "rust_transport_exchange",
@@ -489848,6 +490450,7 @@
           "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.PROHIBITED_BEHAVIOR",
           "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.RECOMMENDED_BEHAVIOR_OR_DEVIATION",
           "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.REQUIRED_BEHAVIOR",
+          "org.kmipkit.extensions.ProfileCatalog.VerificationCategory.value",
           "org.kmipkit.extensions.ProfileCatalog.clientProfiles",
           "org.kmipkit.extensions.ProfileCatalog.clientRequirements",
           "org.kmipkit.extensions.ProfileCatalog.profileTestCases",

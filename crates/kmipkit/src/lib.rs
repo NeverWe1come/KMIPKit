@@ -130,6 +130,7 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "opaque_register_context"
             | "server_generated_creation"
             | "typed_message_model"
+            | "public_binding_surface"
     ))
 }
 

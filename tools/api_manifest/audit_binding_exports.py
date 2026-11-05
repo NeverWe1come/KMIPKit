@@ -885,17 +885,45 @@ def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> d
             or row.get("kind") == "c-symbol"
             or row.get("exportName") in stable_error_codes
         ]
+    declaration_counts = Counter((row["packageId"], row["exportName"]) for row in package_rows)
+    duplicate_names = sorted(name for (package_id, name), count in declaration_counts.items() if count > 1)
     declared = {(row["packageId"], row["exportName"]): row for row in package_rows}
-    duplicate_names = sorted(name for name, count in Counter(row["exportName"] for row in package_rows).items() if count > 1)
     package_exclusions = [row for row in manifest.get("approvedExclusions", [])
                           if row.get("packageId") == package]
     exclusion_counts = Counter((row["packageId"], row["exportName"]) for row in package_exclusions)
     duplicate_exclusions = sorted(key for key, count in exclusion_counts.items() if count > 1)
     exclusions = {(row["packageId"], row["exportName"]): row for row in package_exclusions}
-    declaration_exclusion_overlaps = sorted(set(declared) & set(exclusions))
+    declaration_exclusion_overlaps = set(declared) & set(exclusions)
     observed = {(row["packageId"], row["exportName"]): row for row in report["declarations"]}
     missing = sorted(set(observed) - set(declared) - set(exclusions))
     stale = sorted(set(declared) - set(observed))
+
+    signature_issues: list[dict[str, str]] = []
+    signature_splits: set[tuple[str, str]] = set()
+    if package == "java-kmipkit":
+        for key in sorted(declaration_exclusion_overlaps):
+            observed_signatures = observed.get(key, {}).get("signatures", [])
+            declared_signatures = declared[key].get("javaSignatures")
+            excluded_signatures = exclusions[key].get("javaSignatures")
+            valid_split = (
+                bool(observed_signatures)
+                and bool(declared_signatures)
+                and bool(excluded_signatures)
+                and len(declared_signatures) == len(set(declared_signatures))
+                and len(excluded_signatures) == len(set(excluded_signatures))
+                and not (set(declared_signatures) & set(excluded_signatures))
+                and set(observed_signatures) == set(declared_signatures) | set(excluded_signatures)
+            )
+            if valid_split:
+                signature_splits.add(key)
+            else:
+                signature_issues.append({
+                    "packageId": package,
+                    "exportName": key[1],
+                    "reason": "java-signature-partition-mismatch",
+                })
+
+    invalid_overlaps = sorted(declaration_exclusion_overlaps - signature_splits)
     def canonical_kind(kind: str) -> str:
         if package == "python-kmipkit" and kind in {"function", "python-export"}:
             return "python-callable"
@@ -904,9 +932,10 @@ def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> d
     mismatches = sorted(key for key in set(observed) & set(declared)
                         if canonical_kind(observed[key]["kind"]) != canonical_kind(declared[key]["kind"]))
     path_matches = set(observed) & set(declared)
-    signature_issues: list[dict[str, str]] = []
     if package == "java-kmipkit":
         for key in sorted(path_matches):
+            if key in signature_splits or key in declaration_exclusion_overlaps:
+                continue
             observed_signatures = observed[key].get("signatures")
             declared_signatures = declared[key].get("javaSignatures")
             if not observed_signatures:
@@ -923,6 +952,16 @@ def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> d
                     "exportName": key[1],
                     "reason": "java-signature-mismatch",
                 })
+        for key in sorted(set(observed) & set(exclusions) - declaration_exclusion_overlaps):
+            observed_signatures = observed[key].get("signatures")
+            excluded_signatures = exclusions[key].get("javaSignatures")
+            if observed_signatures and excluded_signatures is not None \
+                    and set(observed_signatures) != set(excluded_signatures):
+                signature_issues.append({
+                    "packageId": package,
+                    "exportName": key[1],
+                    "reason": "java-exclusion-signature-mismatch",
+                })
     exact_matches = len(path_matches) - len(mismatches) - len(signature_issues)
     issues = list(report["issues"])
     issues.extend(signature_issues)
@@ -933,8 +972,8 @@ def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> d
                   for key in duplicate_exclusions)
     issues.extend({"packageId": key[0], "exportName": key[1],
                    "reason": "manifest-export-also-excluded"}
-                  for key in declaration_exclusion_overlaps)
-    invalid_identities = bool(duplicate_names or duplicate_exclusions or declaration_exclusion_overlaps)
+                  for key in invalid_overlaps)
+    invalid_identities = bool(duplicate_names or duplicate_exclusions or invalid_overlaps)
     return {"packageId": package, "complete": report["complete"] and not invalid_identities and not signature_issues,
             "matchesManifest": not missing and not stale and not mismatches and not invalid_identities
             and not signature_issues and report["complete"],

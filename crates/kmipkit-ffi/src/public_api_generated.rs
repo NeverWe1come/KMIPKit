@@ -20,6 +20,7 @@ pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
     "nonce_ttlv_parity",
     "opaque_register_context",
     "production_transport",
+    "public_binding_surface",
     "server_generated_creation",
     "ttlv_wire_codec",
     "typed_message_model",

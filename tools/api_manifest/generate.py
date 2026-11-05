@@ -1309,8 +1309,30 @@ def _validate_unique_public_export_identities(
         raise ManifestError("manifest contains a duplicate public export path")
     if len(exclusion_paths) != len(set(exclusion_paths)):
         raise ManifestError("manifest contains a duplicate approved exclusion path")
-    if set(declaration_paths) & set(exclusion_paths):
-        raise ManifestError("a public declaration overlaps an approved exclusion")
+    overlaps = set(declaration_paths) & set(exclusion_paths)
+    declarations_by_path = {
+        (record.get("packageId"), record.get("exportName")): record
+        for record in declarations
+        if isinstance(record, dict)
+    }
+    exclusions_by_path = {
+        (record.get("packageId"), record.get("exportName")): record
+        for record in exclusions
+        if isinstance(record, dict)
+    }
+    for package_id, export_name in overlaps:
+        declaration = declarations_by_path[(package_id, export_name)]
+        exclusion = exclusions_by_path[(package_id, export_name)]
+        declared_signatures = declaration.get("javaSignatures")
+        excluded_signatures = exclusion.get("javaSignatures")
+        if package_id != "java-kmipkit" or not isinstance(declared_signatures, list) \
+                or not isinstance(excluded_signatures, list) or not declared_signatures \
+                or not excluded_signatures:
+            raise ManifestError("a public declaration overlaps an approved exclusion")
+        if len(declared_signatures) != len(set(declared_signatures)) \
+                or len(excluded_signatures) != len(set(excluded_signatures)) \
+                or set(declared_signatures) & set(excluded_signatures):
+            raise ManifestError("a public declaration overlaps an approved exclusion")
 
 
 def _require_complete_readiness(

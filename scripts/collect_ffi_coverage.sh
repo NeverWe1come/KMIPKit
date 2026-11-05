@@ -10,6 +10,7 @@ llvm_cov_target="${target_root}/llvm-cov-target"
 source_files=(
     "${repository_root}/crates/kmipkit-ffi/src/extension_registry.rs"
     "${repository_root}/crates/kmipkit-ffi/src/extension_registry/client_abi.rs"
+    "${repository_root}/crates/kmipkit-ffi/src/extension_registry/credential_secrets.rs"
 )
 
 if [[ "$(uname -s)" != Linux ]]; then
