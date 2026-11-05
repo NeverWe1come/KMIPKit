@@ -19,6 +19,8 @@ final class NamedProtocolValuesTest {
         assertEquals(KmipValues.CryptographicUsageMask.ENCRYPT,
                 KmipValues.CryptographicUsageMask.knownBits(raw));
         assertEquals(0x8000_0000L, KmipValues.CryptographicUsageMask.unknownBits(raw));
+        assertEquals(0x8000_0000L,
+                KmipValues.CryptographicUsageMask.unknownBits(raw | 0x1_0000_0000L));
         assertEquals(List.of("Encrypt"), KmipValues.CryptographicUsageMask.names(raw));
     }
 }
