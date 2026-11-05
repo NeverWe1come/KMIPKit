@@ -16,11 +16,11 @@ use std::cell::{Cell, RefCell};
 use std::error::Error;
 use std::rc::Rc;
 
-use kmipkit_protocol::{AttributeSet, CreateRequest, ObjectType};
+use kmipkit_protocol::{AttributeSet, CreateRequest, ObjectType, Pkcs11Request};
 use kmipkit_test_support::{ExchangeScript, ScriptedTransport};
 use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
 use kmipkit_ttlv::codec::{CodecLimits, decode};
-use kmipkit_ttlv::{Item, RawTag, Value, ValueView};
+use kmipkit_ttlv::{Item, RawTag, Structure, Value, ValueView};
 use serde_json::Value as JsonValue;
 
 use crate::ClientErrorCategory;
@@ -341,6 +341,29 @@ fn invalid_typed_request_is_not_encoded_or_written() {
     assert_eq!(fake.borrow().write_call_count(), 0);
     assert!(!error.to_string().contains("PREFLIGHT_CANARY"));
     assert!(!format!("{error:?}").contains("PREFLIGHT_CANARY"));
+}
+
+#[test]
+fn malformed_pkcs11_function_is_not_sent() {
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Pkcs11(
+        Pkcs11Request::new(Structure::new()),
+    )));
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::Success {
+            response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let error = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect_err("malformed PKCS#11 Function is rejected during typed preflight");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(error.category(), ClientErrorCategory::Validation);
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert_eq!(fake.borrow().write_call_count(), 0);
 }
 
 fn pending_response() -> Vec<u8> {

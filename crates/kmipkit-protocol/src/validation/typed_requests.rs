@@ -74,7 +74,6 @@ impl_typed_request_validation! {
     ModifyAttributeRequest => ModifyAttribute,
     ObtainLeaseRequest => ObtainLease,
     PingRequest => Ping,
-    Pkcs11Request => Pkcs11,
     PollRequest => Poll,
     ProcessRequest => Process,
     QueryAsyncRequestsRequest => QueryAsyncRequests,
@@ -214,5 +213,36 @@ impl ValidateKmipRequest for JoinSplitKeyRequest {
                 )
             }
         }
+    }
+}
+
+impl ValidateKmipRequest for Pkcs11Request {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Pkcs11;
+
+    fn validate(&self) -> ValidationReport {
+        let (field, reference) = match self.validate_request_shape() {
+            Ok(()) => return ValidationReport::default(),
+            Err(crate::pkcs11::Pkcs11RequestValidationFailure::Interface) => {
+                ("PKCS#11 Interface", "§6.1.37, Table 273; §7.28, Table 380")
+            }
+            Err(crate::pkcs11::Pkcs11RequestValidationFailure::Function) => {
+                ("PKCS#11 Function", "§6.1.37, Table 273; §7.26, Table 378")
+            }
+            Err(crate::pkcs11::Pkcs11RequestValidationFailure::InputParameters) => (
+                "PKCS#11 Input Parameters",
+                "§6.1.37, Table 273; §7.27, Table 379",
+            ),
+            Err(crate::pkcs11::Pkcs11RequestValidationFailure::ExtensionCollision) => {
+                ("Request Payload", "§6.1.37, Table 273")
+            }
+        };
+        crate::validation::request_issue_report(
+            "KMIPKIT-0051-P005",
+            field,
+            crate::ValidationSourceRef::Oasis {
+                document: "KMIP v2.1",
+                reference,
+            },
+        )
     }
 }
