@@ -616,3 +616,62 @@ fn normalized_initial_digits_and_xml_text_escape_combinations_roundtrip() {
     assert!(xml(&false_value).contains("value=\"false\""));
     equal(&false_value, &parse(&xml(&false_value)));
 }
+
+// KMIPKIT-0056-R004: the complete input must pass limits before parser allocation.
+#[test]
+fn complete_element_preflight_precedes_earlier_payload_decoding() {
+    let input = b"<RequestPayload><BatchCount type='Integer' value='bad'/><BatchItem/></RequestPayload>";
+    assert_eq!(
+        decode(input, &CodecLimits::new(1000, 10, 2).unwrap())
+            .unwrap_err()
+            .kind(),
+        WireCodecErrorKind::LimitExceeded
+    );
+}
+
+#[test]
+fn complete_depth_preflight_precedes_earlier_namespace_decoding() {
+    let input = b"<RequestPayload xmlns='&undeclared;'><BatchItem type='Str&#117;cture'/></RequestPayload>";
+    assert_eq!(
+        decode(input, &CodecLimits::new(1000, 1, 10).unwrap())
+            .unwrap_err()
+            .kind(),
+        WireCodecErrorKind::LimitExceeded
+    );
+}
+
+// KMIPKIT-0056-R005: Namespaces in XML 1.0 sections 3-4, XML 1.0 section 2.3.
+#[test]
+fn qualified_names_require_nonempty_ncname_prefix_and_local_name() {
+    for input in [
+        "<:RequestPayload/>",
+        "<:RequestPayload></:RequestPayload>",
+        "<k:/>",
+        "<a:b:RequestPayload xmlns:a='urn:oasis:tc:kmip:xmlns'/>",
+        "<RequestPayload xmlns:='urn:oasis:tc:kmip:xmlns'/>",
+        "<RequestPayload xmlns:a:b='urn:oasis:tc:kmip:xmlns'/>",
+        "<RequestPayload xmlns:0a='urn:oasis:tc:kmip:xmlns'/>",
+        "<RequestPayload xmlns:\u{3000}='urn:oasis:tc:kmip:xmlns'/>",
+        "<RequestPayload xmlns:a\u{B2}='urn:oasis:tc:kmip:xmlns'/>",
+    ] {
+        assert_eq!(
+            decode(input.as_bytes(), &CodecLimits::defaults())
+                .unwrap_err()
+                .kind(),
+            WireCodecErrorKind::InvalidDocument,
+            "accepted {input}"
+        );
+    }
+}
+
+#[test]
+fn xml_ncname_unicode_ranges_are_accepted_for_namespace_prefixes() {
+    for prefix in ["_", "a\u{300}\u{B7}\u{203F}", "\u{200C}", "\u{10000}"] {
+        equal(
+            &parse(&format!(
+                "<{prefix}:RequestPayload xmlns:{prefix}='urn:oasis:tc:kmip:xmlns'/>"
+            )),
+            &parse("<RequestPayload/>"),
+        );
+    }
+}
