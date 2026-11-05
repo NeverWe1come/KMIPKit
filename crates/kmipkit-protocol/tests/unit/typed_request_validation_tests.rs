@@ -666,3 +666,35 @@ fn cryptographic_requests_validate_supplied_parameter_structures() {
         }));
     }
 }
+
+#[test]
+fn derive_key_validation_recurses_into_cryptographic_parameters() {
+    let attributes = AttributeSet::try_new([
+        schema_item(0x0042_002a, Value::integer(256)),
+        schema_item(0x0042_0028, Value::enumeration(3)),
+    ])
+    .expect("the symmetric-key attributes use catalogued TTLV types");
+    let request = DeriveKeyRequest::new(
+        ObjectType::from_raw(2),
+        vec![UniqueIdentifier::TextString("source".to_owned())],
+        DerivationMethod::from_raw(4),
+        DerivationParameters::new().with_cryptographic_parameters(
+            gcm_parameters_without_required_lengths(),
+        ),
+        attributes,
+    );
+
+    let report = request.validate();
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R219"
+            && issue.path().to_string()
+                == "Request Payload.Derivation Parameters.Cryptographic Parameters.IV Length"
+            && issue.source().to_string() == "KMIP v2.1 §4.16, Table 59"
+    }));
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R220"
+            && issue.path().to_string()
+                == "Request Payload.Derivation Parameters.Cryptographic Parameters.Tag Length"
+    }));
+}
