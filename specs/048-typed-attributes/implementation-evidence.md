@@ -59,6 +59,17 @@ published camelCase names.
 - `python -B tools/normative_catalog/generate_attribute_types.py --check`
   passed for both generated Rust outputs.
 
+## Security review and publication
+
+- Codex Security completed a scoped diff review of 12 changed security
+  surfaces with zero reportable findings. The independent architecture
+  cross-check verified the Rust attribute-to-client path, manifest readiness
+  semantics, secret handling, and transport boundaries. This automated review
+  does not replace the independent human security audit required before 1.0.
+- PR #115 was opened in draft against `feature/KMIPKIT-0047-named-values`.
+  Its local Windows evidence is recorded above; hosted CI and other platforms
+  remain pending while the GitHub billing issue is unresolved.
+
 The manifest input is 43,045,067 bytes under the explicit 44 MiB limit. No
 raw rustdoc audit report is checked in; the exact report is reproducible with
 `tools/api_manifest/audit_rust_exports.py --check`.

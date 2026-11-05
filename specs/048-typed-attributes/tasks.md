@@ -26,7 +26,7 @@
 
 - [x] T014 Refactor the generator and shared conversion code without changing behavior; record distinct Red, Green, and Refactor commit evidence in `specs/048-typed-attributes/implementation-evidence.md` (FR-001–FR-010; Refactor commit).
 - [x] T015 Run format, focused/workspace tests, Clippy, generator `--check`, manifest audit, and applicable coverage/security checks; record exact results in `specs/048-typed-attributes/implementation-evidence.md` (FR-001–FR-010).
-- [ ] T016 Push `feature/KMIPKIT-0048-typed-attributes` and open a draft stacked PR targeting `feature/KMIPKIT-0047-named-values`.
+- [x] T016 Push `feature/KMIPKIT-0048-typed-attributes` and open draft stacked PR #115 targeting `feature/KMIPKIT-0047-named-values`.
 
 ## Dependencies and independent criteria
 
