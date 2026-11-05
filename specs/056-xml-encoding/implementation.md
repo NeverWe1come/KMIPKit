@@ -33,12 +33,25 @@ The pinned `quick-xml =0.42.0` dependency has default features disabled. Its
 borrowed UTF-8 reader supplies events; KMIPKit performs namespace, attribute,
 type and scalar checks. No DOM, DTD processing, external entity resolver,
 schema retrieval, filesystem access or network access exists in the codec.
-The parser's end-name stack is disabled; the codec compares its own bounded,
-zeroizing open-name owners. Comments are checked for malformed `--` content.
+The codec compares its own bounded, zeroizing open-name owners. Disabling the
+parser's end-name equality check does not disable its internal ordinary name
+stack in quick-xml 0.42.0; the complete lexical preflight below bounds that
+stack before the reader exists. Comments are checked for malformed `--` content.
 
-Wire-byte limits apply before UTF-8 validation and parsing. Item count and
-Structure depth are checked before payload decoding/descent, including the
-root. Namespace and scalar scratch are bounded by the already checked input
+Wire-byte limits apply before UTF-8 validation and parsing. A complete borrowed,
+allocation-free lexical pass checks Item count and Structure depth, including
+the root, before constructing `Reader`. It recognizes quoted tag delimiters,
+skips comments/CDATA/processing instructions, rejects declarations requiring DTD
+processing, and compares normalized/escaped type metadata without allocation.
+Its borrowed `BytesStart` attribute iterator disables duplicate-check storage;
+the subsequent full parser retains duplicate and all other XML/KMIP validation.
+An over-limit document therefore never reaches parser or model allocation,
+even when an earlier payload or namespace would also be invalid. The reader's
+name bytes are bounded by the checked message size and its stack entries by
+checked element count and Structure depth plus at most one scalar frame.
+These dependency-internal ordinary allocations remain infallible and are not
+claimed to be zeroized. Defensive model count/depth checks remain in place.
+Namespace and scalar scratch are bounded by the already checked input
 size, use fallible reservations and zeroizing strings, and are released on
 both success and error. Decoded values move into existing zeroizing model
 owners. The model's boxed payload and Structure insertion remain the existing
@@ -51,6 +64,12 @@ zeroizing the live allocation cannot establish clearing of earlier allocator
 copies. Borrowed input belongs to the caller, whose lifecycle remains its
 responsibility. Errors retain only a safe common category and no input,
 parser error, decoded payload, source error, or XML context.
+
+Element QNames and namespace declaration prefixes follow XML 1.0 fifth edition
+section 2.3 NameStartChar/NameChar ranges and Namespaces in XML 1.0 sections
+3-4 NCName/QName productions. A QName's prefix and local part must both be
+nonempty NCNames; declaration prefixes are a single NCName. This rejects
+empty/multiple-colon prefixes while accepting permitted Unicode ranges.
 
 ## Dependency review
 
@@ -70,8 +89,8 @@ Dependency-policy scan results are recorded in the implementation report.
 | KMIPKIT-0056-R001 | Spec v2.1 §10.2.3; Profiles v2.1 §§5.4.1.1–5.4.1.6.2 | Catalog normalization, general/specific XML forms, namespace scopes, default/explicit Structure and ordered repeated children. |
 | KMIPKIT-0056-R002 | Profiles v2.1 §§5.4.1.2, 5.4.1.6.3, 5.4.1.6.5–5.4.1.6.13 | Independent scalar literal cases, malformed/range tests, full-range DateTime property tests and raw scalar/tree properties. |
 | KMIPKIT-0056-R003 | Profiles v2.1 §5.4.1.6.4 | All three assigned M/B families, all 33 flags, space separator, numeric/hex forms, zero/reserved/unknown bit roundtrips. |
-| KMIPKIT-0056-R004 | 0054 common contract; constitution IV | Exact byte/depth/count boundaries for encode/decode, deeply nested adversarial input and depth preflight before payload attribute decoding. |
-| KMIPKIT-0056-R005 | 0054 common contract; constitution IV | Malformed XML, DTD, external entities, namespace/prolog/reference validation, malformed scalars and payload-free errors. |
+| KMIPKIT-0056-R004 | 0054 common contract; constitution IV | Exact byte/depth/count boundaries for encode/decode, deeply nested adversarial input, complete lexical preflight before parser creation or earlier invalid payload/namespace decoding, escaped type metadata and non-item/quoted delimiters. |
+| KMIPKIT-0056-R005 | 0054 common contract; constitution IV | Malformed XML, DTD, external entities, QName/NCName and namespace/prolog/reference validation, Unicode namespace prefixes, malformed lexical markup/scalars and payload-free errors. |
 | KMIPKIT-0056-R006 | Profiles v2.1 §§5.4.2, 5.4.4.1 | All four pinned `MSGENC-XML-M-1-21` message documents, deterministic `$NOW`, two response-size requests and failure/success statuses, semantic replay. |
 
 All verification tests are in

@@ -2,7 +2,8 @@
 
 Date: 2026-11-05. Branch: `feature/KMIPKIT-0056-xml-encoding`.
 Worktree: `C:\Users\ramp1953\.codex\worktrees\kmipkit-0056-xml\KMIPKit`.
-Implementation code verified at `a1ca02e6a84e62f24cc461f75ce100812228950f`.
+Original implementation verified at `a1ca02e6a84e62f24cc461f75ce100812228950f`.
+Independent-review corrections verified at `fa90504dd` (see review follow-up).
 
 ## Result and scope
 
@@ -54,7 +55,7 @@ cherry-picks `4b6527f10`, `0781aef70`, `f757a2221` (originals `d1ca945b3`,
 metadata/generator and 0054 contract changes in this branch. XML-specific
 commits do not hand-edit generated output or infer extra families.
 
-## Final verification
+## Original implementation verification
 
 All commands ran from this worktree on `x86_64-pc-windows-msvc`.
 
@@ -118,3 +119,53 @@ size enforcement, complete XML Client profile conformance or certification.
 Implementation is ready for the parent integration review. Human acceptance,
 draft PR/release branch management and KMIPKIT-0057 integration remain under
 the orchestrating task; no merge or approval was performed here.
+
+## Independent review follow-up
+
+Two findings were verified and corrected within the same private codec scope.
+Inspection of pinned quick-xml 0.42.0 `ReaderState::emit_start` confirmed it
+unconditionally appends nonempty element names to its ordinary internal String
+and index Vec even when `check_end_names` is false. The earlier report's claim
+that the parser stack was disabled was incorrect and is corrected in
+`implementation.md`. A complete, allocation-free lexical pass now runs before
+Reader construction. The byte cap applies first; the lexical pass bounds Item
+count and nesting, including escaped Structure type metadata, before any
+parser/model allocation. It borrows input, skips non-item markup, recognizes
+quoted delimiters, and uses borrowed attributes with duplicate storage disabled.
+Full XML/KMIP validation, including duplicate rejection and matching end tags,
+still runs afterward. Reader name bytes are bounded by message size and its
+entries by element count and Structure depth plus at most one scalar frame;
+these dependency-internal allocations are infallible and not zeroized.
+
+The QName helper previously accepted an empty prefix in `:RequestPayload` and
+treated a namespace declaration suffix as a QName, accepting `xmlns:a:b`.
+It now requires nonempty NCName prefix/local components and a single NCName
+declaration prefix, using the exact XML 1.0 fifth edition section 2.3 [4]/[4a]
+character ranges. Unicode positive controls cover combining marks, middle dot,
+connector characters, zero-width non-joiner and supplementary name characters.
+References: [XML 1.0 section 2.3](https://www.w3.org/TR/REC-xml/#sec-common-syn)
+and [Namespaces in XML 1.0 sections 3-4](https://www.w3.org/TR/REC-xml-names/#ns-qualnames).
+
+| Phase | Signed commit | Evidence |
+|---|---|---|
+| RED | `228856652` | 23 focused tests passed; 4 new regressions failed as expected: complete count/depth checks occurred after earlier invalid payload/namespace processing, malformed QName was accepted, valid XML Unicode NCNames were rejected. |
+| GREEN | `adbced8c3` | 27/27 focused XML tests, complete client suite and client all-target/all-feature Clippy passed after the borrowed preflight and exact QName/NCName fix. |
+| REFACTOR | `fa90504dd` | Removed the redundant allocating event-local type preflight, preserving defensive model checks. Added delimiter/escaped-type and malformed lexical regression controls; 29/29 focused tests and Clippy passed. |
+
+Fresh final checks on `x86_64-pc-windows-msvc`:
+
+| Command / check | Result |
+|---|---|
+| `cargo test -p kmipkit-client --all-features` | Exit 0; 710 passed, 0 failed, 3 pre-existing Cosmian KMS tests ignored; 636 library tests passed. Includes all official XML fixture replay cases. |
+| `cargo fmt --all --check` | Exit 0. |
+| `cargo clippy -p kmipkit-client --all-targets --all-features -- -D warnings` | Exit 0; no exemptions added. |
+| `cargo llvm-cov --package kmipkit-client --lib --json --output-path .superpowers/sdd/0056-xml/coverage-review.json -- xml_codec --test-threads=1` | Exit 0; 29 tests passed. New lexical preflight 66/66 lines; characters 66/66; decoder 200/210. All XML plus common error code: 789/809 (97.53%). |
+| `cargo llvm-cov report --lcov --output-path .superpowers/sdd/0056-xml/review-coverage.lcov` | Exit 0; intersecting LCOV DA records with production added lines in `git diff --unified=0 c5f3c46fd` gives 102/102 corrective changed executable lines (100%). |
+| `git diff --check` | Exit 0. |
+| Worktree and committed fixture SHA-256 | Both remain `5ca1a4533bb8e911231ea9e43c446894ff11f9004e2ca74531515327145e75d3`. |
+
+No dependency/lockfile, public API, dispatch, generated output or pinned OASIS
+source changed in this follow-up. The earlier fresh dependency-policy result
+remains the dependency evidence; no new dependency exception was introduced.
+Detailed final logs and coverage artifacts are retained locally alongside this
+report. No PR was created, approved or merged during this follow-up.
