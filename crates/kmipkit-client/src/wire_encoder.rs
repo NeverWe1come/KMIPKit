@@ -3,6 +3,7 @@
 use std::error::Error;
 use std::fmt;
 
+use kmipkit_transport::WireEncoding;
 use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Item, ItemType, StructureView, ValueView};
 #[cfg(test)]
@@ -449,7 +450,7 @@ fn encode_item(item: &Item) -> Result<EncodedOwner, EncodeError> {
 pub(super) fn encode_for_execute(
     item: &Item,
     limits: &CodecLimits,
-    encoding: kmipkit_transport::WireEncoding,
+    encoding: WireEncoding,
     _permit: super::OperationEncodingPermit,
     #[cfg(test)] limits_observer: Option<&super::LimitsIdentityObserver>,
     #[cfg(test)] observer: &tests::EncodingObserver,
@@ -460,7 +461,7 @@ pub(super) fn encode_for_execute(
         observer.record_encode(limits);
     }
     let bytes = match encoding {
-        kmipkit_transport::WireEncoding::Ttlv => {
+        WireEncoding::Ttlv => {
             return encode_item_inner(
                 item,
                 limits,
@@ -472,8 +473,8 @@ pub(super) fn encode_for_execute(
                 drop_observer,
             );
         }
-        kmipkit_transport::WireEncoding::Json => crate::json_encoding::encode(item, limits),
-        kmipkit_transport::WireEncoding::Xml => crate::xml_codec::encode(item, limits),
+        WireEncoding::Json => crate::json_encoding::encode(item, limits),
+        WireEncoding::Xml => crate::xml_codec::encode(item, limits),
         _ => return Err(EncodeError::UnsupportedValueType),
     }
     .map_err(EncodeError::WireCodec)?;

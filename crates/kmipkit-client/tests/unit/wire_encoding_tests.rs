@@ -2,7 +2,7 @@
 //!
 //! OASIS KMIP Specification v2.1 §§10.1–10.2.3 and KMIP Profiles v2.1
 //! §§5.4.1 and 5.5.1 define the selected formats. Selection precedence,
-//! no fallback, borrowed limits, and cleanup are KMIPKit project contracts.
+//! no fallback, borrowed limits, and cleanup are `KMIPKit` project contracts.
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -99,6 +99,7 @@ fn default_configuration_keeps_ttlv_and_exposes_resolved_selection_to_transport(
     let limits = CodecLimits::defaults();
     let config = configuration();
     assert_eq!(config.wire_encoding(), WireEncoding::Ttlv);
+    let config = ClientConfiguration::from_shared_registry(config.shared_extension_registry());
     assert_eq!(RequestOptions::default().wire_encoding(), None);
     let (fake, observation) = OneShotFakeTransport::new(response(WireEncoding::Ttlv));
     let mut client = Client::for_test_with_configuration(fake, config);
@@ -236,4 +237,23 @@ fn text_request_limit_failure_stays_not_sent_and_never_exchanges() {
         assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
         assert_eq!(observation.exchange_count(), 0);
     }
+}
+
+#[test]
+fn outbound_text_codec_failure_preserves_its_payload_free_source() {
+    use std::error::Error;
+
+    use crate::wire_codec_common::{WireCodecError, WireCodecErrorKind};
+
+    let cause = WireCodecError::new(WireCodecErrorKind::LimitExceeded);
+    let error = super::private_wire_writer::EncodeError::WireCodec(cause);
+
+    assert_eq!(
+        error
+            .source()
+            .and_then(|source| source.downcast_ref::<WireCodecError>()),
+        Some(&cause)
+    );
+    assert!(error.to_string().contains("LimitExceeded"));
+    assert_eq!(format!("{error:?}"), "WireCodec");
 }
