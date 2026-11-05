@@ -221,3 +221,75 @@ fn revoke_validation_rejects_compromise_date_for_unrelated_reason() {
 fn validate_request_validation_rejects_an_empty_chain() {
     assert!(!ValidateRequest::new().validate().is_valid());
 }
+
+#[test]
+fn create_key_pair_validation_rejects_conflicting_table_191_attributes() {
+    const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002a;
+    let attributes = |length| {
+        AttributeSet::try_new([Item::new(
+            RawTag::new(CRYPTOGRAPHIC_LENGTH)
+                .expect("Cryptographic Length tag is valid")
+                .try_checked()
+                .expect("Cryptographic Length tag is allocated"),
+            Value::integer(length),
+        )
+        .expect("Cryptographic Length is valid TTLV")])
+        .expect("one Cryptographic Length attribute is valid")
+    };
+    let request = CreateKeyPairRequest::new()
+        .with_private_key_attributes(attributes(256))
+        .with_public_key_attributes(attributes(2048));
+
+    assert!(!request.validate().is_valid());
+}
+
+#[test]
+fn recertify_validation_rejects_missing_request_and_existing_identifier() {
+    assert!(!RecertifyRequest::new().validate().is_valid());
+}
+
+#[test]
+fn rekey_validation_rejects_repeated_single_instance_attribute() {
+    let comment = RawTag::new(0x0042_00fd)
+        .expect("Comment is a valid raw tag")
+        .try_checked()
+        .expect("Comment is an allocated KMIP tag");
+    let mut attributes = kmipkit_ttlv::Structure::new();
+    for value in ["one", "two"] {
+        attributes
+            .try_push(
+                Item::new(comment, Value::text_string(value.to_owned()))
+                    .expect("Comment is valid TTLV"),
+            )
+            .expect("both values fit the generic attribute Structure");
+    }
+
+    assert!(
+        !RekeyRequest::new()
+            .with_attributes(attributes)
+            .validate()
+            .is_valid()
+    );
+}
+
+#[test]
+fn rekey_key_pair_validation_rejects_repeated_single_instance_attribute() {
+    let comment = RawTag::new(0x0042_00fd)
+        .expect("Comment is a valid raw tag")
+        .try_checked()
+        .expect("Comment is an allocated KMIP tag");
+    let attributes = AttributeSet::try_new([
+        Item::new(comment, Value::text_string("one".to_owned()))
+            .expect("first Comment is valid TTLV"),
+        Item::new(comment, Value::text_string("two".to_owned()))
+            .expect("second Comment is valid TTLV"),
+    ])
+    .expect("generic AttributeSet preserves operation-level repetitions");
+
+    assert!(
+        !RekeyKeyPairRequest::new()
+            .with_private_key_attributes(attributes)
+            .validate()
+            .is_valid()
+    );
+}
