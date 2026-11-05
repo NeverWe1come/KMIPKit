@@ -48,7 +48,7 @@ use kmipkit_protocol::{ValidateRequest, ValidateResponse};
 use kmipkit_transport::Transport;
 use kmipkit_transport::{
     HttpsTransport, RawTlsTransport, RequestDeliveryState, RequestOptions, TransportConfig,
-    TransportConfigError,
+    TransportConfigError, WireEncoding,
 };
 use kmipkit_ttlv::codec::{CodecLimits, DecodeError, decode_with_limits};
 use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Value, ValueView};
@@ -5719,6 +5719,10 @@ impl Client {
         limits: &CodecLimits,
         request_options: &RequestOptions,
     ) -> Result<(ResponseMessage, RequestDeliveryState), ClientError> {
+        let encoding = request_options
+            .wire_encoding()
+            .unwrap_or(self.configuration.wire_encoding());
+        let resolved_options = request_options.with_wire_encoding(encoding);
         let request_item = root_message_item(request_message.into_ttlv())
             .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
         let permit = OperationEncodingPermit::mint();
@@ -5730,6 +5734,7 @@ impl Client {
         let encoded = private_wire_writer::encode_for_execute(
             &request_item,
             limits,
+            encoding,
             permit,
             #[cfg(test)]
             self.limits_identity_observer.as_ref(),
@@ -5750,7 +5755,7 @@ impl Client {
         let transport_result = self.transport.exchange(
             encoded.as_bytes(),
             limits.max_message_bytes(),
-            request_options,
+            &resolved_options,
         );
         drop(encoded);
 
@@ -5758,6 +5763,7 @@ impl Client {
         decode_transport_response(
             response,
             limits,
+            encoding,
             #[cfg(test)]
             self.limits_identity_observer.as_ref(),
         )
@@ -8010,6 +8016,7 @@ pub(super) fn decode_bounded_response<T, E>(
 fn decode_transport_response(
     response: kmipkit_transport::TransportResponse,
     limits: &CodecLimits,
+    encoding: WireEncoding,
     #[cfg(test)] observer: Option<&LimitsIdentityObserver>,
 ) -> Result<(ResponseMessage, RequestDeliveryState), ClientError> {
     let response_delivery_state =
@@ -8017,7 +8024,7 @@ fn decode_transport_response(
     let decode_result = decode_bounded_response(
         response.as_bytes(),
         limits,
-        decode_response_message,
+        |bytes, limits| decode_response_message_with_encoding(bytes, limits, encoding),
         #[cfg(test)]
         observer,
     );
@@ -8075,17 +8082,33 @@ fn reserve_guarded_protection(
     context.reserve(cost).map_err(guard_validation_error)
 }
 
+#[cfg(test)]
 fn decode_response_message(
     bytes: &[u8],
     limits: &CodecLimits,
 ) -> Result<ResponseMessage, ProtocolError> {
-    let decoded = decode_with_limits(bytes, limits).map_err(|error: DecodeError| {
-        ProtocolError::new(
-            ProtocolErrorKind::MalformedMessage,
-            ProtocolCauseCategory::InvalidEncoding,
-            error,
-        )
-    })?;
+    decode_response_message_with_encoding(bytes, limits, WireEncoding::Ttlv)
+}
+
+fn decode_response_message_with_encoding(
+    bytes: &[u8],
+    limits: &CodecLimits,
+    encoding: WireEncoding,
+) -> Result<ResponseMessage, ProtocolError> {
+    let decoded = match encoding {
+        WireEncoding::Ttlv => decode_with_limits(bytes, limits).map_err(|error: DecodeError| {
+            ProtocolError::new(
+                ProtocolErrorKind::MalformedMessage,
+                ProtocolCauseCategory::InvalidEncoding,
+                error,
+            )
+        }),
+        WireEncoding::Json => {
+            crate::json_encoding::decode(bytes, limits).map_err(wire_decode_error)
+        }
+        WireEncoding::Xml => crate::xml_codec::decode(bytes, limits).map_err(wire_decode_error),
+        _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
+    }?;
     let tree = decoded
         .with_value(|value| match value {
             ValueView::Structure(structure) => Some(copy_structure(&structure)),
@@ -8099,6 +8122,14 @@ fn decode_response_message(
             error,
         )
     })
+}
+
+fn wire_decode_error(error: crate::wire_codec_common::WireCodecError) -> ProtocolError {
+    ProtocolError::new(
+        ProtocolErrorKind::MalformedMessage,
+        ProtocolCauseCategory::InvalidEncoding,
+        error,
+    )
 }
 
 fn copy_structure(view: &StructureView<'_>) -> Result<Structure, ProtocolError> {

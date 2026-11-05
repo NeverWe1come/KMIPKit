@@ -1,4 +1,4 @@
-//! Private outbound TTLV encoding for typed KMIP items.
+//! Private permit-authorized wire encoding for typed KMIP items.
 
 use std::error::Error;
 use std::fmt;
@@ -58,6 +58,7 @@ pub(super) enum EncodeError {
     SizeOverflow,
     AllocationFailed(std::collections::TryReserveError),
     UnsupportedValueType,
+    WireCodec(crate::wire_codec_common::WireCodecError),
 }
 
 impl PartialEq for EncodeError {
@@ -70,6 +71,7 @@ impl PartialEq for EncodeError {
                 | (Self::SizeOverflow, Self::SizeOverflow)
                 | (Self::AllocationFailed(_), Self::AllocationFailed(_))
                 | (Self::UnsupportedValueType, Self::UnsupportedValueType)
+                | (Self::WireCodec(_), Self::WireCodec(_))
         )
     }
 }
@@ -85,6 +87,7 @@ impl fmt::Debug for EncodeError {
             Self::SizeOverflow => "SizeOverflow",
             Self::AllocationFailed(_) => "AllocationFailed",
             Self::UnsupportedValueType => "UnsupportedValueType",
+            Self::WireCodec(_) => "WireCodec",
         };
         formatter.write_str(variant)
     }
@@ -101,6 +104,7 @@ impl fmt::Display for EncodeError {
                 formatter.write_str("unable to reserve TTLV output buffer")
             }
             Self::UnsupportedValueType => formatter.write_str("unsupported TTLV Item Type"),
+            Self::WireCodec(error) => fmt::Display::fmt(error, formatter),
         }
     }
 }
@@ -108,6 +112,7 @@ impl fmt::Display for EncodeError {
 impl Error for EncodeError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
+            Self::WireCodec(error) => Some(error),
             Self::AllocationFailed(source) => Some(source),
             Self::EmptyBigInteger
             | Self::LimitExceeded
@@ -444,6 +449,7 @@ fn encode_item(item: &Item) -> Result<EncodedOwner, EncodeError> {
 pub(super) fn encode_for_execute(
     item: &Item,
     limits: &CodecLimits,
+    encoding: kmipkit_transport::WireEncoding,
     _permit: super::OperationEncodingPermit,
     #[cfg(test)] limits_observer: Option<&super::LimitsIdentityObserver>,
     #[cfg(test)] observer: &tests::EncodingObserver,
@@ -453,16 +459,33 @@ pub(super) fn encode_for_execute(
     if let Some(observer) = limits_observer {
         observer.record_encode(limits);
     }
-    encode_item_inner(
-        item,
-        limits,
-        #[cfg(test)]
-        observer,
-        #[cfg(test)]
-        None,
+    let bytes = match encoding {
+        kmipkit_transport::WireEncoding::Ttlv => {
+            return encode_item_inner(
+                item,
+                limits,
+                #[cfg(test)]
+                observer,
+                #[cfg(test)]
+                None,
+                #[cfg(test)]
+                drop_observer,
+            );
+        }
+        kmipkit_transport::WireEncoding::Json => crate::json_encoding::encode(item, limits),
+        kmipkit_transport::WireEncoding::Xml => crate::xml_codec::encode(item, limits),
+        _ => return Err(EncodeError::UnsupportedValueType),
+    }
+    .map_err(EncodeError::WireCodec)?;
+    #[cfg(test)]
+    if let Some(observer) = &drop_observer {
+        observer.expect_initialized_len(bytes.len());
+    }
+    Ok(EncodedOwner {
+        bytes,
         #[cfg(test)]
         drop_observer,
-    )
+    })
 }
 
 #[cfg(test)]

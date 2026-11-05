@@ -304,7 +304,7 @@ pub use kmipkit_protocol::{
     ProfileObjectState, ProfileTransport, ProfileValidationContext, ProfileValidationError,
     ProfileValidationErrorCode, ProfileValidationSelection,
 };
-pub use kmipkit_transport::RequestOptions;
+pub use kmipkit_transport::{RequestOptions, WireEncoding};
 
 #[cfg(test)]
 #[path = "../tests/unit/interop_execution_tests.rs"]
