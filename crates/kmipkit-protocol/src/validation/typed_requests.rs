@@ -4,11 +4,11 @@ use crate::{
     ActivateRequest, AddAttributeRequest, AdjustAttributeRequest, ArchiveRequest, CancelRequest,
     CheckRequest, DelegatedLoginRequest, DeleteAttributeRequest, DestroyRequest,
     DiscoverVersionsRequest, GetAttributeListRequest, GetAttributesRequest, GetConstraintsRequest,
-    GetRequest, GetUsageAllocationRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest,
-    LocateRequest, LogRequest, LoginRequest, LogoutRequest, ModifyAttributeRequest,
-    ObtainLeaseRequest, PingRequest, Pkcs11Request, PollRequest, ProcessRequest,
-    QueryAsyncRequestsRequest, QueryRequest, RecoverRequest, RngRetrieveRequest, RngSeedRequest,
-    SetAttributeRequest, SetConstraintsRequest, SetDefaultsRequest, ValidationReport,
+    GetRequest, GetUsageAllocationRequest, ImportRequest, JoinSplitKeyRequest, LocateRequest,
+    LoginRequest, LogoutRequest, ModifyAttributeRequest, ObtainLeaseRequest, PingRequest,
+    Pkcs11Request, PollRequest, ProcessRequest, QueryAsyncRequestsRequest, QueryRequest,
+    RecoverRequest, RngRetrieveRequest, RngSeedRequest, SetAttributeRequest, SetConstraintsRequest,
+    SetDefaultsRequest, ValidationReport,
 };
 
 use super::schema::RequestPayloadSchema;
@@ -75,9 +75,7 @@ impl_typed_request_validation! {
     GetAttributesRequest => GetAttributes,
     GetConstraintsRequest => GetConstraints,
     GetUsageAllocationRequest => GetUsageAllocation,
-    InteropRequest => Interop,
     LocateRequest => Locate,
-    LogRequest => Log,
     LogoutRequest => Logout,
     ModifyAttributeRequest => ModifyAttribute,
     ObtainLeaseRequest => ObtainLease,

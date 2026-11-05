@@ -10,8 +10,8 @@ use kmipkit_ttlv::{Item, Structure, StructureView, Value};
 use crate::cryptographic_operation;
 
 use crate::{
-    KmipOperationResult, ProtocolError, ResponseBatchItemView, ResultMessage,
-    ResultValidationError, SecretText,
+    KmipOperationResult, ProtocolError, RequestPayloadSchema, ResponseBatchItemView, ResultMessage,
+    ResultValidationError, SecretText, ValidateKmipRequest, ValidationReport, ValidationSourceRef,
 };
 
 const OPERATION: u32 = 0x0000_0034;
@@ -84,6 +84,33 @@ impl InteropRequest {
             &[INTEROP_FUNCTION, INTEROP_IDENTIFIER],
         )?;
         Ok(payload)
+    }
+}
+
+impl ValidateKmipRequest for InteropRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Interop;
+
+    fn validate(&self) -> ValidationReport {
+        let Some(extension) = self
+            .extensions
+            .iter()
+            .find(|item| matches!(item.tag().raw(), INTEROP_FUNCTION | INTEROP_IDENTIFIER))
+        else {
+            return ValidationReport::default();
+        };
+        let field = match extension.tag().raw() {
+            INTEROP_FUNCTION => "Interop Function",
+            INTEROP_IDENTIFIER => "Interop Identifier",
+            _ => "Request Payload",
+        };
+        crate::validation::request_issue_report(
+            "KMIPKIT-0051-P005",
+            field,
+            ValidationSourceRef::Oasis {
+                document: "KMIP v2.1",
+                reference: "§6.1.26, Table 241",
+            },
+        )
     }
 }
 
