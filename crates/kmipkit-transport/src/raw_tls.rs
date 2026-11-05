@@ -37,6 +37,10 @@ mod error_mapping_tests;
 mod text_buffer_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/raw_tls_text_response_tests.rs"]
+mod text_response_tests;
+
+#[cfg(test)]
 use std::thread::JoinHandle;
 #[cfg(test)]
 use std::{
@@ -142,11 +146,7 @@ impl RawTlsTransport {
                 io::Error::other("request exceeds configured limit"),
             ));
         }
-        let minimum_response_bytes = if wire_encoding == WireEncoding::Ttlv {
-            RESPONSE_HEADER_LEN
-        } else {
-            1
-        };
+        let minimum_response_bytes = minimum_response_bytes(wire_encoding);
         if max_response_bytes < minimum_response_bytes {
             return Err(safe_error(
                 RequestDeliveryState::NotSent,
@@ -424,133 +424,154 @@ impl RawTlsConnection {
             .await
             .map_err(|error| io_error(error, self.control.delivery_state()))?;
 
-        if wire_encoding != WireEncoding::Ttlv {
-            return self
-                .read_text_response(wire_encoding, max_response_bytes)
-                .await;
-        }
+        read_response(
+            &mut self.io,
+            wire_encoding,
+            max_response_bytes,
+            &self.control,
+            #[cfg(test)]
+            response_allocation_observer,
+        )
+        .await
+    }
+}
 
-        let mut header = Zeroizing::new([0_u8; RESPONSE_HEADER_LEN]);
-        tokio::io::AsyncReadExt::read_exact(&mut self.io, &mut header[..1])
-            .await
-            .map_err(|error| io_error(error, self.control.delivery_state()))?;
-        if is_text_document_prefix(header[0]) {
-            return Err(encoding_mismatch_error(&self.control));
-        }
-        tokio::io::AsyncReadExt::read_exact(&mut self.io, &mut header[1..])
-            .await
-            .map_err(|error| io_error(error, self.control.delivery_state()))?;
+fn minimum_response_bytes(encoding: WireEncoding) -> usize {
+    if encoding == WireEncoding::Ttlv {
+        RESPONSE_HEADER_LEN
+    } else {
+        1
+    }
+}
 
-        let response_value_len = response_value_length(&header[..]).ok_or_else(|| {
-            safe_error(
-                self.control.delivery_state(),
-                TransportCauseCategory::Other,
-                io::Error::new(io::ErrorKind::InvalidData, "invalid TTLV response header"),
-            )
-        })?;
-        let response_len = RESPONSE_HEADER_LEN
-            .checked_add(response_value_len)
-            .filter(|length| *length <= max_response_bytes)
-            .ok_or_else(|| {
-                safe_error(
-                    self.control.delivery_state(),
-                    TransportCauseCategory::Other,
-                    io::Error::new(
-                        io::ErrorKind::InvalidData,
-                        "response exceeds configured limit",
-                    ),
-                )
-            })?;
-
-        #[cfg(test)]
-        let allocation = if let Some(observer) = response_allocation_observer {
-            ResponseBuffer::with_header_and_allocation_observer_for_test(
-                response_len,
-                &header[..],
-                &observer,
-            )
-        } else {
-            ResponseBuffer::with_header(response_len, &header[..])
-        };
-        #[cfg(not(test))]
-        let allocation = ResponseBuffer::with_header(response_len, &header[..]);
-        let mut response = allocation.map_err(|error| {
-            safe_error(
-                self.control.delivery_state(),
-                TransportCauseCategory::Other,
-                error,
-            )
-        })?;
-        if response_len > RESPONSE_HEADER_LEN {
-            tokio::io::AsyncReadExt::read_exact(
-                &mut self.io,
-                &mut response.bytes[RESPONSE_HEADER_LEN..],
-            )
-            .await
-            .map_err(|error| io_error(error, self.control.delivery_state()))?;
-        }
-        Ok(response.into_transport_response())
+async fn read_response<R>(
+    reader: &mut R,
+    wire_encoding: WireEncoding,
+    max_response_bytes: usize,
+    control: &ExchangeControl,
+    #[cfg(test)] allocation_observer: Option<ResponseAllocationObserver>,
+) -> Result<TransportResponse, TransportError>
+where
+    R: tokio::io::AsyncRead + Unpin,
+{
+    if wire_encoding != WireEncoding::Ttlv {
+        return read_text_response(reader, wire_encoding, max_response_bytes, control).await;
     }
 
-    async fn read_text_response(
-        &mut self,
-        wire_encoding: WireEncoding,
-        max_response_bytes: usize,
-    ) -> Result<TransportResponse, TransportError> {
-        let mut framer = wire_framing::TextDocumentFramer::new(wire_encoding).map_err(|error| {
+    let mut header = Zeroizing::new([0_u8; RESPONSE_HEADER_LEN]);
+    tokio::io::AsyncReadExt::read_exact(reader, &mut header[..1])
+        .await
+        .map_err(|error| io_error(error, control.delivery_state()))?;
+    if is_text_document_prefix(header[0]) {
+        return Err(encoding_mismatch_error(control));
+    }
+    tokio::io::AsyncReadExt::read_exact(reader, &mut header[1..])
+        .await
+        .map_err(|error| io_error(error, control.delivery_state()))?;
+
+    let response_value_len = response_value_length(&header[..]).ok_or_else(|| {
+        safe_error(
+            control.delivery_state(),
+            TransportCauseCategory::Other,
+            io::Error::new(io::ErrorKind::InvalidData, "invalid TTLV response header"),
+        )
+    })?;
+    let response_len = RESPONSE_HEADER_LEN
+        .checked_add(response_value_len)
+        .filter(|length| *length <= max_response_bytes)
+        .ok_or_else(|| {
             safe_error(
-                self.control.delivery_state(),
+                control.delivery_state(),
                 TransportCauseCategory::Other,
-                error,
+                io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "response exceeds configured limit",
+                ),
             )
         })?;
-        let mut response = ResponseBuffer::with_empty();
-        let mut chunk = Zeroizing::new([0_u8; 4096]);
-        loop {
-            let bytes_read = tokio::io::AsyncReadExt::read(&mut self.io, &mut chunk[..])
-                .await
-                .map_err(|error| io_error(error, self.control.delivery_state()))?;
-            if bytes_read == 0 {
-                return Err(safe_error(
-                    self.control.delivery_state(),
-                    TransportCauseCategory::Other,
-                    io::Error::new(
-                        io::ErrorKind::UnexpectedEof,
-                        "response document ended before its root was complete",
-                    ),
-                ));
-            }
 
-            for byte in chunk.iter().copied().take(bytes_read) {
-                if response.bytes.len() >= max_response_bytes {
-                    return Err(safe_error(
-                        self.control.delivery_state(),
+    #[cfg(test)]
+    let allocation = if let Some(observer) = allocation_observer {
+        ResponseBuffer::with_header_and_allocation_observer_for_test(
+            response_len,
+            &header[..],
+            &observer,
+        )
+    } else {
+        ResponseBuffer::with_header(response_len, &header[..])
+    };
+    #[cfg(not(test))]
+    let allocation = ResponseBuffer::with_header(response_len, &header[..]);
+    let mut response = allocation.map_err(|error| {
+        safe_error(
+            control.delivery_state(),
+            TransportCauseCategory::Other,
+            error,
+        )
+    })?;
+    if response_len > RESPONSE_HEADER_LEN {
+        tokio::io::AsyncReadExt::read_exact(reader, &mut response.bytes[RESPONSE_HEADER_LEN..])
+            .await
+            .map_err(|error| io_error(error, control.delivery_state()))?;
+    }
+    Ok(response.into_transport_response())
+}
+
+async fn read_text_response<R>(
+    reader: &mut R,
+    wire_encoding: WireEncoding,
+    max_response_bytes: usize,
+    control: &ExchangeControl,
+) -> Result<TransportResponse, TransportError>
+where
+    R: tokio::io::AsyncRead + Unpin,
+{
+    let mut framer = wire_framing::TextDocumentFramer::new(wire_encoding).map_err(|error| {
+        safe_error(
+            control.delivery_state(),
+            TransportCauseCategory::Other,
+            error,
+        )
+    })?;
+    let mut response = ResponseBuffer::with_empty();
+    let mut chunk = Zeroizing::new([0_u8; 4096]);
+    loop {
+        let bytes_read = tokio::io::AsyncReadExt::read(reader, &mut chunk[..])
+            .await
+            .map_err(|error| io_error(error, control.delivery_state()))?;
+        if bytes_read == 0 {
+            return Err(safe_error(
+                control.delivery_state(),
+                TransportCauseCategory::Other,
+                io::Error::new(
+                    io::ErrorKind::UnexpectedEof,
+                    "response document ended before its root was complete",
+                ),
+            ));
+        }
+
+        for byte in chunk.iter().copied().take(bytes_read) {
+            response
+                .append_text_byte(byte, max_response_bytes)
+                .map_err(|error| {
+                    safe_error(
+                        control.delivery_state(),
                         TransportCauseCategory::Other,
-                        io::Error::other("response document exceeds configured limit"),
-                    ));
-                }
-                response
-                    .append_text_byte(byte, max_response_bytes)
-                    .map_err(|error| {
-                        safe_error(
-                            self.control.delivery_state(),
-                            TransportCauseCategory::Other,
-                            error,
-                        )
-                    })?;
-                framer.feed(byte).map_err(|error| {
-                    let cause = if error.kind() == io::ErrorKind::Unsupported {
-                        TransportCauseCategory::EncodingMismatch
-                    } else {
-                        TransportCauseCategory::Other
-                    };
-                    safe_error(self.control.delivery_state(), cause, error)
+                        error,
+                    )
                 })?;
-                if framer.is_complete() {
-                    // The first complete document is this exchange's response. Closing this
-                    // one-exchange connection discards any surplus, matching TTLV framing.
-                    return Ok(response.into_transport_response());
-                }
+            framer.feed(byte).map_err(|error| {
+                let cause = if error.kind() == io::ErrorKind::Unsupported {
+                    TransportCauseCategory::EncodingMismatch
+                } else {
+                    TransportCauseCategory::Other
+                };
+                safe_error(control.delivery_state(), cause, error)
+            })?;
+            if framer.is_complete() {
+                // The first complete document is this exchange's response. Closing this
+                // one-exchange connection discards any surplus, matching TTLV framing.
+                return Ok(response.into_transport_response());
             }
         }
     }

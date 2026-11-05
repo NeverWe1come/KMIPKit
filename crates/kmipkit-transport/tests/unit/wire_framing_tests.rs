@@ -1,3 +1,6 @@
+//! Raw TLS document-boundary tests for OASIS KMIP Profiles v2.1 §§5.4 (XML)
+//! and 5.5 (JSON). The one-document-per-connection rule follows `KMIPKit` ADR-0018.
+
 use crate::config::WireEncoding;
 
 use super::TextDocumentFramer;
