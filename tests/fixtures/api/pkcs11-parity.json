@@ -113,6 +113,14 @@
       "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponsePkcs11"
     ]
   },
+  "approvedInternalNativeExports": {
+    "javaJni": [
+      {
+        "symbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemPkcs11WithExtensions",
+        "manifestExport": "org.kmipkit.NativeExtensionRegistry.clientBatchItemPkcs11WithExtensions"
+      }
+    ]
+  },
   "consumerTests": {
     "rust": "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs",
     "c": "bindings/c/tests/client_abi_consumer.c",
