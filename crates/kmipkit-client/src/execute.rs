@@ -128,6 +128,10 @@ mod signature_verify_execution_tests;
 mod private_wire_writer;
 
 #[cfg(test)]
+#[path = "../tests/unit/wire_encoding_tests.rs"]
+mod wire_encoding_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/extension_outbound.rs"]
 mod extension_outbound_tests;
 
