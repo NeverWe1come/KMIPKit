@@ -86,6 +86,10 @@ mod request_authentication_tests;
 mod direct_method_surface_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/direct_method_behavior_tests.rs"]
+mod direct_method_behavior_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/codec_limits_identity_tests.rs"]
 mod codec_limits_identity_tests;
 
