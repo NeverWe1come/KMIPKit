@@ -2,8 +2,8 @@
 
 Task 5 is complete. The public API manifest is the source for the C header,
 Rust FFI metadata, Java and Python exports, and the checked-in parity fixtures.
-The public C header now has a complete construction and execution path rather
-than encoding-selection declarations detached from a usable client.
+A compiled C consumer constructs a client and batch through the public header,
+then exercises the per-exchange JSON override over local mutual TLS.
 
 ## Red, Green, Refactor commits
 
@@ -20,6 +20,16 @@ The failing API and binding tests were added in separate signed commits:
 Green implementation is in signed commit `120a4ab76`. The separate Refactor
 commit records final verification and marks only Task 5 complete.
 
+The review-fix cycle is also kept in separate signed commits:
+
+- RED `92e633aa7` — require accurate transport-construction mappings, Java
+  nullable override metadata, and a live public-header C JSON exchange.
+- GREEN `c5c23b1eb` — correct the manifest/schema/generator and generated
+  outputs, expose documented cleanup prototypes for the C construction path,
+  and implement the mTLS-backed C consumer.
+- REFACTOR — this evidence update records the final checks below; its commit is
+  separate from the RED and GREEN commits.
+
 ## API and compatibility
 
 - Rust exposes `WireEncoding::{Ttlv, Json, Xml}` and immutable client
@@ -28,9 +38,18 @@ commit records final verification and marks only Task 5 complete.
   configuration, then TTLV.
 - C exposes `kmipkit_wire_encoding_t` and the TTLV/JSON/XML constants. New
   versioned transport records let C construct a transport and client, create a
-  batch, execute it, and read ordered result metadata through the generated
+  batch, execute it, and inspect the response item count through the generated
   public header. `kmipkit_client_execute_with_options` accepts `-1` for the
   configured default and `0`, `1`, or `2` for TTLV, JSON, or XML.
+- The `kmipkit_transport_config_create_v1` mapping now resolves to
+  `TransportConfiguration.Builder.build()` in Java and `TransportConfig`
+  construction in Python. Java nullable-parameter metadata records
+  `encodingOverride` as nullable, matching Python `WireEncoding | None` and
+  the C `-1` configured-default sentinel.
+- The generated C header documents library ownership for handle-release
+  prototypes. Manifest-backed C lifecycle exclusions expose the existing
+  configuration, batch-item, codec-limits, and transport release functions
+  needed to clean up this construction path; no new ABI symbols were added.
 - Java exposes `org.kmipkit.extensions.WireEncoding`, immutable
   `ClientConfiguration.withWireEncoding(...)`, the configuration getter, and
   `Client.executeWithOptions(..., @Nullable WireEncoding)`.
@@ -46,17 +65,21 @@ commit records final verification and marks only Task 5 complete.
 
 | Check | Result |
 |---|---|
-| `python -B tools/api_manifest/generate.py --check` | Passed; all 12 generated outputs current. |
-| Four-file manifest/API pytest selection (`test_manifest_v2.py`, `test_t030_package_docs.py`, `test_generate.py`, `test_wire_encoding_public_api.py`) | 93 passed, 2 skipped. |
+| `bindings/python/.venv/Scripts/python.exe -B tools/api_manifest/generate.py --check` | Passed; all 12 generated outputs current. |
+| `bindings/python/.venv/Scripts/python.exe -m pytest -q tools/api_manifest/tests/test_manifest_v2.py tools/api_manifest/tests/test_t030_package_docs.py tools/api_manifest/tests/test_generate.py tools/api_manifest/tests/test_wire_encoding_public_api.py --tb=short` | 97 passed, 2 skipped. |
 | Exact checked-in Rust inventory test | 1 passed. |
 | CI extension fixture command: `python -B -m unittest discover --failfast -s tools/api_manifest/tests -p 'test_extension_fixtures.py' -v` | 17 passed, 1 Windows symlink-permission skip. |
 | `mvn -q -f bindings/java/pom.xml test` | Passed, including JNI native build and Java TLS encoding override test. |
-| `python -m pytest -q bindings/python/tests` | 162 passed. |
+| `bindings/python/.venv/Scripts/python.exe -m pytest -q bindings/python/tests` | 162 passed. |
 | `cargo test -p kmipkit-client --all-features wire_encoding_tests` | 7 passed. |
-| `cargo test -p kmipkit-ffi --all-features` | 54 Rust unit tests and 3 C ABI consumer tests passed. The public C consumer constructs a client/batch and calls the encoding override entry point. |
+| `cargo test -p kmipkit-ffi --all-features --test c_api_coverage public_c_client_executes_a_valid_json_override_over_mutual_tls -- --exact --nocapture` | Passed. The C helper builds registry/configuration, DER identity/trust transport, client, limits, and DiscoverVersions batch from `kmipkit.h`, then calls override `1`. The local server observes a JSON `RequestMessage` and returns a synthetic JSON success response with a ProtocolVersion payload. |
+| `cargo test -p kmipkit-ffi --all-features` | 54 Rust unit tests and 4 C ABI consumer tests passed. This proves the local ABI/transport path only; it is not an OASIS vector or independent-implementation interoperability result. |
 | `cargo fmt --all --check` | Passed. |
 | `cargo clippy -p kmipkit -p kmipkit-ffi -p kmipkit-client -p kmipkit-transport --all-targets --all-features -- -D warnings` | Passed. |
 | `git diff --check` | Passed. |
+
+The new C integration test holds the test private-key copy in
+`zeroize::Zeroizing`; the local TLS server uses ephemeral test PKI material.
 
 The compiler emitted non-fatal AWS-LC environment warnings about NASM and an
 optional C feature probe; the Rust, C, JNI, and Java build/test commands above
