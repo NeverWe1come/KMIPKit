@@ -162,6 +162,105 @@ fn raw_tls_sends_exact_bytes_over_tls13_mtls_and_closes_after_one_frame() {
     assert_request_owner_zeroized(&observer, fixtures::REQUEST_SENTINEL.len());
 }
 
+#[test]
+fn raw_tls_json_response_is_framed_across_fragments_and_closes_after_one_document() {
+    const FRAGMENTS: &[&[u8]] = &[br#"{"tag":"Response"#, br#"Message","value":"#, br#"[]}"#];
+    let expected = FRAGMENTS.concat();
+    let (result, peer) = exchange_action_with_encoding(
+        PeerAction::RespondFragments(FRAGMENTS),
+        1024,
+        config::WireEncoding::Json,
+    );
+
+    let response = result.expect("a complete fragmented JSON response is framed");
+    assert_eq!(response.as_bytes(), expected);
+    assert!(
+        peer.closed_after_response,
+        "the client closes after one document"
+    );
+    assert_eq!(peer.request_bytes.as_slice(), fixtures::REQUEST_SENTINEL);
+}
+
+#[test]
+fn raw_tls_xml_response_is_framed_across_fragments() {
+    const FRAGMENTS: &[&[u8]] = &[
+        b"<?xml version=\"1.0\" encoding=\"UTF-8\"?><ResponseMessage>",
+        b"<ResponseHeader>",
+        b"</ResponseHeader><BatchItem/>",
+        b"</ResponseMessage>",
+    ];
+    let expected = FRAGMENTS.concat();
+    let (result, peer) = exchange_action_with_encoding(
+        PeerAction::RespondFragments(FRAGMENTS),
+        1024,
+        config::WireEncoding::Xml,
+    );
+
+    let response = result.expect("a complete fragmented XML response is framed");
+    assert_eq!(response.as_bytes(), expected);
+    assert!(
+        peer.closed_after_response,
+        "the client closes after one document"
+    );
+}
+
+#[test]
+fn raw_tls_rejects_incomplete_and_malformed_text_documents() {
+    for (encoding, response) in [
+        (
+            config::WireEncoding::Json,
+            &b"{\"tag\":\"ResponseMessage\""[..],
+        ),
+        (config::WireEncoding::Json, &b"[1,2,3]"[..]),
+        (config::WireEncoding::Xml, &b"<ResponseMessage>"[..]),
+        (
+            config::WireEncoding::Xml,
+            &b"<!DOCTYPE ResponseMessage>"[..],
+        ),
+    ] {
+        let (result, peer) =
+            exchange_action_with_encoding(PeerAction::RespondBytes(response), 1024, encoding);
+        let error = result.expect_err("incomplete or malformed text input is rejected");
+        assert_eq!(
+            error.delivery_state(),
+            RequestDeliveryState::ResponseStarted
+        );
+        assert!(
+            peer.closed_after_response,
+            "the client closes after the invalid document"
+        );
+    }
+}
+
+#[test]
+fn raw_tls_rejects_text_trailing_bytes_and_enforces_actual_byte_limit() {
+    let trailing = br#"{"tag":"ResponseMessage","value":[]} false"#;
+    let (result, peer) = exchange_action_with_encoding(
+        PeerAction::RespondBytes(trailing),
+        1024,
+        config::WireEncoding::Json,
+    );
+    let error = result.expect_err("a second JSON value is not part of the response document");
+    assert_eq!(
+        error.delivery_state(),
+        RequestDeliveryState::ResponseStarted
+    );
+    assert!(peer.closed_after_response);
+
+    let limited = b"<ResponseMessage/>";
+    let (result, peer) = exchange_action_with_encoding(
+        PeerAction::RespondBytes(limited),
+        limited.len() - 1,
+        config::WireEncoding::Xml,
+    );
+    let error = result.expect_err("the actual XML bytes are checked against the local cap");
+    assert_eq!(
+        error.delivery_state(),
+        RequestDeliveryState::ResponseStarted
+    );
+    assert!(peer.closed_after_response);
+}
+
 /// Proves the staged request owner is cleaned up when the peer closes after
 /// receiving the request without returning a response frame.
 #[test]
@@ -1220,6 +1319,31 @@ fn exchange_action(
     exchange_action_with_response_allocation_observer(action, max_response_bytes, None)
 }
 
+fn exchange_action_with_encoding(
+    action: PeerAction,
+    max_response_bytes: usize,
+    encoding: config::WireEncoding,
+) -> (Result<TransportResponse, TransportError>, PeerObservation) {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the TLS peer binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_peer(
+        listener.into_inner(),
+        server_config(&pki, true),
+        fixtures::REQUEST_SENTINEL.len(),
+        action,
+    );
+    let config = client_config(&pki, &pki, address.port(), SERVER_NAME, Vec::new());
+    let mut adapter = raw_tls::new_for_test(config, None);
+    let result = adapter.exchange_with_options(
+        fixtures::REQUEST_SENTINEL,
+        max_response_bytes,
+        &RequestOptions::default().with_wire_encoding(encoding),
+    );
+    let peer = peer.join().expect("the local TLS peer thread completes");
+    (result, peer)
+}
+
 fn exchange_action_with_response_allocation_observer(
     action: PeerAction,
     max_response_bytes: usize,
@@ -1465,6 +1589,7 @@ fn server_config(pki: &impl PkiMaterial, require_client_auth: bool) -> Arc<Serve
 enum PeerAction {
     RespondOnce,
     RespondBytes(&'static [u8]),
+    RespondFragments(&'static [&'static [u8]]),
     RespondCoalesced,
     CloseWithoutResponse,
     CloseAfterHandshake,
@@ -1728,10 +1853,29 @@ fn run_peer(
     }
 
     match action {
-        PeerAction::RespondOnce | PeerAction::RespondBytes(_) | PeerAction::RespondCoalesced => {
+        PeerAction::RespondOnce
+        | PeerAction::RespondBytes(_)
+        | PeerAction::RespondFragments(_)
+        | PeerAction::RespondCoalesced => {
             let response_write = match action {
                 PeerAction::RespondOnce => connection.writer().write_all(&RESPONSE_FRAME),
                 PeerAction::RespondBytes(bytes) => connection.writer().write_all(bytes),
+                PeerAction::RespondFragments(fragments) => {
+                    for fragment in fragments.iter() {
+                        if connection.writer().write_all(fragment).is_err() {
+                            return observation;
+                        }
+                        while connection.wants_write() {
+                            if Instant::now() >= deadline
+                                || connection.write_tls(&mut stream).is_err()
+                            {
+                                return observation;
+                            }
+                        }
+                        thread::sleep(Duration::from_millis(5));
+                    }
+                    Ok(())
+                }
                 PeerAction::RespondCoalesced => connection.writer().write_all(&TWO_RESPONSE_FRAMES),
                 _ => {
                     return observation;
