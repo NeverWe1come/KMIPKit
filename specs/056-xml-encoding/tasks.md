@@ -19,6 +19,9 @@
   coverage and fresh root/fuzz dependency-policy checks.
 - [x] Self-review scope and committed fixture bytes; preserve immutable OASIS
   upstream, public API manifest and dispatch boundaries.
+- [x] Address independent review findings: complete allocation-free resource
+  preflight before XML reader construction and XML 1.0 QName/NCName validation;
+  record signed RED/GREEN/REFACTOR commits and fresh verification evidence.
 - [x] Record requirement traceability and allocation/ownership limitations in
   [implementation.md](implementation.md) and the full execution evidence in
   [the worktree report](../../.superpowers/sdd/0056-xml/report.md).
