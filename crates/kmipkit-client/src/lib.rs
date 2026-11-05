@@ -78,6 +78,10 @@ mod response_boundary_tests;
 mod request_time_stamp_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/request_authentication_tests.rs"]
+mod request_authentication_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/codec_limits_identity_tests.rs"]
 mod codec_limits_identity_tests;
 
