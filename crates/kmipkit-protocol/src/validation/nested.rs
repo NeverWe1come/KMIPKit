@@ -352,11 +352,7 @@ pub(super) fn validate_derive_key_conditions(
             .field("Derivation Parameters");
 
         if method == Some(PBKDF2) {
-            if !parameters
-                .children()
-                .iter()
-                .any(|field| field.tag().raw() == SALT)
-            {
+            if !has_tag(&parameters, SALT) {
                 report.push(ValidationIssue::new(
                     ValidationCode::new("KMIPKIT-0051-R226"),
                     prefix.clone().field("Salt"),
@@ -367,11 +363,7 @@ pub(super) fn validate_derive_key_conditions(
                     },
                 ));
             }
-            if !parameters
-                .children()
-                .iter()
-                .any(|field| field.tag().raw() == ITERATION_COUNT)
-            {
+            if !has_tag(&parameters, ITERATION_COUNT) {
                 report.push(ValidationIssue::new(
                     ValidationCode::new("KMIPKIT-0051-R227"),
                     prefix.clone().field("Iteration Count"),
@@ -391,10 +383,9 @@ pub(super) fn validate_derive_key_conditions(
                 .find(|field| field.tag().raw() == CRYPTOGRAPHIC_PARAMETERS)
                 .is_some_and(|field| {
                     field.with_value(|value| match value {
-                        kmipkit_ttlv::ValueView::Structure(parameters) => parameters
-                            .children()
-                            .iter()
-                            .any(|item| item.tag().raw() == HASHING_ALGORITHM),
+                        kmipkit_ttlv::ValueView::Structure(parameters) => {
+                            has_tag(&parameters, HASHING_ALGORITHM)
+                        }
                         _ => true,
                     })
                 });
@@ -414,6 +405,13 @@ pub(super) fn validate_derive_key_conditions(
         }
     });
     report
+}
+
+fn has_tag(structure: &StructureView<'_>, tag: u32) -> bool {
+    structure
+        .children()
+        .iter()
+        .any(|item| item.tag().raw() == tag)
 }
 
 fn descriptor(schema: NestedStructureSchema) -> RequestSchemaDescriptor {
