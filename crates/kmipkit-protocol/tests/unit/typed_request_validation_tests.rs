@@ -829,6 +829,38 @@ fn derive_key_validation_recurses_into_cryptographic_parameters() {
 }
 
 #[test]
+fn derive_key_validation_checks_known_derivation_parameter_extensions() {
+    let attributes = AttributeSet::try_new([
+        schema_item(0x0042_002a, Value::integer(256)),
+        schema_item(0x0042_0028, Value::enumeration(3)),
+    ])
+    .expect("the symmetric-key attributes use catalogued TTLV types");
+    let parameters = DerivationParameters::new()
+        .with_extension(schema_item(
+            0x0042_003c,
+            Value::text_string("secret-canary".to_owned()),
+        ))
+        .expect("the generic extension is valid as TTLV");
+    let request = DeriveKeyRequest::new(
+        ObjectType::from_raw(2),
+        vec![UniqueIdentifier::TextString("source".to_owned())],
+        DerivationMethod::from_raw(4),
+        parameters,
+        attributes,
+    );
+
+    let report = request.validate();
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R225"
+            && issue.path().to_string()
+                == "Request Payload.Derivation Parameters.Iteration Count"
+            && issue.source().to_string() == "KMIP v2.1 §7.12, Table 364"
+    }));
+    assert!(!format!("{report:?}").contains("secret-canary"));
+}
+
+#[test]
 fn reprovision_validation_checks_supplied_certificate_shapes() {
     let malformed_request = schema_structure([schema_item(0x0042_0019, Value::enumeration(1))]);
     let request = ReProvisionRequest::new().with_certificate_request(malformed_request);
