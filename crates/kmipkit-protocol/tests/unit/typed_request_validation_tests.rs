@@ -7,7 +7,7 @@ use crate::{
     GetAttributesRequest, GetConstraintsRequest, GetRequest, GetUsageAllocationRequest,
     HashRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest, LocateRequest, LogRequest,
     LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest, ModifyAttributeRequest, ObjectType,
-    ObtainLeaseRequest, PingRequest, Pkcs11Request, PollRequest, ProcessRequest,
+    ObtainLeaseRequest, OperationData, PingRequest, Pkcs11Request, PollRequest, ProcessRequest,
     QueryAsyncRequestsRequest, QueryFunction, QueryRequest, ReProvisionRequest, RecertifyRequest,
     RecoverRequest, RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason,
     RevokeRequest, RngRetrieveRequest, RngSeedRequest, SecretBytes, SetAttributeRequest,
@@ -686,6 +686,38 @@ fn cryptographic_requests_validate_supplied_parameter_structures() {
                     .ends_with("Cryptographic Parameters.Tag Length")
         }));
     }
+}
+
+#[test]
+fn hash_validation_checks_cryptographic_parameter_requirements() {
+    const BLOCK_CIPHER_MODE: u32 = 0x0042_0011;
+    const HASHING_ALGORITHM: u32 = 0x0042_0038;
+    let parameters = schema_structure([
+        schema_item(HASHING_ALGORITHM, Value::enumeration(6)),
+        schema_item(BLOCK_CIPHER_MODE, Value::enumeration(9)),
+    ]);
+    let request = HashRequest::new(parameters).with_data(OperationData::ByteString(
+        SecretBytes::new(b"synthetic-input".to_vec()),
+    ));
+
+    let report = request.validate();
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R219"
+            && issue
+                .path()
+                .to_string()
+                .ends_with("Cryptographic Parameters.IV Length")
+            && issue.source().to_string() == "KMIP v2.1 §4.16, Table 59"
+    }));
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R220"
+            && issue
+                .path()
+                .to_string()
+                .ends_with("Cryptographic Parameters.Tag Length")
+    }));
+    assert!(!format!("{report:?}").contains("synthetic-input"));
 }
 
 #[test]
