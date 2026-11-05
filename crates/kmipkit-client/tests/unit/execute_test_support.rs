@@ -114,20 +114,36 @@ pub(crate) fn assert_lifecycle_outcome_surface(
     );
 }
 
-pub(crate) struct TestTransport(Box<dyn Transport>);
+pub(crate) struct TestTransport {
+    transport: Box<dyn Transport>,
+    options_observer: Option<std::rc::Rc<std::cell::RefCell<Vec<RequestOptions>>>>,
+}
 
 impl TestTransport {
     pub(crate) fn new<T: Transport + 'static>(transport: T) -> Self {
-        Self(Box::new(transport))
+        Self {
+            transport: Box::new(transport),
+            options_observer: None,
+        }
+    }
+
+    pub(crate) fn observe_options(
+        &mut self,
+        observer: std::rc::Rc<std::cell::RefCell<Vec<RequestOptions>>>,
+    ) {
+        self.options_observer = Some(observer);
     }
 
     pub(crate) fn exchange_with_options(
         &mut self,
         request: &[u8],
         max_response_bytes: usize,
-        _options: &RequestOptions,
+        options: &RequestOptions,
     ) -> Result<TransportResponse, TransportError> {
-        self.0.exchange(request, max_response_bytes)
+        if let Some(observer) = &self.options_observer {
+            observer.borrow_mut().push(*options);
+        }
+        self.transport.exchange(request, max_response_bytes)
     }
 }
 
