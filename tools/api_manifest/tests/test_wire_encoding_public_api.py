@@ -6,6 +6,8 @@ import json
 import unittest
 from pathlib import Path
 
+from tools.api_manifest import generate
+
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
@@ -99,6 +101,35 @@ class WireEncodingPublicApiTests(unittest.TestCase):
             }
             <= type_ids
         )
+
+    def test_versioned_c_record_layout_is_generated_from_manifest_fields(self) -> None:
+        manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+        manifest["types"].insert(
+            0,
+            {
+                "id": "TransportConfigProbe",
+                "kind": "struct",
+                "requirementIds": ["KMIPKIT-0057-FR-005"],
+                "rust": {"module": "kmipkit_ffi", "name": "Probe", "owner": "ffi"},
+                "c": {
+                    "name": "kmipkit_transport_config_probe_v1_t",
+                    "kind": "record",
+                    "fields": [
+                        {"name": "struct_size", "type": "uint32_t"},
+                        {"name": "abi_version", "type": "uint32_t"},
+                        {"name": "endpoint", "type": "kmipkit_byte_span_v1_t"},
+                    ],
+                },
+                "java": {"package": "org.kmipkit", "name": "Probe"},
+                "python": {"module": "kmipkit.client", "name": "Probe"},
+            },
+        )
+
+        c_header = generate.render_c_header(manifest, include_blocked=True)
+        rust_ffi = generate.render_rust_ffi(manifest)
+        self.assertIn("uint32_t struct_size;", c_header)
+        self.assertIn("kmipkit_byte_span_v1_t endpoint;", c_header)
+        self.assertIn("pub endpoint: kmipkit_byte_span_v1_t,", rust_ffi)
 
 
 if __name__ == "__main__":
