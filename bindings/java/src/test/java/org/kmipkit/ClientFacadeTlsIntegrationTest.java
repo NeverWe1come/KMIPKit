@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyStore;
@@ -43,15 +44,71 @@ import org.kmipkit.extensions.ClientConfiguration;
 import org.kmipkit.extensions.ClientExtensionRegistry;
 import org.kmipkit.extensions.ExtensionRegistryLimits;
 import org.kmipkit.extensions.TransportConfiguration;
+import org.kmipkit.extensions.WireEncoding;
 import org.kmipkit.ttlv.CodecLimits;
 
 /** Exercises the T076 client ABI through the Java facade against a local TLS 1.3 peer. */
 final class ClientFacadeTlsIntegrationTest {
     private static final char[] STORE_PASSWORD = "kmipkit-test".toCharArray();
     private static final byte[] CORRELATION = {0, 0x41, (byte) 0xff, 0x42};
+    private static final byte[] JSON_DISCOVER_VERSIONS_RESPONSE = """
+            {"tag":"ResponseMessage","value":[{"tag":"ResponseHeader","value":[{"tag":"ProtocolVersion","value":[{"tag":"ProtocolVersionMajor","type":"Integer","value":2},{"tag":"ProtocolVersionMinor","type":"Integer","value":1}]},{"tag":"TimeStamp","type":"DateTime","value":"1970-01-01T00:00:01Z"},{"tag":"BatchCount","type":"Integer","value":1}]},{"tag":"BatchItem","value":[{"tag":"Operation","type":"Enumeration","value":"DiscoverVersions"},{"tag":"ResultStatus","type":"Enumeration","value":"Success"},{"tag":"ResponsePayload","value":[]}]}]}
+            """.getBytes(StandardCharsets.UTF_8);
 
     @TempDir
     Path temporaryDirectory;
+
+    @Test
+    void executeWithOptionsUsesJsonForRequestAndResponseAndNullUsesConfiguredDefault() throws Exception {
+        Path serverStorePath = temporaryDirectory.resolve("encoding-server.p12");
+        Path clientStorePath = temporaryDirectory.resolve("encoding-client.p12");
+        createKeyStore(serverStorePath, "server");
+        createKeyStore(clientStorePath, "client");
+        KeyStore serverStore = loadKeyStore(serverStorePath);
+        KeyStore clientStore = loadKeyStore(clientStorePath);
+        X509Certificate serverCertificate = certificate(serverStore, "server");
+        X509Certificate clientCertificate = certificate(clientStore, "client");
+        PrivateKey clientKey = (PrivateKey) clientStore.getKey("client", STORE_PASSWORD);
+
+        SSLServerSocket listener = (SSLServerSocket) serverContext(serverStore, clientCertificate)
+                .getServerSocketFactory()
+                .createServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+        listener.setEnabledProtocols(new String[] {"TLSv1.3"});
+        listener.setNeedClientAuth(true);
+        listener.setSoTimeout(10_000);
+        FutureTask<byte[][]> peer = new FutureTask<>(() -> serveTtlvThenJson(listener));
+        Thread peerThread = new Thread(peer, "kmipkit-java-encoding-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration configuration = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityDer(new byte[][] {clientCertificate.getEncoded()}, clientKey.getEncoded())
+                        .trustCertificatesDer(new byte[][] {serverCertificate.getEncoded()})
+                        .build();
+                Client client = Client.create(configuration, transport)) {
+            try (ClientBatchResponse response = client.executeWithOptions(
+                            ClientBatch.create().add(ClientBatchItem.discoverVersions()),
+                            CodecLimits.defaults(), null)) {
+                assertEquals(1, response.itemCount());
+            }
+            try (ClientBatchResponse response = client.executeWithOptions(
+                            ClientBatch.create().add(ClientBatchItem.discoverVersions()),
+                            CodecLimits.defaults(), WireEncoding.JSON)) {
+                assertEquals(1, response.itemCount());
+            }
+            byte[][] requests = peer.get(12, TimeUnit.SECONDS);
+            assertEquals(2, requests.length);
+            assertArrayEquals(new byte[] {0x42, 0x00, 0x78},
+                    new byte[] {requests[0][0], requests[0][1], requests[0][2]});
+            assertEquals((int) '{', requests[1][0]);
+        } finally {
+            listener.close();
+        }
+    }
 
     @Test
     void executionPreservesOrderedPendingAndCompletedMetadataOverMutualTls() throws Exception {
@@ -298,6 +355,51 @@ final class ClientFacadeTlsIntegrationTest {
             }
         }
         return requests;
+    }
+
+    private static byte[][] serveTtlvThenJson(SSLServerSocket listener) throws Exception {
+        byte[][] requests = new byte[2][];
+        for (int index = 0; index < requests.length; index++) {
+            try (SSLSocket socket = (SSLSocket) listener.accept()) {
+                socket.setEnabledProtocols(new String[] {"TLSv1.3"});
+                socket.setSoTimeout(10_000);
+                socket.startHandshake();
+                requests[index] = index == 0
+                        ? readFrame(socket.getInputStream())
+                        : readJsonDocument(socket.getInputStream());
+                OutputStream output = socket.getOutputStream();
+                output.write(index == 0 ? responseMessage(false) : JSON_DISCOVER_VERSIONS_RESPONSE);
+                output.flush();
+            }
+        }
+        return requests;
+    }
+
+    private static byte[] readJsonDocument(InputStream input) throws Exception {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        int depth = 0;
+        boolean inString = false;
+        boolean escaped = false;
+        int value;
+        while ((value = input.read()) != -1) {
+            output.write(value);
+            if (inString) {
+                if (escaped) {
+                    escaped = false;
+                } else if (value == '\\') {
+                    escaped = true;
+                } else if (value == '"') {
+                    inString = false;
+                }
+            } else if (value == '"') {
+                inString = true;
+            } else if (value == '{') {
+                depth++;
+            } else if (value == '}' && --depth == 0) {
+                return output.toByteArray();
+            }
+        }
+        throw new IllegalStateException("JSON request document is incomplete");
     }
 
     private static FutureTask<byte[]> peerThatClosesAfterOneRequest(SSLServerSocket listener) {
