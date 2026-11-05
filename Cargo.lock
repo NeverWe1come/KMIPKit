@@ -338,6 +338,7 @@ dependencies = [
  "kmipkit-transport",
  "kmipkit-ttlv",
  "quickcheck",
+ "roxmltree",
  "rustls",
  "serde",
  "serde_json",
