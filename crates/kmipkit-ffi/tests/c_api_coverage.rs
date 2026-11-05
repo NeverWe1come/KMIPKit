@@ -21,6 +21,8 @@ unsafe extern "C" {
 unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_validates_attribute_set() -> i32;
     fn kmipkit_client_abi_c_consumer_validates_standalone_attribute_requests() -> i32;
+    fn kmipkit_client_abi_c_consumer_exercises_attribute_request_models() -> i32;
+    fn kmipkit_client_abi_c_consumer_exercises_batch_header_fields() -> i32;
 }
 
 #[link(name = "kmipkit_credential_secret_abi_c_consumer", kind = "static")]
@@ -100,6 +102,20 @@ fn compiled_c_consumer_validates_and_consumes_ordered_attribute_sets() {
 fn compiled_c_consumer_validates_standalone_attribute_request_models() {
     // SAFETY: The C consumer owns and releases every temporary handle it creates.
     let status = unsafe { kmipkit_client_abi_c_consumer_validates_standalone_attribute_requests() };
+    assert_eq!(status, 1);
+}
+
+#[test]
+fn compiled_c_consumer_exercises_owned_attribute_request_models() {
+    // SAFETY: The C consumer owns and releases all request, item, value, payload, and batch handles.
+    let status = unsafe { kmipkit_client_abi_c_consumer_exercises_attribute_request_models() };
+    assert_eq!(status, 1);
+}
+
+#[test]
+fn compiled_c_consumer_exercises_client_batch_header_fields() {
+    // SAFETY: The C consumer owns the batch and uses live, writable scalar outputs.
+    let status = unsafe { kmipkit_client_abi_c_consumer_exercises_batch_header_fields() };
     assert_eq!(status, 1);
 }
 
