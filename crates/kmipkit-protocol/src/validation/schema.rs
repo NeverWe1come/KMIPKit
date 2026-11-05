@@ -81,6 +81,16 @@ pub enum NestedStructureSchema {
     EncryptionKeyInformation,
     /// The §3.3 MAC/Signature Key Information structure.
     MacSignatureKeyInformation,
+    /// The §7.35 Rights structure containing repeatable Right structures.
+    Rights,
+    /// One §7.34 Right structure.
+    Right,
+    /// The §7.40 Usage Limits structure.
+    UsageLimits,
+    /// The §7.21 Objects structure containing Unique Identifiers.
+    Objects,
+    /// The §7.25 Operations structure containing Operation enumerations.
+    Operations,
 }
 
 #[derive(Clone, Copy)]

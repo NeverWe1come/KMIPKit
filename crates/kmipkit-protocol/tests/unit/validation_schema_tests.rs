@@ -329,14 +329,8 @@ fn key_information_requires_text_string_unique_identifier() {
 
 #[test]
 fn rights_schema_recursively_validates_usage_limits_and_preserves_empty_rights() {
-    let malformed_usage_limits = structure([item(
-        USAGE_LIMITS_TOTAL,
-        Value::integer(2),
-    )]);
-    let right = structure([item(
-        USAGE_LIMITS,
-        Value::structure(malformed_usage_limits),
-    )]);
+    let malformed_usage_limits = structure([item(USAGE_LIMITS_TOTAL, Value::integer(2))]);
+    let right = structure([item(USAGE_LIMITS, Value::structure(malformed_usage_limits))]);
     let rights = structure([item(RIGHT, Value::structure(right))]);
     let payload = structure([
         item(0x0042_014A, Value::enumeration(1)),
@@ -351,10 +345,14 @@ fn rights_schema_recursively_validates_usage_limits_and_preserves_empty_rights()
         )),
     );
 
-    assert!(report.issues().iter().any(|issue| {
-        issue.path().to_string() == "Right.Usage Limits.Usage Limits Total"
-            && issue.source().to_string() == "KMIP v2.1 §7.40, Table 392"
-    }));
+    assert!(
+        report.issues().iter().any(|issue| {
+            issue.path().to_string()
+                == "Request Payload.Rights.Right[0].Usage Limits.Usage Limits Total"
+                && issue.source().to_string() == "KMIP v2.1 §7.40, Table 392"
+        }),
+        "unexpected validation report: {report:?}"
+    );
 }
 
 #[test]
@@ -377,7 +375,10 @@ fn rights_schema_preserves_empty_and_repeated_rights_and_unknown_extensions() {
     let populated_right = structure([
         item(
             OPERATIONS,
-            Value::structure(structure([item(0x0042_005C, Value::enumeration(0x8000_0001))])),
+            Value::structure(structure([item(
+                0x0042_005C,
+                Value::enumeration(0x8000_0001),
+            )])),
         ),
         item(
             OBJECTS,

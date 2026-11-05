@@ -4,8 +4,8 @@ use kmipkit_ttlv::StructureView;
 
 use super::schema::{
     FieldDescriptor, FieldTag, NestedStructureSchema, RequestSchemaDescriptor, TYPE_BOOLEAN,
-    TYPE_BYTE_STRING, TYPE_ENUMERATION, TYPE_INTEGER, TYPE_STRUCTURE, TYPE_TEXT_STRING,
-    validate_structure_with_descriptor_and_prefix,
+    TYPE_BYTE_STRING, TYPE_ENUMERATION, TYPE_INTEGER, TYPE_LONG_INTEGER, TYPE_STRUCTURE,
+    TYPE_TEXT_STRING, validate_structure_with_descriptor_and_prefix,
 };
 use super::{
     ValidationCode, ValidationIssue, ValidationPath, ValidationReport, ValidationSeverity,
@@ -348,6 +348,105 @@ const KEY_INFORMATION_FIELDS: &[FieldDescriptor] = &[
     },
 ];
 
+const RIGHTS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
+    rule_id: "KMIPKIT-0051-R237",
+    name: "Right",
+    tag: FieldTag::Exact(0x0042_0150),
+    types: TYPE_STRUCTURE,
+    min_count: 0,
+    max_count: None,
+    nested_schema: Some(NestedStructureSchema::Right),
+}];
+
+const RIGHT_FIELDS: &[FieldDescriptor] = &[
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R238",
+        name: "Usage Limits",
+        tag: FieldTag::Exact(0x0042_0095),
+        types: TYPE_STRUCTURE,
+        min_count: 0,
+        max_count: Some(1),
+        nested_schema: Some(NestedStructureSchema::UsageLimits),
+    },
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R239",
+        name: "Operations",
+        tag: FieldTag::Exact(0x0042_014F),
+        types: TYPE_STRUCTURE,
+        min_count: 0,
+        max_count: Some(1),
+        nested_schema: Some(NestedStructureSchema::Operations),
+    },
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R240",
+        name: "Objects",
+        tag: FieldTag::Exact(0x0042_014E),
+        types: TYPE_STRUCTURE,
+        min_count: 0,
+        max_count: Some(1),
+        nested_schema: Some(NestedStructureSchema::Objects),
+    },
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R241",
+        name: "Object Groups",
+        tag: FieldTag::Exact(0x0042_0166),
+        types: TYPE_STRUCTURE,
+        min_count: 0,
+        max_count: Some(1),
+        nested_schema: Some(NestedStructureSchema::ObjectGroups),
+    },
+];
+
+const USAGE_LIMITS_FIELDS: &[FieldDescriptor] = &[
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R242",
+        name: "Usage Limits Total",
+        tag: FieldTag::Exact(0x0042_0097),
+        types: TYPE_LONG_INTEGER,
+        min_count: 1,
+        max_count: Some(1),
+        nested_schema: None,
+    },
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R243",
+        name: "Usage Limits Count",
+        tag: FieldTag::Exact(0x0042_0096),
+        types: TYPE_LONG_INTEGER,
+        min_count: 1,
+        max_count: Some(1),
+        nested_schema: None,
+    },
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R244",
+        name: "Usage Limits Unit",
+        tag: FieldTag::Exact(0x0042_0098),
+        types: TYPE_ENUMERATION,
+        min_count: 1,
+        max_count: Some(1),
+        nested_schema: None,
+    },
+];
+
+const OBJECTS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
+    rule_id: "KMIPKIT-0051-R245",
+    name: "Unique Identifier",
+    tag: FieldTag::Exact(0x0042_0094),
+    types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
+    min_count: 0,
+    max_count: None,
+    nested_schema: None,
+}];
+
+const OPERATIONS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
+    rule_id: "KMIPKIT-0051-R246",
+    name: "Operation",
+    tag: FieldTag::Exact(0x0042_005C),
+    types: TYPE_ENUMERATION,
+    min_count: 0,
+    max_count: None,
+    nested_schema: None,
+}];
+
 const BLOCK_CIPHER_MODE: u32 = 0x0042_0011;
 const IV_LENGTH: u32 = 0x0042_00CD;
 const TAG_LENGTH: u32 = 0x0042_00CE;
@@ -515,6 +614,11 @@ fn descriptor(schema: NestedStructureSchema) -> RequestSchemaDescriptor {
         NestedStructureSchema::MacSignatureKeyInformation => {
             ("§3.3, Table 17", KEY_INFORMATION_FIELDS)
         }
+        NestedStructureSchema::Rights => ("§7.35, Table 387", RIGHTS_FIELDS),
+        NestedStructureSchema::Right => ("§7.34, Table 386", RIGHT_FIELDS),
+        NestedStructureSchema::UsageLimits => ("§7.40, Table 392", USAGE_LIMITS_FIELDS),
+        NestedStructureSchema::Objects => ("§7.21, Table 373", OBJECTS_FIELDS),
+        NestedStructureSchema::Operations => ("§7.25, Table 377", OPERATIONS_FIELDS),
     };
     RequestSchemaDescriptor { source, fields }
 }

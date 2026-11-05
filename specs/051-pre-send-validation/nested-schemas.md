@@ -16,6 +16,11 @@ remain in the caller's TTLV tree and are not rejected solely for being unknown.
 | `Cryptographic Parameters` | §4.16, Table 59 | Eighteen known optional singleton fields in table order, with their specified TTLV types; require `IV Length` for locally recognized CTR, CCM, and GCM modes, and `Tag Length` for GCM. | R201–R220 | `validation_schema_tests::encrypt_payload_recursively_validates_known_cryptographic_parameter_fields`; `validation_schema_tests::cryptographic_parameters_require_iv_and_gcm_tag_lengths_when_mode_requires_them`; `validation_schema_tests::cryptographic_parameters_preserve_unknown_members_and_future_enumerations` |
 | `Derivation Parameters` | §7.12, Table 364 | Optional Cryptographic Parameters, Initialization Vector, Salt, and Iteration Count; repeatable Derivation Data; all known children use the table's TTLV type and order. The enclosing Derive Key request requires Salt and Iteration Count for PBKDF2 and Hashing Algorithm for HASH. | R221–R228 | `validation_schema_tests::derive_key_payload_recursively_validates_derivation_parameters`; `validation_schema_tests::derive_key_schema_applies_pbkdf2_parameter_requirements_from_outer_method`; `validation_schema_tests::derive_key_schema_requires_hashing_algorithm_for_hash_method` |
 | `Key Wrapping Specification` | §7.18, Table 370; §3.3, Tables 16–17 | Required Wrapping Method; at least one key-information Structure, with both allowed; repeated Attribute Name; optional Encoding Option. Each key-information Structure requires one Text String Unique Identifier and may contain Cryptographic Parameters. | R229–R236 | `validation_schema_tests::get_payload_recursively_validates_key_wrapping_specification`; `validation_schema_tests::key_wrapping_specification_requires_key_information_but_allows_both_forms`; `validation_schema_tests::key_information_requires_text_string_unique_identifier` |
+| `Rights` | §7.35, Table 387 | Zero or more `Right` Structure children; the enclosing Delegated Login request still requires one Rights Structure. | R237 | `validation_schema_tests::rights_schema_preserves_empty_and_repeated_rights_and_unknown_extensions` |
+| `Right` | §7.34, Table 386 | Optional singleton Usage Limits, Operations, Objects, and Object Groups Structures, in table order. | R238–R241 | `validation_schema_tests::rights_schema_recursively_validates_usage_limits_and_preserves_empty_rights`; `validation_schema_tests::rights_schema_preserves_empty_and_repeated_rights_and_unknown_extensions` |
+| `Usage Limits` | §7.40, Table 392 | Required singleton Usage Limits Total and Count Long Integers followed by Usage Limits Unit Enumeration; unknown fields remain available. No numeric range is inferred. | R242–R244 | `validation_schema_tests::rights_schema_recursively_validates_usage_limits_and_preserves_empty_rights` |
+| `Objects` | §7.21, Table 373 | Zero or more Unique Identifier values, each encoded as Integer, Enumeration, or Text String. | R245 | `validation_schema_tests::rights_schema_preserves_empty_and_repeated_rights_and_unknown_extensions` |
+| `Operations` | §7.25, Table 377 | Zero or more Operation Enumeration values; future and vendor values are retained. | R246 | `validation_schema_tests::rights_schema_preserves_empty_and_repeated_rights_and_unknown_extensions` |
 
 ## Boundaries
 
@@ -26,8 +31,8 @@ families have been reconciled and covered by the operation-family tasks.
 - `Set Constraints` applies constraints to server operations. This API validates
   only the source-defined structure and does not claim that a server supports
   or accepts any supplied constraint.
-- An empty `Constraints`, `Object Types`, `Object Groups`, or `Defaults
-  Information` list is preserved. Where the cited table marks a child as
+- An empty `Constraints`, `Object Types`, `Object Groups`, `Defaults
+  Information`, `Rights`, `Objects`, or `Operations` list is preserved. Where the cited table marks a child as
   repeatable and not required, the validator does not invent a minimum count.
 - `Attributes` contains tag-selected Object Attributes. The generic nested
   schema does not guess attribute-specific multiplicity or server policy.
@@ -41,3 +46,6 @@ families have been reconciled and covered by the operation-family tasks.
   Method or whether a Unique Identifier denotes a Secret Data object. PBKDF2,
   HASH, and input-object-dependent rules require the enclosing Derive Key
   Request Payload context; a Secret Data object's type remains server state.
+- Rights validation checks only the §7 structure. It does not establish ticket
+  authorization or enforce server-specific operation, object, group, or usage
+  policy, and it does not impose numeric ranges on Usage Limits values.

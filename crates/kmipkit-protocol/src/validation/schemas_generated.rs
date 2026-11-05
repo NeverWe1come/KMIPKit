@@ -903,7 +903,7 @@ static DELEGATEDLOGIN_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::UsageLimits),
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R048",
@@ -912,7 +912,7 @@ static DELEGATEDLOGIN_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 1,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::Rights),
     },
 ];
 
@@ -1497,7 +1497,7 @@ static LOGIN_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
-        nested_schema: None,
+        nested_schema: Some(NestedStructureSchema::UsageLimits),
     },
 ];
 
