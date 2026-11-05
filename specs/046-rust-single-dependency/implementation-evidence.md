@@ -2,11 +2,11 @@
 
 ## Red
 
-`cargo check --manifest-path tests/fixtures/rust-single-dependency/Cargo.toml --offline` failed as expected on the absent `kmipkit::protocol`, `kmipkit::ttlv`, `kmipkit::client_config`, and `kmipkit::transport_config` facade paths. The first run also identified a missing fixture `main`; that harness issue was corrected before recording this Red result. The request-type imports deliberately include all 56 currently defined request structs, eight of which are not yet re-exported by `kmipkit-protocol`.
+`cargo check --manifest-path tests/fixtures/rust-single-dependency/Cargo.toml --offline` failed as expected on the absent `kmipkit::protocol`, `kmipkit::ttlv`, `kmipkit::client_config`, and `kmipkit::transport_config` facade paths. The first run also identified a missing fixture `main`; that harness issue was corrected before recording this Red result. The request-type imports deliberately include all 56 currently defined request structs, which are already exported by the lower-level protocol crate but were not reachable via the `kmipkit` facade.
 
 ## Green
 
-Pending.
+`cargo check --manifest-path tests/fixtures/rust-single-dependency/Cargo.toml --offline` passed after adding the facade namespaces and configuration exports. The isolated consumer has exactly one direct KMIPKit dependency and compiles imports for all 56 protocol request structs, constructs the supported transport/client configuration from public types, type-checks typed execution/results, and decodes/builds generic TTLV values. No network connection is made.
 
 ## Refactor
 

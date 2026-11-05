@@ -99,17 +99,22 @@ fn one_dependency_supports_client_configuration(
 }
 
 fn one_dependency_supports_typed_client_and_generic_ttlv(
-    client: &mut Client,
-    batch: ClientBatch,
     bytes: &[u8],
-) -> Result<ClientBatchResponse, ClientError> {
+) -> Result<(), Box<dyn std::error::Error>> {
     let limits = CodecLimits::defaults();
     let _ = decode_with_limits(bytes, &limits);
     let _item = Item::new(
         RawTag::new(0x0042_0077)?.try_checked()?,
         Value::integer(1),
     );
-    client.execute(batch, &limits)
+    Ok(())
+}
+
+fn typed_execution_returns_public_response_types(
+    client: &mut Client,
+    batch: ClientBatch,
+) -> Result<ClientBatchResponse, ClientError> {
+    client.execute(batch, &CodecLimits::defaults())
 }
 
 fn asynchronous_result_type_is_reachable(_: PendingOutcome) {}
