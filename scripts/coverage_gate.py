@@ -102,10 +102,22 @@ _RUST_METADATA_ONLY_SOURCE_EXCLUSIONS = frozenset(
         "crates/kmipkit-protocol/src/profiles_generated.rs",
     }
 )
+# Catalog-generated named-value tables contain deterministic declarations and
+# lookup code. Their exact bytes are checked by the pinned generator, and the
+# generated lookup behavior is exercised by language binding tests. Keep these
+# exact files out of raw source coverage while retaining tests for their behavior.
+_CATALOG_GENERATED_NAMED_VALUE_EXCLUSIONS = frozenset(
+    {
+        "crates/kmipkit-protocol/src/named_values_generated.rs",
+        "bindings/java/src/main/java/org/kmipkit/protocol/KmipValues.java",
+        "bindings/python/src/kmipkit/protocol_values.py",
+    }
+)
 _COVERAGE_SOURCE_EXCLUSIONS = (
     _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS
     | _PYTHON_GENERATED_SOURCE_EXCLUSIONS
     | _RUST_METADATA_ONLY_SOURCE_EXCLUSIONS
+    | _CATALOG_GENERATED_NAMED_VALUE_EXCLUSIONS
 )
 
 
