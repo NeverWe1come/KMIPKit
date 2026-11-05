@@ -148,6 +148,10 @@ impl ImportRequest {
     /// TTLV model limit is exceeded.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
         if self.object.item_type() != ItemType::Structure
+            || !crate::managed_object::object_tag_matches_type(
+                self.object_type,
+                self.object.tag().raw(),
+            )
             || self
                 .attributes
                 .validate_single_instance_cardinality_for_object_type(self.object_type.raw())

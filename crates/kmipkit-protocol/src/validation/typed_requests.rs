@@ -144,7 +144,24 @@ impl ValidateKmipRequest for ImportRequest {
 
     fn validate(&self) -> ValidationReport {
         let object = self.object();
-        object.with_value(|value| match value {
+        let mut report = if object.item_type() != kmipkit_ttlv::ItemType::Structure
+            || !crate::managed_object::object_tag_matches_type(
+                self.object_type(),
+                object.tag().raw(),
+            )
+        {
+            crate::validation::request_issue_report(
+                "KMIPKIT-0051-R092",
+                "Any Object",
+                crate::ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.25, Table 238",
+                },
+            )
+        } else {
+            ValidationReport::default()
+        };
+        report.append(object.with_value(|value| match value {
             kmipkit_ttlv::ValueView::Structure(object_structure) => {
                 super::nested::validate_managed_object(
                     &object_structure,
@@ -155,31 +172,9 @@ impl ValidateKmipRequest for ImportRequest {
                 )
             }
             _ => ValidationReport::default(),
-        })
+        }));
+        report
     }
-}
-
-macro_rules! impl_validation_with_existing_check {
-    ($request:ty => $schema:ident, $check:ident, $field:literal, $reference:literal) => {
-        impl ValidateKmipRequest for $request {
-            const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::$schema;
-
-            fn validate(&self) -> ValidationReport {
-                if self.$check().is_err() {
-                    crate::validation::request_issue_report(
-                        "KMIPKIT-0051-P005",
-                        $field,
-                        crate::ValidationSourceRef::Oasis {
-                            document: "KMIP v2.1",
-                            reference: $reference,
-                        },
-                    )
-                } else {
-                    ValidationReport::default()
-                }
-            }
-        }
-    };
 }
 
 macro_rules! impl_crypto_request_validation {
@@ -248,13 +243,6 @@ impl_crypto_request_validation!(
     "Signature Data",
     "§6.1.56, Table 337"
 );
-impl_validation_with_existing_check!(
-    crate::RegisterRequest => Register,
-    validate_local_shape,
-    "Object",
-    "§6.1.43, Tables 291 and 293"
-);
-
 impl ValidateKmipRequest for QueryRequest {
     const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Query;
 

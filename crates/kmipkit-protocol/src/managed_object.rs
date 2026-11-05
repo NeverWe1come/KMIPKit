@@ -687,3 +687,19 @@ fn known_object_tag(tag: u32) -> bool {
             | SYMMETRIC_KEY
     )
 }
+
+pub(crate) fn object_tag_matches_type(object_type: ObjectType, tag: u32) -> bool {
+    let expected_tag = match object_type.raw() {
+        1 => Some(CERTIFICATE),
+        2 => Some(SYMMETRIC_KEY),
+        3 => Some(PUBLIC_KEY),
+        4 => Some(PRIVATE_KEY),
+        5 => Some(SPLIT_KEY),
+        7 => Some(SECRET_DATA),
+        8 => Some(OPAQUE_OBJECT),
+        9 => Some(PGP_KEY),
+        10 => Some(CERTIFICATE_REQUEST),
+        _ => None,
+    };
+    expected_tag.map_or_else(|| !known_object_tag(tag), |expected| expected == tag)
+}
