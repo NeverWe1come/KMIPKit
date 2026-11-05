@@ -2,9 +2,7 @@
 
 //! Typed attribute API contract from the KMIPKIT-0048 specification.
 
-use crate::attribute::{
-    Attribute, AttributeSet, CurrentAttribute, NewAttribute, typed,
-};
+use crate::attribute::{Attribute, AttributeSet, CurrentAttribute, NewAttribute, typed};
 use crate::typed_attributes::{UniqueIdentifierValue, UniqueIdentifierView};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};
 
@@ -13,6 +11,23 @@ fn checked_tag(raw: u32) -> Tag {
         .expect("test tag fits the KMIP tag field")
         .try_checked()
         .expect("test tag is assigned or within the vendor extension range")
+}
+
+#[test]
+fn generated_typed_attribute_registry_covers_every_direct_definition() {
+    let definitions = crate::typed_attributes::ATTRIBUTE_DEFINITIONS;
+
+    assert_eq!(definitions.len(), 62);
+    assert!(definitions.iter().any(|definition| {
+        definition.element_id == "KMIPKIT-ELEM-ATTRIBUTE-DIGITAL-SIGNATURE-ALGORITHM"
+            && definition.source_multiplicity
+                == Some("Yes for PGP keys. No for X.509 certificates.")
+    }));
+    assert!(
+        definitions
+            .iter()
+            .all(|definition| definition.tag <= 0x00FF_FFFF)
+    );
 }
 
 fn item(raw_tag: u32, value: Value) -> Item {
@@ -42,7 +57,7 @@ fn typed_scalar_attribute_builds_and_borrows_its_value() {
         .expect("typed Comment view matches its source encoding");
 
     assert_eq!(observed, "private-note-sentinel");
-    assert_eq!(attribute.as_item().tag().raw(), 0x0042_0022);
+    assert_eq!(attribute.as_item().tag().raw(), 0x0042_00FD);
     assert!(!format!("{attribute:?}").contains("private-note-sentinel"));
 }
 
@@ -62,10 +77,14 @@ fn typed_enumeration_preserves_unknown_raw_values() {
 fn typed_attribute_set_keeps_repeated_structures_in_wire_order() {
     let mut attributes = AttributeSet::new();
     attributes
-        .try_push_typed(Attribute::<typed::AlternativeName>::new(structure_with_children(1)).unwrap())
+        .try_push_typed(
+            Attribute::<typed::AlternativeName>::new(structure_with_children(1)).unwrap(),
+        )
         .unwrap();
     attributes
-        .try_push_typed(Attribute::<typed::AlternativeName>::new(structure_with_children(2)).unwrap())
+        .try_push_typed(
+            Attribute::<typed::AlternativeName>::new(structure_with_children(2)).unwrap(),
+        )
         .unwrap();
 
     let child_counts = attributes
@@ -112,9 +131,7 @@ fn unique_identifier_preserves_each_source_permitted_value_kind() {
                 UniqueIdentifierView::TextString(text) => {
                     UniqueIdentifierValue::TextString(text.to_owned())
                 }
-                UniqueIdentifierView::Enumeration(raw) => {
-                    UniqueIdentifierValue::Enumeration(raw)
-                }
+                UniqueIdentifierView::Enumeration(raw) => UniqueIdentifierValue::Enumeration(raw),
                 UniqueIdentifierView::Integer(raw) => UniqueIdentifierValue::Integer(raw),
             })
             .expect("Unique Identifier value view matches the encoded alternative");
@@ -133,9 +150,8 @@ fn typed_current_and_new_wrappers_keep_generic_construction_available() {
         .unwrap();
     assert_eq!(current_value, "replacement");
 
-    let new = NewAttribute::from_typed(
-        Attribute::<typed::Comment>::new("new-value".to_owned()).unwrap(),
-    );
+    let new =
+        NewAttribute::from_typed(Attribute::<typed::Comment>::new("new-value".to_owned()).unwrap());
     let new_value = new
         .typed::<typed::Comment>()
         .unwrap()

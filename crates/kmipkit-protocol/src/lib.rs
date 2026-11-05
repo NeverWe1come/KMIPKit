@@ -91,6 +91,7 @@ mod set_defaults_tests;
 mod sign;
 mod signature_verify;
 mod ticket;
+mod typed_attributes;
 mod validate;
 
 pub use activate::{ActivateError, ActivateRequest, ActivateResponse};
@@ -100,7 +101,11 @@ pub use adjust_attribute::{
 };
 pub use archive::{ArchiveError, ArchiveRequest, ArchiveResponse};
 pub use asynchronous::AsynchronousOperationError;
-pub use attribute::{AttributeSet, AttributeSetError, CurrentAttribute, NewAttribute};
+pub use attribute::{
+    Attribute, AttributeDefinition, AttributeSet, AttributeSetError, AttributeValueError,
+    AttributeView, CurrentAttribute, NewAttribute, UniqueIdentifierValue, UniqueIdentifierView,
+    typed,
+};
 pub use attribute_reference::AttributeReference;
 pub use cancel::{CancelRequest, CancelResponse, CancellationResult};
 pub use certify::{CertifyError, CertifyRequest, CertifyResponse};

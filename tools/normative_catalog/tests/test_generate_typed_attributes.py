@@ -35,8 +35,10 @@ class TypedAttributeGeneratorTests(unittest.TestCase):
             "DateTime",
         )
         self.assertEqual(
-            by_id["KMIPKIT-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION"].multiple,
-            True,
+            by_id[
+                "KMIPKIT-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION"
+            ].source_multiplicity,
+            "Yes",
         )
         self.assertEqual(
             by_id["KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER"].value_kind,
@@ -45,6 +47,12 @@ class TypedAttributeGeneratorTests(unittest.TestCase):
         self.assertEqual(
             by_id["KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE"].tag,
             0x0042_0008,
+        )
+        self.assertEqual(
+            by_id[
+                "KMIPKIT-ELEM-ATTRIBUTE-DIGITAL-SIGNATURE-ALGORITHM"
+            ].source_multiplicity,
+            "Yes for PGP keys. No for X.509 certificates.",
         )
 
     def test_generated_markers_keep_open_and_structure_value_categories(self) -> None:
@@ -56,15 +64,19 @@ class TypedAttributeGeneratorTests(unittest.TestCase):
         self.assertIn("StructureView", rendered)
         self.assertIn("0x42_00_01", rendered)
         self.assertNotIn("CertificateAttributes", rendered)
-        self.assertEqual(rendered.count("impl AttributeDefinition for "), 62)
+        self.assertEqual(rendered.count("impl super::AttributeDefinition for "), 62)
 
     def test_generated_registry_retains_source_multiplicity_and_trace_ids(self) -> None:
         rendered = generate_attribute_types.render_typed_rust(self.catalog)
 
         self.assertIn("KMIPKIT-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION", rendered)
-        self.assertIn("multiple: true", rendered)
+        self.assertIn('source_multiplicity: Some("Yes")', rendered)
+        self.assertIn(
+            'source_multiplicity: Some("Yes for PGP keys. No for X.509 certificates.")',
+            rendered,
+        )
         self.assertIn("KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE", rendered)
-        self.assertIn("multiple: false", rendered)
+        self.assertIn('source_multiplicity: Some("No")', rendered)
 
 
 if __name__ == "__main__":
